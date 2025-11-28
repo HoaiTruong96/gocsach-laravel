@@ -18,8 +18,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             // Mã định danh sách (Khóa ngoại)
             $table->foreignId('book_id')->constrained()->onDelete('cascade');
-            // Số sao đánh giá
-            $table->integer('rating_start');
+            // Số sao đánh giá (1-5)
+            $table->decimal('rating', 3, 1);
             // Nội dung đánh giá
             $table->text('content_text');
             // Trạng thái phê duyệt đánh giá

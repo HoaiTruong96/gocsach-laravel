@@ -25,6 +25,9 @@ return new class extends Migration
             // Ngày hoàn thành
             $table->date('finished_at')->nullable();
             $table->timestamps();
+            // CỰC KÌ QUAN TRỌNG: Tránh trường hợp 1 user có thể thêm cùng 1 cuốn sách vào kệ nhiều lần
+            // Dòng này tạo ràng buộc duy nhất giữa người dùng và cuốn sách đã chọn
+            $table->unique(['user_id', 'book_id']);
         });
     }
 

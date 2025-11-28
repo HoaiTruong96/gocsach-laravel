@@ -23,13 +23,39 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        // Ghi chú: Tạo tên đầy đủ
+        $name = fake()->lastName() . ' ' . fake()->middleName() . ' ' . fake()->firstName();
         return [
-            'name' => fake()->name(),
+            'name' => $name,
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
+            // Ghi chú: Pass mặc định: 123456789
+            'password' => static::$password ??= Hash::make('123456789'),
+            'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=random&color=fff',
+            'bio' => fake()->randomElement([
+                'Một người đam mê sách cuồng nhiệt.',
+                'Thích sách.',
+                'Xin chào, tôi là một mọt sách.',
+                'Đang tìm kiếm những cuốn sách hay để review.',
+                'Tâm hồn tôi thuộc về những trang sách.',
+                'Yêu thích việc khám phá tri thức qua sách vở.',
+                'Sách là người bạn đồng hành tuyệt vời nhất của tôi.',
+                'Mỗi cuốn sách là một cuộc phiêu lưu mới.',
+                'Tôi sống để đọc và đọc để sống.',
+                'Chưa thiết lập tiểu sử.',
+            ]),
+            'role' => 'user',
+            'is_active' => true,
             'remember_token' => Str::random(10),
         ];
+    }
+
+    public function admin(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'bio' => 'Quản trị viên hệ thống Góc Sách.',
+            'role' => 'admin',
+        ]);
     }
 
     /**
@@ -37,7 +63,7 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
         ]);
     }
