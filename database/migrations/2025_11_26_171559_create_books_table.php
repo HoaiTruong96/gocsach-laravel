@@ -10,32 +10,18 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::create('books', function (Blueprint $table) {
-            // Mã định danh sách
-            $table->id();
-            // Tiêu đề sách
-            $table->string('title');
-            // Đường dẫn sách
-            $table->string('slug')->unique();
-            // Mã định danh thể loại (Khóa ngoại)
-            $table->foreignId('category_id')->constrained()->onDelete('cascade');
-            // Mã định danh tác giả (Khóa ngoại)
-            $table->foreignId('author_id')->constrained()->onDelete('cascade');
-            // Nhà xuất bản
-            $table->string('publisher')->nullable();
-            // Năm xuất bản
-            $table->integer('published_year')->nullable();
-            // Mô tả sách
-            $table->text('description')->nullable();
-            // Ảnh bìa sách
-            $table->string('cover_image')->nullable();
-            // Số lượt xem
-            $table->integer('view_count')->default(0);
-            $table->timestamps();
-        });
-    }
-
+{
+    Schema::create('books', function (Blueprint $table) {
+        $table->id();
+        $table->string('title'); // Tên sách
+        $table->string('author')->nullable(); // Tác giả
+        $table->string('category')->nullable(); // Thể loại
+        $table->date('publish_date')->nullable(); // Ngày xuất bản
+        $table->string('image_url', 500)->nullable(); // Ảnh bìa
+        $table->text('description')->nullable(); // Mô tả
+        $table->timestamps();
+    });
+}
     /**
      * Reverse the migrations.
      */
