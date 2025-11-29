@@ -16,6 +16,10 @@ return new class extends Migration
             $table->id();
             // Tên tác giả
             $table->string('name');
+            // Đường dẫn cho tác giả
+            $table->string('slug')->unique();
+            // Ảnh đại diện tác giả
+            $table->string('avatar')->nullable();
             // Tiểu sử tác giả
             $table->text('bio')->nullable();
             $table->timestamps();
