@@ -3,166 +3,290 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Góc Sách - Review & Chia Sẻ</title>
+    <title>Góc Sách - Mạng Xã Hội Đọc Sách</title>
     
-    <!-- Dùng CDN cho nhanh (Sau này chuyên nghiệp sẽ dùng npm run dev) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
-        body { font-family: 'Roboto', sans-serif; }
-        .banner-gradient { background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%); }
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-green': '#3E5F4E',   // Xanh rêu
+                        'brand-cream': '#FDFBF7',   // Nền kem
+                        'brand-beige': '#F3E5D0',   // Nền tag
+                        'brand-brown': '#8C6B4B',   // Chữ nâu
+                        'brand-accent': '#D4A373',  // Cam đất
+                    },
+                    fontFamily: {
+                        sans: ['Segoe UI', 'Roboto', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    }
+                }
+            }
         }
+    </script>
+    
+    <style>
+        body { background-color: #FDFBF7; color: #2C3E36; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-white text-gray-800">
+<body class="font-sans antialiased flex flex-col min-h-screen">
 
-    <!-- Top Bar -->
-    <div class="bg-black text-white text-xs py-2">
-        <div class="container mx-auto px-4 flex justify-between items-center">
-            <div class="flex space-x-4">
-                <!-- Blade: Hiển thị ngày tháng cực gọn -->
-                <span>Hôm nay: {{ date('d/m/Y') }}</span>
-                <span class="font-bold cursor-pointer hover:text-blue-400">Top Sách Bán Chạy</span>
-            </div>
-            <div class="flex space-x-4">
-                <a href="#" class="hover:text-blue-400"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" class="hover:text-blue-400"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="hover:text-blue-400"><i class="fab fa-youtube"></i></a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Header & Navbar -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
-            
-            <!-- Logo -->
-            <div class="flex flex-col items-center mb-4 md:mb-0">
-                <a href="/" class="text-red-700 text-3xl font-bold flex flex-col items-center hover:opacity-80 transition">
-                    <i class="fas fa-book-reader mb-1"></i>
-                    <span class="text-xl tracking-widest uppercase">Góc Sách</span>
+    <header class="bg-brand-cream sticky top-0 z-50 border-b border-gray-200/50 shadow-sm">
+        <div class="container mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center mb-4 md:mb-0">
+                <a href="#" class="text-brand-green text-2xl font-bold flex items-center gap-2">
+                    <span class="text-3xl">📚</span>
+                    <span class="tracking-wide">GÓC SÁCH</span>
                 </a>
-                <span class="text-xs text-gray-500 tracking-wide">Review & Share</span>
             </div>
-
-            <!-- Banner -->
-            <div class="hidden md:flex w-2/3 h-24 banner-gradient rounded-lg relative overflow-hidden text-white items-center justify-between px-8 mx-4 shadow-md">
-                <div class="z-10">
-                    <h2 class="text-2xl font-bold">THẾ GIỚI SÁCH</h2>
-                    <p class="text-sm opacity-90">Khám phá tri thức vô tận</p>
-                </div>
-                <div class="z-10">
-                    <button class="bg-white text-blue-600 px-5 py-2 rounded-full font-bold text-sm hover:bg-gray-100 transition shadow-sm">
-                        Xem Ngay <i class="fas fa-arrow-right ml-1"></i>
+            <div class="hidden md:flex flex-1 mx-10 max-w-lg">
+                <div class="relative w-full">
+                    <input type="text" placeholder="Tìm kiếm sách, tác giả..." 
+                           class="w-full bg-[#EBE5D9] rounded-full py-2 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green text-gray-700 placeholder-gray-500">
+                    <button class="absolute right-4 top-2.5 text-gray-500 hover:text-brand-green">
+                        <i class="fas fa-search"></i>
                     </button>
                 </div>
-                <div class="absolute top-[-20px] left-[-20px] w-24 h-24 bg-white opacity-10 rounded-full"></div>
-                <div class="absolute bottom-[-40px] right-[50px] w-32 h-32 bg-white opacity-10 rounded-full"></div>
             </div>
-
-             <!-- Mobile Icons -->
-             <div class="md:hidden flex items-center space-x-4">
-                <i class="fas fa-search text-lg"></i>
-                <i class="fas fa-shopping-bag text-lg text-blue-500"></i>
-            </div>
+            <nav class="flex items-center space-x-6 text-sm font-medium text-gray-600">
+                <a href="#" class="text-brand-green font-bold border-b-2 border-brand-green pb-1">Trang Chủ</a>
+                <a href="#" class="hover:text-brand-green transition">Thể Loại</a>
+                <a href="#" class="hover:text-brand-green transition">Bài Viết</a>
+                <a href="#" class="text-brand-green font-bold">Đăng Nhập</a>
+            </nav>
         </div>
-
-        <!-- Menu -->
-        <nav class="border-t border-gray-100 bg-white">
-            <div class="container mx-auto px-4">
-                <div class="flex justify-between items-center py-3 overflow-x-auto whitespace-nowrap scrollbar-hide">
-                    <ul class="flex space-x-6 text-sm font-medium uppercase text-gray-700">
-                        <li class="text-blue-600 border-b-2 border-blue-600 pb-1"><a href="/">Trang Chủ</a></li>
-                        <li class="hover:text-blue-600 cursor-pointer transition">Review Sách</li>
-                        <li class="hover:text-blue-600 cursor-pointer transition">Tác Giả</li>
-                        <li class="hover:text-blue-600 cursor-pointer transition">Top List</li>
-                        <li class="hover:text-blue-600 cursor-pointer transition">Cộng Đồng</li>
-                    </ul>
-                    <div class="hidden md:block">
-                        <div class="relative">
-                            <input type="text" placeholder="Tìm kiếm sách..." class="pl-3 pr-8 py-1 border rounded-full text-sm focus:outline-none focus:border-blue-500">
-                            <i class="fas fa-search text-gray-400 absolute right-3 top-2 text-xs"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </nav>
     </header>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8 min-h-screen">
-        
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold border-l-4 border-blue-500 pl-3">Mới Cập Nhật</h2>
-            <a href="#" class="text-sm text-blue-500 hover:underline">Xem tất cả</a>
+    <section class="bg-brand-green text-white py-12">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row items-center gap-10">
+            <div class="w-full md:w-1/3 flex justify-center md:justify-end">
+                <div class="relative w-48 h-72 shadow-2xl rounded-lg overflow-hidden border-4 border-white/20 transform hover:-translate-y-2 transition duration-500 cursor-pointer">
+                    <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover">
+                </div>
+            </div>
+            <div class="w-full md:w-2/3 text-center md:text-left">
+                <span class="text-brand-beige text-xs font-bold uppercase tracking-widest mb-2 block opacity-90">Cuốn Sách Của Tháng</span>
+                <h1 class="text-4xl md:text-5xl font-bold mb-4 leading-tight font-serif">Cây Cam Ngọt Của Tôi</h1>
+                <div class="flex items-center justify-center md:justify-start text-yellow-400 mb-4 text-base gap-1">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                    <span class="text-white ml-2 opacity-80 text-sm">(4.9)</span>
+                </div>
+                <p class="text-gray-200 text-lg mb-8 line-clamp-2 italic font-light max-w-2xl">"Hành trình cảm động về tuổi thơ, nỗi đau và tình yêu thương..."</p>
+                <a href="#" class="inline-block bg-brand-beige text-brand-green font-bold px-8 py-3 rounded-lg shadow-lg hover:bg-white hover:scale-105 transition transform">Đọc Bài Review</a>
+            </div>
         </div>
+    </section>
 
-        <!-- Grid Sách -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <main class="container mx-auto px-4 py-12 flex-grow">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
             
-            {{-- Blade: Dùng @forelse thay vì @foreach để tự động xử lý khi không có dữ liệu --}}
-            @forelse($books as $book)
-                
-                <div class="flex flex-col group cursor-pointer h-full">
-                    <div class="overflow-hidden rounded-lg mb-3 relative shadow-sm border border-gray-100">
-                        <!-- Ảnh bìa -->
-                        <img src="{{ $book->image_url }}" 
-                             alt="{{ $book->title }}" 
-                             class="w-full h-64 object-cover transform transition duration-500 group-hover:scale-105"
-                             onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'">
-                        
-                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition duration-300"></div>
-                        
-                        <!-- Category -->
-                        <span class="absolute top-2 left-2 bg-blue-600 text-white text-[10px] px-2 py-1 rounded shadow uppercase font-bold">
-                            {{ $book->category }}
-                        </span>
+            <div class="lg:col-span-8 space-y-12">
+                <section>
+                    <div class="flex justify-between items-end mb-6 border-b border-gray-200 pb-2">
+                        <h2 class="text-2xl font-bold text-brand-green font-serif">Review Mới Nhất</h2>
+                        <a href="#" class="text-brand-green text-sm font-semibold hover:underline mb-1">Xem tất cả ></a>
                     </div>
-
-                    <div class="flex flex-col flex-grow">
-                        <div class="flex items-center text-xs text-gray-500 mb-2 space-x-2">
-                            <span class="font-medium text-gray-700"><i class="far fa-user mr-1"></i>{{ $book->author }}</span>
-                            <span class="text-gray-300">|</span>
-                            {{-- Format ngày tháng trong Blade --}}
-                            <span><i class="far fa-clock mr-1"></i>{{ date('d/m/Y', strtotime($book->publish_date)) }}</span>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition flex gap-4 h-48">
+                            <div class="w-28 flex-shrink-0 overflow-hidden rounded shadow-sm">
+                                <img src="https://images.unsplash.com/photo-1592496431122-2349e0fbc666?auto=format&fit=crop&q=80&w=300" class="w-full h-full object-cover">
+                            </div>
+                            <div class="flex flex-col flex-1">
+                                <h3 class="font-bold text-gray-800 line-clamp-2 mb-1 hover:text-brand-green transition text-lg font-serif">Mắt Biếc</h3>
+                                <div class="flex text-yellow-400 text-xs mb-2">★★★★★</div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <img src="https://ui-avatars.com/api/?name=User+One" class="w-5 h-5 rounded-full">
+                                    <span class="text-xs text-gray-500">Ngạn Si Tình</span>
+                                </div>
+                                <p class="text-sm text-gray-500 line-clamp-2 mt-auto">Chuyện tình đơn phương buồn nhất của Nguyễn Nhật Ánh...</p>
+                            </div>
                         </div>
-                        
-                        <h3 class="text-lg font-bold leading-tight group-hover:text-blue-600 transition duration-300 line-clamp-2 mb-2">
-                            <a href="#">{{ $book->title }}</a>
-                        </h3>
-                        
-                        <p class="text-sm text-gray-500 line-clamp-2 mb-4">
-                            {{ $book->description ?? 'Chưa có mô tả cho cuốn sách này.' }}
-                        </p>
+                        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition flex gap-4 h-48">
+                            <div class="w-28 flex-shrink-0 overflow-hidden rounded shadow-sm">
+                                <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=300" class="w-full h-full object-cover">
+                            </div>
+                            <div class="flex flex-col flex-1">
+                                <h3 class="font-bold text-gray-800 line-clamp-2 mb-1 hover:text-brand-green transition text-lg font-serif">Dế Mèn Phiêu Lưu Ký</h3>
+                                <div class="flex text-yellow-400 text-xs mb-2">★★★★☆</div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <img src="https://ui-avatars.com/api/?name=To+Hoai" class="w-5 h-5 rounded-full">
+                                    <span class="text-xs text-gray-500">Dế Mèn</span>
+                                </div>
+                                <p class="text-sm text-gray-500 line-clamp-2 mt-auto">Bài học đường đời đầu tiên...</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-bold text-brand-green mb-4 font-serif">Thể Loại Phổ Biến</h2>
+                    <div class="flex flex-wrap gap-3">
+                        <a href="#" class="bg-[#EBE5D9] text-[#6B5A45] px-5 py-2 rounded-lg text-sm font-semibold hover:bg-brand-brown hover:text-white transition">Văn Học</a>
+                        <a href="#" class="bg-[#EBE5D9] text-[#6B5A45] px-5 py-2 rounded-lg text-sm font-semibold hover:bg-brand-brown hover:text-white transition">Kinh Tế</a>
+                        <a href="#" class="bg-[#EBE5D9] text-[#6B5A45] px-5 py-2 rounded-lg text-sm font-semibold hover:bg-brand-brown hover:text-white transition">Tâm Lý</a>
+                        <a href="#" class="bg-[#EBE5D9] text-[#6B5A45] px-5 py-2 rounded-lg text-sm font-semibold hover:bg-brand-brown hover:text-white transition">Trinh Thám</a>
+                    </div>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-bold text-brand-green mb-6 font-serif">Tác Giả Nổi Bật</h2>
+                    <div class="flex gap-8 overflow-x-auto pb-4 scrollbar-hide">
+                        <div class="flex flex-col items-center min-w-[90px] cursor-pointer group">
+                            <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200 group-hover:border-brand-green transition mb-2">
+                                <img src="https://ui-avatars.com/api/?name=Nguyen+Nhat+Anh&size=150" class="w-full h-full object-cover">
+                            </div>
+                            <span class="text-sm font-bold text-center text-gray-700">Nguyễn Nhật Ánh</span>
+                        </div>
+                        <div class="flex flex-col items-center min-w-[90px] cursor-pointer group">
+                            <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200 group-hover:border-brand-green transition mb-2">
+                                <img src="https://ui-avatars.com/api/?name=J+K+Rowling&size=150" class="w-full h-full object-cover">
+                            </div>
+                            <span class="text-sm font-bold text-center text-gray-700">J.K. Rowling</span>
+                        </div>
+                    </div>
+                </section>
+                
+                <div class="relative bg-brand-beige rounded-2xl p-8 overflow-hidden flex items-center justify-between shadow-sm">
+                    <div class="relative z-10 w-2/3">
+                        <h3 class="text-2xl font-bold text-brand-brown mb-2 font-serif">Thử Thách Đọc Sách Mùa Thu</h3>
+                        <p class="text-brand-brown opacity-80 mb-4 text-sm">Tham gia ngay để nhận huy hiệu đặc biệt</p>
+                        <button class="bg-brand-brown text-white px-6 py-2 rounded font-bold text-sm hover:bg-[#6e5338] transition">Tham Gia Ngay</button>
+                    </div>
+                    <div class="absolute right-4 bottom-[-10px] opacity-20 text-brand-brown">
+                        <i class="fas fa-leaf text-8xl"></i>
                     </div>
                 </div>
+            </div>
 
-            @empty
-                {{-- Phần này sẽ hiện ra nếu Database chưa có sách nào --}}
-                <div class="col-span-1 sm:col-span-2 lg:col-span-4 text-center py-10 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                    <i class="fas fa-book-open text-4xl text-gray-300 mb-3"></i>
-                    <p class="text-gray-500">Chưa có cuốn sách nào trong cơ sở dữ liệu.</p>
+            <div class="lg:col-span-4">
+                <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b border-gray-100 font-serif border-l-4 border-brand-green pl-3">
+                        Top Thịnh Hành
+                    </h3>
+                    
+                    <div class="space-y-6">
+                        <div class="flex gap-4 items-start group cursor-pointer">
+                            <div class="text-3xl font-bold text-[#EBE5D9] group-hover:text-brand-accent transition w-8 text-center leading-none font-serif">01</div>
+                            <div class="w-12 h-16 flex-shrink-0 bg-gray-200 rounded overflow-hidden shadow-sm">
+                                <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=200" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-brand-green transition">Cây Cam Ngọt Của Tôi</h4>
+                                <p class="text-xs text-gray-500 mb-1">José Mauro</p>
+                                <div class="text-[10px] text-yellow-400">★★★★★ 4.9</div>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 items-start group cursor-pointer">
+                            <div class="text-3xl font-bold text-[#EBE5D9] group-hover:text-brand-accent transition w-8 text-center leading-none font-serif">02</div>
+                            <div class="w-12 h-16 flex-shrink-0 bg-gray-200 rounded overflow-hidden shadow-sm">
+                                <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=200" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-brand-green transition">Dế Mèn Phiêu Lưu Ký</h4>
+                                <p class="text-xs text-gray-500 mb-1">Tô Hoài</p>
+                                <div class="text-[10px] text-yellow-400">★★★★☆ 4.8</div>
+                            </div>
+                        </div>
+                         <div class="flex gap-4 items-start group cursor-pointer">
+                            <div class="text-3xl font-bold text-[#EBE5D9] group-hover:text-brand-accent transition w-8 text-center leading-none font-serif">03</div>
+                            <div class="w-12 h-16 flex-shrink-0 bg-gray-200 rounded overflow-hidden shadow-sm">
+                                <img src="https://images.unsplash.com/photo-1629198688000-71f23e745b6e?auto=format&fit=crop&q=80&w=200" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-brand-green transition">Hoàng Tử Bé</h4>
+                                <p class="text-xs text-gray-500 mb-1">Saint-Exupéry</p>
+                                <div class="text-[10px] text-yellow-400">★★★★★ 4.9</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            @endforelse
-
+            </div>
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-gray-100 mt-12 py-8 border-t border-gray-200">
-        <div class="container mx-auto px-4 text-center">
-            <h3 class="text-xl font-bold text-gray-700 mb-2">Góc Sách</h3>
-            <p class="text-gray-500 text-sm mb-4">Kết nối tri thức - Chia sẻ đam mê</p>
-            <p class="text-xs text-gray-400">&copy; {{ date('Y') }} HoaiTruong96. All rights reserved.</p>
+    <footer class="bg-[#2C3E36] text-white pt-16 pb-8 relative overflow-hidden">
+        <div class="container mx-auto px-4">
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                
+                <div class="space-y-4">
+                    <div class="flex flex-col items-start">
+                        <div class="mb-2">
+                            <i class="fas fa-book-open text-4xl text-[#E9EDC9]"></i>
+                        </div>
+                        <h3 class="font-bold text-lg leading-tight">
+                            Mọt Sách Review - <br>
+                            Kết nối tri thức
+                        </h3>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-bold mb-6 text-white text-lg">Liên Kết Nhanh</h4>
+                    <ul class="space-y-3 text-sm text-gray-300">
+                        <li><a href="#" class="hover:text-[#D4A373] transition">Về chúng tôi</a></li>
+                        <li><a href="#" class="hover:text-[#D4A373] transition">Liên hệ</a></li>
+                        <li><a href="#" class="hover:text-[#D4A373] transition">Điều khoản</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold mb-6 text-white text-lg">Thể Loại</h4>
+                    <ul class="space-y-3 text-sm text-gray-300">
+                        <li><a href="#" class="hover:text-[#D4A373] transition">Danh sách</a></li>
+                        <li><a href="#" class="hover:text-[#D4A373] transition">Tiểu thuyết</a></li>
+                        <li><a href="#" class="hover:text-[#D4A373] transition">Kinh tế</a></li>
+                        <li><a href="#" class="hover:text-[#D4A373] transition">Trinh thám</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold mb-6 text-white text-lg">Đăng Ký Nhận Tin</h4>
+                    
+                    <form onsubmit="event.preventDefault();" class="flex mb-6">
+                        <input type="email" placeholder="Email..." 
+                               class="w-full px-4 py-2 text-gray-800 rounded-l focus:outline-none text-sm">
+                        <button class="bg-[#8C6B4B] hover:bg-[#6e5338] text-white font-bold px-4 py-2 rounded-r transition text-sm whitespace-nowrap">
+                            Đăng Ký
+                        </button>
+                    </form>
+
+                    <div class="flex gap-3">
+                        <a href="#" class="w-8 h-8 bg-[#E9EDC9] text-[#2C3E36] rounded-full flex items-center justify-center hover:bg-white transition">
+                            <i class="fab fa-twitter text-sm"></i>
+                        </a>
+                        <a href="#" class="w-8 h-8 bg-[#E9EDC9] text-[#2C3E36] rounded-full flex items-center justify-center hover:bg-white transition">
+                            <i class="fab fa-facebook-f text-sm"></i>
+                        </a>
+                        <a href="#" class="w-8 h-8 bg-[#E9EDC9] text-[#2C3E36] rounded-full flex items-center justify-center hover:bg-white transition">
+                            <i class="fab fa-instagram text-sm"></i>
+                        </a>
+                        <a href="#" class="w-8 h-8 bg-[#E9EDC9] text-[#2C3E36] rounded-full flex items-center justify-center hover:bg-white transition">
+                            <i class="fab fa-youtube text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-600 pt-8 text-center text-xs text-gray-400">
+                Copyright © 2025 Mọt Sách Review
+            </div>
+        </div>
+
+        <div class="absolute bottom-0 right-0 text-gray-500 opacity-20 transform translate-y-1/4 translate-x-1/4">
+            <svg width="150" height="150" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z"/>
+            </svg>
         </div>
     </footer>
+
+</body>
+</html>
 
 </body>
 </html>
