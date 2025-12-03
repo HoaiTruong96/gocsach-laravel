@@ -1,7 +1,37 @@
 <?php
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\BookController;
 
-Route::get('/', [BookController::class, 'index']);
-Route::get('/profile', [ProfileController::class, 'index']);
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;     // Xử lý Đăng nhập/Đăng ký/Quên MK
+use App\Http\Controllers\BookController;     // Hiển thị sách
+use App\Http\Controllers\ProfileController;  // Hiển thị hồ sơ
 
+// --- 1. TRANG CHỦ (Ai cũng xem được) ---
+Route::get('/', [BookController::class, 'index'])->name('home');
+
+// --- 2. NHÓM KHÁCH (Chưa đăng nhập mới được vào) ---
+Route::middleware('guest')->group(function () {
+    // Đăng nhập
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+
+    // Đăng ký
+    Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+    Route::post('/register', [AuthController::class, 'register']);
+
+    // Quên mật khẩu (Dùng Mã bí mật)
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('forgot.password');
+    Route::post('/check-secret', [AuthController::class, 'checkSecret'])->name('check.secret');
+    Route::post('/update-password', [AuthController::class, 'updatePassword'])->name('update.password');
+});
+
+// --- 3. NHÓM THÀNH VIÊN (Phải đăng nhập mới được vào) ---
+Route::middleware('auth')->group(function () {
+    // Đăng xuất
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    // Trang cá nhân (Profile)
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+
+    Route::get('/change-password', [AuthController::class, 'showChangePasswordForm'])->name('change.password');
+    Route::post('/change-password', [AuthController::class, 'changePassword'])->name('change.password.post');
+});

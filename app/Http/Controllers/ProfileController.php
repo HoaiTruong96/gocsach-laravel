@@ -3,20 +3,19 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use stdClass; // Thư viện dùng để tạo object giả
+use Illuminate\Support\Facades\Auth; // [QUAN TRỌNG] Gọi thư viện Auth
+use stdClass;
 
 class ProfileController extends Controller
 {
     public function index()
     {
-        // 1. TẠO DỮ LIỆU GIẢ CHO USER (Thay vì lấy từ Database)
-        $user = new stdClass();
-        $user->name = "Nguyễn Quốc Kha";
-        $user->email = "kha.frontend@hutech.edu.vn";
-        $user->avatar = "https://ui-avatars.com/api/?name=Quoc+Kha&background=0D8ABC&color=fff";
+        // 1. LẤY THÔNG TIN NGƯỜI DÙNG TỪ DATABASE (Đã sửa)
+        // Hàm Auth::user() sẽ lấy ra toàn bộ thông tin của người đang đăng nhập
+        $user = Auth::user();
 
-        // 2. TẠO DỮ LIỆU GIẢ CHO TỦ SÁCH
-        // (Tự tạo 3 cuốn sách để test giao diện)
+        // 2. TẠO DỮ LIỆU GIẢ CHO TỦ SÁCH (Giữ nguyên để test giao diện)
+        // Phần này sau này bạn Thông làm xong DB sách thì mình sẽ query thật sau
         $book1 = new stdClass();
         $book1->title = "Đắc Nhân Tâm";
         $book1->author = "Dale Carnegie";
@@ -35,13 +34,12 @@ class ProfileController extends Controller
         $book3->image_url = "https://salt.tikicdn.com/cache/w1200/ts/product/c6/eb/aa/3f4e15779c6563456c1d052601710972.jpg";
         $book3->category = "Đời sống";
 
-        // Gom sách vào một mảng
         $myBooks = [$book1, $book2, $book3];
 
-        // 3. TRẢ VỀ VIEW KÈM DỮ LIỆU
+        // 3. TRẢ VỀ VIEW KÈM DỮ LIỆU THẬT CỦA USER
         return view('profile', [
-            'user' => $user,
-            'myBooks' => $myBooks
+            'user' => $user,      // Biến $user này bây giờ chứa thông tin thật từ DB
+            'myBooks' => $myBooks // Biến này vẫn là giả lập
         ]);
     }
 }
