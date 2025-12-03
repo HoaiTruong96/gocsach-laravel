@@ -48,6 +48,7 @@
 
 <body class="font-sans antialiased flex flex-col min-h-screen">
 
+    <!-- HEADER -->
     <header class="bg-brand-cream sticky top-0 z-50 border-b border-gray-200/50 shadow-sm">
         <div class="container mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center">
             <div class="flex items-center mb-4 md:mb-0">
@@ -69,6 +70,14 @@
             <!-- NAV MENU CHÍNH -->
             <nav class="flex items-center space-x-6 text-sm font-medium text-gray-600">
                 <a href="{{ route('home') }}" class="text-brand-green font-bold border-b-2 border-brand-green pb-1">Trang Chủ</a>
+                
+                <!-- [LOGIC QUAN TRỌNG] Hiển thị Dashboard cho Admin -->
+                @if(Auth::check() && Auth::user()->role === 'admin')
+                    <a href="{{ route('admin.dashboard') }}" class="text-red-600 hover:text-red-800 font-bold border border-red-100 bg-red-50 px-3 py-1 rounded-full transition">
+                        <i class="fas fa-tachometer-alt mr-1"></i>Dashboard
+                    </a>
+                @endif
+
                 <a href="#" class="hover:text-brand-green transition">Thể Loại</a>
                 <a href="#" class="hover:text-brand-green transition">Bài Viết</a>
 
@@ -78,7 +87,7 @@
                 <div class="relative group z-50">
                     <button class="flex items-center gap-2 text-brand-green font-bold focus:outline-none hover:opacity-80 transition">
                         <!-- Avatar tự động tạo theo tên -->
-                        <img src="https://ui-avatars.com/api/?name={{ Auth::user()->name }}&background=3E5F4E&color=fff" class="w-8 h-8 rounded-full border border-brand-green shadow-sm">
+                        <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=3E5F4E&color=fff" class="w-8 h-8 rounded-full border border-brand-green shadow-sm">
                         <span class="max-w-[100px] truncate">{{ Auth::user()->name }}</span>
                         <i class="fas fa-chevron-down text-xs"></i>
                     </button>
@@ -91,11 +100,6 @@
                         <a href="{{ route('profile') }}" class="block px-4 py-2 text-gray-700 hover:bg-brand-beige hover:text-brand-green transition">
                             <i class="fas fa-user mr-2"></i> Hồ sơ cá nhân
                         </a>
-                        <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-brand-beige hover:text-brand-green transition">
-                            <i class="fas fa-bookmark mr-2"></i> Tủ sách của tôi
-                        </a>
-
-                        <!-- [MỚI] Link Đổi mật khẩu -->
                         <a href="{{ route('change.password') }}" class="block px-4 py-2 text-gray-700 hover:bg-brand-beige hover:text-brand-green transition">
                             <i class="fas fa-key mr-2"></i> Đổi mật khẩu
                         </a>
@@ -122,6 +126,7 @@
         </div>
     </header>
 
+    <!-- BANNER NỔI BẬT -->
     <section class="bg-brand-green text-white py-12">
         <div class="container mx-auto px-4 flex flex-col md:flex-row items-center gap-10">
             <div class="w-full md:w-1/3 flex justify-center md:justify-end">
@@ -142,44 +147,55 @@
         </div>
     </section>
 
+    <!-- MAIN CONTENT -->
     <main class="container mx-auto px-4 py-12 flex-grow">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
 
+            <!-- CỘT TRÁI (DANH SÁCH SÁCH) -->
             <div class="lg:col-span-8 space-y-12">
                 <section>
                     <div class="flex justify-between items-end mb-6 border-b border-gray-200 pb-2">
                         <h2 class="text-2xl font-bold text-brand-green font-serif">Review Mới Nhất</h2>
                         <a href="#" class="text-brand-green text-sm font-semibold hover:underline mb-1">Xem tất cả ></a>
                     </div>
+                    
+                    <!-- [DYNAMIC] Lưới hiển thị sách từ Database -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition flex gap-4 h-48">
-                            <div class="w-28 flex-shrink-0 overflow-hidden rounded shadow-sm">
-                                <img src="https://images.unsplash.com/photo-1592496431122-2349e0fbc666?auto=format&fit=crop&q=80&w=300" class="w-full h-full object-cover">
-                            </div>
-                            <div class="flex flex-col flex-1">
-                                <h3 class="font-bold text-gray-800 line-clamp-2 mb-1 hover:text-brand-green transition text-lg font-serif">Mắt Biếc</h3>
-                                <div class="flex text-yellow-400 text-xs mb-2">★★★★★</div>
-                                <div class="flex items-center gap-2 mb-2">
-                                    <img src="https://ui-avatars.com/api/?name=User+One" class="w-5 h-5 rounded-full">
-                                    <span class="text-xs text-gray-500">Ngạn Si Tình</span>
+                        @forelse($books as $book)
+                            <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition flex gap-4 h-48 group cursor-pointer">
+                                <!-- Ảnh bìa sách -->
+                                <div class="w-28 flex-shrink-0 overflow-hidden rounded shadow-sm relative">
+                                    <img src="{{ $book->image_url }}" alt="{{ $book->title }}" 
+                                         class="w-full h-full object-cover transform transition duration-500 group-hover:scale-105"
+                                         onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'">
                                 </div>
-                                <p class="text-sm text-gray-500 line-clamp-2 mt-auto">Chuyện tình đơn phương buồn nhất của Nguyễn Nhật Ánh...</p>
-                            </div>
-                        </div>
-                        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition flex gap-4 h-48">
-                            <div class="w-28 flex-shrink-0 overflow-hidden rounded shadow-sm">
-                                <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=300" class="w-full h-full object-cover">
-                            </div>
-                            <div class="flex flex-col flex-1">
-                                <h3 class="font-bold text-gray-800 line-clamp-2 mb-1 hover:text-brand-green transition text-lg font-serif">Dế Mèn Phiêu Lưu Ký</h3>
-                                <div class="flex text-yellow-400 text-xs mb-2">★★★★☆</div>
-                                <div class="flex items-center gap-2 mb-2">
-                                    <img src="https://ui-avatars.com/api/?name=To+Hoai" class="w-5 h-5 rounded-full">
-                                    <span class="text-xs text-gray-500">Dế Mèn</span>
+                                
+                                <!-- Thông tin sách -->
+                                <div class="flex flex-col flex-1">
+                                    <h3 class="font-bold text-gray-800 line-clamp-2 mb-1 hover:text-brand-green transition text-lg font-serif">
+                                        <a href="{{ route('book.show', $book->id) }}">{{ $book->title }}</a>
+                                    </h3>
+                                    
+                                    <!-- Rating giả lập (hoặc lấy từ DB nếu có) -->
+                                    <div class="flex text-yellow-400 text-xs mb-2">★★★★★</div>
+                                    
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <!-- Avatar tác giả (dùng UI Avatars) -->
+                                        <img src="https://ui-avatars.com/api/?name={{ urlencode($book->author) }}&background=random" class="w-5 h-5 rounded-full">
+                                        <span class="text-xs text-gray-500">{{ $book->author }}</span>
+                                    </div>
+                                    
+                                    <p class="text-sm text-gray-500 line-clamp-2 mt-auto">
+                                        {{ $book->description ?? 'Chưa có mô tả cho cuốn sách này.' }}
+                                    </p>
                                 </div>
-                                <p class="text-sm text-gray-500 line-clamp-2 mt-auto">Bài học đường đời đầu tiên...</p>
                             </div>
-                        </div>
+                        @empty
+                            <div class="col-span-full bg-white p-8 rounded-xl text-center border border-dashed border-gray-300">
+                                <i class="fas fa-book-open text-4xl text-gray-300 mb-3"></i>
+                                <p class="text-gray-500">Chưa có cuốn sách nào trong cơ sở dữ liệu.</p>
+                            </div>
+                        @endforelse
                     </div>
                 </section>
 
@@ -190,24 +206,6 @@
                         <a href="#" class="bg-[#EBE5D9] text-[#6B5A45] px-5 py-2 rounded-lg text-sm font-semibold hover:bg-brand-brown hover:text-white transition">Kinh Tế</a>
                         <a href="#" class="bg-[#EBE5D9] text-[#6B5A45] px-5 py-2 rounded-lg text-sm font-semibold hover:bg-brand-brown hover:text-white transition">Tâm Lý</a>
                         <a href="#" class="bg-[#EBE5D9] text-[#6B5A45] px-5 py-2 rounded-lg text-sm font-semibold hover:bg-brand-brown hover:text-white transition">Trinh Thám</a>
-                    </div>
-                </section>
-
-                <section>
-                    <h2 class="text-2xl font-bold text-brand-green mb-6 font-serif">Tác Giả Nổi Bật</h2>
-                    <div class="flex gap-8 overflow-x-auto pb-4 scrollbar-hide">
-                        <div class="flex flex-col items-center min-w-[90px] cursor-pointer group">
-                            <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200 group-hover:border-brand-green transition mb-2">
-                                <img src="https://ui-avatars.com/api/?name=Nguyen+Nhat+Anh&size=150" class="w-full h-full object-cover">
-                            </div>
-                            <span class="text-sm font-bold text-center text-gray-700">Nguyễn Nhật Ánh</span>
-                        </div>
-                        <div class="flex flex-col items-center min-w-[90px] cursor-pointer group">
-                            <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200 group-hover:border-brand-green transition mb-2">
-                                <img src="https://ui-avatars.com/api/?name=J+K+Rowling&size=150" class="w-full h-full object-cover">
-                            </div>
-                            <span class="text-sm font-bold text-center text-gray-700">J.K. Rowling</span>
-                        </div>
                     </div>
                 </section>
 
@@ -223,128 +221,64 @@
                 </div>
             </div>
 
+            <!-- CỘT PHẢI (SIDEBAR) -->
             <div class="lg:col-span-4">
-                <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm sticky top-24">
                     <h3 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b border-gray-100 font-serif border-l-4 border-brand-green pl-3">
                         Top Thịnh Hành
                     </h3>
 
+                    <!-- Sidebar giả lập (Để cho đẹp) -->
                     <div class="space-y-6">
+                        @foreach(['Cây Cam Ngọt Của Tôi', 'Dế Mèn Phiêu Lưu Ký', 'Hoàng Tử Bé'] as $index => $title)
                         <div class="flex gap-4 items-start group cursor-pointer">
-                            <div class="text-3xl font-bold text-[#EBE5D9] group-hover:text-brand-accent transition w-8 text-center leading-none font-serif">01</div>
+                            <div class="text-3xl font-bold text-[#EBE5D9] group-hover:text-brand-accent transition w-8 text-center leading-none font-serif">{{ $index + 1 }}</div>
                             <div class="w-12 h-16 flex-shrink-0 bg-gray-200 rounded overflow-hidden shadow-sm">
-                                <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=200" class="w-full h-full object-cover">
+                                <img src="https://source.unsplash.com/random/200x300?book,{{ $index }}" class="w-full h-full object-cover">
                             </div>
                             <div>
-                                <h4 class="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-brand-green transition">Cây Cam Ngọt Của Tôi</h4>
-                                <p class="text-xs text-gray-500 mb-1">José Mauro</p>
+                                <h4 class="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-brand-green transition">{{ $title }}</h4>
+                                <p class="text-xs text-gray-500 mb-1">Nhiều Tác Giả</p>
                                 <div class="text-[10px] text-yellow-400">★★★★★ 4.9</div>
                             </div>
                         </div>
-                        <div class="flex gap-4 items-start group cursor-pointer">
-                            <div class="text-3xl font-bold text-[#EBE5D9] group-hover:text-brand-accent transition w-8 text-center leading-none font-serif">02</div>
-                            <div class="w-12 h-16 flex-shrink-0 bg-gray-200 rounded overflow-hidden shadow-sm">
-                                <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=200" class="w-full h-full object-cover">
-                            </div>
-                            <div>
-                                <h4 class="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-brand-green transition">Dế Mèn Phiêu Lưu Ký</h4>
-                                <p class="text-xs text-gray-500 mb-1">Tô Hoài</p>
-                                <div class="text-[10px] text-yellow-400">★★★★☆ 4.8</div>
-                            </div>
-                        </div>
-                        <div class="flex gap-4 items-start group cursor-pointer">
-                            <div class="text-3xl font-bold text-[#EBE5D9] group-hover:text-brand-accent transition w-8 text-center leading-none font-serif">03</div>
-                            <div class="w-12 h-16 flex-shrink-0 bg-gray-200 rounded overflow-hidden shadow-sm">
-                                <img src="https://images.unsplash.com/photo-1629198688000-71f23e745b6e?auto=format&fit=crop&q=80&w=200" class="w-full h-full object-cover">
-                            </div>
-                            <div>
-                                <h4 class="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-brand-green transition">Hoàng Tử Bé</h4>
-                                <p class="text-xs text-gray-500 mb-1">Saint-Exupéry</p>
-                                <div class="text-[10px] text-yellow-400">★★★★★ 4.9</div>
-                            </div>
-                        </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
+    <!-- FOOTER -->
     <footer class="bg-[#2C3E36] text-white pt-16 pb-8 relative overflow-hidden">
         <div class="container mx-auto px-4">
-
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-
                 <div class="space-y-4">
                     <div class="flex flex-col items-start">
-                        <div class="mb-2">
-                            <i class="fas fa-book-open text-4xl text-[#E9EDC9]"></i>
-                        </div>
-                        <h3 class="font-bold text-lg leading-tight">
-                            Mọt Sách Review - <br>
-                            Kết nối tri thức
-                        </h3>
+                        <div class="mb-2"><i class="fas fa-book-open text-4xl text-[#E9EDC9]"></i></div>
+                        <h3 class="font-bold text-lg leading-tight">Mọt Sách Review - <br>Kết nối tri thức</h3>
                     </div>
                 </div>
-
                 <div>
                     <h4 class="font-bold mb-6 text-white text-lg">Liên Kết Nhanh</h4>
                     <ul class="space-y-3 text-sm text-gray-300">
                         <li><a href="#" class="hover:text-[#D4A373] transition">Về chúng tôi</a></li>
                         <li><a href="#" class="hover:text-[#D4A373] transition">Liên hệ</a></li>
-                        <li><a href="#" class="hover:text-[#D4A373] transition">Điều khoản</a></li>
                     </ul>
                 </div>
-
-                <div>
-                    <h4 class="font-bold mb-6 text-white text-lg">Thể Loại</h4>
-                    <ul class="space-y-3 text-sm text-gray-300">
-                        <li><a href="#" class="hover:text-[#D4A373] transition">Danh sách</a></li>
-                        <li><a href="#" class="hover:text-[#D4A373] transition">Tiểu thuyết</a></li>
-                        <li><a href="#" class="hover:text-[#D4A373] transition">Kinh tế</a></li>
-                        <li><a href="#" class="hover:text-[#D4A373] transition">Trinh thám</a></li>
-                    </ul>
-                </div>
-
                 <div>
                     <h4 class="font-bold mb-6 text-white text-lg">Đăng Ký Nhận Tin</h4>
-
                     <form onsubmit="event.preventDefault();" class="flex mb-6">
-                        <input type="email" placeholder="Email..."
-                            class="w-full px-4 py-2 text-gray-800 rounded-l focus:outline-none text-sm">
-                        <button class="bg-[#8C6B4B] hover:bg-[#6e5338] text-white font-bold px-4 py-2 rounded-r transition text-sm whitespace-nowrap">
-                            Đăng Ký
-                        </button>
+                        <input type="email" placeholder="Email..." class="w-full px-4 py-2 text-gray-800 rounded-l focus:outline-none text-sm">
+                        <button class="bg-[#8C6B4B] hover:bg-[#6e5338] text-white font-bold px-4 py-2 rounded-r transition text-sm whitespace-nowrap">Đăng Ký</button>
                     </form>
-
-                    <div class="flex gap-3">
-                        <a href="#" class="w-8 h-8 bg-[#E9EDC9] text-[#2C3E36] rounded-full flex items-center justify-center hover:bg-white transition">
-                            <i class="fab fa-twitter text-sm"></i>
-                        </a>
-                        <a href="#" class="w-8 h-8 bg-[#E9EDC9] text-[#2C3E36] rounded-full flex items-center justify-center hover:bg-white transition">
-                            <i class="fab fa-facebook-f text-sm"></i>
-                        </a>
-                        <a href="#" class="w-8 h-8 bg-[#E9EDC9] text-[#2C3E36] rounded-full flex items-center justify-center hover:bg-white transition">
-                            <i class="fab fa-instagram text-sm"></i>
-                        </a>
-                        <a href="#" class="w-8 h-8 bg-[#E9EDC9] text-[#2C3E36] rounded-full flex items-center justify-center hover:bg-white transition">
-                            <i class="fab fa-youtube text-sm"></i>
-                        </a>
-                    </div>
                 </div>
             </div>
-
             <div class="border-t border-gray-600 pt-8 text-center text-xs text-gray-400">
                 Copyright © 2025 Mọt Sách Review
             </div>
         </div>
-
-        <div class="absolute bottom-0 right-0 text-gray-500 opacity-20 transform translate-y-1/4 translate-x-1/4">
-            <svg width="150" height="150" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
-            </svg>
-        </div>
     </footer>
 
 </body>
-
 </html>
