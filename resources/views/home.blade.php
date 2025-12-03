@@ -1,23 +1,24 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Góc Sách - Mạng Xã Hội Đọc Sách</title>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'brand-green': '#3E5F4E',   // Xanh rêu
-                        'brand-cream': '#FDFBF7',   // Nền kem
-                        'brand-beige': '#F3E5D0',   // Nền tag
-                        'brand-brown': '#8C6B4B',   // Chữ nâu
-                        'brand-accent': '#D4A373',  // Cam đất
+                        'brand-green': '#3E5F4E', // Xanh rêu
+                        'brand-cream': '#FDFBF7', // Nền kem
+                        'brand-beige': '#F3E5D0', // Nền tag
+                        'brand-brown': '#8C6B4B', // Chữ nâu
+                        'brand-accent': '#D4A373', // Cam đất
                     },
                     fontFamily: {
                         sans: ['Segoe UI', 'Roboto', 'sans-serif'],
@@ -27,13 +28,24 @@
             }
         }
     </script>
-    
+
     <style>
-        body { background-color: #FDFBF7; color: #2C3E36; }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        body {
+            background-color: #FDFBF7;
+            color: #2C3E36;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
+
 <body class="font-sans antialiased flex flex-col min-h-screen">
 
     <header class="bg-brand-cream sticky top-0 z-50 border-b border-gray-200/50 shadow-sm">
@@ -46,14 +58,14 @@
             </div>
             <div class="hidden md:flex flex-1 mx-10 max-w-lg">
                 <div class="relative w-full">
-                    <input type="text" placeholder="Tìm kiếm sách, tác giả..." 
-                           class="w-full bg-[#EBE5D9] rounded-full py-2 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green text-gray-700 placeholder-gray-500">
+                    <input type="text" placeholder="Tìm kiếm sách, tác giả..."
+                        class="w-full bg-[#EBE5D9] rounded-full py-2 px-5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green text-gray-700 placeholder-gray-500">
                     <button class="absolute right-4 top-2.5 text-gray-500 hover:text-brand-green">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
             </div>
-            
+
             <!-- NAV MENU CHÍNH -->
             <nav class="flex items-center space-x-6 text-sm font-medium text-gray-600">
                 <a href="{{ route('home') }}" class="text-brand-green font-bold border-b-2 border-brand-green pb-1">Trang Chủ</a>
@@ -62,48 +74,48 @@
 
                 <!-- LOGIC AUTHENTICATION -->
                 @auth
-                    <!-- Khi ĐÃ Đăng nhập -->
-                    <div class="relative group z-50">
-                        <button class="flex items-center gap-2 text-brand-green font-bold focus:outline-none hover:opacity-80 transition">
-                            <!-- Avatar tự động tạo theo tên -->
-                            <img src="https://ui-avatars.com/api/?name={{ Auth::user()->name }}&background=3E5F4E&color=fff" class="w-8 h-8 rounded-full border border-brand-green shadow-sm">
-                            <span class="max-w-[100px] truncate">{{ Auth::user()->name }}</span>
-                            <i class="fas fa-chevron-down text-xs"></i>
-                        </button>
-                        
-                        <!-- Dropdown Menu -->
-                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 hidden group-hover:block py-2 animate-fade-in">
-                            <div class="px-4 py-2 border-b border-gray-100 text-xs text-gray-400">
-                                Xin chào, {{ Auth::user()->name }}
-                            </div>
-                            <a href="{{ route('profile') }}" class="block px-4 py-2 text-gray-700 hover:bg-brand-beige hover:text-brand-green transition">
-                                <i class="fas fa-user mr-2"></i> Hồ sơ cá nhân
-                            </a>
-                            <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-brand-beige hover:text-brand-green transition">
-                                <i class="fas fa-bookmark mr-2"></i> Tủ sách của tôi
-                            </a>
+                <!-- Khi ĐÃ Đăng nhập -->
+                <div class="relative group z-50">
+                    <button class="flex items-center gap-2 text-brand-green font-bold focus:outline-none hover:opacity-80 transition">
+                        <!-- Avatar tự động tạo theo tên -->
+                        <img src="https://ui-avatars.com/api/?name={{ Auth::user()->name }}&background=3E5F4E&color=fff" class="w-8 h-8 rounded-full border border-brand-green shadow-sm">
+                        <span class="max-w-[100px] truncate">{{ Auth::user()->name }}</span>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </button>
 
-                            <!-- [MỚI] Link Đổi mật khẩu -->
-                            <a href="{{ route('change.password') }}" class="block px-4 py-2 text-gray-700 hover:bg-brand-beige hover:text-brand-green transition">
-                                <i class="fas fa-key mr-2"></i> Đổi mật khẩu
-                            </a>
-
-                            <div class="border-t border-gray-100 my-1"></div>
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="w-full text-left px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600 transition">
-                                    <i class="fas fa-sign-out-alt mr-2"></i> Đăng Xuất
-                                </button>
-                            </form>
+                    <!-- Dropdown Menu -->
+                    <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 hidden group-hover:block py-2 animate-fade-in">
+                        <div class="px-4 py-2 border-b border-gray-100 text-xs text-gray-400">
+                            Xin chào, {{ Auth::user()->name }}
                         </div>
+                        <a href="{{ route('profile') }}" class="block px-4 py-2 text-gray-700 hover:bg-brand-beige hover:text-brand-green transition">
+                            <i class="fas fa-user mr-2"></i> Hồ sơ cá nhân
+                        </a>
+                        <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-brand-beige hover:text-brand-green transition">
+                            <i class="fas fa-bookmark mr-2"></i> Tủ sách của tôi
+                        </a>
+
+                        <!-- [MỚI] Link Đổi mật khẩu -->
+                        <a href="{{ route('change.password') }}" class="block px-4 py-2 text-gray-700 hover:bg-brand-beige hover:text-brand-green transition">
+                            <i class="fas fa-key mr-2"></i> Đổi mật khẩu
+                        </a>
+
+                        <div class="border-t border-gray-100 my-1"></div>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="w-full text-left px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600 transition">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Đăng Xuất
+                            </button>
+                        </form>
                     </div>
+                </div>
                 @else
-                    <!-- Khi CHƯA Đăng nhập -->
-                    <div class="flex items-center gap-3">
-                        <a href="{{ route('login') }}" class="text-gray-600 hover:text-brand-green transition">Đăng Nhập</a>
-                        <span class="text-gray-300">|</span>
-                        <a href="{{ route('register') }}" class="text-brand-green font-bold hover:underline decoration-2 underline-offset-4">Đăng Ký</a>
-                    </div>
+                <!-- Khi CHƯA Đăng nhập -->
+                <div class="flex items-center gap-3">
+                    <a href="{{ route('login') }}" class="text-gray-600 hover:text-brand-green transition">Đăng Nhập</a>
+                    <span class="text-gray-300">|</span>
+                    <a href="{{ route('register') }}" class="text-brand-green font-bold hover:underline decoration-2 underline-offset-4">Đăng Ký</a>
+                </div>
                 @endauth
 
             </nav>
@@ -132,7 +144,7 @@
 
     <main class="container mx-auto px-4 py-12 flex-grow">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
-            
+
             <div class="lg:col-span-8 space-y-12">
                 <section>
                     <div class="flex justify-between items-end mb-6 border-b border-gray-200 pb-2">
@@ -198,7 +210,7 @@
                         </div>
                     </div>
                 </section>
-                
+
                 <div class="relative bg-brand-beige rounded-2xl p-8 overflow-hidden flex items-center justify-between shadow-sm">
                     <div class="relative z-10 w-2/3">
                         <h3 class="text-2xl font-bold text-brand-brown mb-2 font-serif">Thử Thách Đọc Sách Mùa Thu</h3>
@@ -216,7 +228,7 @@
                     <h3 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b border-gray-100 font-serif border-l-4 border-brand-green pl-3">
                         Top Thịnh Hành
                     </h3>
-                    
+
                     <div class="space-y-6">
                         <div class="flex gap-4 items-start group cursor-pointer">
                             <div class="text-3xl font-bold text-[#EBE5D9] group-hover:text-brand-accent transition w-8 text-center leading-none font-serif">01</div>
@@ -240,7 +252,7 @@
                                 <div class="text-[10px] text-yellow-400">★★★★☆ 4.8</div>
                             </div>
                         </div>
-                         <div class="flex gap-4 items-start group cursor-pointer">
+                        <div class="flex gap-4 items-start group cursor-pointer">
                             <div class="text-3xl font-bold text-[#EBE5D9] group-hover:text-brand-accent transition w-8 text-center leading-none font-serif">03</div>
                             <div class="w-12 h-16 flex-shrink-0 bg-gray-200 rounded overflow-hidden shadow-sm">
                                 <img src="https://images.unsplash.com/photo-1629198688000-71f23e745b6e?auto=format&fit=crop&q=80&w=200" class="w-full h-full object-cover">
@@ -259,9 +271,9 @@
 
     <footer class="bg-[#2C3E36] text-white pt-16 pb-8 relative overflow-hidden">
         <div class="container mx-auto px-4">
-            
+
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-                
+
                 <div class="space-y-4">
                     <div class="flex flex-col items-start">
                         <div class="mb-2">
@@ -295,10 +307,10 @@
 
                 <div>
                     <h4 class="font-bold mb-6 text-white text-lg">Đăng Ký Nhận Tin</h4>
-                    
+
                     <form onsubmit="event.preventDefault();" class="flex mb-6">
-                        <input type="email" placeholder="Email..." 
-                               class="w-full px-4 py-2 text-gray-800 rounded-l focus:outline-none text-sm">
+                        <input type="email" placeholder="Email..."
+                            class="w-full px-4 py-2 text-gray-800 rounded-l focus:outline-none text-sm">
                         <button class="bg-[#8C6B4B] hover:bg-[#6e5338] text-white font-bold px-4 py-2 rounded-r transition text-sm whitespace-nowrap">
                             Đăng Ký
                         </button>
@@ -328,10 +340,11 @@
 
         <div class="absolute bottom-0 right-0 text-gray-500 opacity-20 transform translate-y-1/4 translate-x-1/4">
             <svg width="150" height="150" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z"/>
+                <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
             </svg>
         </div>
     </footer>
 
 </body>
+
 </html>
