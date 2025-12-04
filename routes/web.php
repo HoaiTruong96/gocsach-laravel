@@ -5,20 +5,28 @@ use App\Http\Controllers\AuthController;     // Xử lý Đăng nhập/Đăng k�
 use App\Http\Controllers\BookController;     // Hiển thị sách
 use App\Http\Controllers\ProfileController;  // Hiển thị hồ sơ
 use App\Http\Controllers\AdminController;    // <--- [CHUẨN] Nên khai báo ở đây
+use App\Http\Controllers\HomeController;     // <--- [MỚI] Thêm dòng này để dùng HomeController
 
 // ====================================================
 // 1. TRANG CHỦ (Ai cũng xem được)
 // ====================================================
-Route::get('/', [BookController::class, 'index'])->name('home');
+
+// [SỬA] Dùng HomeController để có phân trang review mới nhất
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
 // ===> [MỚI THÊM] Trang Danh sách sách (Frontend tĩnh) <===
 // Truy cập bằng đường dẫn: http://127.0.0.1:8000/danh-sach
 Route::get('/danh-sach', function () {
     return view('list'); // Trả về file resources/views/list.blade.php
 })->name('list');
+
 Route::get('/chi-tiet', function () {
     return view('detail');
 })->name('detail');
+
+// Route chi tiết sách (Giữ nguyên như code bạn gửi)
 Route::get('/book/{id}', [BookController::class, 'show'])->name('book.show');
+
 // ====================================================
 // 2. NHÓM KHÁCH (Chưa đăng nhập mới được vào)
 // ====================================================
