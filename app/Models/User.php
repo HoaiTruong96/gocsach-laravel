@@ -21,6 +21,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'secret_code',
+        'avatar',
+        'bio',
+        'role',
+        'is_active',
     ];
 
     /**
@@ -43,6 +48,41 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
+    }
+
+    // Quan hệ
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function likes()
+    {
+        return $this->hasMany(Like::class);
+    }
+
+    public function bookshelf()
+    {
+        return $this->belongsToMany(Book::class, 'bookshelves', 'user_id', 'book_id')
+                    ->withPivot('status', 'started_at', 'finished_at') // <--- QUAN TRỌNG: Để lấy cột status
+                    ->withTimestamps();
+    }
+
+    // Quan hệ giữa người dùng và người theo dõi
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id');
+    }
+
+    public function followings()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id');
     }
 }
