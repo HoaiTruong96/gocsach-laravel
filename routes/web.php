@@ -4,21 +4,30 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;     // Xử lý Đăng nhập/Đăng ký/Quên MK
 use App\Http\Controllers\BookController;     // Hiển thị sách
 use App\Http\Controllers\ProfileController;  // Hiển thị hồ sơ
-use App\Http\Controllers\AdminController;    // <--- [CHUẨN] Nên khai báo ở đây
+use App\Http\Controllers\AdminController;    // Quản trị viên
+use App\Http\Controllers\ReviewController;   // Xử lý đánh giá
 
 // ====================================================
-// 1. TRANG CHỦ (Ai cũng xem được)
+// 1. NHÓM PUBLIC (Ai cũng xem được)
 // ====================================================
+
+// Trang chủ
 Route::get('/', [BookController::class, 'index'])->name('home');
-// ===> [MỚI THÊM] Trang Danh sách sách (Frontend tĩnh) <===
-// Truy cập bằng đường dẫn: http://127.0.0.1:8000/danh-sach
-Route::get('/danh-sach', function () {
-    return view('list'); // Trả về file resources/views/list.blade.php
+
+// Trang danh sách (Fix lỗi route [list] not defined)
+Route::get('/list', function () {
+    return view('list');
 })->name('list');
-Route::get('/chi-tiet', function () {
+Route::get('/detail', function () {
     return view('detail');
 })->name('detail');
+// Tìm kiếm sách
+Route::get('/review-search', [BookController::class, 'search'])->name('books.search');
+
+// Xem chi tiết sách
 Route::get('/book/{id}', [BookController::class, 'show'])->name('book.show');
+
+
 // ====================================================
 // 2. NHÓM KHÁCH (Chưa đăng nhập mới được vào)
 // ====================================================
@@ -37,6 +46,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/update-password', [AuthController::class, 'updatePassword'])->name('update.password');
 });
 
+
 // ====================================================
 // 3. NHÓM THÀNH VIÊN (Phải đăng nhập mới được vào)
 // ====================================================
@@ -47,10 +57,14 @@ Route::middleware('auth')->group(function () {
     // Trang cá nhân
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
 
+    // Gửi đánh giá (Review) - Phải đăng nhập mới được đánh giá
+    Route::post('/review', [ReviewController::class, 'store'])->name('review.store');
+
     // Đổi mật khẩu
     Route::get('/change-password', [AuthController::class, 'showChangePasswordForm'])->name('change.password');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('change.password.post');
 });
+
 
 // ====================================================
 // 4. NHÓM ADMIN (Phải có quyền Admin)

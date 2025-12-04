@@ -32,7 +32,8 @@ class Book extends Model
     // Quan hệ
     public function category()
     {
-        return $this->belongsTo(Category::class);
+        // Một cuốn sách thuộc về 1 thể loại
+        return $this->belongsTo(Category::class, 'category_id');
     }
 
     public function creator()
