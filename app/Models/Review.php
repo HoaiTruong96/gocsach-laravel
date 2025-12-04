@@ -9,12 +9,12 @@ class Review extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
+   protected $fillable = [
         'user_id',
         'book_id',
         'rating',
-        'content_text',
-        'is_approved',
+        'content_text', // <--- Sửa 'content' thành 'content_text' cho đúng với Database
+        'is_approved'   // Thêm cột này nếu Database có
     ];
 
     protected $casts = [
