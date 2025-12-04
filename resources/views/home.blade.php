@@ -1,186 +1,35 @@
-<!DOCTYPE html>
-<html lang="vi">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Góc Sách - Mạng Xã Hội Đọc Sách</title>
+@section('title', 'Trang Chủ - Góc Sách')
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300&family=Nunito+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+{{-- [FIX] Định nghĩa biến ở đây để dùng được cho cả @section('content') và @push('scripts') --}}
+@php
+    $heroSlides = [
+        [
+            'title' => 'Cây Cam Ngọt Của Tôi',
+            'tag' => 'Sách Của Tháng 12',
+            'desc' => '"Vị chua chát của cái nghèo hòa trộn với vị ngọt ngào của trí tưởng tượng..."',
+            'image' => 'https://library.hust.edu.vn/sites/default/files/C%C3%A2y%20cam%20ng%E1%BB%8Dt%20c%E1%BB%A7a%20t%C3%B4i%20-%20%E1%BA%A2nh%20b%C3%ACa.jpg',
+            'rating' => '4.9/5.0',
+        ],
+        [
+            'title' => 'Nhà Giả Kim',
+            'tag' => 'Bán Chạy Nhất',
+            'desc' => '"Khi bạn khao khát một điều gì đó, cả vũ trụ sẽ hợp lực giúp bạn đạt được nó."',
+            'image' => 'https://baocantho.com.vn/image/news/2017/20170107/fckimage/40361498129094_102.jpg',
+            'rating' => '4.8/5.0',
+        ],
+        [
+            'title' => 'Hoàng Tử Bé',
+            'tag' => 'Văn Học Kinh Điển',
+            'desc' => '"Người ta chỉ nhìn thấy thật rõ ràng bằng trái tim. Cái cốt yếu thì mắt thường không thấy được."',
+            'image' => 'https://product.hstatic.net/200000343865/product/hoang-tu-be---tb-2022_f0f2f9b813c246c4878e7e685f683d50_5b46a794d64c4996a6695f6e9e8d3213.jpg',
+            'rating' => '5.0/5.0',
+        ]
+    ];
+@endphp
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'brand-green': '#2A483A',
-                        'brand-green-light': '#3E5F4E',
-                        'brand-cream': '#FDFBF7',
-                        'brand-beige': '#F2E8DC',
-                        'brand-brown': '#8C6B4B',
-                        'brand-accent': '#D4A373',
-                    },
-                    fontFamily: {
-                        sans: ['Nunito Sans', 'sans-serif'],
-                        serif: ['Merriweather', 'serif'],
-                    },
-                    boxShadow: {
-                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
-                        'card': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025)',
-                    }
-                }
-            }
-        }
-    </script>
-
-    <style>
-        body {
-            background-color: #FAF9F6;
-            color: #333;
-        }
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background-color: #E5E7EB;
-            border-radius: 20px;
-        }
-        .custom-scrollbar:hover::-webkit-scrollbar-thumb {
-            background-color: #3E5F4E;
-        }
-        /* Slider Styles */
-        .hero-slider-wrapper {
-            transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-    </style>
-</head>
-
-<body class="font-sans antialiased flex flex-col min-h-screen selection:bg-brand-green selection:text-white">
-
-    <!-- HEADER -->
-    <header class="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 transition-all duration-300">
-        <div class="container mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
-            <!-- Logo -->
-            <div class="flex items-center">
-                <a href="{{ route('home') }}" class="flex items-center gap-2 group">
-                    <div class="w-10 h-10 bg-brand-green text-white rounded-lg flex items-center justify-center shadow-md transform group-hover:rotate-6 transition-transform duration-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                        </svg>
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-xl font-bold font-serif text-brand-green leading-none tracking-tight">GÓC SÁCH</span>
-                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Review & Share</span>
-                    </div>
-                </a>
-            </div>
-
-            <!-- Search Bar -->
-            <div class="hidden md:flex flex-1 mx-8 max-w-xl">
-                <div class="relative w-full group">
-                    <input type="text" placeholder="Tìm kiếm sách, tác giả..."
-                        class="w-full bg-gray-50 border border-transparent group-hover:border-brand-green/30 rounded-full py-2.5 px-6 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:bg-white transition-all text-gray-700 placeholder-gray-400 shadow-inner">
-                    <button class="absolute right-4 top-2.5 text-gray-400 hover:text-brand-green transition-colors">
-                        <i class="fas fa-search text-lg"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Navigation -->
-            <nav class="flex items-center gap-6 text-sm font-semibold text-gray-600">
-                <a href="{{ route('home') }}" class="text-brand-green border-b-2 border-brand-green pb-0.5">Trang Chủ</a>
-                
-                @if(Auth::check() && Auth::user()->role === 'admin')
-                    <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-1 text-red-600 bg-red-50 px-3 py-1.5 rounded-full hover:bg-red-100 transition">
-                        <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
-                    </a>
-                @endif
-
-                <a href="#" class="hover:text-brand-green transition-colors relative group">
-                    Danh Sách
-                    <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-brand-green transition-all duration-300 group-hover:w-full"></span>
-                </a>
-
-                @auth
-                    <div class="relative group z-50">
-                        <button class="flex items-center gap-2 text-brand-green font-bold focus:outline-none hover:opacity-80 transition py-1">
-                            <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=3E5F4E&color=fff&size=32" 
-                                 class="w-8 h-8 rounded-full border-2 border-brand-beige shadow-sm">
-                            <span class="max-w-[100px] truncate hidden lg:block">{{ Auth::user()->name }}</span>
-                            <i class="fas fa-chevron-down text-xs ml-1"></i>
-                        </button>
-
-                        <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-card border border-gray-100 hidden group-hover:block py-2 animate-fade-in origin-top-right">
-                            <div class="px-4 py-3 border-b border-gray-50">
-                                <p class="text-xs text-gray-400 uppercase tracking-wider font-bold">Tài khoản</p>
-                                <p class="text-sm font-bold text-gray-800 truncate">{{ Auth::user()->name }}</p>
-                            </div>
-                            <a href="{{ route('profile') }}" class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-brand-cream hover:text-brand-green transition">
-                                <i class="fas fa-user-circle w-5 mr-2"></i> Hồ sơ cá nhân
-                            </a>
-                            <a href="{{ route('change.password') }}" class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-brand-cream hover:text-brand-green transition">
-                                <i class="fas fa-key w-5 mr-2"></i> Đổi mật khẩu
-                            </a>
-                            <div class="border-t border-gray-50 my-1"></div>
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="w-full text-left flex items-center px-4 py-2.5 text-red-600 hover:bg-red-50 transition font-medium">
-                                    <i class="fas fa-sign-out-alt w-5 mr-2"></i> Đăng Xuất
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                @else
-                    <div class="flex items-center gap-3 border-l border-gray-200 pl-6">
-                        <a href="{{ route('login') }}" class="text-gray-500 hover:text-brand-green transition font-bold">Đăng Nhập</a>
-                        <a href="{{ route('register') }}" class="bg-brand-green text-white px-5 py-2 rounded-full hover:bg-brand-green-light hover:shadow-lg transition transform hover:-translate-y-0.5 font-bold shadow-md">Đăng Ký</a>
-                    </div>
-                @endauth
-            </nav>
-        </div>
-    </header>
-
-    <!-- [UPDATED] HERO SLIDER SECTION -->
-    @php
-        // Dữ liệu giả lập cho Slider (Đã xóa thuộc tính bg_class)
-        // BẠN CÓ THỂ THAY ĐỔI ẢNH BÌA SÁCH Ở CÁC DÒNG 'image' BÊN DƯỚI
-        $heroSlides = [
-            [
-                'title' => 'Cây Cam Ngọt Của Tôi',
-                'tag' => 'Sách Của Tháng 12',
-                'desc' => '"Vị chua chát của cái nghèo hòa trộn với vị ngọt ngào của trí tưởng tượng..."',
-                'image' => 'https://library.hust.edu.vn/sites/default/files/C%C3%A2y%20cam%20ng%E1%BB%8Dt%20c%E1%BB%A7a%20t%C3%B4i%20-%20%E1%BA%A2nh%20b%C3%ACa.jpg', // <--- THAY LINK ẢNH TẠI ĐÂY
-                'rating' => '4.9/5.0',
-            ],
-            [
-                'title' => 'Nhà Giả Kim',
-                'tag' => 'Bán Chạy Nhất',
-                'desc' => '"Khi bạn khao khát một điều gì đó, cả vũ trụ sẽ hợp lực giúp bạn đạt được nó."',
-                'image' => 'https://baocantho.com.vn/image/news/2017/20170107/fckimage/40361498129094_102.jpg', // <--- THAY LINK ẢNH TẠI ĐÂY
-                'rating' => '4.8/5.0',
-            ],
-            [
-                'title' => 'Hoàng Tử Bé',
-                'tag' => 'Văn Học Kinh Điển',
-                'desc' => '"Người ta chỉ nhìn thấy thật rõ ràng bằng trái tim. Cái cốt yếu thì mắt thường không thấy được."',
-                'image' => 'https://product.hstatic.net/200000343865/product/hoang-tu-be---tb-2022_f0f2f9b813c246c4878e7e685f683d50_5b46a794d64c4996a6695f6e9e8d3213.jpg', // <--- THAY LINK ẢNH TẠI ĐÂY
-                'rating' => '5.0/5.0',
-            ]
-        ];
-    @endphp
-
-    <!-- Section luôn giữ màu nền xanh rêu -->
+@section('content')
     <section id="hero-carousel" class="relative text-white py-12 lg:py-16 overflow-hidden bg-[#2A483A] group">
         <!-- Background Pattern -->
         <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: url('https://www.transparenttextures.com/patterns/cubes.png');"></div>
@@ -229,9 +78,6 @@
                                 <a href="#" class="inline-flex items-center justify-center gap-2 bg-brand-accent text-white font-bold px-6 py-3 rounded-full shadow-lg hover:bg-[#c29263] transition-all transform hover:-translate-y-1">
                                     <span>Đọc Review</span> <i class="fas fa-arrow-right text-sm"></i>
                                 </a>
-                                <a href="#" class="inline-flex items-center justify-center gap-2 bg-transparent border border-white/30 text-white font-bold px-6 py-3 rounded-full hover:bg-white/10 transition-all">
-                                    <i class="fas fa-bookmark"></i> Lưu Đọc Sau
-                                </a>
                             </div>
                         </div>
                     </div>
@@ -256,13 +102,12 @@
     </section>
 
     <!-- MAIN CONTENT -->
-    <main class="container mx-auto px-4 py-12 flex-grow">
+    <main class="container mx-auto px-4 py-12">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
-
             <!-- CỘT TRÁI (Nội dung chính) -->
             <div class="lg:col-span-8 space-y-16">
                 
-                <!-- SECTION: GÓC NHÌN & SUY NGẪM -->
+                <!-- SECTION: GÓC NHÌN & SUY NGẪM (Tạp Chí Đọc) -->
                 <section>
                     <div class="flex justify-between items-end mb-6 border-b border-gray-200 pb-3">
                         <div>
@@ -277,6 +122,7 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+                        <!-- Bài viết chính -->
                         <article class="md:col-span-3 group cursor-pointer">
                             <div class="relative h-64 md:h-80 rounded-2xl overflow-hidden mb-4 shadow-md">
                                 <img src="https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-700">
@@ -292,6 +138,7 @@
                             </p>
                         </article>
 
+                        <!-- Danh sách bài phụ -->
                         <div class="md:col-span-2 flex flex-col gap-6">
                             <article class="flex flex-col group cursor-pointer">
                                 <div class="h-32 rounded-xl overflow-hidden mb-3 relative">
@@ -332,69 +179,77 @@
                     </div>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        @forelse($books as $book)
-                            @php
-                                $authorName = 'Ẩn danh';
-                                if (is_object($book->author)) $authorName = $book->author->name ?? $authorName;
-                                elseif (is_string($book->author)) {
-                                    $trimmed = trim($book->author);
-                                    $authorName = str_starts_with($trimmed, '{') ? (json_decode($trimmed)->name ?? $book->author) : $book->author;
-                                }
-
-                                $categoryName = 'Chưa phân loại';
-                                if (isset($book->category)) {
-                                    if (is_object($book->category)) $categoryName = $book->category->name ?? $categoryName;
-                                    elseif (is_string($book->category)) {
-                                        $trimmedCat = trim($book->category);
-                                        $categoryName = str_starts_with($trimmedCat, '{') ? (json_decode($trimmedCat)->name ?? $book->category) : $book->category;
+                        {{-- Kiểm tra nếu biến $books tồn tại --}}
+                        @if(isset($books))
+                            @forelse($books as $book)
+                                @php
+                                    $authorName = 'Ẩn danh';
+                                    if (is_object($book->author)) $authorName = $book->author->name ?? $authorName;
+                                    elseif (is_string($book->author)) {
+                                        $trimmed = trim($book->author);
+                                        $authorName = str_starts_with($trimmed, '{') ? (json_decode($trimmed)->name ?? $book->author) : $book->author;
                                     }
-                                }
-                            @endphp
 
-                            <div class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-card transition-all duration-300 group flex flex-col h-full">
-                                <div class="p-4 flex gap-4">
-                                    <div class="w-24 h-36 flex-shrink-0 rounded-lg overflow-hidden shadow-md relative">
-                                        <img src="{{ $book->image_url }}" alt="{{ $book->title }}" 
-                                             class="w-full h-full object-cover transform transition duration-500 group-hover:scale-110"
-                                             onerror="this.src='https://via.placeholder.com/150x225?text=No+Image'">
-                                        <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition"></div>
-                                    </div>
+                                    $categoryName = 'Chưa phân loại';
+                                    if (isset($book->category)) {
+                                        if (is_object($book->category)) $categoryName = $book->category->name ?? $categoryName;
+                                        elseif (is_string($book->category)) {
+                                            $trimmedCat = trim($book->category);
+                                            $categoryName = str_starts_with($trimmedCat, '{') ? (json_decode($trimmedCat)->name ?? $book->category) : $book->category;
+                                        }
+                                    }
+                                @endphp
 
-                                    <div class="flex-1 flex flex-col">
-                                        <div class="flex justify-between items-start">
-                                            <span class="text-[10px] font-bold uppercase text-brand-green bg-brand-green/10 px-2 py-0.5 rounded">{{ $categoryName }}</span>
-                                            <div class="flex text-yellow-400 text-xs gap-0.5">
-                                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
-                                            </div>
+                                <div class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-card transition-all duration-300 group flex flex-col h-full">
+                                    <div class="p-4 flex gap-4">
+                                        <div class="w-24 h-36 flex-shrink-0 rounded-lg overflow-hidden shadow-md relative">
+                                            <img src="{{ $book->image_url }}" alt="{{ $book->title }}" 
+                                                 class="w-full h-full object-cover transform transition duration-500 group-hover:scale-110"
+                                                 onerror="this.src='https://via.placeholder.com/150x225?text=No+Image'">
+                                            <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition"></div>
                                         </div>
 
-                                        <h3 class="font-serif font-bold text-lg text-gray-800 mt-2 mb-1 leading-tight group-hover:text-brand-accent transition cursor-pointer">
-                                            <a href="{{ route('book.show', $book->id) }}">{{ $book->title }}</a>
-                                        </h3>
-                                        
-                                        <p class="text-xs text-gray-500 mb-3">bởi <span class="font-semibold">{{ $authorName }}</span></p>
-                                        
-                                        <p class="text-xs text-gray-500 line-clamp-2 mb-3 flex-grow">
-                                            {{ $book->description ?? 'Chưa có mô tả.' }}
-                                        </p>
-
-                                        <div class="flex items-center justify-between border-t border-gray-50 pt-2 mt-auto">
-                                            <div class="flex items-center gap-1">
-                                                <img src="https://ui-avatars.com/api/?name={{ urlencode($authorName) }}&background=random&size=16" class="w-4 h-4 rounded-full">
-                                                <span class="text-[10px] text-gray-400">{{ $book->created_at ? $book->created_at->format('d/m') : 'N/A' }}</span>
+                                        <div class="flex-1 flex flex-col">
+                                            <div class="flex justify-between items-start">
+                                                <span class="text-[10px] font-bold uppercase text-brand-green bg-brand-green/10 px-2 py-0.5 rounded">{{ $categoryName }}</span>
+                                                <div class="flex text-yellow-400 text-xs gap-0.5">
+                                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                                                </div>
                                             </div>
-                                            <a href="{{ route('book.show', $book->id) }}" class="text-xs font-bold text-brand-green hover:underline">Chi tiết</a>
+
+                                            <h3 class="font-serif font-bold text-lg text-gray-800 mt-2 mb-1 leading-tight group-hover:text-brand-accent transition cursor-pointer">
+                                                <a href="{{ route('book.show', $book->id) }}">{{ $book->title }}</a>
+                                            </h3>
+                                            
+                                            <p class="text-xs text-gray-500 mb-3">bởi <span class="font-semibold">{{ $authorName }}</span></p>
+                                            
+                                            <p class="text-xs text-gray-500 line-clamp-2 mb-3 flex-grow">
+                                                {{ $book->description ?? 'Chưa có mô tả.' }}
+                                            </p>
+
+                                            <div class="flex items-center justify-between border-t border-gray-50 pt-2 mt-auto">
+                                                <div class="flex items-center gap-1">
+                                                    <img src="https://ui-avatars.com/api/?name={{ urlencode($authorName) }}&background=random&size=16" class="w-4 h-4 rounded-full">
+                                                    <span class="text-[10px] text-gray-400">{{ $book->created_at ? $book->created_at->format('d/m') : 'N/A' }}</span>
+                                                </div>
+                                                <a href="{{ route('book.show', $book->id) }}" class="text-xs font-bold text-brand-green hover:underline">Chi tiết</a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        @empty
+                            @empty
+                                <div class="col-span-full py-10 text-center text-gray-500 bg-white rounded-xl border border-dashed">
+                                    Chưa có sách nào.
+                                </div>
+                            @endforelse
+                        @else
                             <div class="col-span-full py-10 text-center text-gray-500 bg-white rounded-xl border border-dashed">
-                                Chưa có sách nào.
+                                Đang cập nhật dữ liệu sách...
                             </div>
-                        @endforelse
+                        @endif
                     </div>
 
+                    <!-- Pagination -->
                     <div class="mt-8 flex justify-center">
                         <nav class="flex items-center gap-2">
                             <a href="#" class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-brand-green hover:text-brand-green transition bg-white text-sm"><i class="fas fa-chevron-left"></i></a>
@@ -406,6 +261,7 @@
                     </div>
                 </section>
 
+                <!-- SECTION: BANNER SỰ KIỆN -->
                 <div class="bg-[#2A483A] rounded-xl p-8 relative overflow-hidden shadow-lg text-white">
                     <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
                     <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -420,183 +276,84 @@
             </div>
 
             <!-- RIGHT COLUMN (Sidebar) -->
-            <div class="lg:col-span-4 space-y-8">
-                <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-soft sticky top-24">
-                    <h3 class="font-serif font-bold text-lg text-gray-800 mb-5 flex items-center gap-2">
-                        <span class="text-brand-accent">🔥</span> Top Thịnh Hành
-                    </h3>
-                    <div class="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                        @foreach(['Cây Cam Ngọt Của Tôi', 'Dế Mèn Phiêu Lưu Ký', 'Hoàng Tử Bé', 'Nhà Giả Kim', 'Mắt Biếc'] as $index => $title)
-                        <a href="#" class="group flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition">
-                            <div class="relative flex-shrink-0">
-                                <span class="absolute -top-1.5 -left-1.5 w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold shadow-sm z-10 {{ $index < 3 ? 'bg-brand-accent text-white' : 'bg-gray-200 text-gray-600' }}">{{ $index + 1 }}</span>
-                                <div class="w-12 h-16 bg-gray-200 rounded overflow-hidden shadow-sm">
-                                    <img src="https://source.unsplash.com/random/200x300?book,sig={{ $index }}" class="w-full h-full object-cover">
+            <div class="lg:col-span-4">
+                <div class="space-y-8">
+                    <!-- Widget Trending -->
+                    <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-soft">
+                        <h3 class="font-serif font-bold text-lg text-gray-800 mb-5 flex items-center gap-2">
+                            <span class="text-brand-accent">🔥</span> Top Thịnh Hành
+                        </h3>
+                        <div class="space-y-4">
+                             @foreach(['Cây Cam Ngọt Của Tôi', 'Dế Mèn Phiêu Lưu Ký', 'Hoàng Tử Bé', 'Nhà Giả Kim', 'Mắt Biếc'] as $index => $title)
+                                <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition cursor-pointer">
+                                    <span class="font-bold text-gray-400 w-4 text-center">{{ $index + 1 }}</span>
+                                    <div class="w-12 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0">
+                                        <img src="https://source.unsplash.com/random/200x300?book,sig={{ $index }}" class="w-full h-full object-cover">
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-gray-800 line-clamp-1">{{ $title }}</h4>
+                                        <span class="text-xs text-yellow-500">★★★★★ (4.8)</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div>
-                                <h4 class="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-brand-green transition">{{ $title }}</h4>
-                                <div class="text-[10px] text-yellow-400 mt-1">★★★★★ (4.9)</div>
-                            </div>
-                        </a>
-                        @endforeach
+                             @endforeach
+                        </div>
                     </div>
-                </div>
 
-                <div class="bg-brand-beige/30 rounded-xl p-6 border border-brand-beige">
-                    <h3 class="font-serif font-bold text-lg text-brand-green mb-4">Thể Loại</h3>
-                    <div class="flex flex-wrap gap-2">
-                        @foreach(['Tiểu Thuyết', 'Kinh Tế', 'Tâm Lý', 'Trinh Thám', 'Lịch Sử', 'Khoa Học', 'Thiếu Nhi'] as $tag)
-                            <a href="#" class="bg-white text-gray-600 px-3 py-1 rounded-full text-xs font-bold border border-gray-100 hover:border-brand-accent hover:text-brand-accent transition shadow-sm">{{ $tag }}</a>
-                        @endforeach
+                    <!-- Widget Categories -->
+                    <div class="bg-brand-beige/30 rounded-xl p-6 border border-brand-beige">
+                        <h3 class="font-serif font-bold text-lg text-brand-green mb-4">Thể Loại</h3>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach(['Tiểu Thuyết', 'Kinh Tế', 'Tâm Lý', 'Trinh Thám', 'Lịch Sử', 'Khoa Học', 'Thiếu Nhi'] as $tag)
+                                <a href="#" class="bg-white text-gray-600 px-3 py-1 rounded-full text-xs font-bold border border-gray-100 hover:border-brand-accent hover:text-brand-accent transition shadow-sm">{{ $tag }}</a>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </main>
+@endsection
 
-    <!-- FOOTER -->
-    <!-- [UPDATED] Footer với đường lượn sóng và Logo Mới -->
-    <div class="relative mt-20">
-        <!-- SVG Wave Divider -->
-        <div class="absolute top-0 left-0 w-full overflow-hidden leading-none z-10 transform -translate-y-full">
-            <svg class="relative block w-full h-12 md:h-16 text-[#1F352B]" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
-                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" fill="currentColor"></path>
-            </svg>
-        </div>
+@push('scripts')
+<script>
+    // Slider Logic Script
+    let currentSlide = 0;
+    // [FIX] Bây giờ biến $heroSlides đã được định nghĩa ở phạm vi toàn cục của view, nên count() sẽ hoạt động đúng
+    const totalSlides = {{ count($heroSlides) }};
+    const sliderWrapper = document.getElementById('sliderWrapper');
+    const dots = document.querySelectorAll('.indicator-dot');
 
-        <footer class="bg-[#1F352B] text-white pt-10 pb-12 relative overflow-hidden">
-            <!-- Decorative Background Pattern -->
-            <div class="absolute inset-0 opacity-5" style="background-image: url('https://www.transparenttextures.com/patterns/cubes.png');"></div>
-            
-            <!-- Glow Effect -->
-            <div class="absolute top-0 right-0 w-96 h-96 bg-brand-green-light/20 rounded-full blur-[100px] -mr-20 -mt-20 pointer-events-none"></div>
-            <div class="absolute bottom-0 left-0 w-64 h-64 bg-brand-accent/10 rounded-full blur-[80px] -ml-10 -mb-10 pointer-events-none"></div>
+    function updateSlider() {
+        if (!sliderWrapper) return;
+        sliderWrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+        dots.forEach((dot, index) => {
+            if (index === currentSlide) {
+                dot.classList.add('bg-brand-accent', 'w-8');
+                dot.classList.remove('bg-white/30');
+            } else {
+                dot.classList.remove('bg-brand-accent', 'w-8');
+                dot.classList.add('bg-white/30');
+            }
+        });
+    }
 
-            <div class="container mx-auto px-4 relative z-10">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
-                    
-                    <!-- Column 1: Brand Info -->
-                    <div class="col-span-1 md:col-span-1 space-y-5">
-                        <div class="flex items-center gap-3">
-                            <!-- Footer Logo -->
-                            <div class="w-10 h-10 bg-brand-accent text-brand-green rounded-lg flex items-center justify-center shadow-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                </svg>
-                            </div>
-                            <div class="flex flex-col">
-                                <span class="font-serif font-bold text-xl tracking-wide text-brand-beige">GÓC SÁCH</span>
-                                <span class="text-[10px] text-white/50 uppercase tracking-widest">Review & Share</span>
-                            </div>
-                        </div>
-                        <p class="text-gray-400 text-sm leading-relaxed">
-                            Nơi kết nối những tâm hồn yêu sách. Chia sẻ cảm nhận, lan tỏa tri thức và tìm kiếm cuốn sách thay đổi cuộc đời bạn.
-                        </p>
-                        <div class="flex gap-4 pt-2">
-                            <a href="#" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-accent hover:text-white transition transform hover:-translate-y-1"><i class="fab fa-facebook-f text-sm"></i></a>
-                            <a href="#" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-accent hover:text-white transition transform hover:-translate-y-1"><i class="fab fa-twitter text-sm"></i></a>
-                            <a href="#" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-accent hover:text-white transition transform hover:-translate-y-1"><i class="fab fa-instagram text-sm"></i></a>
-                            <a href="#" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-accent hover:text-white transition transform hover:-translate-y-1"><i class="fab fa-tiktok text-sm"></i></a>
-                        </div>
-                    </div>
-                    
-                    <!-- Column 2: Quick Links -->
-                    <div>
-                        <h4 class="font-bold mb-6 text-brand-beige uppercase tracking-wide text-xs">Khám Phá</h4>
-                        <ul class="space-y-3 text-sm text-gray-400">
-                            <li><a href="#" class="hover:text-brand-accent hover:pl-2 transition-all duration-300">Sách Mới Phát Hành</a></li>
-                            <li><a href="#" class="hover:text-brand-accent hover:pl-2 transition-all duration-300">Top Review Tháng</a></li>
-                            <li><a href="#" class="hover:text-brand-accent hover:pl-2 transition-all duration-300">Tác Giả Nổi Bật</a></li>
-                            <li><a href="#" class="hover:text-brand-accent hover:pl-2 transition-all duration-300">Thử Thách Đọc</a></li>
-                            <li><a href="#" class="hover:text-brand-accent hover:pl-2 transition-all duration-300">Blog Văn Học</a></li>
-                        </ul>
-                    </div>
-                    
-                    <!-- Column 3: Support -->
-                    <div>
-                        <h4 class="font-bold mb-6 text-brand-beige uppercase tracking-wide text-xs">Hỗ Trợ</h4>
-                        <ul class="space-y-3 text-sm text-gray-400">
-                            <li><a href="#" class="hover:text-brand-accent hover:pl-2 transition-all duration-300">Về Chúng Tôi</a></li>
-                            <li><a href="#" class="hover:text-brand-accent hover:pl-2 transition-all duration-300">Điều Khoản Sử Dụng</a></li>
-                            <li><a href="#" class="hover:text-brand-accent hover:pl-2 transition-all duration-300">Chính Sách Bảo Mật</a></li>
-                            <li><a href="#" class="hover:text-brand-accent hover:pl-2 transition-all duration-300">Câu Hỏi Thường Gặp</a></li>
-                            <li><a href="#" class="hover:text-brand-accent hover:pl-2 transition-all duration-300">Liên Hệ</a></li>
-                        </ul>
-                    </div>
-                    
-                    <!-- Column 4: Newsletter -->
-                    <div>
-                        <h4 class="font-bold mb-6 text-brand-beige uppercase tracking-wide text-xs">Đăng Ký Nhận Tin</h4>
-                        <p class="text-xs text-gray-400 mb-4 leading-relaxed">Nhận thông báo về sách mới, sự kiện offline và các bài viết hay hàng tuần.</p>
-                        <form onsubmit="event.preventDefault();" class="relative group">
-                            <input type="email" placeholder="Email của bạn..." class="w-full pl-4 pr-12 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-brand-accent/50 focus:bg-white/10 text-sm text-white placeholder-gray-500 transition-all">
-                            <button class="absolute right-1 top-1 bg-brand-accent hover:bg-[#c29263] text-white w-10 h-10 rounded-md transition flex items-center justify-center shadow-lg group-hover:scale-105">
-                                <i class="fas fa-paper-plane text-xs"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-                
-                <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
-                    <p>&copy; 2025 Mọt Sách Review. Được thiết kế với <i class="fas fa-heart text-red-500 mx-1"></i> và niềm đam mê sách.</p>
-                    <div class="flex gap-6">
-                        <a href="#" class="hover:text-white transition">Privacy Policy</a>
-                        <a href="#" class="hover:text-white transition">Terms of Service</a>
-                        <a href="#" class="hover:text-white transition">Cookie Settings</a>
-                    </div>
-                </div>
-            </div>
-        </footer>
-    </div>
+    function nextSlide() {
+        currentSlide = (currentSlide + 1) % totalSlides;
+        updateSlider();
+    }
 
-    <!-- SCRIPT FOR HERO SLIDER -->
-    <script>
-        let currentSlide = 0;
-        const totalSlides = {{ count($heroSlides) }};
-        const sliderWrapper = document.getElementById('sliderWrapper');
-        const dots = document.querySelectorAll('.indicator-dot');
-        const container = document.getElementById('hero-carousel');
-        
-        // REMOVED: color logic to keep background static green
-        // const colors = ... 
+    function prevSlide() {
+        currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+        updateSlider();
+    }
 
-        function updateSlider() {
-            // Move slider wrapper
-            sliderWrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
-            
-            // Update dots
-            dots.forEach((dot, index) => {
-                if (index === currentSlide) {
-                    dot.classList.add('bg-brand-accent', 'w-8');
-                    dot.classList.remove('bg-white/30');
-                } else {
-                    dot.classList.remove('bg-brand-accent', 'w-8');
-                    dot.classList.add('bg-white/30');
-                }
-            });
+    function goToSlide(index) {
+        currentSlide = index;
+        updateSlider();
+    }
 
-            // REMOVED: Background Color changing logic
-        }
-
-        function nextSlide() {
-            currentSlide = (currentSlide + 1) % totalSlides;
-            updateSlider();
-        }
-
-        function prevSlide() {
-            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-            updateSlider();
-        }
-
-        function goToSlide(index) {
-            currentSlide = index;
-            updateSlider();
-        }
-
-        // Auto slide every 5 seconds
+    if (totalSlides > 0) {
         setInterval(nextSlide, 5000);
-    </script>
-
-</body>
-</html>
+    }
+</script>
+@endpush

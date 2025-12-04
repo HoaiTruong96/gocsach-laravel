@@ -18,7 +18,9 @@ Route::get('/', [BookController::class, 'index'])->name('home');
 Route::get('/list', function () {
     return view('list');
 })->name('list');
-
+Route::get('/detail', function () {
+    return view('detail');
+})->name('detail');
 // Tìm kiếm sách
 Route::get('/review-search', [BookController::class, 'search'])->name('books.search');
 
