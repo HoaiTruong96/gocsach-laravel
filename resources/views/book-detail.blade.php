@@ -1,194 +1,225 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chi tiết: {{ $book->title }}</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
-        body { font-family: 'Roboto', sans-serif; background-color: #f3f4f6; }
-    </style>
-</head>
-<body class="text-gray-800">
+{{-- 1. Kế thừa khung giao diện chính (đã có Header & Footer) --}}
+@extends('layouts.app')
 
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <a href="/" class="text-red-700 text-2xl font-bold flex items-center hover:opacity-80 transition">
-                <i class="fas fa-book-reader mr-2"></i> Góc Sách
-            </a>
-            <div class="flex items-center space-x-2">
-                <span class="text-sm text-gray-500"> Xin chào, <strong>{{ Auth::check() ? Auth::user()->name : 'Khách' }}</strong></span>
-                <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::check() ? Auth::user()->name : 'Khách') }}&background=0D8ABC&color=fff" class="w-8 h-8 rounded-full border border-gray-200">
-            </div>
-        </div>
-    </header>
+{{-- 2. Đặt tiêu đề động theo tên sách --}}
+@section('title', 'Chi tiết: ' . $book->title . ' - Góc Sách')
 
-    <main class="container mx-auto px-4 py-8 max-w-5xl">
+{{-- 3. Nội dung chính --}}
+@section('content')
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
         
+        <!-- Breadcrumb (Đường dẫn) -->
+        <nav class="flex text-sm text-gray-500 mb-6">
+            <a href="{{ route('home') }}" class="hover:text-brand-green">Trang chủ</a>
+            <span class="mx-2">/</span>
+            <a href="{{ route('list') }}" class="hover:text-brand-green">Sách</a>
+            <span class="mx-2">/</span>
+            <span class="text-gray-800 font-bold truncate">{{ $book->title }}</span>
+        </nav>
+
+        <!-- Thông báo thành công -->
         @if(session('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6 flex items-center shadow-sm">
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6 flex items-center shadow-sm animate-fade-in-down">
                 <i class="fas fa-check-circle mr-2 text-xl"></i>
                 <span class="font-medium">{{ session('success') }}</span>
             </div>
         @endif
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6 flex flex-col md:flex-row gap-8">
-            <div class="flex-shrink-0 mx-auto md:mx-0">
-                <img src="{{ $book->cover_image ?? 'https://via.placeholder.com/300x450' }}" 
-                     alt="{{ $book->title }}" 
-                     class="w-48 h-72 object-cover rounded-lg shadow-md hover:shadow-xl transition duration-300">
+        <!-- Thông báo lỗi -->
+        @if ($errors->any())
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6 shadow-sm">
+                <strong class="font-bold flex items-center"><i class="fas fa-exclamation-circle mr-2"></i> Có lỗi xảy ra:</strong>
+                <ul class="list-disc list-inside mt-1 ml-6">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
-            <div class="flex-grow">
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ $book->title }}</h1>
+        @endif
+
+        <!-- Card Chi tiết Sách -->
+        <div class="bg-white rounded-xl shadow-card border border-gray-100 p-6 mb-8 flex flex-col md:flex-row gap-8">
+            <!-- Ảnh bìa -->
+            <div class="flex-shrink-0 mx-auto md:mx-0 w-48 lg:w-64">
+                <div class="relative rounded-lg shadow-lg overflow-hidden group">
+                    <img src="{{ $book->cover_image ?? 'https://via.placeholder.com/300x450' }}" 
+                         alt="{{ $book->title }}" 
+                         class="w-full h-auto object-cover transform transition duration-500 group-hover:scale-105">
+                    <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition"></div>
+                </div>
                 
-                <div class="flex flex-wrap gap-4 text-sm text-gray-600 mb-6 border-b border-gray-100 pb-4">
-                    <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-medium">
-                        <i class="fas fa-user-edit mr-1"></i> Tác giả: {{ $book->author->name ?? 'Không rõ' }}
+                <!-- Nút thao tác nhanh dưới ảnh -->
+                <div class="mt-4 flex gap-2">
+                    <button class="flex-1 bg-brand-green text-white py-2 rounded-lg font-bold text-sm hover:bg-brand-green-light transition shadow-md">
+                        <i class="fas fa-cart-plus mr-1"></i> Mua Ngay
+                    </button>
+                    <button class="w-10 bg-gray-100 text-gray-500 py-2 rounded-lg hover:text-red-500 hover:bg-red-50 transition">
+                        <i class="far fa-heart"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Thông tin sách -->
+            <div class="flex-grow">
+                <h1 class="text-3xl lg:text-4xl font-bold font-serif text-gray-900 mb-2 leading-tight">{{ $book->title }}</h1>
+                
+                <!-- Meta data -->
+                <div class="flex flex-wrap gap-3 text-sm text-gray-600 mb-6 border-b border-gray-100 pb-6 mt-4">
+                    <span class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full font-bold">
+                        <i class="fas fa-user-edit mr-1.5"></i> {{ $book->author->name ?? 'Không rõ' }}
                     </span>
-                    <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full font-medium">
-                        <i class="fas fa-tag mr-1"></i> Thể loại: {{ $book->category->name ?? 'Không rõ' }}
+                    <span class="bg-brand-green/10 text-brand-green px-3 py-1.5 rounded-full font-bold">
+                        <i class="fas fa-tag mr-1.5"></i> {{ $book->category->name ?? 'Không rõ' }}
                     </span>
-                    <span class="flex items-center text-gray-500">
-                        <i class="fas fa-eye mr-1"></i> {{ $book->view_count ?? 0 }} lượt xem
+                    <span class="flex items-center text-gray-500 ml-auto font-medium">
+                        <i class="fas fa-eye mr-1.5"></i> {{ number_format($book->view_count ?? 0) }} lượt xem
                     </span>
                 </div>
 
-                <div class="prose max-w-none text-gray-600">
-                    <h3 class="font-bold text-gray-800 text-lg mb-2">Giới thiệu nội dung:</h3>
+                <!-- Mô tả -->
+                <div class="prose prose-sm sm:prose max-w-none text-gray-600">
+                    <h3 class="font-bold text-gray-800 text-lg mb-2 font-serif border-l-4 border-brand-accent pl-3">Giới thiệu nội dung</h3>
                     <p class="leading-relaxed text-justify">
                         {{ $book->description ?? 'Đang cập nhật mô tả cho cuốn sách này...' }}
                     </p>
                 </div>
             </div>
         </div>
-        @if ($errors->any())
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-        <strong class="font-bold">Có lỗi xảy ra:</strong>
-        <ul class="list-disc list-inside mt-1">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-    @endif
-        <div class="bg-white rounded-xl shadow-lg border border-blue-100 p-6 relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+
+        <!-- Form Đánh Giá -->
+        <div class="bg-white rounded-xl shadow-card border border-gray-100 p-6 md:p-8 relative overflow-hidden">
+            <!-- Trang trí -->
+            <div class="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-brand-green to-brand-accent"></div>
             
-            <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
-                <i class="fas fa-star text-yellow-400 mr-2 text-2xl"></i> Viết Đánh Giá Của Bạn
+            <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center font-serif">
+                <span class="bg-yellow-100 text-yellow-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">
+                    <i class="fas fa-star"></i>
+                </span>
+                Viết Đánh Giá Của Bạn
             </h2>
 
-            <form action="{{ route('review.store') }}" method="POST" id="reviewForm">
-                @csrf
-                <input type="hidden" name="book_id" value="{{ $book->id }}">
+            <!-- Kiểm tra đăng nhập trước khi cho đánh giá -->
+            @auth
+                <form action="{{ route('review.store') }}" method="POST" id="reviewForm">
+                    @csrf
+                    <input type="hidden" name="book_id" value="{{ $book->id }}">
 
-                <div class="mb-6">
-                    <label class="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">
-                        1. Bạn chấm cuốn này mấy điểm?
-                    </label>
-                    
-                    <div class="flex items-center space-x-2" id="star-container">
-                        @for($i = 1; $i <= 5; $i++)
-                            <i class="fas fa-star text-4xl text-gray-300 cursor-pointer transition-transform duration-200 hover:scale-110" 
-                               data-value="{{ $i }}"></i>
-                        @endfor
+                    <!-- Chọn sao -->
+                    <div class="mb-6 bg-gray-50 p-4 rounded-xl border border-dashed border-gray-200">
+                        <label class="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide text-center">
+                            Bạn chấm cuốn này mấy điểm?
+                        </label>
+                        
+                        <div class="flex justify-center items-center space-x-2" id="star-container">
+                            @for($i = 1; $i <= 5; $i++)
+                                <i class="fas fa-star text-4xl text-gray-300 cursor-pointer transition-all duration-200 hover:scale-110 hover:text-yellow-400" 
+                                   data-value="{{ $i }}"></i>
+                            @endfor
+                        </div>
+
+                        <input type="hidden" name="rating" id="rating-input" value="0">
+                        
+                        <p class="text-red-500 text-sm mt-3 hidden font-bold flex items-center justify-center animate-pulse" id="rating-error">
+                            <i class="fas fa-exclamation-triangle mr-1"></i> Vui lòng chọn số sao trước khi gửi!
+                        </p>
                     </div>
 
-                    <input type="hidden" name="rating" id="rating-input" value="0">
-                    
-                    <p class="text-red-500 text-sm mt-3 hidden font-bold flex items-center animate-pulse" id="rating-error">
-                        <i class="fas fa-exclamation-triangle mr-1"></i> Vui lòng chọn số sao trước khi gửi!
-                    </p>
-                </div>
+                    <!-- Nội dung -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">
+                            Nội dung chi tiết
+                        </label>
+                        <textarea 
+                            name="content" 
+                            rows="4" 
+                            class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green outline-none transition text-gray-700 resize-none"
+                            placeholder="Hãy chia sẻ cảm nhận chân thực nhất của bạn về cuốn sách này (tối thiểu 10 ký tự)..."
+                            required
+                        ></textarea>
+                    </div>
 
-                <div class="mb-6">
-                    <label class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">
-                        2. Nội dung chi tiết
-                    </label>
-                    <textarea 
-                        name="content" 
-                        rows="4" 
-                        class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-gray-700"
-                        placeholder="Hãy chia sẻ cảm nhận chân thực nhất của bạn về cuốn sách này (tối thiểu 10 ký tự)..."
-                        required
-                    ></textarea>
+                    <div class="flex justify-end">
+                        <button type="submit" class="bg-brand-green hover:bg-brand-green-light text-white px-8 py-3 rounded-lg font-bold shadow-lg transform transition hover:-translate-y-1 flex items-center">
+                            <i class="fas fa-paper-plane mr-2"></i> Gửi Đánh Giá
+                        </button>
+                    </div>
+                </form>
+            @else
+                <div class="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                    <p class="text-gray-500 mb-4">Vui lòng đăng nhập để viết đánh giá cho cuốn sách này.</p>
+                    <a href="{{ route('login') }}" class="inline-block bg-brand-green text-white px-6 py-2 rounded-lg font-bold hover:bg-brand-green-light transition shadow-md">
+                        Đăng Nhập Ngay
+                    </a>
                 </div>
-
-                <div class="flex justify-end">
-                    <button type="submit" class="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white px-8 py-3 rounded-lg font-bold shadow-lg transform transition hover:-translate-y-1 flex items-center">
-                        <i class="fas fa-paper-plane mr-2"></i> Gửi Đánh Giá
-                    </button>
-                </div>
-            </form>
+            @endauth
         </div>
 
-    </main>
+    </div>
+@endsection
 
-    <script>
-        const stars = document.querySelectorAll('#star-container i');
-        const ratingInput = document.getElementById('rating-input');
-        const errorMsg = document.getElementById('rating-error');
-        const form = document.getElementById('reviewForm');
+{{-- 4. Chèn Script xử lý riêng cho trang này vào Stack 'scripts' của Layout --}}
+@push('scripts')
+<script>
+    const stars = document.querySelectorAll('#star-container i');
+    const ratingInput = document.getElementById('rating-input');
+    const errorMsg = document.getElementById('rating-error');
+    const form = document.getElementById('reviewForm');
 
-        // --- XỬ LÝ HIỆU ỨNG SAO ---
+    // --- XỬ LÝ HIỆU ỨNG SAO ---
+    if(stars.length > 0) {
         stars.forEach(star => {
-            // 1. Khi chuột RÊ VÀO: Sáng màu vàng (dùng class Tailwind)
+            // 1. Khi chuột RÊ VÀO: Sáng màu vàng
             star.addEventListener('mouseenter', () => {
                 const val = star.getAttribute('data-value');
                 highlight(val);
             });
 
-            // 2. Khi chuột RỜI RA: Trả về trạng thái đã chọn (hoặc xám nếu chưa chọn)
+            // 2. Khi chuột RỜI RA: Trả về trạng thái đã chọn
             star.addEventListener('mouseleave', () => {
                 highlight(ratingInput.value);
             });
 
-            // 3. Khi CLICK CHỌN: Lưu giá trị + Hiệu ứng nhún
+            // 3. Khi CLICK CHỌN
             star.addEventListener('click', () => {
                 const val = star.getAttribute('data-value');
                 ratingInput.value = val;
                 highlight(val);
-                errorMsg.classList.add('hidden'); // Tắt lỗi
+                if(errorMsg) errorMsg.classList.add('hidden');
                 
-                // Hiệu ứng "Nhún" (Scale) để biết đã nhận click
+                // Hiệu ứng nhún
                 star.style.transform = "scale(1.4)";
                 setTimeout(() => star.style.transform = "scale(1)", 200);
             });
         });
+    }
 
-        // Hàm tô màu (Dùng class Tailwind trực tiếp cho chắc chắn)
-        function highlight(value) {
-            stars.forEach(s => {
-                const sVal = s.getAttribute('data-value');
-                if (sVal <= value) {
-                    // Sao sáng: Xóa màu xám, Thêm màu vàng
-                    s.classList.remove('text-gray-300');
-                    s.classList.add('text-yellow-400');
-                } else {
-                    // Sao tắt: Xóa màu vàng, Thêm màu xám
-                    s.classList.remove('text-yellow-400');
-                    s.classList.add('text-gray-300');
-                }
-            });
-        }
-
-        // --- CHẶN GỬI NẾU QUÊN CHỌN ---
-        form.addEventListener('submit', (e) => {
-            if (ratingInput.value == 0) {
-                e.preventDefault(); // Chặn gửi ngay
-                errorMsg.classList.remove('hidden'); // Hiện lỗi
-                
-                // Rung nhẹ chỗ sao để gây chú ý
-                const container = document.getElementById('star-container');
-                container.classList.add('animate-bounce');
-                setTimeout(() => container.classList.remove('animate-bounce'), 1000);
+    // Hàm tô màu sao
+    function highlight(value) {
+        stars.forEach(s => {
+            const sVal = s.getAttribute('data-value');
+            if (sVal <= value) {
+                s.classList.remove('text-gray-300');
+                s.classList.add('text-yellow-400');
+            } else {
+                s.classList.remove('text-yellow-400');
+                s.classList.add('text-gray-300');
             }
         });
-    </script>
+    }
 
-</body>
-</html>
+    // --- CHẶN GỬI NẾU QUÊN CHỌN SAO ---
+    if(form) {
+        form.addEventListener('submit', (e) => {
+            if (ratingInput.value == 0) {
+                e.preventDefault();
+                if(errorMsg) errorMsg.classList.remove('hidden');
+                
+                // Rung nhẹ chỗ sao
+                const container = document.getElementById('star-container');
+                container.classList.add('animate-pulse');
+                setTimeout(() => container.classList.remove('animate-pulse'), 1000);
+            }
+        });
+    }
+</script>
+@endpush

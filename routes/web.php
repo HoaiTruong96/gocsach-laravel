@@ -26,7 +26,9 @@ Route::get('/review-search', [BookController::class, 'search'])->name('books.sea
 
 // Xem chi tiết sách
 Route::get('/book/{id}', [BookController::class, 'show'])->name('book.show');
-
+Route::get('/chi-tiet', function () {
+    return view('detail');
+})->name('detail');
 
 // ====================================================
 // 2. NHÓM KHÁCH (Chưa đăng nhập mới được vào)
