@@ -134,10 +134,6 @@
                             <input type="checkbox" class="custom-checkbox w-4 h-4 rounded border-gray-300 text-brand-green focus:ring-brand-green">
                             <span class="text-gray-600 group-hover:text-brand-green transition text-sm">Tâm Lý & Kỹ Năng <span class="text-xs text-gray-400">(32)</span></span>
                         </label>
-                        <label class="flex items-center space-x-3 cursor-pointer group">
-                            <input type="checkbox" class="custom-checkbox w-4 h-4 rounded border-gray-300 text-brand-green focus:ring-brand-green">
-                            <span class="text-gray-600 group-hover:text-brand-green transition text-sm">Trinh Thám <span class="text-xs text-gray-400">(18)</span></span>
-                        </label>
                     </div>
                 </div>
 
@@ -167,7 +163,11 @@
                 
                 <div class="flex flex-col sm:flex-row justify-between items-center mb-6 bg-white p-3 rounded-lg shadow-sm border border-gray-100">
                     <p class="text-sm text-gray-500 mb-2 sm:mb-0">
-                        Hiển thị <span class="font-bold text-brand-green">1-12</span> của 86 kết quả
+                        @if(isset($books) && count($books) > 0)
+                            Hiển thị <span class="font-bold text-brand-green">{{ count($books) }}</span> kết quả
+                        @else
+                            Chưa có sách nào
+                        @endif
                     </p>
                     <div class="flex items-center gap-3">
                         <span class="text-sm text-gray-500">Sắp xếp:</span>
@@ -181,103 +181,55 @@
 
                 <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
                     
-                    {{-- MOCK DATA --}}
-                    @php
-                        $books = [
-                            [
-                                'title' => 'Cây Cam Ngọt Của Tôi',
-                                'author' => 'José Mauro',
-                                'category' => 'Văn Học',
-                                'image' => 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=400',
-                                'rating' => 4.9,
-                                'view' => '15k',
-                                'hot' => true
-                            ],
-                            [
-                                'title' => 'Dế Mèn Phiêu Lưu Ký',
-                                'author' => 'Tô Hoài',
-                                'category' => 'Thiếu Nhi',
-                                'image' => 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=400',
-                                'rating' => 4.8,
-                                'view' => '8.2k',
-                                'hot' => false
-                            ],
-                            [
-                                'title' => 'Mắt Biếc',
-                                'author' => 'Nguyễn Nhật Ánh',
-                                'category' => 'Tình Cảm',
-                                'image' => 'https://images.unsplash.com/photo-1592496431122-2349e0fbc666?auto=format&fit=crop&q=80&w=400',
-                                'rating' => 5.0,
-                                'view' => '22k',
-                                'hot' => true
-                            ],
-                            [
-                                'title' => 'Tội Ác Và Trừng Phạt',
-                                'author' => 'Dostoevsky',
-                                'category' => 'Kinh Điển',
-                                'image' => 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=400',
-                                'rating' => 4.7,
-                                'view' => '5k',
-                                'hot' => false
-                            ],
-                            [
-                                'title' => 'Nhà Giả Kim',
-                                'author' => 'Paulo Coelho',
-                                'category' => 'Kinh Tế',
-                                'image' => 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=400',
-                                'rating' => 4.8,
-                                'view' => '40k',
-                                'hot' => false
-                            ],
-                            [
-                                'title' => 'Hoàng Tử Bé',
-                                'author' => 'Saint-Exupéry',
-                                'category' => 'Văn Học',
-                                'image' => 'https://images.unsplash.com/photo-1629198688000-71f23e745b6e?auto=format&fit=crop&q=80&w=400',
-                                'rating' => 4.9,
-                                'view' => '100k',
-                                'hot' => false
-                            ],
-                        ];
-                    @endphp
-
-                    @foreach($books as $book)
-                        <div class="group bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition duration-300 flex flex-col h-full relative">
-                            <div class="relative w-full aspect-[2/3] bg-gray-100 overflow-hidden">
-                                <a href="{{ route('detail') }}">
-                                    <img src="{{ $book['image'] }}" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
-                                </a>
-                                
-                                @if($book['hot'])
-                                    <div class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">
-                                        HOT
-                                    </div>
-                                @endif
-                            </div>
-                            
-                            <div class="p-4 flex flex-col flex-1">
-                                <div class="text-[10px] text-brand-accent uppercase font-bold tracking-wider mb-1">{{ $book['category'] }}</div>
-                                
-                                <h3 class="font-serif font-bold text-gray-800 text-lg leading-snug mb-1 line-clamp-2 group-hover:text-brand-green transition">
+                    @if(isset($books) && count($books) > 0)
+                        @foreach($books as $book)
+                            <div class="group bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition duration-300 flex flex-col h-full relative">
+                                <div class="relative w-full aspect-[2/3] bg-gray-100 overflow-hidden">
                                     <a href="{{ route('detail') }}">
-                                        {{ $book['title'] }}
+                                        <img src="{{ $book->cover_image ?? 'https://via.placeholder.com/300x450' }}" 
+                                             alt="{{ $book->title }}"
+                                             class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
                                     </a>
-                                </h3>
+                                    
+                                    @if($book->view_count > 1000)
+                                        <div class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">
+                                            HOT
+                                        </div>
+                                    @endif
+                                </div>
                                 
-                                <p class="text-xs text-gray-500 mb-3">{{ $book['author'] }}</p>
-                                
-                                <div class="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
-                                    <div class="flex items-center text-yellow-400 gap-1">
-                                        <i class="fas fa-star"></i> 
-                                        <span class="text-gray-600 font-semibold">{{ $book['rating'] }}</span>
+                                <div class="p-4 flex flex-col flex-1">
+                                    <div class="text-[10px] text-brand-accent uppercase font-bold tracking-wider mb-1">
+                                        {{ $book->category->name ?? 'Mặc định' }}
                                     </div>
-                                    <div class="text-gray-400 flex items-center gap-1">
-                                        <i class="far fa-eye"></i> {{ $book['view'] }}
+                                    
+                                    <h3 class="font-serif font-bold text-gray-800 text-lg leading-snug mb-1 line-clamp-2 group-hover:text-brand-green transition">
+                                        <a href="{{ route('detail') }}">
+                                            {{ $book->title }}
+                                        </a>
+                                    </h3>
+                                    
+                                    <p class="text-xs text-gray-500 mb-3">
+                                        {{ $book->author->name ?? 'Tác giả ẩn danh' }}
+                                    </p>
+                                    
+                                    <div class="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
+                                        <div class="flex items-center text-yellow-400 gap-1">
+                                            <i class="fas fa-star"></i> 
+                                            <span class="text-gray-600 font-semibold">5.0</span>
+                                        </div>
+                                        <div class="text-gray-400 flex items-center gap-1">
+                                            <i class="far fa-eye"></i> {{ number_format($book->view_count) }}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                        @endforeach
+                    @else
+                        <div class="col-span-full text-center py-10">
+                            <p class="text-gray-500">Chưa có cuốn sách nào trong hệ thống.</p>
                         </div>
-                    @endforeach
+                    @endif
 
                 </div>
 
@@ -288,9 +240,6 @@
                         </a>
                         <a href="#" class="w-8 h-8 flex items-center justify-center rounded-full bg-brand-green text-white font-bold text-sm shadow-md">1</a>
                         <a href="#" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-brand-beige text-gray-600 hover:text-brand-green transition text-sm font-medium">2</a>
-                        <a href="#" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-brand-beige text-gray-600 hover:text-brand-green transition text-sm font-medium">3</a>
-                        <span class="w-8 h-8 flex items-center justify-center text-gray-400 text-xs pb-2">...</span>
-                        <a href="#" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-brand-beige text-gray-600 hover:text-brand-green transition text-sm font-medium">8</a>
                         <a href="#" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-brand-beige text-gray-500 hover:text-brand-green transition">
                             <i class="fas fa-chevron-right text-xs"></i>
                         </a>
