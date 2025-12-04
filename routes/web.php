@@ -4,13 +4,27 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;     // Xử lý Đăng nhập/Đăng ký/Quên MK
 use App\Http\Controllers\BookController;     // Hiển thị sách
 use App\Http\Controllers\ProfileController;  // Hiển thị hồ sơ
-use App\Http\Controllers\AdminController;    // <--- [CHUẨN] Nên khai báo ở đây
-use App\Http\Controllers\ReviewController; 
+use App\Http\Controllers\AdminController;    // Quản trị viên
+use App\Http\Controllers\ReviewController;   // Xử lý đánh giá
+
 // ====================================================
-// 1. TRANG CHỦ (Ai cũng xem được)
+// 1. NHÓM PUBLIC (Ai cũng xem được)
 // ====================================================
+
+// Trang chủ
 Route::get('/', [BookController::class, 'index'])->name('home');
+
+// Trang danh sách (Fix lỗi route [list] not defined)
+Route::get('/list', function () {
+    return view('list');
+})->name('list');
+
+// Tìm kiếm sách
+Route::get('/review-search', [BookController::class, 'search'])->name('books.search');
+
+// Xem chi tiết sách
 Route::get('/book/{id}', [BookController::class, 'show'])->name('book.show');
+
 
 // ====================================================
 // 2. NHÓM KHÁCH (Chưa đăng nhập mới được vào)
@@ -30,24 +44,25 @@ Route::middleware('guest')->group(function () {
     Route::post('/update-password', [AuthController::class, 'updatePassword'])->name('update.password');
 });
 
+
 // ====================================================
 // 3. NHÓM THÀNH VIÊN (Phải đăng nhập mới được vào)
 // ====================================================
 Route::middleware('auth')->group(function () {
     // Đăng xuất
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    // Đường dẫn ảo là /book/1
-    Route::get('/book/1', function () {
-    return view('book-detail');});
+
     // Trang cá nhân
-   Route::get('/profile', [ProfileController::class, 'index'])
-    ->middleware('auth')
-    ->name('profile');
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+
+    // Gửi đánh giá (Review) - Phải đăng nhập mới được đánh giá
+    Route::post('/review', [ReviewController::class, 'store'])->name('review.store');
 
     // Đổi mật khẩu
     Route::get('/change-password', [AuthController::class, 'showChangePasswordForm'])->name('change.password');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('change.password.post');
 });
+
 
 // ====================================================
 // 4. NHÓM ADMIN (Phải có quyền Admin)
@@ -58,5 +73,3 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
 
 });
-Route::get('/review-search', [BookController::class, 'search'])->name('books.search');
-Route::post('/review', [ReviewController::class, 'store'])->name('review.store');
