@@ -10,6 +10,14 @@ use App\Http\Controllers\AdminController;    // <--- [CHUẨN] Nên khai báo �
 // 1. TRANG CHỦ (Ai cũng xem được)
 // ====================================================
 Route::get('/', [BookController::class, 'index'])->name('home');
+// ===> [MỚI THÊM] Trang Danh sách sách (Frontend tĩnh) <===
+// Truy cập bằng đường dẫn: http://127.0.0.1:8000/danh-sach
+Route::get('/danh-sach', function () {
+    return view('list'); // Trả về file resources/views/list.blade.php
+})->name('list');
+Route::get('/chi-tiet', function () {
+    return view('detail');
+})->name('detail');
 
 // ====================================================
 // 2. NHÓM KHÁCH (Chưa đăng nhập mới được vào)
