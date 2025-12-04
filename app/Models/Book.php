@@ -27,16 +27,17 @@ class Book extends Model
     ];
 
     // Quan hệ
+
+   public function author()
+    {
+        // Một cuốn sách thuộc về 1 tác giả
+        return $this->belongsTo(Author::class, 'author_id');
+    }
     public function category()
     {
-        return $this->belongsTo(Category::class);
+        // Một cuốn sách thuộc về 1 thể loại
+        return $this->belongsTo(Category::class, 'category_id');
     }
-
-    public function author()
-    {
-        return $this->belongsTo(Author::class);
-    }
-
     public function reviews()
     {
         return $this->hasMany(Review::class);
@@ -47,4 +48,5 @@ class Book extends Model
     {
         return $this->hasMany(Bookshelf::class);
     }
+
 }
