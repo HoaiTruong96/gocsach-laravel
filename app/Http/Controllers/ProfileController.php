@@ -3,19 +3,18 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth; // [QUAN TRỌNG] Gọi thư viện Auth
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage; // Thêm dòng này để xử lý file
 use stdClass;
 
 class ProfileController extends Controller
 {
     public function index()
     {
-        // 1. LẤY THÔNG TIN NGƯỜI DÙNG TỪ DATABASE (Đã sửa)
-        // Hàm Auth::user() sẽ lấy ra toàn bộ thông tin của người đang đăng nhập
+        // 1. LẤY THÔNG TIN NGƯỜI DÙNG TỪ DATABASE
         $user = Auth::user();
 
-        // 2. TẠO DỮ LIỆU GIẢ CHO TỦ SÁCH (Giữ nguyên để test giao diện)
-        // Phần này sau này bạn Thông làm xong DB sách thì mình sẽ query thật sau
+        // 2. TẠO DỮ LIỆU GIẢ CHO TỦ SÁCH (Giữ nguyên như code của bạn)
         $book1 = new stdClass();
         $book1->title = "Đắc Nhân Tâm";
         $book1->author = "Dale Carnegie";
@@ -36,10 +35,38 @@ class ProfileController extends Controller
 
         $myBooks = [$book1, $book2, $book3];
 
-        // 3. TRẢ VỀ VIEW KÈM DỮ LIỆU THẬT CỦA USER
+        // 3. TRẢ VỀ VIEW
         return view('profile', [
-            'user' => $user,      // Biến $user này bây giờ chứa thông tin thật từ DB
-            'myBooks' => $myBooks // Biến này vẫn là giả lập
+            'user' => $user,
+            'myBooks' => $myBooks
         ]);
+    }
+
+    // --- THÊM MỚI: Hàm xử lý cập nhật thông tin và Avatar ---
+    public function update(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'avatar' => 'nullable|image|max:2048', // Avatar không bắt buộc
+        ]);
+
+        // Xử lý Upload Avatar
+        if ($request->hasFile('avatar')) {
+            // Xóa avatar cũ nếu có
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            // Lưu avatar mới
+            $user->avatar = $request->file('avatar')->store('avatars', 'public');
+        }
+
+        // Cập nhật tên
+        $user->name = $request->name;
+        $user->save();
+
+        return redirect()->route('profile.index')->with('success', 'Cập nhật hồ sơ thành công!');
     }
 }
