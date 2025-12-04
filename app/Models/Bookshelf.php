@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Bookshelf extends Model
 {
-    // Ghi chú: Chưa có Factory cho Bookshelf
     use HasFactory;
 
     protected $fillable = [

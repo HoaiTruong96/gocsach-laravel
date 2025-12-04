@@ -12,17 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('likes', function (Blueprint $table) {
-            // Mã định danh thích
             $table->id();
-            // Mã định danh người dùng (Khóa ngoại)
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            // Mã định danh đánh giá (Khóa ngoại)
-            $table->foreignId('review_id')->constrained()->onDelete('cascade');
+            $table->foreignId('post_id')->constrained()->onDelete('cascade');
             $table->timestamps();
-            // CỰC KÌ QUAN TRỌNG:
-            // Ghi chú: Tránh trường hợp 1 user có thể thích 1 bài review nhiều lần
-            // Dòng này tạo ràng buộc duy nhất giữa người dùng và bài review
-            $table->unique(['user_id', 'review_id']);
+            $table->unique(['user_id', 'post_id']);
         });
     }
 

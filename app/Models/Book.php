@@ -10,43 +10,44 @@ class Book extends Model
     use HasFactory;
 
     protected $fillable = [
+        'created_by_user_id',
         'title',
         'slug',
+        'author_name',
         'category_id',
-        'author_id',
         'publisher',
         'published_year',
         'description',
         'cover_image',
         'view_count',
         'avg_rating',
+        'is_approved',
     ];
 
     protected $casts = [
         'avg_rating' => 'float',
+        'is_approved' => 'boolean',
     ];
 
     // Quan hệ
-
-   public function author()
-    {
-        // Một cuốn sách thuộc về 1 tác giả
-        return $this->belongsTo(Author::class, 'author_id');
-    }
     public function category()
     {
         // Một cuốn sách thuộc về 1 thể loại
         return $this->belongsTo(Category::class, 'category_id');
     }
-    public function reviews()
+
+    public function creator()
     {
-        return $this->hasMany(Review::class);
+        return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
-    // Sách nằm trong kệ sách của người dùng
-    public function inBookshelves()
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    public function bookshelves()
     {
         return $this->hasMany(Bookshelf::class);
     }
-
 }
