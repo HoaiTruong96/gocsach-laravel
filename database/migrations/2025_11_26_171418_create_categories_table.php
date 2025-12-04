@@ -12,13 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('categories', function (Blueprint $table) {
-            // Mã định danh thể loại
             $table->id();
-            // Tên thể loại
             $table->string('name');
-            // Đường dẫn thể loại
             $table->string('slug')->unique();
-            // Mô tả thể loại
             $table->text('description')->nullable();
             $table->timestamps();
         });

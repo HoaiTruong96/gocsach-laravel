@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Follow extends Model
 {
-    // Ghi chú: Chưa có Factory cho Follow
     use HasFactory;
 
     protected $fillable = [

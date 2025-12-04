@@ -7,12 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Comment extends Model
 {
-    // Ghi chú: Chưa có Factory cho Comment
     use HasFactory;
 
     protected $fillable = [
         'user_id',
-        'review_id',
+        'post_id',
         'content'
     ];
 
@@ -22,9 +21,8 @@ class Comment extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function review()
-
+    public function post()
     {
-        return $this->belongsTo(Review::class);
+        return $this->belongsTo(Post::class);
     }
 }

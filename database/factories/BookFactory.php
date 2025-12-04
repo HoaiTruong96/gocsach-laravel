@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Category;
-use App\Models\Author;
+use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -12,13 +12,9 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class BookFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
+        // Giữ lại danh sách sách hay của bạn
         $titleBook = [
             'Dế Mèn Phiêu Lưu Ký',
             'Đất Rừng Phương Nam',
@@ -45,73 +41,43 @@ class BookFactory extends Factory
             'Những Người Khốn Khổ',
             'Thép Đã Tôi Thế Đấy',
             'Tiếng Chim Hót Trong Bụi Mận Gai',
-            'Đồi Gió Hú',
-            'Kiêu Hãnh Và Định Kiến',
-            'Harry Potter và Hòn Đá Phù Thủy',
-            'Chúa Tể Những Chiếc Nhẫn',
-            'Sherlock Holmes',
-            'Án Mạng Trên Chuyến Tàu Tốc Hành Phương Đông',
-            'Sự Im Lặng Của Bầy Cừu',
-            'Mật Mã Da Vinci',
-            'Kỳ Án Ánh Trăng',
-            'Đề Thi Đẫm Máu',
-            'Phía Sau Nghi Can X',
-            'Bạch Dạ Hành',
-            'Hỏa Ngục',
-            'Cô Gái Có Hình Xăm Rồng',
             'Đắc Nhân Tâm',
-            'Nhà Lãnh Đạo Không Chức Danh',
+            'Hạt Giống Tâm Hồn',
             'Cà Phê Cùng Tony',
-            'Tuổi Trẻ Đáng Giá Bao Nhiêu',
+            'Trên Đường Băng',
+            'Nhà Lãnh Đạo Không Chức Danh',
             'Đời Thay Đổi Khi Chúng Ta Thay Đổi',
-            'Dạy Con Làm Giàu',
-            'Chiến Tranh Tiền Tệ',
-            'Tỷ Phú Bán Giày',
-            'Khởi Nghiệp Tinh Gọn',
-            'Nhà Đầu Tư Thông Minh',
-            'Code Dạo Ký Sự',
+            'Tư Duy Nhanh Và Chậm',
+            'Lược Sử Loài Người',
+            'Sapiens',
             'Clean Code',
-            'Lập Trình Viên Pragmatic',
-            'Tớ Học Lập Trình',
-            'Design Patterns',
-            'Nhập Môn Trí Tuệ Nhân Tạo'
+            'Design Patterns'
         ];
 
-        $publishers = [
-            'NXB Trẻ',
-            'NXB Kim Đồng',
-            'NXB Hội Nhà Văn',
-            'NXB Lao Động',
-            'NXB Phụ Nữ',
-            'NXB Thanh Niên',
-            'NXB Văn Học',
-            'NXB Dân Trí',
-            'NXB Thế Giới',
-            'NXB Tổng hợp TP.HCM',
-            'NXB Chính Trị Quốc Gia Sự Thật',
-            'Nhã Nam',
-            'Đinh Tị Books',
-            'Đông A',
-            'Skybooks',
-            'Alpha Books',
-            'Thái Hà Books'
-        ];
+        $publishers = ['NXB Trẻ', 'NXB Kim Đồng', 'Nhã Nam', 'Skybooks', 'Alpha Books', 'NXB Văn Học'];
 
-        // Tạo tiêu đề sách ngẫu nhiên: xóa dấu chấm ở cuối câu
-        $title = fake()->unique()->randomElement($titleBook);
+        $title = fake()->unique()->randomElement($titleBook) ?? fake()->sentence(3);
+
         return [
+            // Người đóng góp sách (Random 1 user hoặc null)
+            'created_by_user_id' => User::query()->inRandomOrder()->value('id') ?? User::factory(),
+
             'title' => $title,
-            'slug' => Str::slug($title),
-            // Lấy ngẫu nhiên id từ bảng categories, nếu không có thì tạo mới
+            'slug' => Str::slug($title) . '-' . Str::random(4),
+
+            // THAY ĐỔI: Tên tác giả dạng text (không cần bảng Author nữa)
+            'author_name' => fake()->name(),
+
             'category_id' => Category::query()->inRandomOrder()->value('id') ?? Category::factory(),
-            // Lấy ngẫu nhiên id từ bảng authors
-            'author_id' => Author::query()->inRandomOrder()->value('id') ?? Author::factory(),
+
             'publisher' => fake()->randomElement($publishers),
             'published_year' => fake()->year(),
             'description' => fake()->paragraph(3),
             'cover_image' => 'https://placehold.co/400x600?text=' . urlencode(Str::limit($title, 20)),
-            'view_count' => fake()->numberBetween(100, 5000),
-            'avg_rating' => 0,
+
+            'view_count' => fake()->numberBetween(100, 10000),
+            'avg_rating' => fake()->randomFloat(1, 3, 5), // Fake trước điểm số
+            'is_approved' => true, // Mặc định sách mẫu thì duyệt luôn
         ];
     }
 }
