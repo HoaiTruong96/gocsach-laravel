@@ -67,62 +67,57 @@
                 </div>
             </div>
 
-            <!-- NAV MENU CHÍNH -->
-            <nav class="flex items-center space-x-6 text-sm font-medium text-gray-600">
-                <a href="{{ route('home') }}" class="text-brand-green font-bold border-b-2 border-brand-green pb-1">Trang Chủ</a>
-                
-                <!-- [LOGIC QUAN TRỌNG] Hiển thị Dashboard cho Admin -->
-                @if(Auth::check() && Auth::user()->role === 'admin')
-                    <a href="{{ route('admin.dashboard') }}" class="text-red-600 hover:text-red-800 font-bold border border-red-100 bg-red-50 px-3 py-1 rounded-full transition">
-                        <i class="fas fa-tachometer-alt mr-1"></i>Dashboard
-                    </a>
-                @endif
+           <nav class="flex items-center space-x-6 text-sm font-medium text-gray-600">
+    
+            <a href="{{ route('home') }}" class="text-brand-green font-bold border-b-2 border-brand-green pb-1">Trang Chủ</a>
+    
+            @if(Auth::check() && Auth::user()->role === 'admin')
+            <a href="{{ route('admin.dashboard') }}" class="text-red-600 hover:text-red-800 font-bold border border-red-100 bg-red-50 px-3 py-1 rounded-full transition">
+                <i class="fas fa-tachometer-alt mr-1"></i>Dashboard
+            </a>
+        @endif
 
-                <a href="#" class="hover:text-brand-green transition">Thể Loại</a>
-                <a href="#" class="hover:text-brand-green transition">Bài Viết</a>
+    <a href="{{ route('list') }}" class="hover:text-brand-green transition">Danh Sách</a>
+    
+    <a href="#" class="hover:text-brand-green transition">Bài Viết</a>
 
-                <!-- LOGIC AUTHENTICATION -->
-                @auth
-                <!-- Khi ĐÃ Đăng nhập -->
-                <div class="relative group z-50">
-                    <button class="flex items-center gap-2 text-brand-green font-bold focus:outline-none hover:opacity-80 transition">
-                        <!-- Avatar tự động tạo theo tên -->
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=3E5F4E&color=fff" class="w-8 h-8 rounded-full border border-brand-green shadow-sm">
-                        <span class="max-w-[100px] truncate">{{ Auth::user()->name }}</span>
-                        <i class="fas fa-chevron-down text-xs"></i>
+    @auth
+        <div class="relative group z-50">
+            <button class="flex items-center gap-2 text-brand-green font-bold focus:outline-none hover:opacity-80 transition">
+                <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=3E5F4E&color=fff" class="w-8 h-8 rounded-full border border-brand-green shadow-sm">
+                <span class="max-w-[100px] truncate">{{ Auth::user()->name }}</span>
+                <i class="fas fa-chevron-down text-xs"></i>
+            </button>
+
+            <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 hidden group-hover:block py-2 animate-fade-in">
+                <div class="px-4 py-2 border-b border-gray-100 text-xs text-gray-400">
+                    Xin chào, {{ Auth::user()->name }}
+                </div>
+                <a href="{{ route('profile') }}" class="block px-4 py-2 text-gray-700 hover:bg-brand-beige hover:text-brand-green transition">
+                    <i class="fas fa-user mr-2"></i> Hồ sơ cá nhân
+                </a>
+                <a href="{{ route('change.password') }}" class="block px-4 py-2 text-gray-700 hover:bg-brand-beige hover:text-brand-green transition">
+                    <i class="fas fa-key mr-2"></i> Đổi mật khẩu
+                </a>
+
+                <div class="border-t border-gray-100 my-1"></div>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="w-full text-left px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600 transition">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Đăng Xuất
                     </button>
+                </form>
+            </div>
+        </div>
+    @else
+        <div class="flex items-center gap-3">
+            <a href="{{ route('login') }}" class="text-gray-600 hover:text-brand-green transition">Đăng Nhập</a>
+            <span class="text-gray-300">|</span>
+            <a href="{{ route('register') }}" class="text-brand-green font-bold hover:underline decoration-2 underline-offset-4">Đăng Ký</a>
+        </div>
+    @endauth
 
-                    <!-- Dropdown Menu -->
-                    <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 hidden group-hover:block py-2 animate-fade-in">
-                        <div class="px-4 py-2 border-b border-gray-100 text-xs text-gray-400">
-                            Xin chào, {{ Auth::user()->name }}
-                        </div>
-                        <a href="{{ route('profile') }}" class="block px-4 py-2 text-gray-700 hover:bg-brand-beige hover:text-brand-green transition">
-                            <i class="fas fa-user mr-2"></i> Hồ sơ cá nhân
-                        </a>
-                        <a href="{{ route('change.password') }}" class="block px-4 py-2 text-gray-700 hover:bg-brand-beige hover:text-brand-green transition">
-                            <i class="fas fa-key mr-2"></i> Đổi mật khẩu
-                        </a>
-
-                        <div class="border-t border-gray-100 my-1"></div>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="w-full text-left px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600 transition">
-                                <i class="fas fa-sign-out-alt mr-2"></i> Đăng Xuất
-                            </button>
-                        </form>
-                    </div>
-                </div>
-                @else
-                <!-- Khi CHƯA Đăng nhập -->
-                <div class="flex items-center gap-3">
-                    <a href="{{ route('login') }}" class="text-gray-600 hover:text-brand-green transition">Đăng Nhập</a>
-                    <span class="text-gray-300">|</span>
-                    <a href="{{ route('register') }}" class="text-brand-green font-bold hover:underline decoration-2 underline-offset-4">Đăng Ký</a>
-                </div>
-                @endauth
-
-            </nav>
+    </nav>
         </div>
     </header>
 
@@ -223,7 +218,7 @@
 
             <!-- CỘT PHẢI (SIDEBAR) -->
             <div class="lg:col-span-4">
-                <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm sticky top-24">
+                <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
                     <h3 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b border-gray-100 font-serif border-l-4 border-brand-green pl-3">
                         Top Thịnh Hành
                     </h3>
