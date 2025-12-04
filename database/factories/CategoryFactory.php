@@ -10,16 +10,10 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class CategoryFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
-        // Danh sách thể loại sách
+        // Danh sách thể loại của bạn
         $categories = [
-            'Sách Giáo Khoa',
             'Văn Học Nước Ngoài',
             'Văn Học Việt Nam',
             'Tâm Lý - Kỹ Năng Sống',
@@ -41,8 +35,8 @@ class CategoryFactory extends Factory
             'Tôn Giáo - Tâm Linh',
         ];
 
-        // Dùng unique() để tránh trùng lặp tên thể loại
-        $name = fake()->unique()->randomElement($categories);
+        $name = fake()->unique()->randomElement($categories) ?? fake()->word();
+
         return [
             'name' => $name,
             'slug' => Str::slug($name),

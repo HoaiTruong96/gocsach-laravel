@@ -4,22 +4,30 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Review extends Model
+class Post extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'user_id',
         'book_id',
+        'title',
+        'slug',
+        'thumbnail',
+        'excerpt',
+        'content',
         'rating',
-        'content_text',
-        'is_approved',
+        'status',       // draft, pending, published, rejected, hidden
+        'published_at',
+        'view_count',
     ];
 
     protected $casts = [
-        'is_approved' => 'boolean',
         'rating' => 'float',
+        'published_at' => 'datetime',
+        'view_count' => 'integer',
     ];
 
     // Quan hệ
@@ -33,7 +41,6 @@ class Review extends Model
         return $this->belongsTo(Book::class);
     }
 
-    // Một bài đánh giá có nhiều bình luận và lượt thích
     public function comments()
     {
         return $this->hasMany(Comment::class);
@@ -42,5 +49,10 @@ class Review extends Model
     public function likes()
     {
         return $this->hasMany(Like::class);
+    }
+
+    public function scopePublished($query)
+    {
+        return $query->where('status', 'published');
     }
 }

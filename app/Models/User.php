@@ -43,19 +43,24 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'is_active' => 'boolean',
-        ];
-    }
+    // protected function casts(): array
+    // {
+    //     return [
+    //         'email_verified_at' => 'datetime',
+    //         'password' => 'hashed',
+    //         'is_active' => 'boolean',
+    //     ];
+    // }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'is_active' => 'boolean',
+    ];
 
     // Quan hệ
-    public function reviews()
+    public function posts()
     {
-        return $this->hasMany(Review::class);
+        return $this->hasMany(Post::class);
     }
 
     public function comments()
@@ -68,9 +73,14 @@ class User extends Authenticatable
         return $this->hasMany(Like::class);
     }
 
-    public function bookshelf()
+    public function bookshelves()
     {
         return $this->hasMany(Bookshelf::class);
+    }
+
+    public function contributedBooks()
+    {
+        return $this->hasMany(Book::class, 'created_by_user_id');
     }
 
     // Quan hệ giữa người dùng và người theo dõi

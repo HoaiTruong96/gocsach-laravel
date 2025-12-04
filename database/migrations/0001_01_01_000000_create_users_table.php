@@ -12,23 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            // Mã định danh người dùng
             $table->id();
-            // Tên người dùng
             $table->string('name');
-            // Email người dùng
             $table->string('email')->unique();
-            // Xác thực email
             $table->timestamp('email_verified_at')->nullable();
-            // Mật khẩu người dùng
             $table->string('password');
-            // Ảnh đại diện người dùng
             $table->string('avatar')->nullable();
-            // Tiểu sử người dùng
             $table->text('bio')->nullable();
             // Vai trò người dùng: 0 = User, 1 = Admin
             $table->string('role')->default('user');
-            // Trạng thái kích hoạt người dùng (Admin có thể vô hiệu hóa tài khoản)
             $table->boolean('is_active')->default(true);
             $table->rememberToken();
             $table->timestamps();

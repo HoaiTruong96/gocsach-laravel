@@ -10,20 +10,23 @@ class Book extends Model
     use HasFactory;
 
     protected $fillable = [
+        'created_by_user_id',
         'title',
         'slug',
+        'author_name',
         'category_id',
-        'author_id',
         'publisher',
         'published_year',
         'description',
         'cover_image',
         'view_count',
         'avg_rating',
+        'is_approved',
     ];
 
     protected $casts = [
         'avg_rating' => 'float',
+        'is_approved' => 'boolean',
     ];
 
     // Quan hệ
@@ -32,18 +35,17 @@ class Book extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function author()
+    public function creator()
     {
-        return $this->belongsTo(Author::class);
+        return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
-    public function reviews()
+    public function posts()
     {
-        return $this->hasMany(Review::class);
+        return $this->hasMany(Post::class);
     }
 
-    // Sách nằm trong kệ sách của người dùng
-    public function inBookshelves()
+    public function bookshelves()
     {
         return $this->hasMany(Bookshelf::class);
     }

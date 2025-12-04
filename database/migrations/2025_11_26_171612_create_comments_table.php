@@ -12,13 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('comments', function (Blueprint $table) {
-            // Mã định danh bình luận
             $table->id();
-            // Mã định danh người dùng (Khóa ngoại)
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            // Mã định danh đánh giá (Khóa ngoại)
-            $table->foreignId('review_id')->constrained()->onDelete('cascade');
-            // Nội dung bình luận
+            $table->foreignId('post_id')->constrained()->onDelete('cascade');
             $table->text('content');
             $table->timestamps();
         });
