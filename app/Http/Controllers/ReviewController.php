@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Review; 
+use App\Models\Post; 
 use Illuminate\Support\Facades\Auth; 
 
 class ReviewController extends Controller
@@ -18,7 +18,7 @@ class ReviewController extends Controller
         ]);
 
         // 2. Lưu vào Database
-        Review::create([
+        Post::create([
             'user_id' => Auth::id() ?? 52, // ID user giả lập của bạn
             'book_id' => $request->input('book_id'),
             'rating' => $request->input('rating'),

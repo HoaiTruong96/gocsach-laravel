@@ -14,7 +14,7 @@ class ProfileController extends Controller
         $user = Auth::user();
         if (!$user) return redirect()->route('login');
         $totalBooks = $user->bookshelf()->count();
-        $totalReviews = $user->reviews()->count(); 
+        $totalReviews = $user->posts()->count(); 
     
 
         $query = $user->bookshelf()->orderByPivot('created_at', 'desc');
