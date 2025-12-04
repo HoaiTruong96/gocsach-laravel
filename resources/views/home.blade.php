@@ -209,6 +209,7 @@
             <div class="hidden md:flex justify-center mt-2 border-t border-gray-100 pt-3">
                 <nav class="flex items-center gap-8 text-sm font-semibold text-gray-500">
                     <a href="{{ route('home') }}" class="text-brand-green border-b-2 border-brand-green pb-3 -mb-3.5 transition-colors">Trang Chủ</a>
+                    <a href="{{ route('list') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all">Danh Sách</a>
                     <a href="#" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all">Sách Mới</a>
                     <a href="#" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all">Review Hay</a>
                     <a href="#" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all">Tác Giả</a>
@@ -526,7 +527,7 @@
             <!-- RIGHT COLUMN (Sidebar) -->
             <div class="lg:col-span-4">
                 <!-- WRAPPER STICKY: Gom cả 2 widget vào đây để cùng dính -->
-                <div class="sticky top-24 space-y-8">
+                <div class="space-y-8">
                     
                     <!-- Widget 1: Trending -->
                     <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-soft">

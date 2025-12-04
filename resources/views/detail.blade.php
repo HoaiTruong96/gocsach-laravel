@@ -92,10 +92,10 @@
                         <div class="flex items-center gap-4 text-sm">
                             <span class="text-gray-500">Tác giả: <a href="#author" class="text-brand-green font-semibold hover:underline">José Mauro de Vasconcelos</a></span>
                             <span class="text-gray-300">|</span>
-                            <div class="flex items-center text-yellow-400">
+                            <a href="#" class="flex items-center text-yellow-400 hover:opacity-80 transition cursor-pointer">
                                 <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
-                                <span class="text-gray-500 ml-1">(4.9/5 từ 1.2k đánh giá)</span>
-                            </div>
+                                <span class="text-gray-500 ml-1 hover:text-brand-green hover:underline">(4.9/5 từ 1.2k đánh giá)</span>
+                            </a>
                         </div>
                     </div>
 
@@ -104,30 +104,24 @@
                     </p>
 
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 text-sm text-gray-600">
-                        <div>
-                            <p class="text-gray-400 text-xs mb-1">Nhà xuất bản</p>
-                            <p class="font-semibold">Hội Nhà Văn</p>
-                        </div>
-                        <div>
-                            <p class="text-gray-400 text-xs mb-1">Năm xuất bản</p>
-                            <p class="font-semibold">2023</p>
-                        </div>
-                        <div>
-                            <p class="text-gray-400 text-xs mb-1">Số trang</p>
-                            <p class="font-semibold">244 trang</p>
-                        </div>
-                        <div>
-                            <p class="text-gray-400 text-xs mb-1">Hình thức</p>
-                            <p class="font-semibold">Bìa mềm</p>
-                        </div>
+                        <div><p class="text-gray-400 text-xs mb-1">Nhà xuất bản</p><p class="font-semibold">Hội Nhà Văn</p></div>
+                        <div><p class="text-gray-400 text-xs mb-1">Năm xuất bản</p><p class="font-semibold">2023</p></div>
+                        <div><p class="text-gray-400 text-xs mb-1">Số trang</p><p class="font-semibold">244 trang</p></div>
+                        <div><p class="text-gray-400 text-xs mb-1">Hình thức</p><p class="font-semibold">Bìa mềm</p></div>
                     </div>
 
                     <div class="mt-auto flex flex-col sm:flex-row gap-4 items-center">
-                        <a href="https://tiki.vn" target="_blank" class="bg-brand-green text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-[#2C3E36] transition flex items-center justify-center gap-2 min-w-[200px]">
-                            <i class="fas fa-external-link-alt"></i> Xem Nơi Bán
-                        </a>
                         
-                       
+                        <a href="#" class="group flex items-center justify-center gap-2 px-8 py-3 rounded-lg border-2 border-brand-green text-brand-green font-bold hover:bg-brand-green hover:text-white transition-all duration-300 min-w-[200px]">
+                            <i class="far fa-comments text-lg"></i>
+                            <span>Xem Các Bài Review</span>
+                        </a>
+
+                        <a href="https://tiki.vn" target="_blank" class="flex items-center justify-center gap-2 px-8 py-3 rounded-lg bg-brand-green text-white font-bold shadow-lg hover:bg-[#2C3E36] hover:-translate-y-0.5 transition-all duration-300 min-w-[200px]">
+                            <i class="fas fa-external-link-alt"></i>
+                            <span>Xem Nơi Bán</span>
+                        </a>
+
                     </div>
                 </div>
             </div>
@@ -155,21 +149,8 @@
                         </p>
                     </div>
                 </div>
-
-                <div class="mt-8 bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                    <h2 class="text-xl font-bold text-brand-green font-serif mb-6">Bài Review Từ Độc Giả</h2>
-                    <div class="flex gap-4 mb-6 border-b border-gray-50 pb-6">
-                        <img src="https://ui-avatars.com/api/?name=Doc+Gia+1" class="w-10 h-10 rounded-full">
-                        <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="font-bold text-sm">Minh Anh</span>
-                                <div class="text-yellow-400 text-xs"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-                            </div>
-                            <p class="text-sm text-gray-600">Sách quá hay, bìa đẹp, giao hàng nhanh. Mình đã khóc hết nước mắt khi đọc đoạn kết.</p>
-                        </div>
-                    </div>
+                
                 </div>
-            </div>
 
             <div class="lg:col-span-4 space-y-8">
                 
@@ -179,16 +160,13 @@
                     </h3>
                     <div class="flex flex-col items-center text-center">
                         <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-brand-beige mb-4 shadow-sm">
-                            <img src="https://images.gr-assets.com/authors/1614710185p8/4336024.jpg" 
-                                 alt="José Mauro" class="w-full h-full object-cover">
+                            <img src="https://images.gr-assets.com/authors/1614710185p8/4336024.jpg" alt="José Mauro" class="w-full h-full object-cover">
                         </div>
                         <h4 class="font-bold text-xl text-gray-800 font-serif mb-1">José Mauro</h4>
                         <span class="text-xs text-brand-brown font-bold uppercase tracking-wide mb-3">Nhà văn Brazil</span>
-                        
                         <p class="text-sm text-gray-500 leading-relaxed mb-4">
-                            (1920 - 1984) Ông là nhà văn người Brazil. Ông mang trong mình dòng máu thổ dân, Bồ Đào Nha. Các tác phẩm của ông thường mang màu sắc tự truyện, thấm đẫm tình người.
+                            (1920 - 1984) Ông là nhà văn người Brazil. Ông mang trong mình dòng máu thổ dân, Bồ Đào Nha. Các tác phẩm của ông thường mang màu sắc tự truyện.
                         </p>
-                        
                         <button class="text-brand-green text-sm font-bold border border-brand-green rounded-full px-4 py-1 hover:bg-brand-green hover:text-white transition">
                             Xem thêm tác phẩm
                         </button>
@@ -199,28 +177,12 @@
                     <h3 class="font-bold text-brand-green font-serif text-lg mb-4">Có Thể Bạn Thích</h3>
                     <div class="space-y-4">
                         <a href="#" class="flex gap-3 group bg-white p-3 rounded-lg border border-gray-100 hover:shadow-md transition">
-                            <div class="w-16 flex-shrink-0">
-                                <img src="https://images.unsplash.com/photo-1629198688000-71f23e745b6e?auto=format&fit=crop&q=80&w=200" class="w-full rounded object-cover aspect-[2/3]">
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-gray-800 text-sm font-serif group-hover:text-brand-green transition line-clamp-2">Hoàng Tử Bé</h4>
-                                <p class="text-xs text-gray-500 mt-1">Saint-Exupéry</p>
-                                <div class="flex items-center gap-1 text-xs text-yellow-400 mt-2">
-                                    <i class="fas fa-star"></i> 4.9
-                                </div>
-                            </div>
+                            <div class="w-16 flex-shrink-0"><img src="https://images.unsplash.com/photo-1629198688000-71f23e745b6e?auto=format&fit=crop&q=80&w=200" class="w-full rounded object-cover aspect-[2/3]"></div>
+                            <div><h4 class="font-bold text-gray-800 text-sm font-serif group-hover:text-brand-green transition line-clamp-2">Hoàng Tử Bé</h4><p class="text-xs text-gray-500 mt-1">Saint-Exupéry</p><div class="flex items-center gap-1 text-xs text-yellow-400 mt-2"><i class="fas fa-star"></i> 4.9</div></div>
                         </a>
                         <a href="#" class="flex gap-3 group bg-white p-3 rounded-lg border border-gray-100 hover:shadow-md transition">
-                            <div class="w-16 flex-shrink-0">
-                                <img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=200" class="w-full rounded object-cover aspect-[2/3]">
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-gray-800 text-sm font-serif group-hover:text-brand-green transition line-clamp-2">Nhà Giả Kim</h4>
-                                <p class="text-xs text-gray-500 mt-1">Paulo Coelho</p>
-                                <div class="flex items-center gap-1 text-xs text-yellow-400 mt-2">
-                                    <i class="fas fa-star"></i> 4.8
-                                </div>
-                            </div>
+                            <div class="w-16 flex-shrink-0"><img src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=200" class="w-full rounded object-cover aspect-[2/3]"></div>
+                            <div><h4 class="font-bold text-gray-800 text-sm font-serif group-hover:text-brand-green transition line-clamp-2">Nhà Giả Kim</h4><p class="text-xs text-gray-500 mt-1">Paulo Coelho</p><div class="flex items-center gap-1 text-xs text-yellow-400 mt-2"><i class="fas fa-star"></i> 4.8</div></div>
                         </a>
                     </div>
                 </div>
@@ -238,31 +200,14 @@
                         <h3 class="font-bold text-lg leading-tight">Mọt Sách Review</h3>
                     </div>
                 </div>
-                <div>
-                    <h4 class="font-bold mb-6 text-white text-lg">Liên Kết</h4>
-                    <ul class="space-y-3 text-sm text-gray-300">
-                        <li>Về chúng tôi</li>
-                        <li>Liên hệ</li>
-                    </ul>
-                </div>
-                 <div>
-                    <h4 class="font-bold mb-6 text-white text-lg">Thể Loại</h4>
-                    <ul class="space-y-3 text-sm text-gray-300">
-                        <li>Tiểu thuyết</li>
-                        <li>Kinh tế</li>
-                    </ul>
-                </div>
+                <div><h4 class="font-bold mb-6 text-white text-lg">Liên Kết</h4><ul class="space-y-3 text-sm text-gray-300"><li>Về chúng tôi</li><li>Liên hệ</li></ul></div>
+                <div><h4 class="font-bold mb-6 text-white text-lg">Thể Loại</h4><ul class="space-y-3 text-sm text-gray-300"><li>Tiểu thuyết</li><li>Kinh tế</li></ul></div>
                 <div>
                     <h4 class="font-bold mb-6 text-white text-lg">Đăng Ký Nhận Tin</h4>
-                    <form onsubmit="event.preventDefault();" class="flex mb-6">
-                        <input type="email" placeholder="Email..." class="w-full px-4 py-2 text-gray-800 rounded-l text-sm focus:outline-none">
-                        <button class="bg-[#8C6B4B] hover:bg-[#6e5338] text-white font-bold px-4 py-2 rounded-r text-sm transition">Đăng Ký</button>
-                    </form>
+                    <form onsubmit="event.preventDefault();" class="flex mb-6"><input type="email" placeholder="Email..." class="w-full px-4 py-2 text-gray-800 rounded-l text-sm focus:outline-none"><button class="bg-[#8C6B4B] hover:bg-[#6e5338] text-white font-bold px-4 py-2 rounded-r text-sm transition">Đăng Ký</button></form>
                 </div>
             </div>
-            <div class="border-t border-gray-600 pt-8 text-center text-xs text-gray-400">
-                Copyright © 2025 Mọt Sách Review
-            </div>
+            <div class="border-t border-gray-600 pt-8 text-center text-xs text-gray-400">Copyright © 2025 Mọt Sách Review</div>
         </div>
     </footer>
 </body>
