@@ -267,6 +267,13 @@
                     </ul>
                 </div>
                 <div>
+                    <h4 class="font-bold mb-6 text-white text-lg">Thể Loại</h4>
+                    <ul class="space-y-3 text-sm text-gray-300">
+                        <li><a href="#" class="hover:text-[#D4A373] transition">Tiểu thuyết</a></li>
+                        <li><a href="#" class="hover:text-[#D4A373] transition">Kinh tế</a></li>
+                    </ul>
+                </div>
+                <div>
                     <h4 class="font-bold mb-6 text-white text-lg">Đăng Ký Nhận Tin</h4>
                     <form onsubmit="event.preventDefault();" class="flex mb-6">
                         <input type="email" placeholder="Email..." class="w-full px-4 py-2 text-gray-800 rounded-l focus:outline-none text-sm">
