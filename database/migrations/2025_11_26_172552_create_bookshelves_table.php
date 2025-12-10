@@ -16,6 +16,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('book_id')->constrained()->onDelete('cascade');
             $table->enum('status', ['wishlist', 'reading', 'completed'])->default('wishlist');
+            $table->date('started_at')->nullable();
+            $table->date('finished_at')->nullable();
             $table->timestamps();
             $table->unique(['user_id', 'book_id']);
         });

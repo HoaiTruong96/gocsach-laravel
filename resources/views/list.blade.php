@@ -94,7 +94,7 @@
                                 {{-- Ảnh bìa --}}
                                 <div class="relative w-full aspect-[2/3] bg-gray-100 overflow-hidden">
                                     {{-- Sử dụng slug thay vì id cho route --}}
-<a href="{{ route('detail', $book->slug ?? $book->id) }}">
+                                    <a href="{{ route('detail', $book->slug ?? $book->id) }}">
                                         <img src="{{ $book->cover_image ?? 'https://via.placeholder.com/300x450' }}" 
                                              alt="{{ $book->title }}"
                                              class="w-full h-full object-cover transition duration-700 group-hover:scale-110"
@@ -132,7 +132,7 @@
                                     </h3>
                                     
                                     <p class="text-xs text-gray-500 mb-3 font-medium truncate">
-{{-- Sử dụng author_name thay vì logic phức tạp cũ --}}
+                                        {{-- Sử dụng author_name thay vì logic phức tạp cũ --}}
                                         {{ $book->author_name ?? 'Tác giả ẩn danh' }}
                                     </p>
                                     

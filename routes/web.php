@@ -1,35 +1,25 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;     // Xử lý Đăng nhập/Đăng ký/Quên MK
-use App\Http\Controllers\BookController;     // Hiển thị sách
-use App\Http\Controllers\ProfileController;  // Hiển thị hồ sơ
-use App\Http\Controllers\AdminController;    // Quản trị viên
-use App\Http\Controllers\PostController;   // Xử lý đánh giá
-use App\Models\Post;
+use App\Models\Book;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BookController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\RankingController;
+use App\Http\Controllers\Admin\BookController as AdminBookController;
 
 // ====================================================
 // 1. NHÓM PUBLIC (Ai cũng xem được)
 // ====================================================
 
 // Trang chủ
-Route::get('/', [BookController::class, 'index'])->name('home');
+Route::get('/', [BookController::class, 'home'])->name('home');
 
-// Trang danh sách (Fix lỗi route [list] not defined)
-Route::get('/list', function () {
-    return view('list');
-})->name('list');
-Route::get('/detail', function () {
-    return view('detail');
-})->name('detail');
-// Tìm kiếm sách
-Route::get('/post-search', [BookController::class, 'search'])->name('books.search');
+// ===> [MỚI THÊM] Trang Danh sách sách (Frontend tĩnh) <===
+// Truy cập bằng đường dẫn: http://127.0.0.1:8000/danh-sach
 
-// Xem chi tiết sách
-Route::get('/book/{id}', [BookController::class, 'show'])->name('book.show');
-Route::get('/chi-tiet', function () {
-    return view('detail');
-})->name('detail');
 Route::get('/danh-sach', function () {
     // Lấy tất cả sách, phân trang 12 cuốn
     $books = Book::with('categories')->latest()->paginate(12);
@@ -38,6 +28,12 @@ Route::get('/danh-sach', function () {
     return view('list', compact('books'));
 })->name('list'); // Tên route là 'list' để khớp với menu
 Route::get('/chi-tiet/{slug}', [BookController::class, 'show'])->name('detail');
+Route::get('/review-search', [BookController::class, 'search'])->name('books.search');
+
+Route::get('/book/{slug}', [BookController::class, 'show'])->name('book.show');
+
+Route::get('/ranking/top-liked', [RankingController::class, 'topLikedPosts']);
+Route::post('/post/store', [PostController::class, 'store'])->name('post.store');
 // ====================================================
 // 2. NHÓM KHÁCH (Chưa đăng nhập mới được vào)
 // ====================================================
@@ -56,7 +52,6 @@ Route::middleware('guest')->group(function () {
     Route::post('/update-password', [AuthController::class, 'updatePassword'])->name('update.password');
 });
 
-
 // ====================================================
 // 3. NHÓM THÀNH VIÊN (Phải đăng nhập mới được vào)
 // ====================================================
@@ -68,25 +63,23 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
 
     // Gửi đánh giá (Review) - Phải đăng nhập mới được đánh giá
-    Route::post('/post', [PostController::class, 'store'])->name('post.store');
+    // Route::post('/review', [ReviewController::class, 'store'])->name('review.store');
 
     // Đổi mật khẩu
     Route::get('/change-password', [AuthController::class, 'showChangePasswordForm'])->name('change.password');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('change.password.post');
 });
 
-
 // ====================================================
 // 4. NHÓM ADMIN (Phải có quyền Admin)
 // ====================================================
-Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
-    
-    // Trang Dashboard
-    Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
 
-});
-Route::middleware('auth')->group(function () {
-    // Ajax Like & Comment (Dùng post/{id})
-    Route::post('/post/{id}/like', [PostController::class, 'toggleLike']);
-    Route::post('/post/{id}/comment', [PostController::class, 'postComment']);
+    // [QUAN TRỌNG] Route Dashboard
+    // URL: /admin/dashboard
+    // Tên route: admin.dashboard (để khớp với file HTML)
+    Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+
+    // Quản lý sách: admin.books.index, admin.books.create...
+    Route::resource('books', AdminBookController::class);
 });

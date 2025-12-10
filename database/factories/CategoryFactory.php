@@ -19,7 +19,6 @@ class CategoryFactory extends Factory
             'Tâm Lý - Kỹ Năng Sống',
             'Sức Khỏe',
             'Thiếu Nhi',
-            'Truyện Tranh',
             'Tiểu Thuyết',
             'Khoa Học Viễn Tưởng',
             'Ngoại Ngữ',
@@ -30,9 +29,11 @@ class CategoryFactory extends Factory
             'Kinh Tế',
             'Kinh Doanh',
             'Lịch Sử',
-            'Chính Trị',
-            'Xã Hội',
-            'Tôn Giáo - Tâm Linh',
+            'Chính Trị - Xã Hội',
+            'Nghệ Thuật',
+            'Du Lịch',
+            'Người Thành Công Đọc Gì',
+            'Gia Đình - Mối Quan Hệ',
         ];
 
         $name = fake()->unique()->randomElement($categories) ?? fake()->word();

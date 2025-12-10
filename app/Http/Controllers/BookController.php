@@ -9,7 +9,7 @@ use App\Models\Post; // Gọi Model Post (Review)
 class BookController extends Controller
 {
     // 1. TRANG CHỦ
-    public function index(Request $request)
+    public function home(Request $request)
     {
         // A. Lấy sách cho Slider (5 cuốn mới nhất)
         $books = Book::orderBy('id', 'desc')->take(5)->get();
@@ -49,22 +49,24 @@ class BookController extends Controller
         ]);
     }
 
-    // 2. TRANG CHI TIẾT SÁCH
-    public function show($id)
-    {
-        // Lấy sách kèm theo danh sách bài viết (reviews), user, like, comment
-        $book = Book::with(['posts.user', 'posts.likes', 'posts.comments.user'])->find($id);
-        
-        // Kiểm tra nếu sách không tồn tại
-        if (!$book) {
-            return redirect('/')->with('error', 'Không tìm thấy sách!');
-        }
+    public function show($slug)
+{
+    // Lấy sách theo slug + load quan hệ
+    $book = Book::where('slug', $slug)
+        ->with(['posts.user', 'posts.likes', 'posts.comments.user'])
+        ->first();
 
-        // Tăng lượt xem cho các bài Review thuộc sách này
-        Post::where('book_id', $id)->increment('view_count');
-
-        return view('book-detail', ['book' => $book]);
+    // Nếu không tìm thấy sách
+    if (!$book) {
+        return redirect('/')->with('error', 'Không tìm thấy sách!');
     }
+
+    // Tăng lượt xem cho tất cả bài review của sách
+    Post::where('book_id', $book->id)->increment('view_count');
+
+    return view('book-detail', ['book' => $book]);
+}
+
 
     // 3. TRANG TÌM KIẾM
     public function search(Request $request)

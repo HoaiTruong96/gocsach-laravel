@@ -2,7 +2,7 @@
 
 @section('title', 'Trang Chủ - Góc Sách')
 
-{{-- [FIX] Định nghĩa biến ở đây để dùng được cho cả @section('content') và @push('scripts') --}}
+{{-- [STATIC DATA] Dữ liệu giả cho Slider --}}
 @php
     $heroSlides = [
         [
@@ -31,16 +31,13 @@
 
 @section('content')
     <section id="hero-carousel" class="relative text-white py-12 lg:py-16 overflow-hidden bg-[#2A483A] group">
-        <!-- Background Pattern -->
         <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: url('https://www.transparenttextures.com/patterns/cubes.png');"></div>
         <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-black/20 to-transparent pointer-events-none"></div>
 
-        <!-- Slider Wrapper -->
         <div class="hero-slider-wrapper flex w-full" id="sliderWrapper">
             @foreach($heroSlides as $index => $slide)
                 <div class="w-full flex-shrink-0 px-4 transition-all duration-700">
                     <div class="container mx-auto flex flex-col md:flex-row items-center gap-12 justify-center">
-                        <!-- Book Image -->
                         <div class="w-full md:w-5/12 flex justify-center md:justify-end perspective-1000">
                             <div class="relative w-48 h-72 md:w-56 md:h-80 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-r-lg rounded-l-sm transform rotate-y-12 hover:rotate-y-0 hover:scale-105 transition-all duration-700 cursor-pointer group/book">
                                 <div class="absolute inset-0 bg-white/10 opacity-0 group-hover/book:opacity-20 transition-opacity z-20"></div>
@@ -49,7 +46,6 @@
                             </div>
                         </div>
                         
-                        <!-- Content -->
                         <div class="w-full md:w-7/12 text-center md:text-left space-y-6">
                             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm">
                                 <span class="flex h-2 w-2 relative">
@@ -85,7 +81,6 @@
             @endforeach
         </div>
 
-        <!-- Navigation Buttons -->
         <button onclick="prevSlide()" class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/20 hover:bg-brand-accent/80 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 hover:scale-110 z-20">
             <i class="fas fa-chevron-left text-xl"></i>
         </button>
@@ -93,7 +88,6 @@
             <i class="fas fa-chevron-right text-xl"></i>
         </button>
 
-        <!-- Indicators -->
         <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20">
             @foreach($heroSlides as $index => $slide)
                 <button onclick="goToSlide({{ $index }})" class="indicator-dot w-3 h-3 rounded-full bg-white/30 hover:bg-white transition-all {{ $index === 0 ? 'bg-brand-accent w-8' : '' }}" data-index="{{ $index }}"></button>
@@ -101,13 +95,11 @@
         </div>
     </section>
 
-    <!-- MAIN CONTENT -->
     <main class="container mx-auto px-4 py-12">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
-            <!-- CỘT TRÁI (Nội dung chính) -->
+            
             <div class="lg:col-span-8 space-y-16">
                 
-                <!-- SECTION: GÓC NHÌN & SUY NGẪM (Tạp Chí Đọc) -->
                 <section>
                     <div class="flex justify-between items-end mb-6 border-b border-gray-200 pb-3">
                         <div>
@@ -122,7 +114,6 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
-                        <!-- Bài viết chính -->
                         <article class="md:col-span-3 group cursor-pointer">
                             <div class="relative h-64 md:h-80 rounded-2xl overflow-hidden mb-4 shadow-md">
                                 <img src="https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-700">
@@ -138,7 +129,6 @@
                             </p>
                         </article>
 
-                        <!-- Danh sách bài phụ -->
                         <div class="md:col-span-2 flex flex-col gap-6">
                             <article class="flex flex-col group cursor-pointer">
                                 <div class="h-32 rounded-xl overflow-hidden mb-3 relative">
@@ -167,6 +157,7 @@
                     </div>
                 </section>
 
+                <section id="new-books">
                 <!-- SECTION: post SÁCH (Compact Grid) -->
                  <section id="new-books">
                     <div class="flex justify-between items-center mb-6">
@@ -289,7 +280,6 @@
                     </div>
                 </section>
 
-                <!-- SECTION: BANNER SỰ KIỆN -->
                 <div class="bg-[#2A483A] rounded-xl p-8 relative overflow-hidden shadow-lg text-white">
                     <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
                     <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -303,36 +293,33 @@
                 </div>
             </div>
 
-            <!-- RIGHT COLUMN (Sidebar) -->
             <div class="lg:col-span-4">
                 <div class="space-y-8">
-                    <!-- Widget Trending -->
                     <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-soft">
                         <h3 class="font-serif font-bold text-lg text-gray-800 mb-5 flex items-center gap-2">
                             <span class="text-brand-accent">🔥</span> Top Thịnh Hành
                         </h3>
                         <div class="space-y-4">
                              @foreach(['Cây Cam Ngọt Của Tôi', 'Dế Mèn Phiêu Lưu Ký', 'Hoàng Tử Bé', 'Nhà Giả Kim', 'Mắt Biếc'] as $index => $title)
-                                <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition cursor-pointer">
-                                    <span class="font-bold text-gray-400 w-4 text-center">{{ $index + 1 }}</span>
-                                    <div class="w-12 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0">
+                                <a href="#" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition cursor-pointer group">
+                                    <span class="font-bold text-gray-400 w-6 text-center text-lg italic group-hover:text-brand-accent transition">{{ $index + 1 }}</span>
+                                    <div class="w-12 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0 shadow-sm">
                                         <img src="https://source.unsplash.com/random/200x300?book,sig={{ $index }}" class="w-full h-full object-cover">
                                     </div>
                                     <div>
-                                        <h4 class="text-sm font-bold text-gray-800 line-clamp-1">{{ $title }}</h4>
+                                        <h4 class="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-brand-green transition">{{ $title }}</h4>
                                         <span class="text-xs text-yellow-500">★★★★★ (4.8)</span>
                                     </div>
-                                </div>
+                                </a>
                              @endforeach
                         </div>
                     </div>
 
-                    <!-- Widget Categories -->
                     <div class="bg-brand-beige/30 rounded-xl p-6 border border-brand-beige">
                         <h3 class="font-serif font-bold text-lg text-brand-green mb-4">Thể Loại</h3>
                         <div class="flex flex-wrap gap-2">
                             @foreach(['Tiểu Thuyết', 'Kinh Tế', 'Tâm Lý', 'Trinh Thám', 'Lịch Sử', 'Khoa Học', 'Thiếu Nhi'] as $tag)
-                                <a href="#" class="bg-white text-gray-600 px-3 py-1 rounded-full text-xs font-bold border border-gray-100 hover:border-brand-accent hover:text-brand-accent transition shadow-sm">{{ $tag }}</a>
+                                <a href="{{ route('list') }}" class="bg-white text-gray-600 px-3 py-1 rounded-full text-xs font-bold border border-gray-100 hover:border-brand-accent hover:text-brand-accent transition shadow-sm">{{ $tag }}</a>
                             @endforeach
                         </div>
                     </div>
@@ -346,7 +333,6 @@
 <script>
     // Slider Logic Script
     let currentSlide = 0;
-    // [FIX] Bây giờ biến $heroSlides đã được định nghĩa ở phạm vi toàn cục của view, nên count() sẽ hoạt động đúng
     const totalSlides = {{ count($heroSlides) }};
     const sliderWrapper = document.getElementById('sliderWrapper');
     const dots = document.querySelectorAll('.indicator-dot');

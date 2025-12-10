@@ -4,88 +4,101 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\Models\Book;
-use App\Models\Bookshelf;
 use App\Models\Category;
-use App\Models\Comment;
-use App\Models\Follow;
-use App\Models\Like;
 use App\Models\Post;
-// Tránh sự kiện model khi seeding
-//use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Comment;
+use App\Models\Like;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
+// Tránh sự kiện model khi seeding
+//use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class DatabaseSeeder extends Seeder
 {
     // use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        echo "BẮT ĐẦU KHỞI TẠO DỮ LIỆU\n";
-
-        // 1. Tạo tài khoản Admin
-        User::create([
+        // Admin
+        $admin = User::create([
             'name' => 'Admin',
             'email' => 'admin@gmail.com',
             'password' => bcrypt('123456789'),
             'role' => 'admin',
             'bio' => 'Quản trị viên hệ thống Góc Sách',
             'email_verified_at' => now(),
-            'is_active' => true,
+            'is_active' => true
         ]);
-        echo "- Đã tạo tài khoản Admin!\n";
 
-        // 2. Tạo tài khoản User mẫu
-        User::create([
+        // Users
+        $tester = User::create([
             'name' => 'Tester',
             'email' => 'tester@gmail.com',
             'password' => bcrypt('123456789'),
             'role' => 'user',
-            'bio' => 'Tester hệ thống Góc Sách',
+            'bio' => 'Kiểm thử viên hệ thống Góc Sách',
             'email_verified_at' => now(),
-            'is_active' => true,
+            'is_active' => true
         ]);
-        echo "- Đã tạo tài khoản User mẫu!\n";
+        $users = User::factory(60)->create();
 
-        // 3. Tạo danh mục sách cố định
-        $categories = [
-            'Văn Học Nước Ngoài',
-            'Văn Học Việt Nam',
-            'Tâm Lý - Kỹ Năng Sống',
-            'Sức Khỏe',
-            'Thiếu Nhi',
-            'Tiểu Thuyết',
-            'Khoa Học Viễn Tưởng',
-            'Ngoại Ngữ',
-            'Nấu Ăn',
-            'Kinh Dị',
-            'Trinh Thám',
-            'Công Nghệ Thông Tin',
-            'Kinh Tế',
-            'Kinh Doanh',
-            'Lịch Sử',
-            'Chính Trị - Xã Hội',
-            'Nghệ Thuật',
-            'Du Lịch',
-            'Người Thành Công Đọc Gì',
-            'Gia Đình - Mối Quan Hệ',
-        ];
+        // Danh mục
+        $categories = Category::factory()->count(20)->create();
 
-        foreach ($categories as $name) {
-            Category::create([
-                'name' => $name,
-                'slug' => Str::slug($name),
-                'description' => "Các đầu sách thuộc thể loại $name",
+        // 5 cuốn sách Best Seller
+        $hotBooks = Book::factory(5)->create([
+            'view_count' => fn() => rand(1000, 20000),
+            'avg_rating' => fn() => rand(10, 50) / 10,
+        ]);
+
+        // Sách mẫu
+        $normalBooks = Book::factory(30)->create();
+        $allBooks = $hotBooks->merge($normalBooks);
+
+        // Tạo 5 bài viết đang ở trạng thái pending --> Test admin
+        Post::factory(5)->create([
+            'status' => 'pending',
+            'user_id' => $users->random()->id,
+            'book_id' => $allBooks->random()->id,
+        ]);
+
+        foreach ($hotBooks as $book) {
+            Post::factory(3)->create([ // Mỗi sách hot có 3 bài review
+                'book_id' => $book->id,
+                'status' => 'published',
+                'view_count' => rand(1000, 5000),
+                'user_id' => $users->random()->id
+            ])->each(function ($post) use ($users) {
+                // Tự động fake like/comment nhiều cho bài hot
+                $this->fakeInteraction($post, $users, 15, 50); // 15-50 like
+            });
+        }
+
+        // Bài viết không gắn sách
+        Post::factory(10)->create([
+            'book_id' => null,
+            'status' => 'published'
+        ]);
+
+        echo "Hoàn tất!";
+    }
+
+    // Hàm phụ trợ: Fake like và comment cho bài viết
+    private function fakeInteraction($post, $users, $min, $max)
+    {
+        // Fake Like
+        $randomUsers = $users->random(rand($min, $max));
+        foreach ($randomUsers as $user) {
+            Like::firstOrCreate(['user_id' => $user->id, 'post_id' => $post->id]);
+        }
+
+        // Fake Comment
+        $commentCount = rand(2, 10);
+        for ($i = 0; $i < $commentCount; $i++) {
+            Comment::factory()->create([
+                'post_id' => $post->id,
+                'user_id' => $users->random()->id
             ]);
         }
-        echo "- Đã tạo xong " . count($categories) . " danh mục sách.\n";
-
-        // Tạo ngẫu nhiên danh mục sách
-        // Category::factory()->count(20)->create();
-
-        echo "Hoàn tất!\n";
     }
 }
