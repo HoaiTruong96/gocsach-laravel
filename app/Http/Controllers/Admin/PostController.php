@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\Request;
 
-class ReviewController extends Controller
+class PostController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -21,7 +21,7 @@ class ReviewController extends Controller
             ->paginate(10);
 
         // Bạn cần tạo view 'admin.reviews.index'
-        return view('admin.reviews.index', compact('reviews'));
+        return view('admin.posts.index', compact('reviews'));
     }
 
     /**

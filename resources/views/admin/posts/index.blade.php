@@ -1,6 +1,6 @@
 @extends('layouts.admin')
-@section('title', 'Kiểm Duyệt Review')
-@section('header', 'Quản lý Đánh giá sách')
+@section('title', 'Kiểm Duyệt Bài Đăng')
+@section('header', 'Quản lý Đánh giá Sách')
 
 @section('content')
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -73,7 +73,7 @@
                     <td class="px-6 py-4 text-right align-top">
                         <div class="flex flex-col gap-2 items-end">
                             @if($review->status == 'pending')
-                            <form action="{{ route('admin.reviews.update', $review->id) }}" method="POST">
+                            <form action="{{ route('admin.posts.update', $review->id) }}" method="POST">
                                 @csrf @method('PUT')
                                 <input type="hidden" name="status" value="published">
                                 <button class="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700 transition w-24">
@@ -81,7 +81,7 @@
                                 </button>
                             </form>
 
-                            <form action="{{ route('admin.reviews.update', $review->id) }}" method="POST">
+                            <form action="{{ route('admin.posts.update', $review->id) }}" method="POST">
                                 @csrf @method('PUT')
                                 <input type="hidden" name="status" value="rejected">
                                 <button class="bg-gray-200 text-gray-700 px-3 py-1 rounded text-xs hover:bg-gray-300 transition w-24">
@@ -89,7 +89,7 @@
                                 </button>
                             </form>
                             @else
-                            <form action="{{ route('admin.reviews.destroy', $review->id) }}" method="POST" onsubmit="return confirm('Xóa vĩnh viễn bài review này?');">
+                            <form action="{{ route('admin.posts.destroy', $review->id) }}" method="POST" onsubmit="return confirm('Xóa vĩnh viễn bài review này?');">
                                 @csrf @method('DELETE')
                                 <button class="text-red-500 hover:bg-red-50 px-3 py-1 rounded text-xs transition w-24 text-right">
                                     <i class="fas fa-trash mr-1"></i> Xóa bỏ
