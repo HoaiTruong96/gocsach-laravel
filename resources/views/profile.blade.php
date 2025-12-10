@@ -65,7 +65,7 @@
                         </div>
                         <div class="text-center border-l border-gray-100">
                             <span class="block font-bold text-xl text-brand-accent">{{ $totalReviews ?? 0 }}</span>
-                            <span class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Review</span>
+                            <span class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Bài viết</span>
                         </div>
                     </div>
                     
@@ -161,11 +161,14 @@
                                         @else {{ $book->author }} @endif
                                     </p>
                                     
+                                    {{-- [FIX] Cách 2: Ẩn phần ngày bắt đầu vì DB chưa có cột này --}}
+                                    {{-- 
                                     @if(isset($book->pivot->started_at) && $book->pivot->started_at)
                                         <p class="text-[10px] text-gray-400 mt-2 flex items-center gap-1">
                                             <i class="far fa-clock"></i> {{ date('d/m/Y', strtotime($book->pivot->started_at)) }}
                                         </p>
                                     @endif
+                                    --}}
                                 </div>
 
                                 <div class="flex justify-end mt-2">

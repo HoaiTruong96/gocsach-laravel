@@ -84,6 +84,11 @@
                                 <p class="text-xs text-gray-400 uppercase tracking-wider font-bold">Xin chào</p>
                                 <p class="text-sm font-bold text-brand-green truncate">{{ Auth::user()->name }}</p>
                             </div>
+                            @if(Auth::user()->role == 'admin')
+                            <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-2.5 text-red-600 bg-red-50 hover:bg-red-100 transition font-bold">
+                            <i class="fas fa-tachometer-alt w-5 mr-2"></i> Trang Quản Trị
+                            </a><div class="border-t border-gray-100 my-1"></div>
+                            @endif
                             <a href="{{ route('profile') }}" class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-brand-cream hover:text-brand-green transition">
                                 <i class="fas fa-user-circle w-5 mr-2"></i> Hồ sơ cá nhân
                             </a>

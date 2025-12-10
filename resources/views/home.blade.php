@@ -34,7 +34,6 @@ $heroSlides = [
     <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: url('https://www.transparenttextures.com/patterns/cubes.png');"></div>
     <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-black/20 to-transparent pointer-events-none"></div>
 
-<<<<<<< Updated upstream
         <div class="hero-slider-wrapper flex w-full" id="sliderWrapper">
             @foreach($heroSlides as $index => $slide)
                 <div class="w-full flex-shrink-0 px-4 transition-all duration-700">
@@ -73,21 +72,10 @@ $heroSlides = [
                             
                             <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start pt-2">
                                 <a href="#" class="inline-flex items-center justify-center gap-2 bg-brand-accent text-white font-bold px-6 py-3 rounded-full shadow-lg hover:bg-[#c29263] transition-all transform hover:-translate-y-1">
-                                    <span>Đọc Review</span> <i class="fas fa-arrow-right text-sm"></i>
+                                    <span>Đọc review</span> <i class="fas fa-arrow-right text-sm"></i>
                                 </a>
                             </div>
                         </div>
-=======
-    <div class="hero-slider-wrapper flex w-full" id="sliderWrapper">
-        @foreach($heroSlides as $index => $slide)
-        <div class="w-full flex-shrink-0 px-4 transition-all duration-700">
-            <div class="container mx-auto flex flex-col md:flex-row items-center gap-12 justify-center">
-                <div class="w-full md:w-5/12 flex justify-center md:justify-end perspective-1000">
-                    <div class="relative w-48 h-72 md:w-56 md:h-80 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-r-lg rounded-l-sm transform rotate-y-12 hover:rotate-y-0 hover:scale-105 transition-all duration-700 cursor-pointer group/book">
-                        <div class="absolute inset-0 bg-white/10 opacity-0 group-hover/book:opacity-20 transition-opacity z-20"></div>
-                        <img src="{{ $slide['image'] }}" class="w-full h-full object-cover rounded-r-lg rounded-l-sm border-l-4 border-white/10">
-                        <div class="absolute top-0 left-0 w-2 h-full bg-gradient-to-r from-white/30 to-transparent z-10"></div>
->>>>>>> Stashed changes
                     </div>
                 </div>
 
@@ -202,12 +190,11 @@ $heroSlides = [
                 </div>
             </section>
 
-<<<<<<< Updated upstream
-=======
             <section id="new-books">
                 <!-- SECTION: post SÁCH (Compact Grid) -->
->>>>>>> Stashed changes
                 <section id="new-books">
+                <!-- SECTION: post SÁCH (Compact Grid) -->
+                 <section id="new-books">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-gray-800 font-serif border-l-4 border-brand-green pl-3">
                             Sách Mới Cập Nhật
@@ -242,69 +229,84 @@ $heroSlides = [
                         @endif
                     </div>
                 </section>
-<<<<<<< Updated upstream
-
-                <section id="community-reviews" class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800 font-serif border-l-4 border-brand-accent pl-3">
-                            Review Nổi Bật
-                        </h2>
-                        <button class="text-xs font-bold px-3 py-1 bg-white border border-gray-200 text-gray-500 hover:text-brand-accent rounded-full transition">Mới nhất</button>
+                <!-- SECTION: post CỘNG ĐỒNG (PHẦN QUAN TRỌNG) -->
+                <section id="community-posts">
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                        <h2 class="text-2xl font-bold text-gray-800 font-serif border-l-4 border-brand-accent pl-3">Review Cộng Đồng</h2>
+                        
+                        <!-- CÁC NÚT LỌC (CÓ LOGIC PHP) -->
+                        <div class="flex gap-2">
+                            <a href="{{ route('home', ['filter' => 'latest']) }}#community-posts" 
+                               class="text-xs font-bold px-4 py-1.5 rounded-full transition {{ $currentFilter == 'latest' ? 'bg-brand-green text-white shadow-md' : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
+                               Mới nhất
+                            </a>
+                            <a href="{{ route('home', ['filter' => 'viewed']) }}#community-posts" 
+                               class="text-xs font-bold px-4 py-1.5 rounded-full transition {{ $currentFilter == 'viewed' ? 'bg-brand-green text-white shadow-md' : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
+                               Đọc nhiều
+                            </a>
+                            <a href="{{ route('home', ['filter' => 'liked']) }}#community-posts" 
+                               class="text-xs font-bold px-4 py-1.5 rounded-full transition {{ $currentFilter == 'liked' ? 'bg-brand-green text-white shadow-md' : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
+                               Điểm cao
+                            </a>
+                        </div>
                     </div>
                     
-                    <div class="grid grid-cols-1 gap-6">
-                        @if(isset($books) && $books->count() > 0)
-                            @foreach($books->take(5) as $book) {{-- Lấy 5 cuốn làm ví dụ review --}}
-                                @php
-                                    $authorName = $book->author_name ?? 'Ẩn danh';
-                                @endphp
-
-                                <div class="bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition flex gap-4">
-                                    <div class="flex-shrink-0">
-                                        <img src="https://ui-avatars.com/api/?name=User+{{ $book->id }}&background=random" class="w-10 h-10 rounded-full border border-gray-200">
-                                    </div>
-
-                                    <div class="flex-1">
-                                        <div class="flex justify-between items-start mb-1">
-                                            <div>
-                                                <span class="font-bold text-sm text-gray-800">Thành viên #{{ $book->id }}</span>
-                                                <span class="text-gray-400 text-xs mx-1">•</span>
-                                                <span class="text-gray-500 text-xs">đã review về <strong>{{ $book->title }}</strong></span>
-                                            </div>
-                                            <div class="flex text-yellow-400 text-xs">
-                                                @for($i=0; $i < round($book->avg_rating); $i++) <i class="fas fa-star"></i> @endfor
-                                            </div>
-                                        </div>
-
-                                        <a href="#" class="block mt-1 mb-2">
-                                            <h3 class="font-bold text-base text-gray-800 hover:text-brand-green transition">
-                                                "Cảm nhận về cuốn sách {{ $book->title }}"
-                                            </h3>
-                                            <p class="text-sm text-gray-600 line-clamp-2">
-                                                {{ $book->description ? Str::limit($book->description, 150) : 'Bài viết này chưa có nội dung tóm tắt...' }}
-                                            </p>
-                                        </a>
-
-                                        <div class="flex gap-4 text-xs text-gray-400">
-                                            <span class="hover:text-brand-green cursor-pointer"><i class="far fa-heart mr-1"></i> {{ rand(10, 100) }} Thích</span>
-                                            <span class="hover:text-brand-green cursor-pointer"><i class="far fa-comment mr-1"></i> {{ rand(0, 20) }} Bình luận</span>
-                                        </div>
-                                    </div>
+                    <!-- GRID DANH SÁCH post -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        @if(isset($latestReviews) && $latestReviews->count() > 0)
+                             @foreach($latestReviews as $post) 
+                                {{-- Kiểm tra: Nếu bài viết có sách ($post->book) thì mới tạo link, ngược lại để link rỗng --}}
+                                    <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group cursor-pointer h-full flex flex-col" 
+                                        onclick="window.location.href='{{ $post->book ? route('detail', ['slug' => $post->book->slug]) : '#' }}'">
                                     
-                                    <div class="w-16 h-24 flex-shrink-0 rounded overflow-hidden shadow-sm hidden sm:block">
-                                        <img src="{{ $book->cover_image ?? 'https://via.placeholder.com/150x225' }}" class="w-full h-full object-cover">
+                                    <!-- User Info & Rating -->
+                                    <div class="flex justify-between items-start mb-3">
+                                        <div class="flex items-center gap-3">
+                                            <img src="{{ $post->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($post->user->name).'&background=random' }}" 
+                                                 class="w-10 h-10 rounded-full border border-gray-100 shadow-sm">
+                                            <div>
+                                                <h4 class="font-bold text-sm text-gray-800 line-clamp-1">{{ $post->user->name }}</h4>
+                                                <p class="text-[10px] text-gray-400 flex items-center gap-1">
+                                                    <i class="far fa-clock"></i> {{ $post->created_at->diffForHumans() }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="flex text-yellow-400 text-xs bg-yellow-50 px-2 py-1 rounded-full border border-yellow-100">
+                                            <span class="font-bold mr-1 text-yellow-600">{{ $post->rating }}.0</span>
+                                            <i class="fas fa-star"></i>
+                                        </div>
+                                    </div>
+
+                                    <!-- Content -->
+                                    <div class="mb-4 flex-grow border-b border-dashed border-gray-100 pb-3">
+                                        <h5 class="text-xs font-bold text-brand-green uppercase mb-1 line-clamp-1">
+                                            post: {{ $post->book->title ?? 'Sách đã xóa' }}
+                                        </h5>
+                                        <p class="text-gray-600 text-sm line-clamp-3 leading-relaxed">
+                                            {{ $post->content }}
+                                        </p>
+                                    </div>
+
+                                    <!-- Stats Footer -->
+                                    <div class="flex items-center justify-between text-gray-400 text-xs">
+                                        <div class="flex gap-4">
+                                            <span class="flex items-center gap-1 group-hover:text-red-500 transition">
+                                                <i class="fas fa-heart"></i> {{ $post->likes_count }}
+                                            </span>
+                                            <span class="flex items-center gap-1 group-hover:text-blue-500 transition">
+                                                <i class="fas fa-comment-alt"></i> {{ $post->comments_count }}
+                                            </span>
+                                        </div>
+                                        
+                                        @if($currentFilter == 'viewed')
+                                             <span class="text-gray-500 flex items-center gap-1 font-medium"><i class="far fa-eye"></i> {{ $post->view_count }} lượt xem</span>
+                                        @else
+                                             <span class="text-brand-green font-bold group-hover:underline">Đọc tiếp &rarr;</span>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach
                         @else
-                            <div class="text-center py-8 text-gray-400">Chưa có bài review nào.</div>
-                        @endif
-                    </div>
-
-                    <div class="mt-8 flex justify-center">
-                        @if(isset($books))
-                            {{ $books->links() }}
-=======
                 <!-- SECTION: post CỘNG ĐỒNG (PHẦN QUAN TRỌNG) -->
                 <section id="community-posts">
                     <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
@@ -386,7 +388,11 @@ $heroSlides = [
                             <p class="text-gray-500">Chưa có bài review nào theo tiêu chí này.</p>
                             <a href="{{ route('books.search') }}" class="text-brand-green text-sm font-bold hover:underline mt-2 inline-block">Viết review đầu tiên ngay!</a>
                         </div>
->>>>>>> Stashed changes
+                            <div class="col-span-full py-12 text-center bg-white rounded-xl border border-dashed border-gray-300">
+                                <i class="far fa-comment-dots text-4xl text-gray-300 mb-3"></i>
+                                <p class="text-gray-500">Chưa có bài review nào theo tiêu chí này.</p>
+                                <a href="{{ route('books.search') }}" class="text-brand-green text-sm font-bold hover:underline mt-2 inline-block">Viết review đầu tiên ngay!</a>
+                            </div>
                         @endif
                     </div>
                 </section>

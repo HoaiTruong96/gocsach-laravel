@@ -47,7 +47,7 @@
                                 <div class="text-yellow-400 flex gap-1 mr-2">
                                     @for($j = 1; $j <= 5; $j++)
                                         @if($j <= $i) <i class="fas fa-star"></i>
-                                        @else <i class="far fa-star text-gray-300"></i>
+@else <i class="far fa-star text-gray-300"></i>
                                         @endif
                                     @endfor
                                 </div>

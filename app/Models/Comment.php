@@ -13,18 +13,19 @@ class Comment extends Model
         'user_id',
         'post_id',
         'parent_id',
+        'post_id', // Giữ nguyên theo database
         'content'
     ];
 
-    // Quan hệ
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function post()
+    // Quan hệ: Comment thuộc về 1 Review
+    public function review()
     {
-        return $this->belongsTo(Post::class);
+        return $this->belongsTo(Post::class, 'post_id', 'id');
     }
 
     public function parent()

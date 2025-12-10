@@ -27,13 +27,20 @@ Route::get('/danh-sach', function () {
     // Trả về view 'list'
     return view('list', compact('books'));
 })->name('list'); // Tên route là 'list' để khớp với menu
+// --- ƯU TIÊN 1: Các route cụ thể, dài hơn ---
+// Xem danh sách đánh giá của sách
+Route::get('/chi-tiet/{slug}/danh-gia', [BookController::class, 'showReviews'])->name('book.reviews');
+
+
+// --- ƯU TIÊN 2: Route ngắn hơn (Catch-all) ---
+// Xem chi tiết sách
 Route::get('/chi-tiet/{slug}', [BookController::class, 'show'])->name('detail');
 Route::get('/review-search', [BookController::class, 'search'])->name('books.search');
 
 Route::get('/book/{slug}', [BookController::class, 'show'])->name('book.show');
 
 Route::get('/ranking/top-liked', [RankingController::class, 'topLikedPosts']);
-
+Route::post('/post/store', [PostController::class, 'store'])->name('post.store');
 // ====================================================
 // 2. NHÓM KHÁCH (Chưa đăng nhập mới được vào)
 // ====================================================

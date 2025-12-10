@@ -74,11 +74,11 @@ class User extends Authenticatable
     }
 
     public function bookshelves()
-    {
-        return $this->belongsToMany(Book::class, 'bookshelves', 'user_id', 'book_id')
-                    ->withPivot('status', 'started_at', 'finished_at') // <--- QUAN TRỌNG: Để lấy cột status
-                    ->withTimestamps();
-    }
+{
+    return $this->belongsToMany(Book::class, 'bookshelves', 'user_id', 'book_id')
+                ->withPivot('status')
+                ->withTimestamps();
+}
 
     public function contributedBooks()
     {
