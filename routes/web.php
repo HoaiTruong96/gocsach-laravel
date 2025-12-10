@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Models\Book;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\ProfileController;
@@ -15,7 +16,7 @@ use App\Http\Controllers\Admin\BookController as AdminBookController;
 // ====================================================
 
 // Trang chủ
-Route::get('/', [BookController::class, 'home'])->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // ===> [MỚI THÊM] Trang Danh sách sách (Frontend tĩnh) <===
 // Truy cập bằng đường dẫn: http://127.0.0.1:8000/danh-sach
