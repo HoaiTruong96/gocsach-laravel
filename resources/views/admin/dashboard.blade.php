@@ -48,7 +48,7 @@
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
     <div class="p-6 border-b border-gray-50 flex justify-between items-center">
         <h3 class="font-bold text-gray-800">Review Mới Nhất</h3>
-        <a href="{{ route('admin.reviews.index') }}" class="text-sm text-blue-600 hover:underline">Xem tất cả</a>
+        <a href="{{ route('admin.posts.index') }}" class="text-sm text-blue-600 hover:underline">Xem tất cả</a>
     </div>
 
     @if(isset($recentReviews) && $recentReviews->count() > 0)
