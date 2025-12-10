@@ -33,7 +33,7 @@ Route::get('/review-search', [BookController::class, 'search'])->name('books.sea
 Route::get('/book/{slug}', [BookController::class, 'show'])->name('book.show');
 
 Route::get('/ranking/top-liked', [RankingController::class, 'topLikedPosts']);
-
+Route::post('/post/store', [PostController::class, 'store'])->name('post.store');
 // ====================================================
 // 2. NHÓM KHÁCH (Chưa đăng nhập mới được vào)
 // ====================================================
