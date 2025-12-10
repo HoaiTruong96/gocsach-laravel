@@ -1,35 +1,36 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;     // Xử lý Đăng nhập/Đăng ký/Quên MK
-use App\Http\Controllers\BookController;     // Hiển thị sách
-use App\Http\Controllers\ProfileController;  // Hiển thị hồ sơ
-use App\Http\Controllers\AdminController;    // Quản trị viên
-// use App\Http\Controllers\ReviewController;   // Xử lý đánh giá
-use App\Http\Controllers\PostController;     // Quản lý bài viết
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BookController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\RankingController;
+use App\Http\Controllers\Admin\BookController as AdminBookController;
 
 // ====================================================
 // 1. NHÓM PUBLIC (Ai cũng xem được)
 // ====================================================
 
 // Trang chủ
-Route::get('/', [BookController::class, 'index'])->name('home');
+Route::get('/', [BookController::class, 'home'])->name('home');
 
 // ===> [MỚI THÊM] Trang Danh sách sách (Frontend tĩnh) <===
 // Truy cập bằng đường dẫn: http://127.0.0.1:8000/danh-sach
 Route::get('/danh-sach', function () {
-    return view('list'); // Trả về file resources/views/list.blade.php
+    return view('list');
 })->name('list');
 
 Route::get('/chi-tiet', function () {
     return view('detail');
 })->name('detail');
 
-// Tìm kiếm sách
 Route::get('/review-search', [BookController::class, 'search'])->name('books.search');
 
-// Xem chi tiết sách (Dynamic - dùng Controller)
 Route::get('/book/{slug}', [BookController::class, 'show'])->name('book.show');
+
+Route::get('/ranking/top-liked', [RankingController::class, 'topLikedPosts']);
 
 // ====================================================
 // 2. NHÓM KHÁCH (Chưa đăng nhập mới được vào)
@@ -70,11 +71,7 @@ Route::middleware('auth')->group(function () {
 // ====================================================
 // 4. NHÓM ADMIN (Phải có quyền Admin)
 // ====================================================
-Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
-
-    // Trang Dashboard
-    Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
-
-    // Quản lý sách(CRUD)
-    Route::resource('books', BookController::class);
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    // Sẽ tạo ra các route: admin.books.index, admin.books.create...
+    Route::resource('books', AdminBookController::class);
 });
