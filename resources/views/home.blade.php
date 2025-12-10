@@ -239,7 +239,9 @@
                                             <img src="{{ $post->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($post->user->name).'&background=random' }}" 
                                                  class="w-10 h-10 rounded-full border border-gray-100 shadow-sm">
                                             <div>
-                                                <h4 class="font-bold text-sm text-gray-800 line-clamp-1">{{ $post->user->name }}</h4>
+                                                <a href="{{ route('profile', $post->user_id) }}" class="font-bold text-sm text-gray-800 line-clamp-1 hover:text-brand-green hover:underline z-10 relative" onclick="event.stopPropagation()">
+                                                    {{ $post->user->name ?? 'Người dùng ẩn' }}
+                                                </a>
                                                 <p class="text-[10px] text-gray-400 flex items-center gap-1">
                                                     <i class="far fa-clock"></i> {{ $post->created_at->diffForHumans() }}
                                                 </p>
