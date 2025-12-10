@@ -81,4 +81,23 @@ class BookController extends Controller
 
         return view('search-book', ['books' => $books]);
     }
+    // ... các hàm cũ ...
+
+    // 4. TRANG DANH SÁCH REVIEW (MỚI THÊM)
+    public function showReviews($slug)
+    {
+        // Lấy thông tin sách
+        $book = Book::where('slug', $slug)->firstOrFail();
+
+        // Lấy danh sách review của sách đó, phân trang 5 bài
+        $reviews = Post::where('book_id', $book->id)
+            ->where('status', 'published') // Chỉ lấy bài đã duyệt
+            ->with('user')                 // Lấy kèm thông tin người viết
+            ->latest()                     // Mới nhất lên đầu
+            ->paginate(3);                 // 3 bài mỗi trang
+
+        return view('review-detail', compact('book', 'reviews'));
+    }
 }
+    
+
