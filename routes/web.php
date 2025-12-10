@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Models\Book;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\ProfileController;
@@ -18,14 +19,15 @@ Route::get('/', [BookController::class, 'home'])->name('home');
 
 // ===> [MỚI THÊM] Trang Danh sách sách (Frontend tĩnh) <===
 // Truy cập bằng đường dẫn: http://127.0.0.1:8000/danh-sach
+
 Route::get('/danh-sach', function () {
-    return view('list');
-})->name('list');
-
-Route::get('/chi-tiet', function () {
-    return view('detail');
-})->name('detail');
-
+    // Lấy tất cả sách, phân trang 12 cuốn
+    $books = Book::with('categories')->latest()->paginate(12);
+    
+    // Trả về view 'list'
+    return view('list', compact('books'));
+})->name('list'); // Tên route là 'list' để khớp với menu
+Route::get('/chi-tiet/{slug}', [BookController::class, 'show'])->name('detail');
 Route::get('/review-search', [BookController::class, 'search'])->name('books.search');
 
 Route::get('/book/{slug}', [BookController::class, 'show'])->name('book.show');

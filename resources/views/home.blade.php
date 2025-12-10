@@ -2,7 +2,7 @@
 
 @section('title', 'Trang Chủ - Góc Sách')
 
-{{-- [FIX] Định nghĩa biến ở đây để dùng được cho cả @section('content') và @push('scripts') --}}
+{{-- [STATIC DATA] Dữ liệu giả cho Slider --}}
 @php
     $heroSlides = [
         [
@@ -31,16 +31,13 @@
 
 @section('content')
     <section id="hero-carousel" class="relative text-white py-12 lg:py-16 overflow-hidden bg-[#2A483A] group">
-        <!-- Background Pattern -->
         <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: url('https://www.transparenttextures.com/patterns/cubes.png');"></div>
         <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-black/20 to-transparent pointer-events-none"></div>
 
-        <!-- Slider Wrapper -->
         <div class="hero-slider-wrapper flex w-full" id="sliderWrapper">
             @foreach($heroSlides as $index => $slide)
                 <div class="w-full flex-shrink-0 px-4 transition-all duration-700">
                     <div class="container mx-auto flex flex-col md:flex-row items-center gap-12 justify-center">
-                        <!-- Book Image -->
                         <div class="w-full md:w-5/12 flex justify-center md:justify-end perspective-1000">
                             <div class="relative w-48 h-72 md:w-56 md:h-80 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-r-lg rounded-l-sm transform rotate-y-12 hover:rotate-y-0 hover:scale-105 transition-all duration-700 cursor-pointer group/book">
                                 <div class="absolute inset-0 bg-white/10 opacity-0 group-hover/book:opacity-20 transition-opacity z-20"></div>
@@ -49,7 +46,6 @@
                             </div>
                         </div>
                         
-                        <!-- Content -->
                         <div class="w-full md:w-7/12 text-center md:text-left space-y-6">
                             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm">
                                 <span class="flex h-2 w-2 relative">
@@ -85,7 +81,6 @@
             @endforeach
         </div>
 
-        <!-- Navigation Buttons -->
         <button onclick="prevSlide()" class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/20 hover:bg-brand-accent/80 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 hover:scale-110 z-20">
             <i class="fas fa-chevron-left text-xl"></i>
         </button>
@@ -93,7 +88,6 @@
             <i class="fas fa-chevron-right text-xl"></i>
         </button>
 
-        <!-- Indicators -->
         <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20">
             @foreach($heroSlides as $index => $slide)
                 <button onclick="goToSlide({{ $index }})" class="indicator-dot w-3 h-3 rounded-full bg-white/30 hover:bg-white transition-all {{ $index === 0 ? 'bg-brand-accent w-8' : '' }}" data-index="{{ $index }}"></button>
@@ -101,13 +95,11 @@
         </div>
     </section>
 
-    <!-- MAIN CONTENT -->
     <main class="container mx-auto px-4 py-12">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
-            <!-- CỘT TRÁI (Nội dung chính) -->
+            
             <div class="lg:col-span-8 space-y-16">
                 
-                <!-- SECTION: GÓC NHÌN & SUY NGẪM (Tạp Chí Đọc) -->
                 <section>
                     <div class="flex justify-between items-end mb-6 border-b border-gray-200 pb-3">
                         <div>
@@ -122,7 +114,6 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
-                        <!-- Bài viết chính -->
                         <article class="md:col-span-3 group cursor-pointer">
                             <div class="relative h-64 md:h-80 rounded-2xl overflow-hidden mb-4 shadow-md">
                                 <img src="https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-700">
@@ -138,7 +129,6 @@
                             </p>
                         </article>
 
-                        <!-- Danh sách bài phụ -->
                         <div class="md:col-span-2 flex flex-col gap-6">
                             <article class="flex flex-col group cursor-pointer">
                                 <div class="h-32 rounded-xl overflow-hidden mb-3 relative">
@@ -167,101 +157,106 @@
                     </div>
                 </section>
 
-                <!-- SECTION: REVIEW SÁCH (Compact Grid) -->
-                <section>
+                <section id="new-books">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800 font-serif border-l-4 border-brand-accent pl-3">Review Cộng Đồng</h2>
-                        <div class="hidden sm:flex gap-2">
-                            <button class="text-xs font-bold px-3 py-1 bg-brand-green text-white rounded-full">Mới nhất</button>
-                            <button class="text-xs font-bold px-3 py-1 bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-full transition">Đọc nhiều</button>
-                            <button class="text-xs font-bold px-3 py-1 bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-full transition">Điểm cao</button>
-                        </div>
+                        <h2 class="text-2xl font-bold text-gray-800 font-serif border-l-4 border-brand-green pl-3">
+                            Sách Mới Cập Nhật
+                        </h2>
+                        <a href="{{ route('list') }}" class="text-xs font-bold px-3 py-1 bg-gray-100 text-gray-500 hover:bg-brand-green hover:text-white rounded-full transition">Xem kho sách</a>
                     </div>
                     
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        {{-- Kiểm tra nếu biến $books tồn tại --}}
-                        @if(isset($books))
-                            @forelse($books as $book)
-                                @php
-                                    $authorName = 'Ẩn danh';
-                                    if (is_object($book->author)) $authorName = $book->author->name ?? $authorName;
-                                    elseif (is_string($book->author)) {
-                                        $trimmed = trim($book->author);
-                                        $authorName = str_starts_with($trimmed, '{') ? (json_decode($trimmed)->name ?? $book->author) : $book->author;
-                                    }
-
-                                    $categoryName = 'Chưa phân loại';
-                                    if (isset($book->category)) {
-                                        if (is_object($book->category)) $categoryName = $book->category->name ?? $categoryName;
-                                        elseif (is_string($book->category)) {
-                                            $trimmedCat = trim($book->category);
-                                            $categoryName = str_starts_with($trimmedCat, '{') ? (json_decode($trimmedCat)->name ?? $book->category) : $book->category;
-                                        }
-                                    }
-                                @endphp
-
-                                <div class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-card transition-all duration-300 group flex flex-col h-full">
-                                    <div class="p-4 flex gap-4">
-                                        <div class="w-24 h-36 flex-shrink-0 rounded-lg overflow-hidden shadow-md relative">
-                                            <img src="{{ $book->image_url }}" alt="{{ $book->title }}" 
-                                                 class="w-full h-full object-cover transform transition duration-500 group-hover:scale-110"
-                                                 onerror="this.src='https://via.placeholder.com/150x225?text=No+Image'">
-                                            <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition"></div>
-                                        </div>
-
-                                        <div class="flex-1 flex flex-col">
-                                            <div class="flex justify-between items-start">
-                                                <span class="text-[10px] font-bold uppercase text-brand-green bg-brand-green/10 px-2 py-0.5 rounded">{{ $categoryName }}</span>
-                                                <div class="flex text-yellow-400 text-xs gap-0.5">
-                                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
-                                                </div>
-                                            </div>
-
-                                            <h3 class="font-serif font-bold text-lg text-gray-800 mt-2 mb-1 leading-tight group-hover:text-brand-accent transition cursor-pointer">
-                                                <a href="{{ route('book.show', $book->id) }}">{{ $book->title }}</a>
-                                            </h3>
-                                            
-                                            <p class="text-xs text-gray-500 mb-3">bởi <span class="font-semibold">{{ $authorName }}</span></p>
-                                            
-                                            <p class="text-xs text-gray-500 line-clamp-2 mb-3 flex-grow">
-                                                {{ $book->description ?? 'Chưa có mô tả.' }}
-                                            </p>
-
-                                            <div class="flex items-center justify-between border-t border-gray-50 pt-2 mt-auto">
-                                                <div class="flex items-center gap-1">
-                                                    <img src="https://ui-avatars.com/api/?name={{ urlencode($authorName) }}&background=random&size=16" class="w-4 h-4 rounded-full">
-                                                    <span class="text-[10px] text-gray-400">{{ $book->created_at ? $book->created_at->format('d/m') : 'N/A' }}</span>
-                                                </div>
-                                                <a href="{{ route('book.show', $book->id) }}" class="text-xs font-bold text-brand-green hover:underline">Chi tiết</a>
-                                            </div>
-                                        </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        @if(isset($books) && $books->count() > 0)
+                            {{-- Chỉ lấy 4 cuốn đầu tiên cho phần này --}}
+                            @foreach($books->take(4) as $book)
+                                <div class="group relative">
+                                    <div class="relative w-full aspect-[2/3] rounded-lg overflow-hidden shadow-md mb-3">
+                                        <a href="{{ route('detail', $book->slug) }}">
+                                            <img src="{{ $book->cover_image ?? 'https://via.placeholder.com/150x225?text=No+Image' }}" 
+                                                 alt="{{ $book->title }}" 
+                                                 class="w-full h-full object-cover transform transition duration-500 group-hover:scale-110">
+                                        </a>
+                                        <div class="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">MỚI</div>
                                     </div>
+                                    
+                                    <h3 class="font-serif font-bold text-base text-gray-800 leading-snug mb-1 line-clamp-2 group-hover:text-brand-green transition">
+                                        <a href="{{ route('detail', $book->slug) }}">{{ $book->title }}</a>
+                                    </h3>
+                                    <p class="text-xs text-gray-500">{{ $book->author_name ?? 'Ẩn danh' }}</p>
                                 </div>
-                            @empty
-                                <div class="col-span-full py-10 text-center text-gray-500 bg-white rounded-xl border border-dashed">
-                                    Chưa có sách nào.
-                                </div>
-                            @endforelse
+                            @endforeach
                         @else
-                            <div class="col-span-full py-10 text-center text-gray-500 bg-white rounded-xl border border-dashed">
-                                Đang cập nhật dữ liệu sách...
+                            <div class="col-span-full py-8 text-center text-gray-400 bg-gray-50 rounded-lg">
+                                Chưa có sách mới.
                             </div>
                         @endif
                     </div>
+                </section>
 
-                    <!-- Pagination -->
+                <section id="community-reviews" class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800 font-serif border-l-4 border-brand-accent pl-3">
+                            Review Nổi Bật
+                        </h2>
+                        <button class="text-xs font-bold px-3 py-1 bg-white border border-gray-200 text-gray-500 hover:text-brand-accent rounded-full transition">Mới nhất</button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 gap-6">
+                        @if(isset($books) && $books->count() > 0)
+                            @foreach($books->take(5) as $book) {{-- Lấy 5 cuốn làm ví dụ review --}}
+                                @php
+                                    $authorName = $book->author_name ?? 'Ẩn danh';
+                                @endphp
+
+                                <div class="bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition flex gap-4">
+                                    <div class="flex-shrink-0">
+                                        <img src="https://ui-avatars.com/api/?name=User+{{ $book->id }}&background=random" class="w-10 h-10 rounded-full border border-gray-200">
+                                    </div>
+
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-start mb-1">
+                                            <div>
+                                                <span class="font-bold text-sm text-gray-800">Thành viên #{{ $book->id }}</span>
+                                                <span class="text-gray-400 text-xs mx-1">•</span>
+                                                <span class="text-gray-500 text-xs">đã review về <strong>{{ $book->title }}</strong></span>
+                                            </div>
+                                            <div class="flex text-yellow-400 text-xs">
+                                                @for($i=0; $i < round($book->avg_rating); $i++) <i class="fas fa-star"></i> @endfor
+                                            </div>
+                                        </div>
+
+                                        <a href="#" class="block mt-1 mb-2">
+                                            <h3 class="font-bold text-base text-gray-800 hover:text-brand-green transition">
+                                                "Cảm nhận về cuốn sách {{ $book->title }}"
+                                            </h3>
+                                            <p class="text-sm text-gray-600 line-clamp-2">
+                                                {{ $book->description ? Str::limit($book->description, 150) : 'Bài viết này chưa có nội dung tóm tắt...' }}
+                                            </p>
+                                        </a>
+
+                                        <div class="flex gap-4 text-xs text-gray-400">
+                                            <span class="hover:text-brand-green cursor-pointer"><i class="far fa-heart mr-1"></i> {{ rand(10, 100) }} Thích</span>
+                                            <span class="hover:text-brand-green cursor-pointer"><i class="far fa-comment mr-1"></i> {{ rand(0, 20) }} Bình luận</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="w-16 h-24 flex-shrink-0 rounded overflow-hidden shadow-sm hidden sm:block">
+                                        <img src="{{ $book->cover_image ?? 'https://via.placeholder.com/150x225' }}" class="w-full h-full object-cover">
+                                    </div>
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="text-center py-8 text-gray-400">Chưa có bài review nào.</div>
+                        @endif
+                    </div>
+
                     <div class="mt-8 flex justify-center">
-                        <nav class="flex items-center gap-2">
-                            <a href="#" class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-brand-green hover:text-brand-green transition bg-white text-sm"><i class="fas fa-chevron-left"></i></a>
-                            <a href="#" class="w-8 h-8 flex items-center justify-center rounded-lg bg-brand-green text-white font-bold text-sm shadow-md">1</a>
-                            <a href="#" class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:bg-brand-cream hover:border-brand-green hover:text-brand-green transition bg-white text-sm">2</a>
-                            <a href="#" class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:bg-brand-cream hover:border-brand-green hover:text-brand-green transition bg-white text-sm">3</a>
-                            <a href="#" class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-brand-green hover:text-brand-green transition bg-white text-sm"><i class="fas fa-chevron-right"></i></a>
-                        </nav>
+                        @if(isset($books))
+                            {{ $books->links() }}
+                        @endif
                     </div>
                 </section>
 
-                <!-- SECTION: BANNER SỰ KIỆN -->
                 <div class="bg-[#2A483A] rounded-xl p-8 relative overflow-hidden shadow-lg text-white">
                     <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
                     <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -275,36 +270,33 @@
                 </div>
             </div>
 
-            <!-- RIGHT COLUMN (Sidebar) -->
             <div class="lg:col-span-4">
                 <div class="space-y-8">
-                    <!-- Widget Trending -->
                     <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-soft">
                         <h3 class="font-serif font-bold text-lg text-gray-800 mb-5 flex items-center gap-2">
                             <span class="text-brand-accent">🔥</span> Top Thịnh Hành
                         </h3>
                         <div class="space-y-4">
                              @foreach(['Cây Cam Ngọt Của Tôi', 'Dế Mèn Phiêu Lưu Ký', 'Hoàng Tử Bé', 'Nhà Giả Kim', 'Mắt Biếc'] as $index => $title)
-                                <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition cursor-pointer">
-                                    <span class="font-bold text-gray-400 w-4 text-center">{{ $index + 1 }}</span>
-                                    <div class="w-12 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0">
+                                <a href="#" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition cursor-pointer group">
+                                    <span class="font-bold text-gray-400 w-6 text-center text-lg italic group-hover:text-brand-accent transition">{{ $index + 1 }}</span>
+                                    <div class="w-12 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0 shadow-sm">
                                         <img src="https://source.unsplash.com/random/200x300?book,sig={{ $index }}" class="w-full h-full object-cover">
                                     </div>
                                     <div>
-                                        <h4 class="text-sm font-bold text-gray-800 line-clamp-1">{{ $title }}</h4>
+                                        <h4 class="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-brand-green transition">{{ $title }}</h4>
                                         <span class="text-xs text-yellow-500">★★★★★ (4.8)</span>
                                     </div>
-                                </div>
+                                </a>
                              @endforeach
                         </div>
                     </div>
 
-                    <!-- Widget Categories -->
                     <div class="bg-brand-beige/30 rounded-xl p-6 border border-brand-beige">
                         <h3 class="font-serif font-bold text-lg text-brand-green mb-4">Thể Loại</h3>
                         <div class="flex flex-wrap gap-2">
                             @foreach(['Tiểu Thuyết', 'Kinh Tế', 'Tâm Lý', 'Trinh Thám', 'Lịch Sử', 'Khoa Học', 'Thiếu Nhi'] as $tag)
-                                <a href="#" class="bg-white text-gray-600 px-3 py-1 rounded-full text-xs font-bold border border-gray-100 hover:border-brand-accent hover:text-brand-accent transition shadow-sm">{{ $tag }}</a>
+                                <a href="{{ route('list') }}" class="bg-white text-gray-600 px-3 py-1 rounded-full text-xs font-bold border border-gray-100 hover:border-brand-accent hover:text-brand-accent transition shadow-sm">{{ $tag }}</a>
                             @endforeach
                         </div>
                     </div>
@@ -318,7 +310,6 @@
 <script>
     // Slider Logic Script
     let currentSlide = 0;
-    // [FIX] Bây giờ biến $heroSlides đã được định nghĩa ở phạm vi toàn cục của view, nên count() sẽ hoạt động đúng
     const totalSlides = {{ count($heroSlides) }};
     const sliderWrapper = document.getElementById('sliderWrapper');
     const dots = document.querySelectorAll('.indicator-dot');
