@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,17 +10,18 @@
     <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
+
 <body class="bg-gray-100 font-sans">
 
     <div class="flex min-h-screen">
-        
+
         <!-- ================= SIDEBAR (MENU TRÁI) ================= -->
         <div class="w-64 bg-gray-900 text-white flex-shrink-0 hidden md:block">
             <div class="p-6 border-b border-gray-800 flex items-center gap-3">
                 <i class="fas fa-user-shield text-red-500 text-2xl"></i>
                 <span class="font-bold text-xl tracking-wide">ADMIN PANEL</span>
             </div>
-            
+
             <nav class="mt-6 px-4 space-y-2">
                 <!-- Menu Item: Dashboard -->
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-3 bg-red-600 rounded-lg text-white shadow-md transition">
@@ -52,7 +54,7 @@
 
         <!-- ================= MAIN CONTENT (NỘI DUNG PHẢI) ================= -->
         <div class="flex-1 flex flex-col">
-            
+
             <!-- Header Mobile -->
             <div class="bg-white p-4 shadow md:hidden flex justify-between items-center">
                 <span class="font-bold">Admin Panel</span>
@@ -74,7 +76,7 @@
 
                 <!-- Thống kê (Stats Cards) -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    
+
                     <!-- Card 1: Tổng số sách -->
                     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition">
                         <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xl">
@@ -107,6 +109,16 @@
                             <h3 class="text-2xl font-bold text-gray-800">0</h3>
                         </div>
                     </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition">
+                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 text-xl">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 text-sm">Review chờ duyệt</p>
+                            <h3 class="text-2xl font-bold text-gray-800">{{ $pendingReviewCount }}</h3>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Khu vực nội dung trống (Sau này sẽ hiện danh sách sách ở đây) -->
@@ -123,4 +135,5 @@
     </div>
 
 </body>
+
 </html>
