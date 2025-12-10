@@ -9,13 +9,15 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+   public function up()
     {
         Schema::create('follows', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('follower_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('following_id')->constrained('users')->onDelete('cascade');
+            $table->unsignedBigInteger('follower_id'); // Người đi theo dõi (Ví dụ: Bạn)
+            $table->unsignedBigInteger('following_id'); // Người được theo dõi (Ví dụ: Admin)
             $table->timestamps();
+
+            // Ràng buộc: Một người chỉ được follow người kia 1 lần (tránh trùng lặp)
             $table->unique(['follower_id', 'following_id']);
         });
     }
