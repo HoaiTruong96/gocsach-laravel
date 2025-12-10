@@ -21,7 +21,7 @@ class BookController extends Controller
             ->latest()
             ->paginate(12);
 
-        return view('index', compact('books'));
+        return view('home', compact('books'));
     }
 
     public function show($slug)
