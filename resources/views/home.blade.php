@@ -220,8 +220,9 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         @if(isset($latestReviews) && $latestReviews->count() > 0)
                              @foreach($latestReviews as $post) 
-                                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition duration-300 flex flex-col h-full group cursor-pointer" 
-                                     onclick="window.location.href='{{ route('book.show', $post->book_id) }}'">
+                                {{-- Kiểm tra: Nếu bài viết có sách ($post->book) thì mới tạo link, ngược lại để link rỗng --}}
+                                    <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group cursor-pointer h-full flex flex-col" 
+                                        onclick="window.location.href='{{ $post->book ? route('detail', ['slug' => $post->book->slug]) : '#' }}'">
                                     
                                     <!-- User Info & Rating -->
                                     <div class="flex justify-between items-start mb-3">
