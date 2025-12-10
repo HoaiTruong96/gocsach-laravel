@@ -85,6 +85,8 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
 
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/reviews', [AdminController::class, 'dashboardReviews'])->name('dashboard.reviews');
+    Route::get('/dashboard/users', [AdminController::class, 'dashboardUsers'])->name('dashboard.users');
 
     // 1. Quản lý Sách
     Route::resource('books', AdminBookController::class);
