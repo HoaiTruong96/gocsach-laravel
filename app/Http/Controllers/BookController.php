@@ -2,43 +2,78 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Book; // Nhớ dòng này để gọi Model Book
 use Illuminate\Http\Request;
+use App\Models\Book; // Gọi Model Book
+use App\Models\Post; // Gọi Model Post (Review)
 
 class BookController extends Controller
 {
-    public function index()
+    // 1. TRANG CHỦ
+    public function index(Request $request)
     {
-        // Thay vì viết SQL dài dòng, ta dùng Eloquent:
-        $books = Book::orderBy('id', 'desc')->get();
+        // A. Lấy sách cho Slider (5 cuốn mới nhất)
+        $books = Book::orderBy('id', 'desc')->take(5)->get();
 
-        // Gửi biến $books sang giao diện (View)
-        return view('home', ['books' => $books]);
-    }
-    // --- THÊM ĐOẠN NÀY VÀO ---
-    public function show($id)
-    {
-        // 1. Lấy sách từ Database theo ID
-        $book = Book::find($id);
+        // B. Xử lý Lọc Review Cộng Đồng
+        $filter = $request->get('filter', 'latest'); // Mặc định là mới nhất
+        
+        // Khởi tạo query: Lấy Post kèm User + Sách + Đếm Like/Comment
+        $query = Post::with(['user', 'book'])
+            ->withCount(['likes', 'comments']);
 
-        // 2. Nếu không tìm thấy sách (ví dụ gõ ID linh tinh) -> Quay về trang chủ
-        if (!$book) {
-            return redirect('/')->with('error', 'Không tìm thấy cuốn sách này!');
+        // Logic sắp xếp
+        switch ($filter) {
+            case 'viewed':
+                // Sắp xếp theo lượt xem
+                // (Nếu bảng posts chưa có view_count thì tạm dùng comments_count)
+                $query->orderBy('view_count', 'desc'); 
+                break;
+            case 'liked':
+                // Sắp xếp theo lượng tim
+                $query->orderBy('likes_count', 'desc');
+                break;
+            default: // 'latest'
+                $query->orderBy('created_at', 'desc');
+                break;
         }
 
-        // 3. Trả về giao diện chi tiết
+        // Lấy 6 bài review
+        $latestReviews = $query->take(6)->get();
+
+        // [QUAN TRỌNG] Đã xóa dòng dd($latestReviews); ở đây để web chạy bình thường
+
+        return view('home', [
+            'books' => $books,
+            'latestReviews' => $latestReviews,
+            'currentFilter' => $filter
+        ]);
+    }
+
+    // 2. TRANG CHI TIẾT SÁCH
+    public function show($id)
+    {
+        // Lấy sách kèm theo danh sách bài viết (reviews), user, like, comment
+        $book = Book::with(['posts.user', 'posts.likes', 'posts.comments.user'])->find($id);
+        
+        // Kiểm tra nếu sách không tồn tại
+        if (!$book) {
+            return redirect('/')->with('error', 'Không tìm thấy sách!');
+        }
+
+        // Tăng lượt xem cho các bài Review thuộc sách này
+        Post::where('book_id', $id)->increment('view_count');
+
         return view('book-detail', ['book' => $book]);
     }
+
+    // 3. TRANG TÌM KIẾM
     public function search(Request $request)
     {
-        // Lấy từ khóa tìm kiếm từ ô input
         $keyword = $request->input('keyword');
 
-        // Nếu có từ khóa thì tìm theo tên, không thì lấy tất cả
         if ($keyword) {
             $books = Book::where('title', 'LIKE', "%{$keyword}%")->get();
         } else {
-            // Mặc định lấy 12 cuốn mới nhất
             $books = Book::orderBy('id', 'desc')->limit(12)->get();
         }
 

@@ -11,17 +11,19 @@ class Like extends Model
 
     protected $fillable = [
         'user_id',
-        'post_id'
+        'post_id' // Giữ nguyên theo database của bạn
     ];
 
-    // Quan hệ
+    // Quan hệ: Like thuộc về 1 User
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function post()
+    // Quan hệ: Like thuộc về 1 Review (Dù DB tên là post_id)
+    public function review()
     {
-        return $this->belongsTo(Post::class);
+        // belongsTo(Model Đích, 'tên_cột_khóa_ngoại', 'tên_cột_khóa_chính_bảng_kia')
+        return $this->belongsTo(Post::class, 'post_id', 'id');
     }
 }

@@ -100,7 +100,7 @@
 
             <!-- Kiểm tra đăng nhập trước khi cho đánh giá -->
             @auth
-                <form action="{{ route('review.store') }}" method="POST" id="reviewForm">
+                <form action="{{ route('post.store') }}" method="POST" id="postForm">
                     @csrf
                     <input type="hidden" name="book_id" value="{{ $book->id }}">
 
@@ -163,8 +163,86 @@
     const stars = document.querySelectorAll('#star-container i');
     const ratingInput = document.getElementById('rating-input');
     const errorMsg = document.getElementById('rating-error');
-    const form = document.getElementById('reviewForm');
+    const form = document.getElementById('postForm');
+    // Cấu hình CSRF Token cho Ajax (Bắt buộc trong Laravel)
+    const csrfToken = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '';
 
+    // 1. Xử lý Like
+    function toggleLike(postId) {
+        fetch(`/post/${postId}/like`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Lấy token từ Blade
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.status === 'error') {
+                alert(data.message); // Báo lỗi nếu chưa đăng nhập
+                window.location.href = '/login';
+                return;
+            }
+
+            // Cập nhật giao diện ngay lập tức (Real-time feel)
+            const icon = document.getElementById(`icon-like-${postId}`);
+            const count = document.getElementById(`count-like-${postId}`);
+
+            // Cập nhật số lượng
+            count.innerText = data.count;
+
+            // Cập nhật icon (Đỏ/Trắng)
+            if (data.liked) {
+                icon.classList.remove('far');
+                icon.classList.add('fas', 'text-red-500');
+            } else {
+                icon.classList.remove('fas', 'text-red-500');
+                icon.classList.add('far');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // 2. Xử lý Comment
+    function sendComment(postId) {
+        const input = document.getElementById(`input-comment-${postId}`);
+        const content = input.value;
+
+        if (!content.trim()) return; // Không gửi nếu rỗng
+
+        fetch(`/post/${postId}/comment`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ content: content })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.status === 'error') {
+                alert(data.message);
+                return;
+            }
+
+            // Xóa ô nhập
+            input.value = '';
+
+            // Vẽ comment mới vào danh sách (Append HTML)
+            const list = document.getElementById(`comment-list-${postId}`);
+            const newCommentHTML = `
+                <div class="flex gap-2 animate-fade-in-up"> <img src="${data.user_avatar}" class="w-8 h-8 rounded-full">
+                    <div class="bg-gray-100 p-2 rounded-lg">
+                        <strong class="text-sm block">${data.user_name}</strong>
+                        <span class="text-sm text-gray-800">${data.content}</span>
+                    </div>
+                </div>
+            `;
+            // Chèn vào cuối danh sách
+            list.insertAdjacentHTML('beforeend', newCommentHTML);
+        })
+        .catch(error => console.error('Error:', error));
+    }
     // --- XỬ LÝ HIỆU ỨNG SAO ---
     if(stars.length > 0) {
         stars.forEach(star => {
