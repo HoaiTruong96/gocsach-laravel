@@ -17,8 +17,7 @@ class BookController extends Controller
         return view('home', compact('books'));
     }
 
-    public function show($slug)
-
+    public function show($slug) {}
 
     // 3. TRANG TÌM KIẾM
     public function search(Request $request)
@@ -51,5 +50,3 @@ class BookController extends Controller
         return view('review-detail', compact('book', 'reviews'));
     }
 }
-    
-
