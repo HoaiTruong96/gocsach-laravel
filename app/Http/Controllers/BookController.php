@@ -8,65 +8,27 @@ use App\Models\Post; // Gọi Model Post (Review)
 
 class BookController extends Controller
 {
-    // 1. TRANG CHỦ
+    // 1. TRANG CHỦ (Nếu bạn dùng HomeController thì hàm này có thể không cần thiết ở đây, nhưng cứ để nếu bạn muốn giữ)
     public function home(Request $request)
     {
         // A. Lấy sách cho Slider (5 cuốn mới nhất)
         $books = Book::orderBy('id', 'desc')->take(5)->get();
 
-        // B. Xử lý Lọc Review Cộng Đồng
-        $filter = $request->get('filter', 'latest'); // Mặc định là mới nhất
-        
-        // Khởi tạo query: Lấy Post kèm User + Sách + Đếm Like/Comment
-        $query = Post::with(['user', 'book'])
-            ->withCount(['likes', 'comments']);
-
-        // Logic sắp xếp
-        switch ($filter) {
-            case 'viewed':
-                // Sắp xếp theo lượt xem
-                // (Nếu bảng posts chưa có view_count thì tạm dùng comments_count)
-                $query->orderBy('view_count', 'desc'); 
-                break;
-            case 'liked':
-                // Sắp xếp theo lượng tim
-                $query->orderBy('likes_count', 'desc');
-                break;
-            default: // 'latest'
-                $query->orderBy('created_at', 'desc');
-                break;
-        }
-
-        // Lấy 6 bài review
-        $latestReviews = $query->take(6)->get();
-
-        // [QUAN TRỌNG] Đã xóa dòng dd($latestReviews); ở đây để web chạy bình thường
-
-        return view('home', [
-            'books' => $books,
-            'latestReviews' => $latestReviews,
-            'currentFilter' => $filter
-        ]);
+        return view('home', compact('books'));
     }
 
+    // 2. TRANG CHI TIẾT SÁCH (Đã sửa lỗi thiếu code)
     public function show($slug)
-{
-    // Lấy sách theo slug + load quan hệ
-    $book = Book::where('slug', $slug)
-        ->with(['posts.user', 'posts.likes', 'posts.comments.user'])
-        ->first();
+    {
+        // Tìm sách theo slug, nếu không thấy thì báo lỗi 404
+        $book = Book::where('slug', $slug)->firstOrFail();
 
-    // Nếu không tìm thấy sách
-    if (!$book) {
-        return redirect('/')->with('error', 'Không tìm thấy sách!');
+        // (Tùy chọn) Tăng lượt xem
+        // $book->increment('view_count');
+
+        // Trả về view chi tiết sách
+        return view('book-detail', compact('book'));
     }
-
-    // Tăng lượt xem cho tất cả bài review của sách
-    Post::where('book_id', $book->id)->increment('view_count');
-
-    return view('book-detail', ['book' => $book]);
-}
-
 
     // 3. TRANG TÌM KIẾM
     public function search(Request $request)
@@ -80,5 +42,21 @@ class BookController extends Controller
         }
 
         return view('search-book', ['books' => $books]);
+    }
+
+    // 4. TRANG DANH SÁCH REVIEW (MỚI THÊM)
+    public function showReviews($slug)
+    {
+        // Lấy thông tin sách
+        $book = Book::where('slug', $slug)->firstOrFail();
+
+        // Lấy danh sách review của sách đó, phân trang 3 bài
+        $reviews = Post::where('book_id', $book->id)
+            ->where('status', 'published') // Chỉ lấy bài đã duyệt (nếu có cột status)
+            ->with('user')                 // Lấy kèm thông tin người viết
+            ->latest()                     // Mới nhất lên đầu
+            ->paginate(3);                 // 3 bài mỗi trang
+
+        return view('review-detail', compact('book', 'reviews'));
     }
 }

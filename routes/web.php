@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Models\Book;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\ProfileController;
@@ -15,7 +16,7 @@ use App\Http\Controllers\FollowController;
 // ====================================================
 
 // Trang chủ
-Route::get('/', [BookController::class, 'home'])->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // ===> [MỚI THÊM] Trang Danh sách sách (Frontend tĩnh) <===
 // Truy cập bằng đường dẫn: http://127.0.0.1:8000/danh-sach
@@ -27,6 +28,13 @@ Route::get('/danh-sach', function () {
     // Trả về view 'list'
     return view('list', compact('books'));
 })->name('list'); // Tên route là 'list' để khớp với menu
+// --- ƯU TIÊN 1: Các route cụ thể, dài hơn ---
+// Xem danh sách đánh giá của sách
+Route::get('/chi-tiet/{slug}/danh-gia', [BookController::class, 'showReviews'])->name('book.reviews');
+
+
+// --- ƯU TIÊN 2: Route ngắn hơn (Catch-all) ---
+// Xem chi tiết sách
 Route::get('/chi-tiet/{slug}', [BookController::class, 'show'])->name('detail');
 Route::get('/review-search', [BookController::class, 'search'])->name('books.search');
 
@@ -86,7 +94,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class);
 
     // 3. Quản lý Review
-    Route::resource('reviews', \App\Http\Controllers\Admin\ReviewController::class)->only(['index', 'update', 'destroy']);
+    Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->only(['index', 'update', 'destroy']);
 
     // 4. Quản lý Thành viên
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class);

@@ -2,7 +2,7 @@
 
 @section('title', 'Trang Chủ - Góc Sách')
 
-{{-- [STATIC DATA] Dữ liệu giả cho Slider --}}
+{{-- [STATIC DATA] Slider --}}
 @php
     $heroSlides = [
         [
@@ -30,6 +30,7 @@
 @endphp
 
 @section('content')
+    {{-- SECTION: HERO SLIDER --}}
     <section id="hero-carousel" class="relative text-white py-12 lg:py-16 overflow-hidden bg-[#2A483A] group">
         <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: url('https://www.transparenttextures.com/patterns/cubes.png');"></div>
         <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-black/20 to-transparent pointer-events-none"></div>
@@ -38,6 +39,7 @@
             @foreach($heroSlides as $index => $slide)
                 <div class="w-full flex-shrink-0 px-4 transition-all duration-700">
                     <div class="container mx-auto flex flex-col md:flex-row items-center gap-12 justify-center">
+                        {{-- Book Cover (Left/Top) --}}
                         <div class="w-full md:w-5/12 flex justify-center md:justify-end perspective-1000">
                             <div class="relative w-48 h-72 md:w-56 md:h-80 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-r-lg rounded-l-sm transform rotate-y-12 hover:rotate-y-0 hover:scale-105 transition-all duration-700 cursor-pointer group/book">
                                 <div class="absolute inset-0 bg-white/10 opacity-0 group-hover/book:opacity-20 transition-opacity z-20"></div>
@@ -46,6 +48,7 @@
                             </div>
                         </div>
                         
+                        {{-- Content (Right/Bottom) --}}
                         <div class="w-full md:w-7/12 text-center md:text-left space-y-6">
                             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm">
                                 <span class="flex h-2 w-2 relative">
@@ -81,6 +84,7 @@
             @endforeach
         </div>
 
+        {{-- Navigation Buttons --}}
         <button onclick="prevSlide()" class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/20 hover:bg-brand-accent/80 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 hover:scale-110 z-20">
             <i class="fas fa-chevron-left text-xl"></i>
         </button>
@@ -88,6 +92,7 @@
             <i class="fas fa-chevron-right text-xl"></i>
         </button>
 
+        {{-- Dots --}}
         <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20">
             @foreach($heroSlides as $index => $slide)
                 <button onclick="goToSlide({{ $index }})" class="indicator-dot w-3 h-3 rounded-full bg-white/30 hover:bg-white transition-all {{ $index === 0 ? 'bg-brand-accent w-8' : '' }}" data-index="{{ $index }}"></button>
@@ -95,11 +100,14 @@
         </div>
     </section>
 
+    {{-- MAIN LAYOUT --}}
     <main class="container mx-auto px-4 py-12">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
             
+            {{-- [CỘT TRÁI - 8 PHẦN] NỘI DUNG CHÍNH --}}
             <div class="lg:col-span-8 space-y-16">
                 
+                {{-- SECTION 1: TẠP CHÍ --}}
                 <section>
                     <div class="flex justify-between items-end mb-6 border-b border-gray-200 pb-3">
                         <div>
@@ -114,6 +122,7 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+                        {{-- Bài viết lớn --}}
                         <article class="md:col-span-3 group cursor-pointer">
                             <div class="relative h-64 md:h-80 rounded-2xl overflow-hidden mb-4 shadow-md">
                                 <img src="https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?auto=format&fit=crop&q=80&w=800" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-700">
@@ -129,6 +138,7 @@
                             </p>
                         </article>
 
+                        {{-- Bài viết nhỏ bên cạnh --}}
                         <div class="md:col-span-2 flex flex-col gap-6">
                             <article class="flex flex-col group cursor-pointer">
                                 <div class="h-32 rounded-xl overflow-hidden mb-3 relative">
@@ -157,9 +167,8 @@
                     </div>
                 </section>
 
+                {{-- SECTION 2: SÁCH MỚI CẬP NHẬT --}}
                 <section id="new-books">
-                <!-- SECTION: post SÁCH (Compact Grid) -->
-                 <section id="new-books">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-gray-800 font-serif border-l-4 border-brand-green pl-3">
                             Sách Mới Cập Nhật
@@ -169,7 +178,6 @@
                     
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                         @if(isset($books) && $books->count() > 0)
-                            {{-- Chỉ lấy 4 cuốn đầu tiên cho phần này --}}
                             @foreach($books->take(4) as $book)
                                 <div class="group relative">
                                     <div class="relative w-full aspect-[2/3] rounded-lg overflow-hidden shadow-md mb-3">
@@ -193,37 +201,39 @@
                             </div>
                         @endif
                     </div>
+                    
+                    <div class="mt-8 text-center">
+                        <a href="{{ route('list') }}" class="inline-block px-8 py-3 bg-gray-100 hover:bg-brand-green hover:text-white text-gray-600 font-bold rounded-full transition duration-300 shadow-sm border border-gray-200">
+                            Xem toàn bộ kho sách <i class="fas fa-angle-right ml-1"></i>
+                        </a>
+                    </div>
                 </section>
-                <!-- SECTION: post CỘNG ĐỒNG (PHẦN QUAN TRỌNG) -->
-                <section id="community-posts">
-                    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                        <h2 class="text-2xl font-bold text-gray-800 font-serif border-l-4 border-brand-accent pl-3">Review Cộng Đồng</h2>
+
+                {{-- SECTION 3: REVIEW CỘNG ĐỒNG --}}
+                <section id="community-posts" class="mb-16">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800 font-serif border-l-4 border-brand-accent pl-3">
+                                Cộng Đồng Review
+                            </h2>
+                            <p class="text-sm text-gray-500 pl-4 mt-1">Góc chia sẻ cảm nhận chân thực từ độc giả</p>
+                        </div>
                         
-                        <!-- CÁC NÚT LỌC (CÓ LOGIC PHP) -->
-                        <div class="flex gap-2">
+                        <div class="bg-gray-100 p-1 rounded-full flex text-xs font-bold">
                             <a href="{{ route('home', ['filter' => 'latest']) }}#community-posts" 
-                               class="text-xs font-bold px-4 py-1.5 rounded-full transition {{ $currentFilter == 'latest' ? 'bg-brand-green text-white shadow-md' : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
-                               Mới nhất
-                            </a>
-                            <a href="{{ route('home', ['filter' => 'viewed']) }}#community-posts" 
-                               class="text-xs font-bold px-4 py-1.5 rounded-full transition {{ $currentFilter == 'viewed' ? 'bg-brand-green text-white shadow-md' : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
-                               Đọc nhiều
-                            </a>
+                               class="px-4 py-1.5 rounded-full transition {{ ($filter ?? 'latest') == 'latest' ? 'bg-white text-brand-green shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">Mới nhất</a>
                             <a href="{{ route('home', ['filter' => 'liked']) }}#community-posts" 
-                               class="text-xs font-bold px-4 py-1.5 rounded-full transition {{ $currentFilter == 'liked' ? 'bg-brand-green text-white shadow-md' : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
-                               Điểm cao
-                            </a>
+                               class="px-4 py-1.5 rounded-full transition {{ ($filter ?? '') == 'liked' ? 'bg-white text-brand-green shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">Nổi bật</a>
                         </div>
                     </div>
                     
-                    <!-- GRID DANH SÁCH post -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 gap-6">
                         @if(isset($latestReviews) && $latestReviews->count() > 0)
                              @foreach($latestReviews as $post) 
                                 <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition duration-300 flex flex-col h-full group cursor-pointer" 
-                                     onclick="window.location.href='{{ route('book.show', $post->book_id) }}'">
+                                     onclick="window.location.href='{{ $post->book ? route('detail', ['slug' => $post->book->slug]) : '#' }}'">
                                     
-                                    <!-- User Info & Rating -->
+                                    {{-- User Info --}}
                                     <div class="flex justify-between items-start mb-3">
                                         <div class="flex items-center gap-3">
                                             <img src="{{ $post->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($post->user->name).'&background=random' }}" 
@@ -237,41 +247,34 @@
                                                 </p>
                                             </div>
                                         </div>
-                                        <div class="flex text-yellow-400 text-xs bg-yellow-50 px-2 py-1 rounded-full border border-yellow-100">
-                                            <span class="font-bold mr-1 text-yellow-600">{{ $post->rating }}.0</span>
-                                            <i class="fas fa-star"></i>
+                                        <div class="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded text-xs font-bold text-yellow-600 border border-yellow-100">
+                                            <span>{{ $post->rating }}</span> <i class="fas fa-star text-[10px]"></i>
                                         </div>
                                     </div>
 
-                                    <!-- Content -->
-                                    <div class="mb-4 flex-grow border-b border-dashed border-gray-100 pb-3">
-                                        <h5 class="text-xs font-bold text-brand-green uppercase mb-1 line-clamp-1">
-                                            post: {{ $post->book->title ?? 'Sách đã xóa' }}
+                                    {{-- Review Content --}}
+                                    <div class="mb-3 flex-grow">
+                                        <h5 class="text-sm font-bold text-gray-700 mb-1 group-hover:text-brand-green transition">
+                                            Review: <span class="italic font-serif text-brand-green text-base">"{{ $post->book->title ?? 'Sách ẩn' }}"</span>
                                         </h5>
-                                        <p class="text-gray-600 text-sm line-clamp-3 leading-relaxed">
+                                        <p class="text-gray-600 text-sm line-clamp-2 md:line-clamp-3 leading-relaxed">
                                             {{ $post->content }}
                                         </p>
                                     </div>
 
-                                    <!-- Stats Footer -->
-                                    <div class="flex items-center justify-between text-gray-400 text-xs">
-                                        <div class="flex gap-4">
-                                            <span class="flex items-center gap-1 group-hover:text-red-500 transition">
-                                                <i class="fas fa-heart"></i> {{ $post->likes_count }}
+                                    {{-- Footer Stats --}}
+                                    <div class="mt-auto flex items-center justify-between pt-3 border-t border-gray-50">
+                                        <div class="flex gap-4 text-xs text-gray-400 font-medium">
+                                            <span class="flex items-center gap-1.5 hover:text-red-500 transition">
+                                                <i class="far fa-heart"></i> {{ $post->likes_count ?? 0 }}
                                             </span>
-                                            <span class="flex items-center gap-1 group-hover:text-blue-500 transition">
-                                                <i class="fas fa-comment-alt"></i> {{ $post->comments_count }}
+                                            <span class="flex items-center gap-1.5 hover:text-blue-500 transition">
+                                                <i class="far fa-comment-alt"></i> {{ $post->comments_count ?? 0 }} bình luận
                                             </span>
                                         </div>
-                                        
-                                        @if($currentFilter == 'viewed')
-                                             <span class="text-gray-500 flex items-center gap-1 font-medium"><i class="far fa-eye"></i> {{ $post->view_count }} lượt xem</span>
-                                        @else
-                                             <span class="text-brand-green font-bold group-hover:underline">Đọc tiếp &rarr;</span>
-                                        @endif
                                     </div>
                                 </div>
-                            @endforeach
+                             @endforeach
                         @else
                             <div class="col-span-full py-12 text-center bg-white rounded-xl border border-dashed border-gray-300">
                                 <i class="far fa-comment-dots text-4xl text-gray-300 mb-3"></i>
@@ -293,10 +296,12 @@
                         <button class="bg-brand-accent hover:bg-[#c29263] text-white px-6 py-2.5 rounded-full font-bold shadow-lg transition text-sm whitespace-nowrap">Tham Gia Ngay</button>
                     </div>
                 </div>
-            </div>
+            </div> {{-- KẾT THÚC CỘT 8 --}}
 
+            {{-- [CỘT PHẢI - 4 PHẦN] SIDEBAR --}}
             <div class="lg:col-span-4">
                 <div class="space-y-8">
+                    {{-- Widget 1: Top Thịnh Hành --}}
                     <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-soft">
                         <h3 class="font-serif font-bold text-lg text-gray-800 mb-5 flex items-center gap-2">
                             <span class="text-brand-accent">🔥</span> Top Thịnh Hành
@@ -317,6 +322,7 @@
                         </div>
                     </div>
 
+                    {{-- Widget 2: Thể Loại --}}
                     <div class="bg-brand-beige/30 rounded-xl p-6 border border-brand-beige">
                         <h3 class="font-serif font-bold text-lg text-brand-green mb-4">Thể Loại</h3>
                         <div class="flex flex-wrap gap-2">
@@ -326,8 +332,9 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            </div> {{-- KẾT THÚC CỘT 4 --}}
+        
+        </div> {{-- KẾT THÚC GRID CHÍNH --}}
     </main>
 @endsection
 
@@ -335,41 +342,33 @@
 <script>
     // Slider Logic Script
     let currentSlide = 0;
-    const totalSlides = {{ count($heroSlides) }};
+    const totalSlides = {{ count($heroSlides) }}; // Đã sửa cú pháp JS/Blade
     const sliderWrapper = document.getElementById('sliderWrapper');
-    const dots = document.querySelectorAll('.indicator-dot');
-
+    
     function updateSlider() {
         if (!sliderWrapper) return;
         sliderWrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
-        dots.forEach((dot, index) => {
-            if (index === currentSlide) {
-                dot.classList.add('bg-brand-accent', 'w-8');
-                dot.classList.remove('bg-white/30');
-            } else {
-                dot.classList.remove('bg-brand-accent', 'w-8');
-                dot.classList.add('bg-white/30');
-            }
-        });
     }
-
     function nextSlide() {
         currentSlide = (currentSlide + 1) % totalSlides;
         updateSlider();
     }
-
     function prevSlide() {
         currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
         updateSlider();
     }
-
     function goToSlide(index) {
         currentSlide = index;
         updateSlider();
     }
-
     if (totalSlides > 0) {
         setInterval(nextSlide, 5000);
     }
 </script>
+<style>
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #888; }
+</style>
 @endpush
