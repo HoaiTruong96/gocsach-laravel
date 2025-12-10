@@ -10,7 +10,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\RankingController;
 use App\Http\Controllers\Admin\BookController as AdminBookController;
-
+use App\Http\Controllers\FollowController;
 // ====================================================
 // 1. NHÓM PUBLIC (Ai cũng xem được)
 // ====================================================
@@ -68,8 +68,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // Trang cá nhân
-    Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
-
+    Route::get('/profile/{id?}', [ProfileController::class, 'index'])
+    ->name('profile');
+     Route::post('/follow/toggle', [FollowController::class, 'toggleFollow'])->name('follow.toggle');
     // Gửi đánh giá (Review) - Phải đăng nhập mới được đánh giá
     // Route::post('/review', [ReviewController::class, 'store'])->name('review.store');
 
@@ -98,3 +99,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // 4. Quản lý Thành viên
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
 });
+Route::middleware('auth')->post('/follow/toggle', [App\Http\Controllers\FollowController::class, 'toggleFollow'])->name('follow.toggle');
+Route::get('/api/user/{id}/followers', [FollowController::class, 'getFollowers']);
+Route::get('/api/user/{id}/following', [FollowController::class, 'getFollowing']);
