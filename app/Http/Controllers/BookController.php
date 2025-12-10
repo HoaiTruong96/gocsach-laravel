@@ -2,12 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Book;                    // Nhớ dòng này để gọi Model Book
-use App\Models\Category;
-use Illuminate\Support\Facades\Storage; // Sử dụng để xóa ảnh
-use Illuminate\Support\Str;
+use App\Models\Book; // Nhớ dòng này để gọi Model Book
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class BookController extends Controller
 {
