@@ -13,12 +13,11 @@ class ProfileController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
         if (!$user) return redirect()->route('login');
-        $totalBooks = $user->bookshelf()->count();
-        $totalReviews = $user->reviews()->count(); 
-    
+        $totalBooks = $user->bookshelves()->count();
+        $totalReviews = $user->posts()->whereNotNull('book_id')->count();
 
-        $query = $user->bookshelf()->orderByPivot('created_at', 'desc');
-        
+        $query = $user->bookshelves()->with('book')->orderByPivot('created_at', 'desc');
+
         if ($request->has('status') && $request->get('status') != 'all') {
             $status = $request->get('status');
             if ($status == 'favorites') $query->wherePivot('status', 'wishlist');

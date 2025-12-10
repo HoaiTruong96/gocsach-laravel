@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 class BookController extends Controller
 {
+<<<<<<< HEAD
     public function index()
     {
         // Thay vì viết SQL dài dòng, ta dùng Eloquent:
@@ -97,5 +98,31 @@ class BookController extends Controller
         }
         $book->delete();
         return redirect()->route('books.index')->with('success', 'Đã xóa sách!');
+=======
+    // =========================================================
+    // 1. DÀNH CHO NGƯỜI DÙNG (FRONTEND)
+    // =========================================================
+    public function home()
+    {
+        $books = Book::with('categories')
+            ->where('is_approved', true)
+            ->latest()
+            ->paginate(12);
+
+        return view('index', compact('books'));
+    }
+
+    public function show($slug)
+    {
+        $book = Book::where('slug', $slug)
+            ->where('is_approved', true)
+            ->with(['categories', 'posts.user']) // Eager load để tối ưu
+            ->firstOrFail();
+
+        // Tăng view (có thể thêm logic check session để tránh spam F5)
+        $book->increment('view_count');
+
+        return view('detail', compact('book'));
+>>>>>>> main
     }
 }
