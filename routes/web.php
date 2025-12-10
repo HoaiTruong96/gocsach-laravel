@@ -23,7 +23,7 @@ Route::get('/', [BookController::class, 'home'])->name('home');
 Route::get('/danh-sach', function () {
     // Lấy tất cả sách, phân trang 12 cuốn
     $books = Book::with('categories')->latest()->paginate(12);
-    
+
     // Trả về view 'list'
     return view('list', compact('books'));
 })->name('list'); // Tên route là 'list' để khớp với menu
@@ -73,13 +73,20 @@ Route::middleware('auth')->group(function () {
 // ====================================================
 // 4. NHÓM ADMIN (Phải có quyền Admin)
 // ====================================================
+// ... Bên trong nhóm Route admin
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
 
-    // [QUAN TRỌNG] Route Dashboard
-    // URL: /admin/dashboard
-    // Tên route: admin.dashboard (để khớp với file HTML)
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
 
-    // Quản lý sách: admin.books.index, admin.books.create...
+    // 1. Quản lý Sách
     Route::resource('books', AdminBookController::class);
+
+    // 2. Quản lý Danh mục
+    Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class);
+
+    // 3. Quản lý Review
+    Route::resource('reviews', \App\Http\Controllers\Admin\ReviewController::class)->only(['index', 'update', 'destroy']);
+
+    // 4. Quản lý Thành viên
+    Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
 });
