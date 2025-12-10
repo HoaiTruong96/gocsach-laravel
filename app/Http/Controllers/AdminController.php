@@ -12,7 +12,9 @@ class AdminController extends Controller
     public function index()
     {
         // 1. Số liệu thống kê
-        $totalBooks = Book::count();
+        // [ĐÃ SỬA] Đổi tên biến $totalBooks -> $bookCount để khớp với View HTML
+        $bookCount = Book::count();
+
         $totalUsers = User::where('role', 'user')->count();
         $totalViews = Book::sum('view_count');
 
@@ -28,7 +30,7 @@ class AdminController extends Controller
             ->get();
 
         return view('admin.dashboard', compact(
-            'totalBooks',
+            'bookCount',          // <--- Đã cập nhật tên biến tại đây
             'totalUsers',
             'pendingReviewCount',
             'totalViews',

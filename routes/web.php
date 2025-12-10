@@ -72,6 +72,12 @@ Route::middleware('auth')->group(function () {
 // 4. NHÓM ADMIN (Phải có quyền Admin)
 // ====================================================
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    // Sẽ tạo ra các route: admin.books.index, admin.books.create...
+
+    // [QUAN TRỌNG] Route Dashboard
+    // URL: /admin/dashboard
+    // Tên route: admin.dashboard (để khớp với file HTML)
+    Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+
+    // Quản lý sách: admin.books.index, admin.books.create...
     Route::resource('books', AdminBookController::class);
 });
