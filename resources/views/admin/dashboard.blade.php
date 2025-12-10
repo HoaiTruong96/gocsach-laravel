@@ -1,139 +1,109 @@
-<!DOCTYPE html>
-<html lang="vi">
+@extends('layouts.admin')
+@section('title', 'Admin Dashboard')
+@section('header', 'Tổng Quan Hệ Thống')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Góc Sách</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-
-<body class="bg-gray-100 font-sans">
-
-    <div class="flex min-h-screen">
-
-        <!-- ================= SIDEBAR (MENU TRÁI) ================= -->
-        <div class="w-64 bg-gray-900 text-white flex-shrink-0 hidden md:block">
-            <div class="p-6 border-b border-gray-800 flex items-center gap-3">
-                <i class="fas fa-user-shield text-red-500 text-2xl"></i>
-                <span class="font-bold text-xl tracking-wide">ADMIN PANEL</span>
-            </div>
-
-            <nav class="mt-6 px-4 space-y-2">
-                <!-- Menu Item: Dashboard -->
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-3 bg-red-600 rounded-lg text-white shadow-md transition">
-                    <i class="fas fa-tachometer-alt w-5"></i>
-                    <span>Tổng Quan</span>
-                </a>
-
-                <!-- Menu Item: Quản lý Sách -->
-                <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-lg transition">
-                    <i class="fas fa-book w-5"></i>
-                    <span>Quản lý Sách</span>
-                </a>
-
-                <!-- Menu Item: Về trang chủ -->
-                <a href="{{ route('home') }}" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-lg transition border-t border-gray-800 mt-4">
-                    <i class="fas fa-home w-5"></i>
-                    <span>Xem Trang Chủ</span>
-                </a>
-
-                <!-- Menu Item: Đăng Xuất (Dùng Form vì Route là POST) -->
-                <form action="{{ route('logout') }}" method="POST" class="mt-2">
-                    @csrf
-                    <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-900/20 rounded-lg transition text-left">
-                        <i class="fas fa-sign-out-alt w-5"></i>
-                        <span>Đăng Xuất</span>
-                    </button>
-                </form>
-            </nav>
+@section('content')
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition">
+        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xl">
+            <i class="fas fa-book"></i>
         </div>
-
-        <!-- ================= MAIN CONTENT (NỘI DUNG PHẢI) ================= -->
-        <div class="flex-1 flex flex-col">
-
-            <!-- Header Mobile -->
-            <div class="bg-white p-4 shadow md:hidden flex justify-between items-center">
-                <span class="font-bold">Admin Panel</span>
-                <button class="text-gray-600"><i class="fas fa-bars"></i></button>
-            </div>
-
-            <!-- Nội dung chính -->
-            <main class="p-8">
-                <!-- Lời chào -->
-                <div class="mb-8 flex justify-between items-end">
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-800">Xin chào, {{ Auth::user()->name }}! 👋</h1>
-                        <p class="text-gray-500 mt-1">Chào mừng bạn quay trở lại trang quản trị.</p>
-                    </div>
-                    <div class="text-sm text-gray-400">
-                        Hôm nay: {{ date('d/m/Y') }}
-                    </div>
-                </div>
-
-                <!-- Thống kê (Stats Cards) -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-
-                    <!-- Card 1: Tổng số sách -->
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition">
-                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xl">
-                            <i class="fas fa-book"></i>
-                        </div>
-                        <div>
-                            <p class="text-gray-500 text-sm">Tổng đầu sách</p>
-                            <h3 class="text-2xl font-bold text-gray-800">{{ $bookCount ?? 0 }}</h3>
-                        </div>
-                    </div>
-
-                    <!-- Card 2: Thành viên (Giả lập) -->
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition">
-                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 text-xl">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div>
-                            <p class="text-gray-500 text-sm">Thành viên</p>
-                            <h3 class="text-2xl font-bold text-gray-800">1</h3>
-                        </div>
-                    </div>
-
-                    <!-- Card 3: Review (Giả lập) -->
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition">
-                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 text-xl">
-                            <i class="fas fa-star"></i>
-                        </div>
-                        <div>
-                            <p class="text-gray-500 text-sm">Đánh giá mới</p>
-                            <h3 class="text-2xl font-bold text-gray-800">0</h3>
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition">
-                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 text-xl">
-                            <i class="fas fa-star"></i>
-                        </div>
-                        <div>
-                            <p class="text-gray-500 text-sm">Review chờ duyệt</p>
-                            <h3 class="text-2xl font-bold text-gray-800">{{ $pendingReviewCount }}</h3>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Khu vực nội dung trống (Sau này sẽ hiện danh sách sách ở đây) -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center py-20">
-                    <div class="inline-block p-4 bg-gray-50 rounded-full mb-4">
-                        <i class="fas fa-layer-group text-4xl text-gray-300"></i>
-                    </div>
-                    <h3 class="text-lg font-medium text-gray-900">Chưa có hoạt động mới</h3>
-                    <p class="text-gray-500 mt-1">Hệ thống đang hoạt động bình thường.</p>
-                </div>
-
-            </main>
+        <div>
+            <p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Tổng đầu sách</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ number_format($bookCount) }}</h3>
         </div>
     </div>
 
-</body>
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition">
+        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 text-xl">
+            <i class="fas fa-users"></i>
+        </div>
+        <div>
+            <p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Thành viên</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ number_format($totalUsers) }}</h3>
+        </div>
+    </div>
 
-</html>
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition">
+        <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xl">
+            <i class="fas fa-star"></i>
+        </div>
+        <div>
+            <p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Đánh giá tuần này</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ number_format($newReviewsCount) }}</h3>
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition">
+        <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 text-xl">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div>
+            <p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Review chờ duyệt</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ number_format($pendingReviewCount) }}</h3>
+        </div>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="p-6 border-b border-gray-50 flex justify-between items-center">
+        <h3 class="font-bold text-gray-800">Review Mới Nhất</h3>
+        <a href="{{ route('admin.reviews.index') }}" class="text-sm text-blue-600 hover:underline">Xem tất cả</a>
+    </div>
+
+    @if(isset($recentReviews) && $recentReviews->count() > 0)
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+                <tr>
+                    <th class="px-6 py-3">Người dùng</th>
+                    <th class="px-6 py-3">Sách review</th>
+                    <th class="px-6 py-3">Điểm</th>
+                    <th class="px-6 py-3">Thời gian</th>
+                    <th class="px-6 py-3 text-center">Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                @foreach($recentReviews as $review)
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <img src="{{ $review->user->avatar ?? 'https://ui-avatars.com/api/?name='.$review->user->name }}" class="w-8 h-8 rounded-full">
+                            <span class="text-sm font-medium text-gray-700">{{ $review->user->name }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="text-sm text-gray-600 block truncate w-48" title="{{ $review->book->title ?? 'Sách đã xóa' }}">
+                            {{ $review->book->title ?? 'Sách đã xóa' }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="text-yellow-500 text-sm font-bold">
+                            <i class="fas fa-star"></i> {{ $review->rating }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-500">
+                        {{ $review->created_at->diffForHumans() }}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        @if($review->status == 'published')
+                        <span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Đã duyệt</span>
+                        @elseif($review->status == 'pending')
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">Chờ duyệt</span>
+                        @else
+                        <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-bold">{{ $review->status }}</span>
+                        @endif
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+    @else
+    <div class="p-8 text-center text-gray-500">
+        <i class="fas fa-inbox text-4xl mb-3 text-gray-300"></i>
+        <p>Chưa có bài review nào.</p>
+    </div>
+    @endif
+</div>
+@endsection

@@ -20,28 +20,39 @@
             </div>
 
             <nav class="mt-6 px-4 space-y-2">
-                <!-- 1. Tổng quan (Dashboard) -->
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-3 {{ request()->routeIs('admin.dashboard') ? 'bg-red-600 text-white shadow-md' : 'text-gray-400 hover:bg-gray-800 hover:text-white' }} rounded-lg transition">
+                <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'bg-red-600 text-white shadow-md' : 'text-gray-400 hover:bg-gray-800 hover:text-white' }} flex items-center gap-3 px-4 py-3 rounded-lg transition">
                     <i class="fas fa-tachometer-alt w-5"></i>
                     <span>Tổng Quan</span>
                 </a>
 
-                <!-- 2. Quản lý Sách -->
-                <a href="{{ route('books.index') }}" class="flex items-center gap-3 px-4 py-3 {{ request()->routeIs('books.*') ? 'bg-red-600 text-white shadow-md' : 'text-gray-400 hover:bg-gray-800 hover:text-white' }} rounded-lg transition">
+                <a href="{{ route('admin.books.index') }}" class="{{ request()->routeIs('admin.books.*') ? 'bg-red-600 text-white shadow-md' : 'text-gray-400 hover:bg-gray-800 hover:text-white' }} flex items-center gap-3 px-4 py-3 rounded-lg transition">
                     <i class="fas fa-book w-5"></i>
                     <span>Quản lý Sách</span>
                 </a>
 
-                <!-- 3. Về trang chủ -->
+                <a href="{{ route('admin.categories.index') }}" class="{{ request()->routeIs('admin.categories.*') ? 'bg-red-600 text-white shadow-md' : 'text-gray-400 hover:bg-gray-800 hover:text-white' }} flex items-center gap-3 px-4 py-3 rounded-lg transition">
+                    <i class="fas fa-list w-5"></i>
+                    <span>Danh Mục Sách</span>
+                </a>
+
+                <a href="{{ route('admin.reviews.index') }}" class="{{ request()->routeIs('admin.reviews.*') ? 'bg-red-600 text-white shadow-md' : 'text-gray-400 hover:bg-gray-800 hover:text-white' }} flex items-center gap-3 px-4 py-3 rounded-lg transition">
+                    <i class="fas fa-star w-5"></i>
+                    <span>Kiểm Duyệt Review</span>
+                </a>
+
+                <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'bg-red-600 text-white shadow-md' : 'text-gray-400 hover:bg-gray-800 hover:text-white' }} flex items-center gap-3 px-4 py-3 rounded-lg transition">
+                    <i class="fas fa-users w-5"></i>
+                    <span>Thành Viên</span>
+                </a>
+
                 <a href="{{ route('home') }}" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-lg transition border-t border-gray-800 mt-4">
                     <i class="fas fa-home w-5"></i>
                     <span>Xem Trang Chủ</span>
                 </a>
 
-                <!-- 4. Đăng xuất -->
-                <form action="{{ route('logout') }}" method="POST">
+                <form action="{{ route('logout') }}" method="POST" class="mt-2">
                     @csrf
-                    <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-900/20 rounded-lg transition mt-2 text-left">
+                    <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-900/20 rounded-lg transition text-left">
                         <i class="fas fa-sign-out-alt w-5"></i>
                         <span>Đăng Xuất</span>
                     </button>

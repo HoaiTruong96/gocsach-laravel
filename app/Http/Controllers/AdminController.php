@@ -12,11 +12,12 @@ class AdminController extends Controller
     public function index()
     {
         // 1. Số liệu thống kê
-        // [ĐÃ SỬA] Đổi tên biến $totalBooks -> $bookCount để khớp với View HTML
         $bookCount = Book::count();
 
         $totalUsers = User::where('role', 'user')->count();
-        $totalViews = Book::sum('view_count');
+        $newReviewsCount = Post::whereNotNull('book_id')
+            ->where('created_at', '>=', now()->subDays(7))
+            ->count();
 
         $pendingReviewCount = Post::where('status', 'pending')
             ->whereNotNull('book_id')
@@ -30,10 +31,10 @@ class AdminController extends Controller
             ->get();
 
         return view('admin.dashboard', compact(
-            'bookCount',          // <--- Đã cập nhật tên biến tại đây
+            'bookCount',
             'totalUsers',
+            'newReviewsCount',
             'pendingReviewCount',
-            'totalViews',
             'recentReviews'
         ));
     }
