@@ -3,7 +3,7 @@
 @section('title', 'Tất Cả Sách - Góc Sách')
 
 @section('content')
-    <!-- Breadcrumb -->
+    {{-- Breadcrumb --}}
     <div class="bg-brand-beige/30 py-4 border-b border-brand-beige">
         <div class="container mx-auto px-4">
             <div class="flex items-center text-sm text-gray-500 font-medium">
@@ -17,15 +17,15 @@
     <main class="container mx-auto px-4 py-12 flex-grow">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            <!-- SIDEBAR: BỘ LỌC -->
+            {{-- SIDEBAR: BỘ LỌC --}}
             <aside class="lg:col-span-3 space-y-8">
-                <!-- Widget Thể Loại -->
-                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-soft sticky top-24">
+                {{-- Widget Thể Loại --}}
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-soft">
                     <h3 class="font-bold text-brand-green font-serif text-lg mb-4 pb-2 border-b border-gray-100">
                         <i class="fas fa-filter mr-2 text-brand-accent"></i> Thể Loại
                     </h3>
                     <div class="space-y-3">
-                        @foreach(['Văn Học (120)', 'Kinh Tế (45)', 'Tâm Lý & Kỹ Năng (32)', 'Trinh Thám (18)', 'Thiếu Nhi (10)'] as $cat)
+                        @foreach(['Văn Học', 'Kinh Tế', 'Tâm Lý & Kỹ Năng', 'Trinh Thám', 'Thiếu Nhi'] as $cat)
                         <label class="flex items-center space-x-3 cursor-pointer group hover:bg-gray-50 p-2 rounded-lg transition -mx-2">
                             <input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-brand-green focus:ring-brand-green form-checkbox">
                             <span class="text-gray-600 group-hover:text-brand-green transition text-sm font-medium flex-1">{{ $cat }}</span>
@@ -34,7 +34,7 @@
                     </div>
                 </div>
 
-                <!-- Widget Đánh Giá -->
+                {{-- Widget Đánh Giá --}}
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-soft">
                     <h3 class="font-bold text-brand-green font-serif text-lg mb-4 pb-2 border-b border-gray-100">
                         <i class="fas fa-star mr-2 text-brand-accent"></i> Đánh Giá
@@ -59,14 +59,14 @@
                 </div>
             </aside>
 
-            <!-- MAIN CONTENT: DANH SÁCH SÁCH -->
+            {{-- MAIN CONTENT: DANH SÁCH SÁCH --}}
             <div class="lg:col-span-9">
                 
-                <!-- Toolbar: Sắp xếp & Số lượng -->
+                {{-- Toolbar: Sắp xếp & Số lượng --}}
                 <div class="flex flex-col sm:flex-row justify-between items-center mb-8 bg-white p-4 rounded-xl shadow-soft border border-gray-100">
                     <p class="text-sm text-gray-500 font-medium mb-2 sm:mb-0">
-                        @if(isset($books) && count($books) > 0)
-                            Hiển thị <span class="font-bold text-brand-green">{{ count($books) }}</span> kết quả
+                        @if(isset($books) && $books->count() > 0)
+                            Hiển thị <span class="font-bold text-brand-green">{{ $books->count() }}</span> kết quả
                         @else
                             Chưa có sách nào
                         @endif
@@ -86,83 +86,60 @@
                     </div>
                 </div>
 
-                <!-- Grid Sách -->
+                {{-- Grid Sách --}}
                 <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-                    @if(isset($books) && count($books) > 0)
+                    @if(isset($books) && $books->count() > 0)
                         @foreach($books as $book)
-                            @php
-                                $authorName = 'Tác giả ẩn danh';
-                                if (is_object($book->author)) {
-                                    $authorName = $book->author->name ?? $authorName;
-                                } elseif (is_string($book->author)) {
-                                    $trimmed = trim($book->author);
-                                    if (str_starts_with($trimmed, '{')) {
-                                        $decoded = json_decode($trimmed);
-                                        $authorName = $decoded->name ?? $book->author;
-                                    } else {
-                                        $authorName = $book->author;
-                                    }
-                                }
-                                
-                                $catName = 'Văn Học'; // Mặc định
-                                if(isset($book->category)){
-                                     if (is_object($book->category)) {
-                                         $catName = $book->category->name ?? $catName;
-                                     } elseif (is_string($book->category)) {
-                                         $trimmedCat = trim($book->category);
-                                         if (str_starts_with($trimmedCat, '{')) {
-                                            $decodedCat = json_decode($trimmedCat);
-                                            $catName = $decodedCat->name ?? $book->category;
-                                         } else {
-                                            $catName = $book->category;
-                                         }
-                                     }
-                                }
-                            @endphp
-
                             <div class="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-card hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative">
-                                <!-- Ảnh bìa -->
+                                {{-- Ảnh bìa --}}
                                 <div class="relative w-full aspect-[2/3] bg-gray-100 overflow-hidden">
-                                    <a href="{{ route('detail', $book->id) }}">
+                                    {{-- Sử dụng slug thay vì id cho route --}}
+                                    <a href="{{ route('detail', $book->slug ?? $book->id) }}">
                                         <img src="{{ $book->cover_image ?? 'https://via.placeholder.com/300x450' }}" 
                                              alt="{{ $book->title }}"
                                              class="w-full h-full object-cover transition duration-700 group-hover:scale-110"
                                              onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
                                     </a>
                                     
-                                    <!-- Badge HOT -->
+                                    {{-- Badge HOT --}}
                                     @if($book->view_count > 1000)
                                         <div class="absolute top-3 left-3 bg-red-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md animate-pulse">
                                             HOT
                                         </div>
                                     @endif
 
-                                    <!-- Nút Quick View (Hiện khi hover) -->
+                                    {{-- Nút Quick View --}}
                                     <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                                         <span class="bg-white text-brand-green px-4 py-2 rounded-full font-bold text-xs shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">Xem Chi Tiết</span>
                                     </div>
                                 </div>
                                 
-                                <!-- Nội dung -->
+                                {{-- Nội dung --}}
                                 <div class="p-4 flex flex-col flex-1">
                                     <div class="text-[10px] text-brand-accent uppercase font-bold tracking-wider mb-1.5 truncate">
-                                        {{ $catName }}
+                                        {{-- Logic lấy Category an toàn --}}
+                                        @if(isset($book->categories) && $book->categories->isNotEmpty())
+                                            {{ $book->categories->first()->name }}
+                                        @else
+                                            Sách
+                                        @endif
                                     </div>
                                     
                                     <h3 class="font-serif font-bold text-gray-800 text-base leading-snug mb-1 line-clamp-2 group-hover:text-brand-green transition h-10" title="{{ $book->title }}">
-                                        <a href="{{ route('detail', $book->id) }}">
+                                        <a href="{{ route('detail', $book->slug ?? $book->id) }}">
                                             {{ $book->title }}
                                         </a>
                                     </h3>
                                     
                                     <p class="text-xs text-gray-500 mb-3 font-medium truncate">
-                                        {{ $authorName }}
+                                        {{-- Sử dụng author_name thay vì logic phức tạp cũ --}}
+                                        {{ $book->author_name ?? 'Tác giả ẩn danh' }}
                                     </p>
                                     
                                     <div class="mt-auto pt-3 border-t border-gray-50 flex items-center justify-between text-xs">
                                         <div class="flex items-center text-yellow-400 gap-1 bg-yellow-50 px-2 py-0.5 rounded-md">
                                             <i class="fas fa-star"></i> 
-                                            <span class="text-gray-600 font-bold">4.8</span>
+                                            <span class="text-gray-600 font-bold">{{ $book->avg_rating ?? '0' }}</span>
                                         </div>
                                         <div class="text-gray-400 flex items-center gap-1" title="Lượt xem">
                                             <i class="far fa-eye"></i> {{ number_format($book->view_count ?? 0) }}
@@ -172,6 +149,7 @@
                             </div>
                         @endforeach
                     @else
+                        {{-- Empty State --}}
                         <div class="col-span-full text-center py-16 bg-white rounded-2xl border border-dashed border-gray-200">
                             <div class="bg-gray-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
                                 <i class="fas fa-book-open text-gray-300 text-2xl"></i>
@@ -182,20 +160,11 @@
                     @endif
                 </div>
 
-                <!-- Phân trang -->
+                {{-- Phân trang (Chỉ hiện nếu biến books là đối tượng phân trang) --}}
                 <div class="mt-12 flex justify-center">
-                    <nav class="flex items-center gap-2 bg-white px-3 py-2 rounded-full shadow-soft border border-gray-100">
-                        <a href="#" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-brand-cream text-gray-400 hover:text-brand-green transition">
-                            <i class="fas fa-chevron-left text-xs"></i>
-                        </a>
-                        <span class="w-9 h-9 flex items-center justify-center rounded-full bg-brand-green text-white font-bold text-sm shadow-md cursor-default">1</span>
-                        <a href="#" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-brand-cream text-gray-600 hover:text-brand-green transition text-sm font-bold">2</a>
-                        <a href="#" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-brand-cream text-gray-600 hover:text-brand-green transition text-sm font-bold">3</a>
-                        <span class="w-9 h-9 flex items-center justify-center text-gray-400 text-xs pb-1 cursor-default">...</span>
-                        <a href="#" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-brand-cream text-gray-500 hover:text-brand-green transition">
-                            <i class="fas fa-chevron-right text-xs"></i>
-                        </a>
-                    </nav>
+                    @if(isset($books) && method_exists($books, 'links'))
+                        {{ $books->links() }}
+                    @endif
                 </div>
 
             </div>
