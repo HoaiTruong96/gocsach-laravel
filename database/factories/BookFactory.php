@@ -14,7 +14,6 @@ class BookFactory extends Factory
 {
     public function definition(): array
     {
-        // Giữ lại danh sách sách hay của bạn
         $titleBook = [
             'Dế Mèn Phiêu Lưu Ký',
             'Đất Rừng Phương Nam',
@@ -54,30 +53,40 @@ class BookFactory extends Factory
             'Design Patterns'
         ];
 
-        $publishers = ['NXB Trẻ', 'NXB Kim Đồng', 'Nhã Nam', 'Skybooks', 'Alpha Books', 'NXB Văn Học'];
+        $publishers = [
+            'NXB Trẻ',
+            'NXB Kim Đồng',
+            'Nhã Nam',
+            'Skybooks',
+            'Alpha Books',
+            'NXB Văn Học'
+        ];
 
         $title = fake()->unique()->randomElement($titleBook) ?? fake()->sentence(3);
 
         return [
-            // Người đóng góp sách (Random 1 user hoặc null)
             'created_by_user_id' => User::query()->inRandomOrder()->value('id') ?? User::factory(),
-
             'title' => $title,
             'slug' => Str::slug($title) . '-' . Str::random(4),
-
-            // THAY ĐỔI: Tên tác giả dạng text (không cần bảng Author nữa)
             'author_name' => fake()->name(),
-
-            'category_id' => Category::query()->inRandomOrder()->value('id') ?? Category::factory(),
 
             'publisher' => fake()->randomElement($publishers),
             'published_year' => fake()->year(),
             'description' => fake()->paragraph(3),
             'cover_image' => 'https://placehold.co/400x600?text=' . urlencode(Str::limit($title, 20)),
-
             'view_count' => fake()->numberBetween(100, 10000),
-            'avg_rating' => fake()->randomFloat(1, 3, 5), // Fake trước điểm số
-            'is_approved' => true, // Mặc định sách mẫu thì duyệt luôn
+            'avg_rating' => fake()->randomFloat(1, 3, 5),
+            'is_approved' => true,
         ];
+    }
+
+    public function configure()
+    {
+        return $this->afterCreating(function (\App\Models\Book $book) {
+            $categories = \App\Models\Category::inRandomOrder()->limit(rand(1, 3))->get();
+            if ($categories->isNotEmpty()) {
+                $book->categories()->attach($categories);
+            }
+        });
     }
 }

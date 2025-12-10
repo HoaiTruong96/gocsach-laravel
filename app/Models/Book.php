@@ -10,11 +10,9 @@ class Book extends Model
     use HasFactory;
 
     protected $fillable = [
-        'created_by_user_id',
         'title',
         'slug',
         'author_name',
-        'category_id',
         'publisher',
         'published_year',
         'description',
@@ -22,6 +20,7 @@ class Book extends Model
         'view_count',
         'avg_rating',
         'is_approved',
+        'created_by_user_id'
     ];
 
     protected $casts = [
@@ -30,10 +29,9 @@ class Book extends Model
     ];
 
     // Quan hệ
-    public function category()
+    public function categories()
     {
-        // Một cuốn sách thuộc về 1 thể loại
-        return $this->belongsTo(Category::class, 'category_id');
+        return $this->belongsToMany(Category::class, 'book_category');
     }
 
     public function creator()
