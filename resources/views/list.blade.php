@@ -86,16 +86,30 @@
                     </div>
                 </div>
 
+                
                 {{-- Grid Sách --}}
                 <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
                     @if(isset($books) && $books->count() > 0)
                         @foreach($books as $book)
+                            {{-- [FIX ẢNH] Xử lý đường dẫn ảnh --}}
+                            @php
+                                $cover = $book->cover_image;
+                                if (!$cover) {
+                                    $coverUrl = 'https://via.placeholder.com/300x450?text=No+Image';
+                                } elseif (str_starts_with($cover, 'http')) {
+                                    $coverUrl = $cover;
+                                } else {
+                                    $coverUrl = asset('storage/' . $cover);
+                                }
+                            @endphp
+
                             <div class="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-card hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative">
                                 {{-- Ảnh bìa --}}
                                 <div class="relative w-full aspect-[2/3] bg-gray-100 overflow-hidden">
                                     {{-- Sử dụng slug thay vì id cho route --}}
                                     <a href="{{ route('detail', $book->slug ?? $book->id) }}">
-                                        <img src="{{ $book->cover_image ?? 'https://via.placeholder.com/300x450' }}" 
+                                        {{-- Dùng biến $coverUrl đã xử lý --}}
+                                        <img src="{{ $coverUrl }}" 
                                              alt="{{ $book->title }}"
                                              class="w-full h-full object-cover transition duration-700 group-hover:scale-110"
                                              onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
@@ -117,7 +131,6 @@
                                 {{-- Nội dung --}}
                                 <div class="p-4 flex flex-col flex-1">
                                     <div class="text-[10px] text-brand-accent uppercase font-bold tracking-wider mb-1.5 truncate">
-                                        {{-- Logic lấy Category an toàn --}}
                                         @if(isset($book->categories) && $book->categories->isNotEmpty())
                                             {{ $book->categories->first()->name }}
                                         @else
@@ -132,7 +145,6 @@
                                     </h3>
                                     
                                     <p class="text-xs text-gray-500 mb-3 font-medium truncate">
-                                        {{-- Sử dụng author_name thay vì logic phức tạp cũ --}}
                                         {{ $book->author_name ?? 'Tác giả ẩn danh' }}
                                     </p>
                                     

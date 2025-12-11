@@ -50,4 +50,12 @@ class Book extends Model
     {
         return $this->hasMany(Bookshelf::class);
     }
+
+    // --- PHẦN ĐÃ SỬA ---
+    public function comments()
+    {
+        // Tham số thứ 2 ('post_id'): Tên cột khóa ngoại trong bảng comments
+        // Tham số thứ 3 ('id'): Tên cột khóa chính trong bảng books
+        return $this->hasMany(Comment::class, 'post_id', 'id');
+    }
 }

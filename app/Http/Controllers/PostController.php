@@ -28,21 +28,27 @@ class PostController extends Controller
     // 2. Tạo Slug duy nhất
     $slug = Str::slug($request->title) . '-' . time();
 
+    // ... đoạn validate giữ nguyên ...
+
     // 3. Lưu vào Database
     Post::create([
         'user_id'      => Auth::id(),
         'book_id'      => $request->book_id,
-        'title'        => $request->title, // Lấy tiêu đề từ Form
+        'title'        => $request->title,
         'slug'         => $slug,
         'rating'       => $request->rating,
         'content'      => $request->content,
-        'status'       => 'published',
-        'published_at' => now(),
+        
+        // [SỬA] Đổi 'published' thành 'pending'
+        'status'       => 'pending', 
+        
+        'published_at' => now(), // Có thể để null hoặc now() tùy bạn
     ]);
     
     // 4. Quay về trang Profile
+    // [SỬA] Đổi thông báo để người dùng không hoang mang
     return redirect()->route('profile', Auth::id())
-                     ->with('success', 'Đăng bài review thành công!');
+                     ->with('success', 'Bài viết đã được gửi và đang chờ Admin phê duyệt!');
 }
      public function toggleLike($id)
     {
