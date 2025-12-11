@@ -46,7 +46,7 @@
                     Danh Sách Review ({{ $reviews->total() }})
                 </h2>
                 
-                <a href="{{ route('detail', $book->slug) }}#reviews" class="inline-flex items-center gap-2 text-sm font-bold text-brand-accent hover:text-brand-brown hover:underline transition">
+                <a href="{{ route('detail', $book->slug) }}#section-review" class="inline-flex items-center gap-2 text-sm font-bold text-brand-accent hover:text-brand-brown hover:underline transition">
                     <i class="fas fa-pen"></i> Viết đánh giá mới
                 </a>
             </div>
@@ -56,11 +56,11 @@
                     <div class="bg-white p-6 md:p-8 rounded-2xl shadow-soft border border-gray-100 hover:shadow-card transition duration-300">
                         <div class="flex items-start gap-5">
                             <div class="flex-shrink-0">
-                                <img src="https://ui-avatars.com/api/?name={{ urlencode($review->user->name) }}&background=random&size=64&color=fff" 
-                                     class="w-12 h-12 rounded-full border-2 border-brand-beige shadow-sm">
+                                <img src="{{ $review->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($review->user->name) . '&background=random&size=64&color=fff' }}" 
+                                     class="w-12 h-12 rounded-full border-2 border-brand-beige shadow-sm object-cover">
                             </div>
 
-                            <div class="flex-1">
+                            <div class="flex-1 min-w-0">
                                 <div class="flex justify-between items-start mb-3">
                                     <div>
                                         <h4 class="font-bold text-gray-800 text-base">{{ $review->user->name }}</h4>
@@ -70,7 +70,7 @@
                                                 @for($i=0; $i < 5 - round($review->rating); $i++) <i class="far fa-star text-gray-300"></i> @endfor
                                             </div>
                                             <span class="text-gray-300 text-xs">•</span>
-                                            <span class="text-xs text-gray-400">{{ $review->created_at->format('d/m/Y') }}</span>
+                                            <span class="text-xs text-gray-400">{{ $review->created_at->format('d/m/Y H:i') }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -79,8 +79,17 @@
                                     <h3 class="font-bold text-brand-green text-lg mb-2">"{{ $review->title }}"</h3>
                                 @endif
                                 
-                                <div class="text-gray-600 text-sm leading-7 mb-4 text-justify">
-                                    {!! nl2br(e($review->content)) !!}
+                                {{-- [MỚI] Hiển thị ảnh Thumbnail của bài Review --}}
+                                @if(!empty($review->thumbnail))
+                                    <div class="mb-4 rounded-xl overflow-hidden shadow-sm border border-gray-100 max-w-lg">
+                                        <img src="{{ \Illuminate\Support\Str::startsWith($review->thumbnail, 'http') ? $review->thumbnail : asset('storage/' . $review->thumbnail) }}" 
+                                             class="w-full h-auto object-cover hover:scale-105 transition duration-700">
+                                    </div>
+                                @endif
+                                
+                                {{-- [SỬA] Dùng {!! !!} để render HTML từ CKEditor --}}
+                                <div class="text-gray-600 text-sm leading-7 mb-4 text-justify prose prose-sm max-w-none">
+                                    {!! $review->content !!}
                                 </div>
 
                                 <div class="flex items-center gap-6 pt-4 border-t border-gray-50">
@@ -95,13 +104,16 @@
                                     </button>
                                 </div>
 
+                                {{-- KHUNG BÌNH LUẬN --}}
                                 <div id="comment-box-{{ $review->id }}" class="hidden mt-4 pt-4 border-t border-dashed border-gray-100 animate-fade-in-down">
                                     
+                                    {{-- Danh sách bình luận cũ --}}
                                     @if($review->comments && $review->comments->count() > 0)
                                         <div class="space-y-3 mb-4 pl-4 border-l-2 border-gray-100">
                                             @foreach($review->comments as $comment)
                                                 <div class="flex gap-3">
-                                                    <img src="https://ui-avatars.com/api/?name={{ urlencode($comment->user->name ?? 'User') }}&size=32" class="w-8 h-8 rounded-full mt-1 border border-white shadow-sm">
+                                                    <img src="{{ $comment->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($comment->user->name) . '&size=32' }}" 
+                                                         class="w-8 h-8 rounded-full mt-1 border border-white shadow-sm object-cover">
                                                     <div class="bg-gray-50 p-3 rounded-r-xl rounded-bl-xl text-xs w-full">
                                                         <div class="flex justify-between mb-1">
                                                             <span class="font-bold text-gray-800">{{ $comment->user->name ?? 'Ẩn danh' }}</span>
@@ -114,18 +126,17 @@
                                         </div>
                                     @endif
 
+                                    {{-- [SỬA] Form bình luận với Action Route chính xác --}}
                                     @auth
-                                        <form action="#" method="POST" class="flex gap-3 items-start mt-2">
+                                        <form action="{{ route('posts.comment', $review->id) }}" method="POST" class="flex gap-3 items-start mt-2">
                                             @csrf
-                                            <input type="hidden" name="post_id" value="{{ $review->id }}">
-                                            
-                                            <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=3E5F4E&color=fff" 
-                                                 class="w-8 h-8 rounded-full border border-gray-200">
+                                            <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&background=3E5F4E&color=fff' }}" 
+                                                 class="w-8 h-8 rounded-full border border-gray-200 object-cover">
                                             
                                             <div class="flex-1 relative group">
-                                                <textarea name="content" rows="1" 
+                                                <textarea name="content" rows="1" required
                                                           class="w-full bg-gray-50 border border-gray-200 rounded-2xl py-2 pl-4 pr-10 text-sm focus:outline-none focus:border-brand-green focus:bg-white resize-none transition-all shadow-inner"
-                                                          placeholder="Viết bình luận của bạn..." required></textarea>
+                                                          placeholder="Viết bình luận của bạn..."></textarea>
                                                 <button type="submit" class="absolute right-2 top-1.5 text-gray-400 hover:text-brand-green p-1 transition-colors">
                                                     <i class="fas fa-paper-plane"></i>
                                                 </button>
@@ -137,7 +148,7 @@
                                         </div>
                                     @endauth
                                 </div>
-                                </div>
+                            </div>
                         </div>
                     </div>
                 @empty
@@ -147,14 +158,13 @@
                         </div>
                         <h3 class="text-lg font-bold text-gray-600 mb-2">Chưa có đánh giá nào</h3>
                         <p class="text-gray-500 mb-6 text-sm">Hãy quay lại trang chi tiết sách để viết bài đầu tiên nhé.</p>
-                        <a href="{{ route('detail', $book->slug) }}#reviews" class="inline-block bg-brand-green text-white px-6 py-2 rounded-lg font-bold shadow-sm hover:bg-brand-green-light">
+                        <a href="{{ route('detail', $book->slug) }}#section-review" class="inline-block bg-brand-green text-white px-6 py-2 rounded-lg font-bold shadow-sm hover:bg-brand-green-light transition">
                             Viết đánh giá ngay
                         </a>
                     </div>
                 @endforelse
             </div>
 
-            {{-- 3. PHÂN TRANG --}}
             <div class="mt-12 flex justify-center">
                 {{ $reviews->links() }}
             </div>
@@ -164,18 +174,13 @@
 
 @push('scripts')
 <script>
-    // Hàm bật/tắt khung bình luận
     function toggleComment(reviewId) {
         const commentBox = document.getElementById(`comment-box-${reviewId}`);
-        
         if (commentBox.classList.contains('hidden')) {
-            // Hiện lên
             commentBox.classList.remove('hidden');
-            // Tìm ô input và focus vào nó
             const textarea = commentBox.querySelector('textarea');
             if(textarea) setTimeout(() => textarea.focus(), 100);
         } else {
-            // Ẩn đi
             commentBox.classList.add('hidden');
         }
     }

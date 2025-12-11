@@ -33,8 +33,8 @@
             </div>
         @endif
 
-        {{-- 1. HERO SECTION (Giữ nguyên) --}}
-        <div class="bg-white rounded-3xl p-8 md:p-12 shadow-soft border border-gray-100 mb-16 relative overflow-hidden">
+        {{-- 1. HERO SECTION (GIỮ NGUYÊN) --}}
+        <div class="bg-white rounded-3xl p-8 md:p-12 shadow-soft border border-gray-100 mb-12 relative overflow-hidden">
             <div class="absolute top-0 right-0 w-64 h-64 bg-brand-green/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
 
             <div class="grid grid-cols-1 md:grid-cols-12 gap-12 relative z-10">
@@ -62,13 +62,12 @@
                                 <span class="text-brand-green font-bold">{{ $book->author_name ?? 'Đang cập nhật' }}</span>
                             </span>
                             <span class="text-gray-300">|</span>
-                            <a href="#reviews" class="flex items-center text-yellow-400 hover:opacity-80 transition cursor-pointer">
+                            <div class="flex items-center text-yellow-400">
                                 <i class="fas fa-star"></i><span class="text-gray-500 ml-2 text-xs">({{ $book->avg_rating ?? '0' }}/5)</span>
-                            </a>
+                            </div>
                         </div>
                     </div>
 
-                    {{-- Mô tả ngắn --}}
                     <p class="text-gray-600 leading-relaxed mb-8 text-lg font-light italic line-clamp-3">
                         {{ $book->description ?? 'Chưa có mô tả ngắn.' }}
                     </p>
@@ -89,9 +88,9 @@
                     </div>
 
                     <div class="mt-auto flex flex-col sm:flex-row gap-4 items-center">
-                        <a href="#main-content" class="group flex items-center justify-center gap-2 px-8 py-3.5 rounded-full border-2 border-brand-green text-brand-green font-bold hover:bg-brand-green hover:text-white transition-all duration-300 min-w-[200px] shadow-sm hover:shadow-lg">
+                        <a href="#section-review" class="group flex items-center justify-center gap-2 px-8 py-3.5 rounded-full border-2 border-brand-green text-brand-green font-bold hover:bg-brand-green hover:text-white transition-all duration-300 min-w-[200px] shadow-sm hover:shadow-lg">
                             <i class="fas fa-book-open text-lg"></i>
-                            <span>Đọc Nội Dung</span>
+                            <span>Đọc Review</span>
                         </a>
                         <a href="#" class="flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-brand-accent text-white font-bold shadow-lg hover:bg-[#c29263] hover:-translate-y-1 transition-all duration-300 min-w-[200px]">
                             <i class="fas fa-shopping-cart"></i>
@@ -102,157 +101,205 @@
             </div>
         </div>
 
-        {{-- 2. LAYOUT GIỮA (SINGLE COLUMN) --}}
-        <div id="main-content" class="max-w-4xl mx-auto space-y-12">
+        {{-- ============================================================= --}}
+        {{-- 2. MAIN CONTENT (GRID 2 CỘT: TRÁI 8 - PHẢI 4)                  --}}
+        {{-- ============================================================= --}}
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
             
-            {{-- A. GIỚI THIỆU NỘI DUNG (LẤY TỪ BẢNG POSTS) --}}
-            <section>
-                <div class="flex items-center gap-4 mb-8 border-b border-gray-100 pb-4">
-                    <span class="w-10 h-10 rounded-full bg-brand-green/10 flex items-center justify-center text-brand-green">
-                        <i class="fas fa-align-left"></i>
-                    </span>
-                    <h2 class="text-2xl font-bold text-gray-800 font-serif">Nội Dung Chi Tiết</h2>
-                </div>
-
-                @php
-                    // Lấy bài viết published mới nhất của sách này
-                    $mainPost = $book->posts->where('status', 'published')->sortByDesc('created_at')->first();
-                @endphp
-
-                @if($mainPost)
-                    <article class="bg-white rounded-2xl p-0 md:p-2">
-                        <h1 class="text-3xl font-bold text-gray-900 mb-4 font-serif">{{ $mainPost->title }}</h1>
+            {{-- A. CỘT CHÍNH (BÊN TRÁI - REVIEW CHI TIẾT & BÌNH LUẬN) --}}
+            <div class="lg:col-span-8 space-y-12">
+                
+                {{-- [SECTION 1] BÀI REVIEW CHI TIẾT --}}
+                <section id="section-review" class="scroll-mt-28">
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+                        <div class="flex items-center gap-3">
+                            <span class="w-1 h-8 bg-brand-green rounded-full"></span>
+                            <h2 class="text-2xl font-bold text-gray-800 font-serif">Bài Review Chi Tiết</h2>
+                        </div>
                         
-                        <div class="flex items-center gap-3 text-sm text-gray-500 mb-6">
-                            <img src="https://ui-avatars.com/api/?name={{ urlencode($mainPost->user->name ?? 'Admin') }}&background=random&size=32" class="w-8 h-8 rounded-full">
-                            <span class="font-medium text-gray-700">{{ $mainPost->user->name ?? 'Quản trị viên' }}</span>
-                            <span>•</span>
-                            <span>{{ $mainPost->created_at->format('d/m/Y') }}</span>
-                        </div>
+                        @auth
+                            <a href="{{ route('reviews.create') }}" class="flex items-center gap-2 px-5 py-2 bg-black text-white text-sm font-bold rounded-full hover:bg-gray-800 transition shadow-lg transform hover:-translate-y-0.5">
+                                <i class="fas fa-pen-nib"></i> Viết Review
+                            </a>
+                        @else
+                            <a href="{{ route('login') }}" class="text-brand-green font-bold text-sm hover:underline flex items-center gap-1">
+                                <i class="fas fa-sign-in-alt"></i> Đăng nhập để viết
+                            </a>
+                        @endauth
+                    </div>
 
-                        @if(!empty($mainPost->thumbnail))
-                            <div class="mb-8 rounded-2xl overflow-hidden shadow-sm aspect-[21/9]">
-                                <img src="{{ Str::startsWith($mainPost->thumbnail, 'http') ? $mainPost->thumbnail : asset($mainPost->thumbnail) }}" 
-                                     class="w-full h-full object-cover">
+                    @php
+                        // Lấy bài viết published mới nhất
+                        $mainPost = $book->posts->where('status', 'published')->sortByDesc('created_at')->first();
+                    @endphp
+
+                    @if($mainPost)
+                        <article class="bg-white rounded-2xl p-6 md:p-8 border border-gray-100 shadow-sm mb-6">
+                            <h1 class="text-3xl font-bold text-gray-900 mb-4 font-serif leading-tight">{{ $mainPost->title }}</h1>
+                            
+                            <div class="flex items-center gap-3 text-sm text-gray-500 mb-6 bg-gray-50 p-3 rounded-lg w-fit">
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode($mainPost->user->name ?? 'Admin') }}&background=random&size=32" class="w-8 h-8 rounded-full">
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-gray-800">{{ $mainPost->user->name ?? 'Quản trị viên' }}</span>
+                                    <span class="text-xs">{{ $mainPost->created_at->format('d/m/Y') }}</span>
+                                </div>
                             </div>
-                        @endif
 
-                        <div class="prose prose-stone prose-lg max-w-none text-gray-700 text-justify-last-left">
-                            {!! $mainPost->content !!}
+                            @if(!empty($mainPost->thumbnail))
+                                <div class="mb-8 rounded-2xl overflow-hidden shadow-sm aspect-[21/9]">
+                                    <img src="{{ Str::startsWith($mainPost->thumbnail, 'http') ? $mainPost->thumbnail : asset('storage/' . $mainPost->thumbnail) }}" 
+                                         class="w-full h-full object-cover">
+                                </div>
+                            @endif
+
+                            <div class="prose prose-stone prose-lg max-w-none text-gray-700 text-justify-last-left leading-relaxed">
+                                {!! $mainPost->content !!}
+                            </div>
+                        </article>
+                    @else
+                        {{-- Trường hợp chưa có review nào --}}
+                        <div class="bg-white p-12 rounded-2xl text-center border border-dashed border-gray-300 shadow-sm mb-6">
+                            <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
+                                <i class="fas fa-feather-alt text-3xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">Chưa có bài review chi tiết</h3>
+                            <p class="text-gray-500 italic mb-4">Hãy là người đầu tiên chia sẻ cảm nhận sâu sắc về cuốn sách này!</p>
+                            
+                            @if(!empty($book->description))
+                                <div class="mt-6 text-justify text-gray-600 bg-gray-50 p-6 rounded-xl border border-gray-100">
+                                    <h4 class="font-bold text-sm mb-2 uppercase text-gray-400">Sơ lược nội dung:</h4>
+                                    {!! nl2br(e($book->description)) !!}
+                                </div>
+                            @endif
                         </div>
-                    </article>
-                @else
-                    <div class="bg-gray-50 p-8 rounded-2xl text-center border border-dashed border-gray-300">
-                        <p class="text-gray-500 italic">Nội dung chi tiết đang được cập nhật...</p>
-                        @if(!empty($book->description))
-                            <div class="mt-4 text-justify text-gray-600">{!! nl2br(e($book->description)) !!}</div>
-                        @endif
-                    </div>
-                @endif
-            </section>
+                    @endif
 
-            {{-- B. THÔNG TIN TÁC GIẢ --}}
-            <section class="bg-stone-50 rounded-2xl p-8 border border-stone-200/60 flex flex-col md:flex-row items-center md:items-start gap-8">
-                <div class="flex-shrink-0 relative">
-                    <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md">
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode($book->author_name ?? 'TG') }}&background=random&size=128" 
-                             class="w-full h-full object-cover">
-                    </div>
-                    <div class="absolute bottom-0 right-0 bg-brand-green text-white text-[10px] font-bold px-2 py-0.5 rounded-full border-2 border-white">TG</div>
-                </div>
-                <div class="flex-1 text-center md:text-left">
-                    <h3 class="font-serif font-bold text-xl text-gray-900 mb-2">{{ $book->author_name ?? 'Tác giả' }}</h3>
-                    <p class="text-gray-500 text-sm mb-4 leading-relaxed">
-                        Theo dõi tác giả để nhận thông báo về những tác phẩm mới nhất.
-                    </p>
-                    <button class="px-6 py-2 bg-white border border-gray-300 text-gray-700 font-bold rounded-full text-sm hover:border-brand-green hover:text-brand-green transition shadow-sm">
-                        Xem tác phẩm khác
-                    </button>
-                </div>
-            </section>
+                    {{-- [MỚI] NÚT XEM CÁC REVIEW KHÁC --}}
+                    {{-- Chỉ hiện nếu có ít nhất 1 bài review --}}
+                    @if($book->posts->where('status', 'published')->count() > 0)
+                        <div class="text-center border-t border-gray-100 pt-6">
+                            <p class="text-gray-500 text-sm mb-3 italic">Bạn muốn đọc thêm các góc nhìn khác về cuốn sách này?</p>
+                            <a href="{{ route('book.reviews', $book->slug ?? $book->id) }}" 
+                               class="inline-flex items-center gap-2 px-8 py-3 bg-white border-2 border-brand-green text-brand-green font-bold rounded-full hover:bg-brand-green hover:text-white transition-all duration-300 shadow-sm group">
+                                <span>Xem Các Bài Review Khác</span>
+                                <i class="fas fa-arrow-right transform group-hover:translate-x-1 transition-transform"></i>
+                            </a>
+                        </div>
+                    @endif
+                    {{-- [HẾT PHẦN MỚI] --}}
 
-            {{-- C. BÌNH LUẬN VÀ ĐÁNH GIÁ (SỬA LẠI LOGIC LẤY COMMENT) --}}
-            <section id="reviews" class="scroll-mt-24 pt-4">
-                {{-- [QUAN TRỌNG] Logic lấy comments gián tiếp: Book -> Posts -> Comments --}}
-                @php
-                    // Lấy danh sách comments từ tất cả bài post của sách này
-                    $comments = collect();
-                    if($book->posts->isNotEmpty()) {
-                        foreach($book->posts as $post) {
-                            if($post->comments->isNotEmpty()) {
-                                $comments = $comments->merge($post->comments);
+                </section>
+
+                {{-- [SECTION 2] BÌNH LUẬN CỘNG ĐỒNG --}}
+                <section id="section-comments">
+                    @php
+                        $comments = collect();
+                        if($book->posts->isNotEmpty()) {
+                            foreach($book->posts as $post) {
+                                if($post->comments->isNotEmpty()) {
+                                    $comments = $comments->merge($post->comments);
+                                }
                             }
                         }
-                    }
-                    // Sắp xếp comment mới nhất lên đầu
-                    $comments = $comments->sortByDesc('created_at');
-                @endphp
+                        $comments = $comments->sortByDesc('created_at');
+                    @endphp
 
-                <div class="flex items-center justify-between mb-8">
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3 mb-6">
                         <span class="w-1 h-8 bg-yellow-400 rounded-full"></span>
-                        <h2 class="text-2xl font-bold text-gray-800 font-serif">Bình Luận & Đánh Giá</h2>
-                        
-                        {{-- Hiển thị số lượng comment --}}
-                        <span class="bg-gray-100 text-gray-500 text-xs font-bold px-2 py-1 rounded-md ml-2">
+                        <h2 class="text-2xl font-bold text-gray-800 font-serif">Bình Luận Cộng Đồng</h2>
+                        <span class="bg-gray-100 text-gray-500 text-xs font-bold px-2 py-1 rounded-md">
                             {{ $comments->count() }}
                         </span>
                     </div>
-                    
-                    @auth
-                        <button class="flex items-center gap-2 px-5 py-2.5 bg-black text-white text-sm font-bold rounded-full hover:bg-gray-800 transition shadow-lg shadow-gray-200">
-                            <i class="fas fa-pen"></i> Viết đánh giá
-                        </button>
-                    @else
-                        <a href="{{ route('login') }}" class="text-brand-green font-bold text-sm hover:underline">Đăng nhập để bình luận</a>
-                    @endauth
-                </div>
 
-                <div class="space-y-8">
-                    @if($comments->count() > 0)
-                        @foreach($comments as $comment)
-                            <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition duration-300">
-                                <div class="flex items-start gap-4">
-                                    {{-- Avatar User --}}
-                                    <div class="flex-shrink-0">
-                                        <img src="https://ui-avatars.com/api/?name={{ urlencode($comment->user->name ?? 'U') }}&background=random&size=48" 
-                                             class="w-12 h-12 rounded-full border border-gray-100">
-                                    </div>
-                                    
-                                    {{-- Nội dung Comment --}}
-                                    <div class="flex-1">
-                                        <div class="flex justify-between items-start mb-2">
-                                            <div>
-                                                <h4 class="font-bold text-gray-900 text-sm">{{ $comment->user->name ?? 'Người dùng' }}</h4>
-                                                <div class="flex items-center gap-2 mt-1">
-                                                    {{-- Hiển thị sao đánh giá (nếu có) --}}
-                                                    @if(isset($comment->rating))
-                                                        <div class="flex text-yellow-400 text-xs">
-                                                            @for($i=0; $i < $comment->rating; $i++) <i class="fas fa-star"></i> @endfor
-                                                            @for($i=0; $i < 5 - $comment->rating; $i++) <i class="far fa-star text-gray-300"></i> @endfor
-                                                        </div>
-                                                        <span class="text-gray-300 text-xs">•</span>
-                                                    @endif
-                                                    <span class="text-xs text-gray-400">{{ $comment->created_at->format('d/m/Y H:i') }}</span>
+                    <div class="space-y-6">
+                        @if($comments->count() > 0)
+                            @foreach($comments as $comment)
+                                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition duration-300">
+                                    <div class="flex items-start gap-4">
+                                        <div class="flex-shrink-0">
+                                            <img src="https://ui-avatars.com/api/?name={{ urlencode($comment->user->name ?? 'U') }}&background=random&size=48" 
+                                                 class="w-10 h-10 rounded-full border border-gray-100">
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="flex justify-between items-start mb-1">
+                                                <div>
+                                                    <h4 class="font-bold text-gray-900 text-sm">{{ $comment->user->name ?? 'Người dùng' }}</h4>
+                                                    <span class="text-xs text-gray-400">{{ $comment->created_at->diffForHumans() }}</span>
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        <div class="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-                                            {{ $comment->content }}
+                                            <div class="text-gray-700 text-sm leading-relaxed whitespace-pre-line mt-2">
+                                                {{ $comment->content }}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                            @endforeach
+                        @else
+                            <div class="text-center py-12 bg-stone-50 rounded-2xl border border-dashed border-stone-300">
+                                <i class="far fa-comments text-4xl text-gray-300 mb-3 block"></i>
+                                <p class="text-gray-500 text-sm">Chưa có bình luận nào. Hãy tham gia thảo luận ngay!</p>
                             </div>
-                        @endforeach
-                    @else
-                        <div class="text-center py-12 bg-stone-50 rounded-2xl border border-dashed border-stone-300">
-                            <i class="far fa-comments text-4xl text-gray-300 mb-3 block"></i>
-                            <p class="text-gray-500">Chưa có bình luận nào. Hãy là người đầu tiên đánh giá!</p>
-                        </div>
-                    @endif
+                        @endif
+                    </div>
+                </section>
+            </div>
+
+            {{-- B. CỘT PHỤ (BÊN PHẢI - THÔNG TIN TÁC GIẢ) --}}
+            <aside class="lg:col-span-4 space-y-8 ">
+                
+                {{-- [SECTION 3] CARD TÁC GIẢ --}}
+                <div class="bg-white rounded-2xl shadow-soft border border-gray-100 p-6 text-center">
+                    <h3 class="font-bold text-gray-500 text-xs uppercase tracking-widest mb-6">Thông Tin Tác Giả</h3>
+                    
+                    <div class="relative w-24 h-24 mx-auto mb-4">
+                        <img src="https://ui-avatars.com/api/?name={{ urlencode($book->author_name ?? 'TG') }}&background=random&size=128" 
+                             class="w-full h-full rounded-full object-cover border-4 border-stone-100 shadow-md">
+                        <div class="absolute bottom-0 right-0 bg-brand-green text-white text-[10px] font-bold px-2 py-0.5 rounded-full border-2 border-white">TG</div>
+                    </div>
+                    
+                    <h2 class="text-xl font-bold text-gray-900 font-serif mb-2">
+                        {{ $book->author_name ?? 'Tác giả' }}
+                    </h2>
+                    
+                    <p class="text-gray-500 text-sm mb-6 leading-relaxed px-2">
+                        Theo dõi tác giả để nhận thông báo về những tác phẩm mới nhất và các sự kiện ra mắt sách.
+                    </p>
+                    
+                    <button class="w-full py-3 bg-stone-100 hover:bg-brand-green hover:text-white text-gray-700 font-bold rounded-xl transition duration-300 flex items-center justify-center gap-2">
+                        Xem Tác Phẩm Khác <i class="fas fa-arrow-right text-xs"></i>
+                    </button>
                 </div>
-            </section>
+
+                {{-- Widget Gợi Ý (Optional) --}}
+                <div class="bg-brand-beige/20 rounded-2xl p-6 border border-brand-beige/50">
+                    <h3 class="font-bold text-brand-green text-sm mb-4 flex items-center gap-2">
+                        <i class="fas fa-lightbulb"></i> Có thể bạn thích
+                    </h3>
+                    <div class="space-y-4">
+                        {{-- Placeholder sách gợi ý --}}
+                        <div class="flex gap-3 items-center group cursor-pointer">
+                            <div class="w-12 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0">
+                                <img src="https://via.placeholder.com/50x75" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-brand-accent transition">Nhà Giả Kim</h4>
+                                <span class="text-xs text-gray-500">Paulo Coelho</span>
+                            </div>
+                        </div>
+                         <div class="flex gap-3 items-center group cursor-pointer">
+                            <div class="w-12 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0">
+                                <img src="https://via.placeholder.com/50x75" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-brand-accent transition">Hoàng Tử Bé</h4>
+                                <span class="text-xs text-gray-500">Saint-Exupéry</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </aside>
         </div>
     </main>
 @endsection
