@@ -13,11 +13,37 @@ use Illuminate\Support\Facades\Storage;
 
 class BookController extends Controller
 {
-    // Hiển thị danh sách quản lý (Table)
-    public function index()
+    // Hiển thị danh sách quản lý (Có Tìm kiếm & Lọc)
+    public function index(Request $request)
     {
-        $books = Book::with('categories')->latest()->paginate(10);
-        return view('admin.books.index', compact('books'));
+        // Khởi tạo query từ Model Book
+        $query = Book::with('categories');
+
+        // 1. Tìm kiếm theo Từ khóa (Tên sách HOẶC Tên tác giả)
+        if ($request->has('keyword') && $request->keyword != '') {
+            $keyword = $request->keyword;
+            $query->where(function ($q) use ($keyword) {
+                $q->where('title', 'LIKE', "%{$keyword}%")
+                    ->orWhere('author_name', 'LIKE', "%{$keyword}%");
+            });
+        }
+
+        // 2. Lọc theo Thể loại (Category)
+        // Nếu chọn "Tất cả" (value="all") thì bỏ qua bước này
+        if ($request->has('category_id') && $request->category_id != 'all') {
+            $query->whereHas('categories', function ($q) use ($request) {
+                $q->where('categories.id', $request->category_id);
+            });
+        }
+
+        // Lấy dữ liệu, sắp xếp mới nhất và phân trang
+        // withQueryString() giúp giữ lại các tham số tìm kiếm khi chuyển trang (VD: trang 2 vẫn đang tìm kiếm "Harry Potter")
+        $books = $query->latest()->paginate(10)->withQueryString();
+
+        // Lấy tất cả danh mục để hiển thị trong dropdown bộ lọc
+        $categories = Category::all();
+
+        return view('admin.books.index', compact('books', 'categories'));
     }
 
     // Form thêm mới

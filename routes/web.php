@@ -1,5 +1,10 @@
 <?php
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Models\Book;
 use App\Http\Controllers\HomeController;
@@ -10,7 +15,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\RankingController;
 use App\Http\Controllers\Admin\BookController as AdminBookController;
-
+use App\Http\Controllers\FollowController;
 // ====================================================
 // 1. NHÓM PUBLIC (Ai cũng xem được)
 // ====================================================
@@ -37,7 +42,35 @@ Route::get('/chi-tiet/{slug}/danh-gia', [BookController::class, 'showReviews'])-
 // Xem chi tiết sách
 Route::get('/chi-tiet/{slug}', [BookController::class, 'show'])->name('detail');
 Route::get('/review-search', [BookController::class, 'search'])->name('books.search');
+//
+// code test
+Route::middleware(['auth'])->group(function () {
 
+    // Route hiển thị form (Bạn đã có)
+    Route::get('/reviews/viet-bai', function () {
+        $user = Auth::user(); 
+        if (!$user) return redirect()->route('login');
+        return view('create-review', compact('user'));
+    })->name('reviews.create');
+
+    // Route API tìm sách (Bạn đã có)
+    Route::get('/api/books/search', function (Illuminate\Http\Request $request) {
+        $query = $request->get('q');
+        $books = Illuminate\Support\Facades\DB::table('books')
+            ->where('title', 'like', "%{$query}%")
+            ->orWhere('author_name', 'like', "%{$query}%")
+            ->select('id', 'title', 'author_name', 'published_year', 'cover_image')
+            ->limit(10)
+            ->get();
+        return response()->json($books);
+    });
+
+    // ▼▼▼ 2. THÊM DÒNG QUAN TRỌNG NÀY ĐỂ SỬA LỖI ROUTE NOT DEFINED ▼▼▼
+    Route::post('/posts/store', [PostController::class, 'store'])->name('posts.store');
+});
+
+//code test
+//
 Route::get('/book/{slug}', [BookController::class, 'show'])->name('book.show');
 
 Route::get('/ranking/top-liked', [RankingController::class, 'topLikedPosts']);
@@ -68,8 +101,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // Trang cá nhân
-    Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
-
+    Route::get('/profile/{id?}', [ProfileController::class, 'index'])
+    ->name('profile');
+     Route::post('/follow/toggle', [FollowController::class, 'toggleFollow'])->name('follow.toggle');
     // Gửi đánh giá (Review) - Phải đăng nhập mới được đánh giá
     // Route::post('/review', [ReviewController::class, 'store'])->name('review.store');
 
@@ -110,3 +144,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/activity-logs/restore-trashed', [\App\Http\Controllers\Admin\ActivityLogController::class, 'restoreTrashed'])->name('activity-logs.restore-trashed');
     Route::delete('/activity-logs/force-delete', [\App\Http\Controllers\Admin\ActivityLogController::class, 'forceDelete'])->name('activity-logs.force-delete');
 });
+Route::middleware('auth')->post('/follow/toggle', [App\Http\Controllers\FollowController::class, 'toggleFollow'])->name('follow.toggle');
+Route::get('/api/user/{id}/followers', [FollowController::class, 'getFollowers']);
+Route::get('/api/user/{id}/following', [FollowController::class, 'getFollowing']);
