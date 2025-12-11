@@ -4,13 +4,14 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -43,14 +44,6 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    // protected function casts(): array
-    // {
-    //     return [
-    //         'email_verified_at' => 'datetime',
-    //         'password' => 'hashed',
-    //         'is_active' => 'boolean',
-    //     ];
-    // }
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
@@ -74,11 +67,11 @@ class User extends Authenticatable
     }
 
     public function bookshelves()
-{
-    return $this->belongsToMany(Book::class, 'bookshelves', 'user_id', 'book_id')
-                ->withPivot('status')
-                ->withTimestamps();
-}
+    {
+        return $this->belongsToMany(Book::class, 'bookshelves', 'user_id', 'book_id')
+            ->withPivot('status')
+            ->withTimestamps();
+    }
 
     public function contributedBooks()
     {

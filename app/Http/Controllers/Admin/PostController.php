@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Post;
+use App\Models\AdminActivityLog;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
@@ -30,8 +31,27 @@ class PostController extends Controller
     public function update(Request $request, $id)
     {
         $post = Post::findOrFail($id);
+        $oldStatus = $post->status;
+
         // Duyệt bài hoặc Từ chối
         $post->update(['status' => $request->status]);
+
+        // Ghi log
+        $actionType = $request->status === 'published' ? 'approve' : 'reject';
+        $bookTitle = $post->book->title ?? 'Sách đã xóa';
+        $actionDesc = $request->status === 'published'
+            ? "Duyệt bài review: {$bookTitle}"
+            : "Từ chối bài review: {$bookTitle}";
+
+        AdminActivityLog::log(
+            $actionType,
+            $actionDesc,
+            Post::class,
+            $post->id,
+            ['status' => $oldStatus],
+            ['status' => $request->status]
+        );
+
         return back()->with('success', 'Cập nhật trạng thái bài viết thành công!');
     }
 
@@ -40,7 +60,22 @@ class PostController extends Controller
      */
     public function destroy($id)
     {
-        Post::destroy($id);
+        $post = Post::with('book')->findOrFail($id);
+        $postData = $post->toArray();
+        $bookTitle = $post->book->title ?? 'Sách đã xóa';
+
+        $post->delete();
+
+        // Ghi log
+        AdminActivityLog::log(
+            'delete',
+            "Xóa bài review về sách: {$bookTitle}",
+            Post::class,
+            $id,
+            $postData,
+            null
+        );
+
         return back()->with('success', 'Đã xóa bài viết');
     }
 }
