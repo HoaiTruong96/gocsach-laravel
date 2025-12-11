@@ -107,8 +107,12 @@
                 </div>
             </nav>
 
-            {{-- 3. Footer Actions --}}
-            <div class="p-4 border-t border-slate-800 bg-slate-950/30">
+                <a href="{{ route('admin.game.index') }}"
+                    class="{{ request()->routeIs('admin.game.*') || request()->routeIs('admin.badges.*') || request()->routeIs('admin.challenges.*') ? 'bg-red-600 text-white shadow-md' : 'text-gray-400 hover:bg-gray-800 hover:text-white' }} flex items-center gap-3 px-4 py-3 rounded-lg transition">
+                    <i class="fas fa-trophy w-5"></i>
+                    <span>Thử Thách & Danh Hiệu</span>
+                </a>
+
                 <a href="{{ route('home') }}"
                    class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition-all mb-2 group">
                     <i class="fas fa-external-link-alt w-5 text-center group-hover:text-blue-400"></i>
@@ -168,5 +172,6 @@
         </div>
     </div>
 
+    @stack('scripts')
 </body>
 </html>
