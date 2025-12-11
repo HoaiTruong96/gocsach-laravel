@@ -8,26 +8,62 @@ use App\Models\Post;
 
 class BookController extends Controller
 {
-    // 1. TRANG CHỦ
-    public function home(Request $request)
+    // 1. TRANG CHỦ (ĐÃ SỬA ĐỂ HIỆN REVIEW + LIKE/COMMENT)
+    public function index(Request $request)
     {
+        // 1. Lấy sách cho Slider
         $books = Book::orderBy('id', 'desc')->take(5)->get();
-        return view('home', compact('books'));
+
+        // 2. Lấy Review Cộng Đồng (Kèm số lượng Like & Comment)
+        $filter = $request->get('filter', 'latest');
+        
+        // [QUAN TRỌNG] withCount giúp đếm số lượng like và comment cho từng bài post
+        $query = Post::with(['user', 'book'])
+            ->withCount(['likes', 'comments']); 
+
+        // Xử lý bộ lọc
+        if ($filter == 'viewed') {
+            $query->orderBy('view_count', 'desc'); // Lọc theo lượt xem
+        } elseif ($filter == 'liked') {
+            $query->orderBy('likes_count', 'desc'); // Lọc theo số lượng like
+        } else {
+            $query->orderBy('created_at', 'desc'); // Mặc định: Mới nhất
+        }
+
+        // Lấy 6 bài review
+        $latestReviews = $query->take(6)->get();
+
+        return view('home', [
+            'books' => $books,
+            'latestReviews' => $latestReviews, // Gửi biến này sang View
+            'currentFilter' => $filter
+        ]);
+    }
+    
+    // (Để tương thích nếu route gọi là 'home' thay vì 'index')
+    public function home(Request $request) {
+        return $this->index($request);
     }
 
-    // 2. TRANG CHI TIẾT SÁCH (SỬA CHỖ NÀY)
-    public function show($slug)
+    // 2. TRANG CHI TIẾT SÁCH
+    public function show($id)
     {
-        $book = Book::where('slug', $slug)->firstOrFail();
+        // Kiểm tra xem tham số truyền vào là ID hay Slug để tìm cho đúng
+        if (is_numeric($id)) {
+            $book = Book::with(['posts.user', 'posts.likes', 'posts.comments.user'])
+                ->withCount('posts') // Đếm tổng số bài review của sách
+                ->find($id);
+        } else {
+            $book = Book::with(['posts.user', 'posts.likes', 'posts.comments.user'])
+                ->withCount('posts')
+                ->where('slug', $id)
+                ->firstOrFail();
+        }
 
-        // [MỚI] Load quan hệ 'posts' (Review) nhưng LỌC chỉ lấy bài 'published'
-        // Cách này giúp $book->posts trong view chỉ hiện bài đã duyệt
-        $book->load(['posts' => function ($query) {
-            $query->where('status', 'published')->latest(); 
-        }, 'posts.user']); // Load kèm user để hiện avatar người review
+        if (!$book) return redirect()->route('home')->with('error', 'Không tìm thấy sách!');
 
-        // (Tùy chọn) Tính điểm trung bình chỉ dựa trên các bài đã duyệt
-        // $avgRating = $book->posts->where('status', 'published')->avg('rating');
+        // Lọc bài đã duyệt (nếu có cột status)
+        // $book->setRelation('posts', $book->posts->where('status', 'published'));
 
         return view('book-detail', compact('book'));
     }
@@ -46,31 +82,27 @@ class BookController extends Controller
         return view('search-book', ['books' => $books]);
     }
 
-    // 4. TRANG DANH SÁCH REVIEW (ĐÃ ỔN - GIỮ NGUYÊN)
-    public function showReviews($slug)
-    {
-        $book = Book::where('slug', $slug)->firstOrFail();
-
-        $reviews = Post::where('book_id', $book->id)
-            ->where('status', 'published') // Dòng này quan trọng, giữ nguyên
-            ->with('user')                 
-            ->latest()                     
-            ->paginate(3);                 
-        $query = Post::with(['user', 'book'])
-            ->withCount(['likes', 'comments']); 
-        return view('review-detail', compact('book', 'reviews'));
-    }
+    // 4. TRANG SÁCH MỚI
     public function newBooks()
     {
-        // Lấy sách sắp xếp theo ngày tạo mới nhất, phân trang 12 cuốn
-        $books = Book::with('categories')
+        $books = Book::with('category')
                      ->orderBy('created_at', 'desc')
                      ->paginate(12);
 
-        // Tận dụng lại view 'list' (Danh sách) nhưng truyền biến $title khác đi
         return view('list', [
             'books' => $books,
-            'pageTitle' => 'Sách Mới Cập Nhật' // Tiêu đề tùy chỉnh
+            'pageTitle' => 'Sách Mới Cập Nhật'
         ]);
     }
+    public function showReviews($slug)
+{
+    // Lấy sách theo slug
+    $book = Book::where('slug', $slug)->with('reviews')->firstOrFail();
+
+    return view('book-reviews', [
+        'book' => $book,
+        'pageTitle' => 'Đánh giá sách: ' . $book->title
+    ]);
+}
+
 }
