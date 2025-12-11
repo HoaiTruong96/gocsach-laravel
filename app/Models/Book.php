@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
-#use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Book extends Model
 {
-    use HasFactory; #, SoftDeletes;
+    use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
         'title',
@@ -48,5 +49,13 @@ class Book extends Model
     public function bookshelves()
     {
         return $this->hasMany(Bookshelf::class);
+    }
+
+    // --- PHẦN ĐÃ SỬA ---
+    public function comments()
+    {
+        // Tham số thứ 2 ('post_id'): Tên cột khóa ngoại trong bảng comments
+        // Tham số thứ 3 ('id'): Tên cột khóa chính trong bảng books
+        return $this->hasMany(Comment::class, 'post_id', 'id');
     }
 }

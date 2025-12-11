@@ -59,4 +59,17 @@ class BookController extends Controller
 
         return view('review-detail', compact('book', 'reviews'));
     }
+    public function newBooks()
+    {
+        // Lấy sách sắp xếp theo ngày tạo mới nhất, phân trang 12 cuốn
+        $books = Book::with('categories')
+                     ->orderBy('created_at', 'desc')
+                     ->paginate(12);
+
+        // Tận dụng lại view 'list' (Danh sách) nhưng truyền biến $title khác đi
+        return view('list', [
+            'books' => $books,
+            'pageTitle' => 'Sách Mới Cập Nhật' // Tiêu đề tùy chỉnh
+        ]);
+    }
 }

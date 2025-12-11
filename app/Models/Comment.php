@@ -11,30 +11,32 @@ class Comment extends Model
 
     protected $fillable = [
         'user_id',
-        'post_id',
-        'parent_id',
-        'post_id', // Giữ nguyên theo database
-        'content'
+        'post_id', // Cột này đang lưu ID của Sách (hoặc Post)
+        'content',
+        'rating',
+        // ... các cột khác
     ];
 
+    // Quan hệ với User (người bình luận)
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Quan hệ: Comment thuộc về 1 Review
-    public function review()
+    // --- THÊM ĐOẠN NÀY ĐỂ SỬA LỖI ---
+    public function book()
     {
-        return $this->belongsTo(Post::class, 'post_id', 'id');
+        // Khai báo: Comment thuộc về Book thông qua cột 'post_id'
+        return $this->belongsTo(Book::class, 'post_id');
     }
-
-    public function parent()
+    
+    // Nếu bạn cũng muốn lấy comment theo Post, có thể giữ thêm cái này (tuỳ chọn)
+    public function post()
     {
-        return $this->belongsTo(Comment::class, 'parent_id');
+        return $this->belongsTo(Post::class, 'post_id');
     }
-
-    public function replies()
+    public function likes()
     {
-        return $this->hasMany(Comment::class, 'parent_id');
+        return $this->hasMany(CommentLike::class, 'comment_id');
     }
 }
