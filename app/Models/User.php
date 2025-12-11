@@ -4,14 +4,14 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
+#use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable; #, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -82,15 +82,15 @@ class User extends Authenticatable
     public function followings()
     {
         return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     // 5. Những người đang theo dõi tôi (Followers)
     // Bảng trung gian 'follows', khóa ngoại 'following_id' (là tôi), khóa liên kết 'follower_id' (người kia)
-    public function followers() 
+    public function followers()
     {
         return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     // 6. Hàm kiểm tra: Tôi có đang follow người có ID này không?
