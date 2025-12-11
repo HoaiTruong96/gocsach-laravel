@@ -16,13 +16,15 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\RankingController;
 use App\Http\Controllers\Admin\BookController as AdminBookController;
 use App\Http\Controllers\FollowController;
+use App\Http\Controllers\Admin\ArticleController;
+use App\Http\Controllers\Admin\BannerController;
 // ====================================================
 // 1. NHÓM PUBLIC (Ai cũng xem được)
 // ====================================================
 
 // Trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
-
+Route::get('/tap-chi/{slug}', [ArticleController::class, 'show'])->name('articles.show');
 // ===> [MỚI THÊM] Trang Danh sách sách (Frontend tĩnh) <===
 // Truy cập bằng đường dẫn: http://127.0.0.1:8000/danh-sach
 
@@ -131,6 +133,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // 1. Quản lý Sách
     Route::resource('books', AdminBookController::class);
+    Route::resource('articles', ArticleController::class);
 
     // 2. Quản lý Danh mục
     Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class);
@@ -140,6 +143,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // 4. Quản lý Thành viên
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
+    // Route quản lý Banners (Tự động tạo: index, create, store, edit, update, destroy)
+    Route::resource('banners', BannerController::class);
 
     // 5. Lịch sử hoạt động Admin
     Route::get('/activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
