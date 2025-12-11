@@ -153,3 +153,4 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 Route::middleware('auth')->post('/follow/toggle', [App\Http\Controllers\FollowController::class, 'toggleFollow'])->name('follow.toggle');
 Route::get('/api/user/{id}/followers', [FollowController::class, 'getFollowers']);
 Route::get('/api/user/{id}/following', [FollowController::class, 'getFollowing']);
+Route::get('/sach-moi', [BookController::class, 'newBooks'])->name('books.new');
