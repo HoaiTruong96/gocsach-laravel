@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\AdminActivityLog;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -23,8 +24,24 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        if ($user->role === 'admin') return back()->with('error', 'Không thể xóa Admin');
+        if ($user->role === 'admin')
+            return back()->with('error', 'Không thể xóa Admin');
+
+        $userData = $user->toArray();
+        $userName = $user->name;
+
         $user->delete();
+
+        // Ghi log
+        AdminActivityLog::log(
+            'delete',
+            "Xóa thành viên: {$userName} ({$userData['email']})",
+            User::class,
+            $userData['id'],
+            $userData,
+            null
+        );
+
         return back()->with('success', 'Đã xóa thành viên');
     }
 }
