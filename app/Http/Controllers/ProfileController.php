@@ -11,18 +11,16 @@ class ProfileController extends Controller
 {
      public function index(Request $request, $id = null)
     {
-        // LOGIC XÁC ĐỊNH USER CẦN XEM
+        // 1. XÁC ĐỊNH USER
         if ($id) {
-            // Nếu có ID trên URL (VD: /profile/5) -> Xem người khác
             $user = User::find($id);
-            if (!$user) return redirect('/')->with('error', 'Người dùng không tồn tại!');
+            if (!$user) return redirect()->route('home')->with('error', 'Người dùng không tồn tại!');
         } else {
-            // Nếu không có ID -> Xem chính mình
             $user = Auth::user();
             if (!$user) return redirect()->route('login');
         }
 
-        // 1. Thống kê
+        // 2. THỐNG KÊ
         $totalBooks = $user->bookshelves()->count();
         $totalReviews = $user->posts()->count();
         $totalFollowing = $user->followings()->count();
@@ -59,12 +57,11 @@ class ProfileController extends Controller
         return view('profile', [
             'user' => $user,
             'reviews' => $reviews,
-            'myBooks' => $myBooks,
+            'myBooks' => $myBooks, // Biến này giờ chỉ chứa sách yêu thích
             'totalBooks' => $totalBooks,
             'totalReviews' => $totalReviews,
             'totalFollowing' => $totalFollowing,
             'totalFollowers' => $totalFollowers,
-            'currentFilter' => $request->get('status', 'all')
         ]);
     }
 }

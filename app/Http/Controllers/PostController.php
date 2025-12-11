@@ -13,41 +13,49 @@ class PostController extends Controller
 {
    public function store(Request $request)
 {
-    // 1. Validate dữ liệu
+    // 1. Validate dữ liệu (Bao gồm cả ảnh thumbnail)
     $request->validate([
         'book_id' => 'required|exists:books,id',
         'rating'  => 'required|integer|min:1|max:5',
-        'title'   => 'required|string|max:255', // Bắt buộc có tiêu đề
+        'title'   => 'required|string|max:255',
         'content' => 'required|min:10',
+        'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validate ảnh
     ], [
-        'book_id.exists' => 'Vui lòng chọn một cuốn sách hợp lệ từ danh sách gợi ý.',
+        'book_id.exists' => 'Vui lòng chọn một cuốn sách hợp lệ.',
         'title.required' => 'Bạn chưa nhập tiêu đề bài viết.',
-        'content.min' => 'Nội dung review quá ngắn, hãy viết thêm chút nữa nhé!',
+        'content.min' => 'Nội dung review quá ngắn.',
+        'thumbnail.image' => 'File tải lên phải là hình ảnh.',
+        'thumbnail.max' => 'Ảnh không được lớn hơn 2MB.',
     ]);
 
-    // 2. Tạo Slug duy nhất
-    $slug = Str::slug($request->title) . '-' . time();
+    // 2. Xử lý Upload Ảnh (Nếu có)
+    $thumbnailPath = null;
+    if ($request->hasFile('thumbnail')) {
+        // Lưu ảnh vào thư mục storage/app/public/posts
+        $thumbnailPath = $request->file('thumbnail')->store('posts', 'public');
+    }
 
-    // ... đoạn validate giữ nguyên ...
+    // 3. Tạo Slug
+    $slug = \Illuminate\Support\Str::slug($request->title) . '-' . time();
 
-    // 3. Lưu vào Database
-    Post::create([
-        'user_id'      => Auth::id(),
+    // 4. Lưu vào Database (Kết hợp cả Thumbnail và Pending)
+    \App\Models\Post::create([
+        'user_id'      => \Illuminate\Support\Facades\Auth::id(),
         'book_id'      => $request->book_id,
         'title'        => $request->title,
         'slug'         => $slug,
         'rating'       => $request->rating,
         'content'      => $request->content,
         
-        // [SỬA] Đổi 'published' thành 'pending'
-        'status'       => 'pending', 
+        'thumbnail'    => $thumbnailPath, // [QUAN TRỌNG 1] Lưu đường dẫn ảnh
         
-        'published_at' => now(), // Có thể để null hoặc now() tùy bạn
+        'status'       => 'pending',      // [QUAN TRỌNG 2] Đặt trạng thái chờ duyệt
+        
+        'published_at' => now(),          // Ngày gửi bài
     ]);
     
-    // 4. Quay về trang Profile
-    // [SỬA] Đổi thông báo để người dùng không hoang mang
-    return redirect()->route('profile', Auth::id())
+    // 5. Quay về Profile với thông báo chờ duyệt
+    return redirect()->route('profile', \Illuminate\Support\Facades\Auth::id())
                      ->with('success', 'Bài viết đã được gửi và đang chờ Admin phê duyệt!');
 }
      public function toggleLike($id)

@@ -94,8 +94,9 @@
                             </div>
                         </div>
 
-                        {{-- GIAI ĐOẠN 2: FORM REVIEW --}}
-                        <form id="step-review" class="hidden flex-col gap-6 mt-6 animate-fade-in-up" action="{{ route('posts.store') }}" method="POST">
+                       {{-- GIAI ĐOẠN 2: FORM REVIEW --}}
+                        {{-- [QUAN TRỌNG] Đã thêm enctype để upload ảnh --}}
+                        <form id="step-review" class="hidden flex-col gap-6 mt-6 animate-fade-in-up" action="{{ route('posts.store') }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             <input type="hidden" name="book_id" id="selected-book-id">
                             <input type="hidden" name="rating" id="selected-rating-value" value="5">
@@ -132,7 +133,7 @@
                                 </div>
                             </div>
 
-                            {{-- 3. Nội dung (Đã tích hợp CKEditor) --}}
+                            {{-- 3. Nội dung & Hình ảnh --}}
                             <div class="space-y-5">
                                 <div>
                                     <label class="block text-sm font-bold text-gray-700 mb-1">Tiêu đề bài viết</label>
@@ -140,10 +141,35 @@
                                         class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition font-bold text-gray-800 placeholder-gray-400" 
                                         placeholder="Tiêu đề (Ví dụ: Một cuốn sách ám ảnh...)">
                                 </div>
+
+                                {{-- [MỚI] KHUNG UPLOAD ẢNH BÌA --}}
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Ảnh bìa bài viết (Tùy chọn)</label>
+                                    <div class="flex items-center justify-center w-full">
+                                        <label for="thumbnail-upload" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition relative overflow-hidden group">
+                                            {{-- Giao diện mặc định --}}
+                                            <div class="flex flex-col items-center justify-center pt-5 pb-6" id="upload-placeholder">
+                                                <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2 group-hover:text-brand-green transition"></i>
+                                                <p class="text-sm text-gray-500"><span class="font-semibold">Bấm để tải ảnh lên</span></p>
+                                                <p class="text-xs text-gray-400 mt-1">PNG, JPG (Tối đa 2MB)</p>
+                                            </div>
+                                            
+                                            {{-- Ảnh Preview (Ẩn mặc định) --}}
+                                            <img id="thumbnail-preview" class="absolute inset-0 w-full h-full object-cover hidden" />
+                                            
+                                            {{-- Input file ẩn --}}
+                                            <input id="thumbnail-upload" name="thumbnail" type="file" class="hidden" accept="image/*" onchange="previewThumbnail(event)" />
+                                            
+                                            {{-- Nút xóa ảnh (Hiện khi có ảnh) --}}
+                                            <button type="button" id="remove-thumbnail" onclick="removeThumbnail(event)" class="hidden absolute top-2 right-2 bg-white text-red-500 rounded-full p-1 shadow-md hover:bg-red-50 z-20">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </label>
+                                    </div>
+                                </div>
                                 
                                 <div>
                                     <label class="block text-sm font-bold text-gray-700 mb-1">Nội dung chi tiết</label>
-                                    {{-- Thêm ID="editor" để CKEditor bắt vào --}}
                                     <textarea name="content" id="editor" rows="10" 
                                         class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-700" 
                                         placeholder="Chia sẻ suy nghĩ chân thật của bạn..."></textarea>
@@ -160,6 +186,33 @@
                                 </button>
                             </div>
                         </form>
+
+                        {{-- Script Xử lý Ảnh Preview --}}
+                        <script>
+                            function previewThumbnail(event) {
+                                const file = event.target.files[0];
+                                if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = function(e) {
+                                        document.getElementById('thumbnail-preview').src = e.target.result;
+                                        document.getElementById('thumbnail-preview').classList.remove('hidden');
+                                        document.getElementById('upload-placeholder').classList.add('opacity-0');
+                                        document.getElementById('remove-thumbnail').classList.remove('hidden');
+                                    }
+                                    reader.readAsDataURL(file);
+                                }
+                            }
+
+                            function removeThumbnail(event) {
+                                event.preventDefault();
+                                event.stopPropagation(); // Ngăn chặn mở dialog chọn file
+                                document.getElementById('thumbnail-upload').value = ""; // Reset input
+                                document.getElementById('thumbnail-preview').src = "";
+                                document.getElementById('thumbnail-preview').classList.add('hidden');
+                                document.getElementById('upload-placeholder').classList.remove('opacity-0');
+                                document.getElementById('remove-thumbnail').classList.add('hidden');
+                            }
+                        </script>
                     </div>
                 </div>
             </div>
