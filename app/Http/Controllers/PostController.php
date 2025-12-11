@@ -13,39 +13,54 @@ use App\Notifications\NewCommentNotification;
 
 class PostController extends Controller
 {
-    // 1. Xử lý Lưu bài viết (Review sách)
-    public function store(Request $request)
-    {
-        $request->validate([
-            'book_id' => 'required|exists:books,id',
-            'rating'  => 'required|integer|min:1|max:5',
-            'content' => 'required|min:10',
-        ], [
-            'book_id.exists' => 'Vui lòng chọn một cuốn sách hợp lệ.',
-            'content.min' => 'Nội dung review quá ngắn, hãy viết thêm chút nữa nhé!',
-        ]);
+   public function store(Request $request)
+{
+    // 1. Validate dữ liệu (Bao gồm cả ảnh thumbnail)
+    $request->validate([
+        'book_id' => 'required|exists:books,id',
+        'rating'  => 'required|integer|min:1|max:5',
+        'title'   => 'required|string|max:255',
+        'content' => 'required|min:10',
+        'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validate ảnh
+    ], [
+        'book_id.exists' => 'Vui lòng chọn một cuốn sách hợp lệ.',
+        'title.required' => 'Bạn chưa nhập tiêu đề bài viết.',
+        'content.min' => 'Nội dung review quá ngắn.',
+        'thumbnail.image' => 'File tải lên phải là hình ảnh.',
+        'thumbnail.max' => 'Ảnh không được lớn hơn 2MB.',
+    ]);
 
-        // Tạo tiêu đề tự động nếu người dùng không nhập (hoặc lấy từ input nếu có)
-        // Vì trong form review bạn không có ô nhập title, ta tự sinh ra
-        $title = 'Review sách #' . $request->input('book_id') . ' - ' . Auth::user()->name;
-        $slug = Str::slug($title) . '-' . time();
-
-        Post::create([
-            'user_id'      => Auth::id(),
-            'book_id'      => $request->input('book_id'),
-            'title'        => $title,
-            'slug'         => $slug,
-            'rating'       => $request->input('rating'),
-            'content'      => $request->input('content'),
-            'status'       => 'published', // [QUAN TRỌNG] Để 'published' luôn để hiện ra ngay (hoặc 'pending' nếu muốn duyệt)
-            'published_at' => now(),
-        ]);
-        
-        return redirect()->back()->with('success', 'Cảm ơn bạn đã đánh giá!');
+    // 2. Xử lý Upload Ảnh (Nếu có)
+    $thumbnailPath = null;
+    if ($request->hasFile('thumbnail')) {
+        // Lưu ảnh vào thư mục storage/app/public/posts
+        $thumbnailPath = $request->file('thumbnail')->store('posts', 'public');
     }
 
-    // 2. Xử lý Ajax Like/Unlike
-    public function toggleLike($id)
+    // 3. Tạo Slug
+    $slug = \Illuminate\Support\Str::slug($request->title) . '-' . time();
+
+    // 4. Lưu vào Database (Kết hợp cả Thumbnail và Pending)
+    \App\Models\Post::create([
+        'user_id'      => \Illuminate\Support\Facades\Auth::id(),
+        'book_id'      => $request->book_id,
+        'title'        => $request->title,
+        'slug'         => $slug,
+        'rating'       => $request->rating,
+        'content'      => $request->content,
+        
+        'thumbnail'    => $thumbnailPath, // [QUAN TRỌNG 1] Lưu đường dẫn ảnh
+        
+        'status'       => 'pending',      // [QUAN TRỌNG 2] Đặt trạng thái chờ duyệt
+        
+        'published_at' => now(),          // Ngày gửi bài
+    ]);
+    
+    // 5. Quay về Profile với thông báo chờ duyệt
+    return redirect()->route('profile', \Illuminate\Support\Facades\Auth::id())
+                     ->with('success', 'Bài viết đã được gửi và đang chờ Admin phê duyệt!');
+}
+     public function toggleLike($id)
     {
         $user = Auth::user();
         if (!$user) return response()->json(['error' => 'Bạn cần đăng nhập!'], 401);

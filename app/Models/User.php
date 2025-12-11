@@ -4,14 +4,15 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-#use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable; #, SoftDeletes;
+    use HasFactory, Notifiable;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -97,5 +98,38 @@ class User extends Authenticatable
     public function isFollowing($userId)
     {
         return $this->followings()->where('following_id', $userId)->exists();
+    }
+
+    public function badges()
+    {
+        return $this->belongsToMany(Badge::class, 'user_badges')
+            ->withPivot('earned_at', 'expires_at')
+            ->withTimestamps();
+    }
+
+    public function activeBadges()
+    {
+        return $this->belongsToMany(Badge::class, 'user_badges')
+            ->withPivot('earned_at', 'expires_at')
+            ->wherePivot('expires_at', '>', now())
+            ->orWherePivotNull('expires_at')
+            ->withTimestamps();
+    }
+
+    public function challenges()
+    {
+        return $this->belongsToMany(Challenge::class, 'user_challenges')
+            ->withPivot('current_count', 'is_completed', 'completed_at')
+            ->withTimestamps();
+    }
+
+    public function userBadges()
+    {
+        return $this->hasMany(UserBadge::class);
+    }
+
+    public function userChallenges()
+    {
+        return $this->hasMany(UserChallenge::class);
     }
 }

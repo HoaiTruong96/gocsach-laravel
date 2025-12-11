@@ -86,7 +86,112 @@
             </div>
         </div>
     </div>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@yield('title', 'Góc Sách - Review & Share')</title>
+    
+    <!-- CDN Tailwind & FontAwesome -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Config màu sắc -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-green': '#1F352B',
+                        'brand-beige': '#E8E4D9',
+                        'brand-accent': '#D4A373',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.2s ease-in-out',
+                        'scale-up': 'scaleUp 0.3s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        scaleUp: { '0%': { opacity: '0', transform: 'scale(0.95)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&family=Roboto:wght@300;400;500;700&display=swap');
+        body { font-family: 'Roboto', sans-serif; background-color: #f8f9fa; }
+        .font-serif { font-family: 'Merriweather', serif; }
+        
+        /* Dropdown CSS thuần (Hover là hiện) */
+        .dropdown-menu { display: none; }
+        .group:hover .dropdown-menu { display: block; }
+        
+        /* Cầu nối vô hình để chuột không bị hụt khi di chuyển xuống menu */
+        .dropdown-bridge::before {
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: transparent;
+        }
 
+        /* Modal Overlay */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen text-gray-800">
+
+    <!-- TOP BAR: Thông tin liên hệ & Social -->
+    <div class="bg-brand-green text-white/80 text-xs py-2 hidden md:block border-b border-white/10">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <div class="flex gap-6">
+                <a href="tel:19001234" class="hover:text-brand-accent cursor-pointer transition flex items-center">
+                    <i class="fas fa-phone-alt mr-2"></i> Hotline: 1900 1234
+                </a>
+                <a href="mailto:contact@gocsach.com" class="hover:text-brand-accent cursor-pointer transition flex items-center">
+                    <i class="fas fa-envelope mr-2"></i> contact@gocsach.com
+                </a>
+            </div>
+            <div class="flex gap-4 items-center">
+                <!-- Nút mở Modal Trợ giúp -->
+                <button onclick="openModal('helpModal')" class="hover:text-white transition focus:outline-none">Trợ giúp</button>
+                <span class="text-white/20">|</span>
+                <!-- Nút mở Modal Quy tắc -->
+                <button onclick="openModal('rulesModal')" class="hover:text-white transition focus:outline-none">Quy tắc cộng đồng</button>
+                
+                <div class="flex gap-3 ml-4">
+                    <a href="#" class="hover:text-brand-accent transition"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="hover:text-brand-accent transition"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="hover:text-brand-accent transition"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER MAIN -->
+    <header class="bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 shadow-sm transition-all duration-300">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+                
+                <!-- 1. Logo -->
+                <div class="flex items-center gap-4">
+                    <a href="{{ route('home') }}" class="flex items-center gap-2 group">
+                        <div class="w-10 h-10 bg-brand-green text-white rounded-lg flex items-center justify-center shadow-md transform group-hover:rotate-6 transition-transform duration-300">
+                            <i class="fas fa-book-reader text-lg"></i>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xl font-bold font-serif text-brand-green leading-none tracking-tight">GÓC SÁCH</span>
+                            <span class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Review & Share</span>
+                        </div>
+                    </a>
+                </div>
     <!-- HEADER MAIN -->
     <header class="bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 shadow-sm transition-all duration-300">
         <div class="container mx-auto px-4 py-3">
@@ -240,7 +345,13 @@
 
             <!-- 4. Navigation Links -->
             <div class="hidden md:flex justify-center mt-2 border-t border-gray-100 pt-3">
+            <!-- 4. Navigation Links -->
+            <div class="hidden md:flex justify-center mt-2 border-t border-gray-100 pt-3">
                 <nav class="flex items-center gap-8 text-sm font-semibold text-gray-500">
+                    <a href="{{ route('home') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('home') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Trang Chủ</a>
+                    <a href="{{ route('list') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('list') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Danh Sách</a>
+                    <a href="{{ route('books.search') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('books.search') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Review Hay</a>
+                    <a href="{{ route('books.new') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('books.new') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Sách Mới</a>
                     <a href="{{ route('home') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('home') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Trang Chủ</a>
                     <a href="{{ route('list') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('list') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Danh Sách</a>
                     <a href="{{ route('books.search') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('books.search') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Review Hay</a>
@@ -248,6 +359,116 @@
                     <a href="#" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all">Tác Giả</a>
                 </nav>
             </div>
+        </div>
+    </header>
+
+    <!-- ===== CÁC POPUP (MODAL) ===== -->
+
+    <!-- 1. Modal Quy Tắc Cộng Đồng -->
+    <div id="rulesModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 modal-overlay transition-opacity" onclick="closeModal('rulesModal')"></div>
+        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4 text-center">
+                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:w-full sm:max-w-lg animate-scale-up">
+                    <!-- Header -->
+                    <div class="bg-brand-green px-4 py-3 sm:px-6 flex justify-between items-center">
+                        <h3 class="text-lg font-bold leading-6 text-white" id="modal-title">
+                            <i class="fas fa-gavel mr-2"></i> Quy Tắc Cộng Đồng
+                        </h3>
+                        <button onclick="closeModal('rulesModal')" class="text-white/70 hover:text-white transition">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <!-- Body -->
+                    <div class="px-4 py-5 sm:p-6 text-sm text-gray-600 space-y-3 max-h-[400px] overflow-y-auto">
+                        <p class="font-bold text-gray-800">1. Tôn trọng lẫn nhau:</p>
+                        <p>Không sử dụng ngôn từ đả kích, xúc phạm hoặc phân biệt đối xử với các thành viên khác.</p>
+                        
+                        <p class="font-bold text-gray-800 mt-2">2. Không Spam:</p>
+                        <p>Không đăng tải các nội dung quảng cáo, tin rác hoặc bình luận trùng lặp nhiều lần.</p>
+                        
+                        <p class="font-bold text-gray-800 mt-2">3. Bản quyền nội dung:</p>
+                        <p>Chỉ chia sẻ những nội dung bạn có quyền sở hữu hoặc trích dẫn nguồn rõ ràng. Không đăng tải sách lậu.</p>
+
+                        <p class="font-bold text-gray-800 mt-2">4. Review trung thực:</p>
+                        <p>Đánh giá sách dựa trên trải nghiệm thực tế, không thiên vị hoặc cố tình dìm hàng.</p>
+                    </div>
+                    <!-- Footer -->
+                    <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                        <button type="button" class="inline-flex w-full justify-center rounded-md bg-brand-green px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-green/90 sm:ml-3 sm:w-auto" onclick="closeModal('rulesModal')">Đã hiểu</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Modal Trợ Giúp -->
+    <div id="helpModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 modal-overlay transition-opacity" onclick="closeModal('helpModal')"></div>
+        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4 text-center">
+                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:w-full sm:max-w-lg animate-scale-up">
+                    <div class="bg-blue-600 px-4 py-3 sm:px-6 flex justify-between items-center">
+                        <h3 class="text-lg font-bold leading-6 text-white">
+                            <i class="fas fa-question-circle mr-2"></i> Trung Tâm Trợ Giúp
+                        </h3>
+                        <button onclick="closeModal('helpModal')" class="text-white/70 hover:text-white transition">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <div class="px-4 py-5 sm:p-6 text-sm text-gray-600 space-y-4">
+                        <div class="flex items-start gap-3">
+                            <div class="bg-blue-100 p-2 rounded-full text-blue-600"><i class="fas fa-user-plus"></i></div>
+                            <div>
+                                <h4 class="font-bold text-gray-800">Làm sao để đăng ký?</h4>
+                                <p>Nhấn vào nút "Đăng Ký" ở góc phải màn hình và điền thông tin email của bạn.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="bg-blue-100 p-2 rounded-full text-blue-600"><i class="fas fa-star"></i></div>
+                            <div>
+                                <h4 class="font-bold text-gray-800">Cách viết Review?</h4>
+                                <p>Tìm cuốn sách bạn muốn, vào trang chi tiết và kéo xuống phần "Viết đánh giá của bạn".</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="bg-blue-100 p-2 rounded-full text-blue-600"><i class="fas fa-envelope"></i></div>
+                            <div>
+                                <h4 class="font-bold text-gray-800">Liên hệ hỗ trợ?</h4>
+                                <p>Email: <a href="mailto:support@gocsach.com" class="text-blue-600 hover:underline">support@gocsach.com</a><br>Hotline: 1900 1234 (8h-17h)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                        <button type="button" class="inline-flex w-full justify-center rounded-md bg-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-300 sm:ml-3 sm:w-auto" onclick="closeModal('helpModal')">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script điều khiển Modal -->
+    <script>
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // Đóng modal khi nhấn ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") {
+                document.querySelectorAll('[id$="Modal"]').forEach(el => el.classList.add('hidden'));
+            }
+        });
+    </script>
+
+    @stack('scripts')
+    
+</body>
+</html>
         </div>
     </header>
 

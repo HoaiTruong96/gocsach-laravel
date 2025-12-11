@@ -16,13 +16,15 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\RankingController;
 use App\Http\Controllers\Admin\BookController as AdminBookController;
 use App\Http\Controllers\FollowController;
+use App\Http\Controllers\Admin\ArticleController;
+use App\Http\Controllers\Admin\BannerController;
 // ====================================================
 // 1. NHÓM PUBLIC (Ai cũng xem được)
 // ====================================================
 
 // Trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
-
+Route::get('/tap-chi/{slug}', [ArticleController::class, 'show'])->name('articles.show');
 // ===> [MỚI THÊM] Trang Danh sách sách (Frontend tĩnh) <===
 // Truy cập bằng đường dẫn: http://127.0.0.1:8000/danh-sach
 
@@ -48,10 +50,12 @@ Route::middleware(['auth'])->group(function () {
 
     // Route hiển thị form (Bạn đã có)
     Route::get('/reviews/viet-bai', function () {
-        $user = Auth::user(); 
-        if (!$user) return redirect()->route('login');
+        $user = Auth::user();
+        if (!$user)
+            return redirect()->route('login');
         return view('create-review', compact('user'));
     })->name('reviews.create');
+    Route::post('/posts/{id}/comment', [App\Http\Controllers\PostController::class, 'postComment'])->name('posts.comment');
 
     // Route API tìm sách (Bạn đã có)
     Route::get('/api/books/search', function (Illuminate\Http\Request $request) {
@@ -108,8 +112,8 @@ Route::middleware('auth')->group(function () {
 
     // Trang cá nhân
     Route::get('/profile/{id?}', [ProfileController::class, 'index'])
-    ->name('profile');
-     Route::post('/follow/toggle', [FollowController::class, 'toggleFollow'])->name('follow.toggle');
+        ->name('profile');
+    Route::post('/follow/toggle', [FollowController::class, 'toggleFollow'])->name('follow.toggle');
     // Gửi đánh giá (Review) - Phải đăng nhập mới được đánh giá
     // Route::post('/review', [ReviewController::class, 'store'])->name('review.store');
 
@@ -131,6 +135,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // 1. Quản lý Sách
     Route::resource('books', AdminBookController::class);
+    Route::resource('articles', ArticleController::class);
 
     // 2. Quản lý Danh mục
     Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class);
@@ -140,6 +145,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // 4. Quản lý Thành viên
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
+    // Route quản lý Banners (Tự động tạo: index, create, store, edit, update, destroy)
+    Route::resource('banners', BannerController::class);
 
     // 5. Lịch sử hoạt động Admin
     Route::get('/activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
@@ -149,6 +156,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/activity-logs/{activityLog}/restore', [\App\Http\Controllers\Admin\ActivityLogController::class, 'restore'])->name('activity-logs.restore');
     Route::post('/activity-logs/restore-trashed', [\App\Http\Controllers\Admin\ActivityLogController::class, 'restoreTrashed'])->name('activity-logs.restore-trashed');
     Route::delete('/activity-logs/force-delete', [\App\Http\Controllers\Admin\ActivityLogController::class, 'forceDelete'])->name('activity-logs.force-delete');
+
+    // 6. Trang tích hợp Thử thách & Danh hiệu
+    Route::get('/game', [\App\Http\Controllers\Admin\GameController::class, 'index'])->name('game.index');
+
+    // 7. Quản lý Danh hiệu (Badges)
+    Route::resource('badges', \App\Http\Controllers\Admin\BadgeController::class);
+
+    // 7. Quản lý Thử thách (Challenges)
+    Route::resource('challenges', \App\Http\Controllers\Admin\ChallengeController::class);
+    Route::post('/challenges/{challenge}/award-badge/{userId}', [\App\Http\Controllers\Admin\ChallengeController::class, 'awardBadge'])->name('challenges.award-badge');
 });
 Route::middleware('auth')->post('/follow/toggle', [App\Http\Controllers\FollowController::class, 'toggleFollow'])->name('follow.toggle');
 Route::get('/api/user/{id}/followers', [FollowController::class, 'getFollowers']);
