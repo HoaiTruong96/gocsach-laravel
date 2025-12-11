@@ -64,8 +64,12 @@
     <div class="bg-brand-green text-white/80 text-xs py-2 hidden md:block border-b border-white/10">
         <div class="container mx-auto px-4 flex justify-between items-center">
             <div class="flex gap-6">
-                <span class="hover:text-brand-accent cursor-pointer transition"><i class="fas fa-phone-alt mr-2"></i> Hotline: 1900 1234</span>
-                <span class="hover:text-brand-accent cursor-pointer transition"><i class="fas fa-envelope mr-2"></i> contact@gocsach.com</span>
+                <a href="tel:19001234" class="hover:text-brand-accent cursor-pointer transition flex items-center">
+                    <i class="fas fa-phone-alt mr-2"></i> Hotline: 1900 1234
+                </a>
+                <a href="mailto:contact@gocsach.com" class="hover:text-brand-accent cursor-pointer transition flex items-center">
+                    <i class="fas fa-envelope mr-2"></i> contact@gocsach.com
+                </a>
             </div>
             <div class="flex gap-4 items-center">
                 <!-- Nút mở Modal Trợ giúp -->
@@ -202,7 +206,7 @@
                     <a href="{{ route('home') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('home') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Trang Chủ</a>
                     <a href="{{ route('list') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('list') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Danh Sách</a>
                     <a href="{{ route('books.search') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('books.search') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Review Hay</a>
-                    <a href="#" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all">Sách Mới</a>
+                    <a href="{{ route('books.new') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('books.new') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Sách Mới</a>
                     <a href="#" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all">Tác Giả</a>
                 </nav>
             </div>
