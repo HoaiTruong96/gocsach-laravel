@@ -132,29 +132,69 @@
                         <button type="submit" class="absolute right-2 top-1.5 w-8 h-8 bg-brand-green text-white rounded-full flex items-center justify-center hover:bg-brand-accent transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5"><i class="fas fa-search text-xs"></i></button>
                     </form>
                 </div>
-
+            
                 <!-- 3. User Menu (Sửa lỗi & Thêm tính năng) -->
+                <!-- 3. User Menu & Notification -->
                 <div class="flex items-center gap-3 md:gap-5">
                     @auth
-                        <!-- Dropdown User -->
-                        <div class="relative group pb-2 -mb-2 z-50"> <!-- Thêm padding bottom ảo để dễ hover -->
-                            
-                            <!-- Nút Trigger (Avatar + Tên) -->
-                            <!-- [TÍNH NĂNG MỚI] Bấm vào nút này sẽ vào thẳng trang Profile -->
-                            <a href="{{ route('profile') }}" class="flex items-center gap-2 focus:outline-none py-1 group-hover:opacity-80 transition cursor-pointer relative z-20">
+                        <!-- Notification Bell -->
+                        <div class="relative group pb-4 -mb-4"> 
+                            <button class="text-gray-500 hover:text-brand-green transition relative p-2">
+                                <i class="far fa-bell text-xl"></i>
+                                @if(Auth::user()->unreadNotifications->count() > 0)
+                                    <span class="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white animate-bounce">
+                                        {{ Auth::user()->unreadNotifications->count() }}
+                                    </span>
+                                @endif
+                            </button>
+                            <div class="dropdown-menu dropdown-bridge absolute right-0 top-full mt-0 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in z-50 origin-top-right">
+                                <div class="px-4 py-3 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
+                                    <span class="text-sm font-bold text-gray-700">Thông báo</span>
+                                    @if(Auth::user()->unreadNotifications->count() > 0)
+                                        <a href="{{ route('notification.readAll') }}" class="text-[10px] text-blue-500 hover:underline">Đánh dấu đã đọc</a>
+                                    @endif
+                                </div>
+                                <div class="max-h-80 overflow-y-auto">
+                                    @forelse(Auth::user()->notifications as $notification)
+                                        <a href="{{ route('notification.read', $notification->id) }}" class="flex gap-3 px-4 py-3 hover:bg-gray-50 transition border-b border-gray-50 {{ $notification->read_at ? 'opacity-60' : 'bg-blue-50/30' }}">
+                                            <div class="flex-shrink-0">
+                                                <img src="{{ $notification->data['user_avatar'] ?? 'https://ui-avatars.com/api/?name=User' }}" class="w-8 h-8 rounded-full">
+                                            </div>
+                                            <div>
+                                                <p class="text-sm text-gray-700 line-clamp-2">
+                                                    <span class="font-bold">{{ $notification->data['user_name'] ?? 'Ai đó' }}</span> 
+                                                    {{ $notification->data['message'] ?? 'đã tương tác với bạn' }}
+                                                    <span class="font-bold">"{{ $notification->data['post_title'] ?? '' }}"</span>
+                                                </p>
+                                                <p class="text-[10px] text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                            </div>
+                                            @if(!$notification->read_at)
+                                                <div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                                            @endif
+                                        </a>
+                                    @empty
+                                        <div class="text-center py-8 text-gray-400">
+                                            <i class="far fa-bell-slash text-2xl mb-2"></i>
+                                            <p class="text-xs">Không có thông báo mới</p>
+                                        </div>
+                                    @endforelse
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dropdown User (Đã bỏ Tủ Sách) -->
+                        <div class="relative group pb-2 -mb-2 z-50">
+                             <a href="{{ route('profile') }}" class="flex items-center gap-2 focus:outline-none py-1 group-hover:opacity-80 transition cursor-pointer relative z-20">
                                 <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name).'&background=3E5F4E&color=fff&size=40' }}" 
                                      class="w-9 h-9 rounded-full border-2 border-brand-beige shadow-sm group-hover:border-brand-green transition object-cover">
                                 <div class="hidden lg:flex flex-col items-start">
                                     <span class="text-xs font-bold text-gray-700 truncate max-w-[80px]">{{ Auth::user()->name }}</span>
-                                    <span class="text-[10px] text-gray-400">{{ Auth::user()->role == 'admin' ? 'Quản trị viên' : 'Thành viên' }}</span>
+                                    <span class="text-[10px] text-gray-400">Thành viên</span>
                                 </div>
-                                <i class="fas fa-chevron-down text-xs text-gray-400 ml-1 transition-transform group-hover:rotate-180"></i>
+                                <i class="fas fa-chevron-down text-xs text-gray-400 ml-1"></i>
                             </a>
-
-                            <!-- Dropdown Menu Content -->
-                            <!-- Thêm dropdown-bridge để không bị mất khi di chuột -->
+                            
                             <div class="dropdown-menu dropdown-bridge absolute right-0 top-full mt-0 w-60 bg-white rounded-xl shadow-xl border border-gray-100 py-2 animate-fade-in origin-top-right z-10">
-                                
                                 <div class="px-4 py-3 border-b border-gray-50 bg-gray-50/50 rounded-t-xl mb-1">
                                     <p class="text-xs text-gray-400 uppercase tracking-wider font-bold">Tài khoản</p>
                                     <p class="text-sm font-bold text-brand-green truncate">{{ Auth::user()->email }}</p>
@@ -169,9 +209,9 @@
                                 <a href="{{ route('profile') }}" class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-brand-green transition mx-2 rounded-md">
                                     <i class="fas fa-user-circle w-5 mr-2 text-gray-400"></i> Hồ sơ cá nhân
                                 </a>
-                                <a href="{{ route('profile', ['tab' => 'books']) }}" class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-brand-green transition mx-2 rounded-md">
-                                    <i class="fas fa-book w-5 mr-2 text-gray-400"></i> Tủ sách của tôi
-                                </a>
+                                
+                                <!-- [ĐÃ XÓA MỤC TỦ SÁCH CỦA TÔI TẠI ĐÂY] -->
+
                                 <a href="{{ route('change.password') }}" class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-brand-green transition mx-2 rounded-md">
                                     <i class="fas fa-key w-5 mr-2 text-gray-400"></i> Đổi mật khẩu
                                 </a>
@@ -187,12 +227,10 @@
                             </div>
                         </div>
                     @else
-                        <!-- CHƯA ĐĂNG NHẬP -->
+                        <!-- Guest -->
                         <div class="flex items-center gap-3">
-                            <a href="{{ route('login') }}" class="text-gray-600 hover:text-brand-green font-bold text-sm px-3 py-2 rounded-lg hover:bg-gray-100 transition hidden sm:block">
-                                Đăng Nhập
-                            </a>
-                            <a href="{{ route('register') }}" class="bg-brand-green text-white px-5 py-2.5 rounded-full hover:bg-[#16271f] transition transform hover:-translate-y-0.5 font-bold shadow-md text-sm flex items-center gap-2">
+                            <a href="{{ route('login') }}" class="text-gray-600 hover:text-brand-green font-bold text-sm px-3 py-2 rounded-lg hover:bg-gray-100 transition hidden sm:block">Đăng Nhập</a>
+                            <a href="{{ route('register') }}" class="bg-brand-green text-white px-5 py-2.5 rounded-full hover:bg-[#16271f] transition font-bold shadow-md text-sm flex items-center gap-2">
                                 <i class="fas fa-user-plus text-xs"></i> <span>Đăng Ký</span>
                             </a>
                         </div>

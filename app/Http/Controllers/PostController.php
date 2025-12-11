@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Like;
 use App\Models\Comment;
 use Illuminate\Support\Str;
+use App\Notifications\NewLikeNotification;
+use App\Notifications\NewCommentNotification;
 
 class PostController extends Controller
 {
@@ -33,11 +35,11 @@ class PostController extends Controller
     // 3. Lưu vào Database
     Post::create([
         'user_id'      => Auth::id(),
-        'book_id'      => $request->book_id,
-        'title'        => $request->title,
+        'book_id'      => $request->input('book_id'),
+        'title'        => $request->input('title'),
         'slug'         => $slug,
-        'rating'       => $request->rating,
-        'content'      => $request->content,
+        'rating'       => $request->input('rating'),
+        'content'      => $request->input('content'),
         
         // [SỬA] Đổi 'published' thành 'pending'
         'status'       => 'pending', 
@@ -50,26 +52,41 @@ class PostController extends Controller
     return redirect()->route('profile', Auth::id())
                      ->with('success', 'Bài viết đã được gửi và đang chờ Admin phê duyệt!');
 }
-     public function toggleLike($id)
+    public function toggleLike($id)
     {
         $user = Auth::user();
         if (!$user) return response()->json(['error' => 'Bạn cần đăng nhập!']);
 
-        // Tìm like theo post_id
+        $post = Post::find($id);
+        if (!$post) return response()->json(['error' => 'Bài viết không tồn tại!']);
+
         $like = Like::where('user_id', $user->id)->where('post_id', $id)->first();
+        $action = '';
 
         if ($like) {
             $like->delete();
             $liked = false;
+            $action = 'unliked';
         } else {
             Like::create(['user_id' => $user->id, 'post_id' => $id]);
             $liked = true;
+            $action = 'liked';
+
+            // Gửi thông báo (nếu có)
+            if ($post->user_id != $user->id) {
+                $post->user->notify(new NewLikeNotification($user, $post));
+            }
         }
 
-        // Đếm lại số like của post này
+        // Đếm lại số like
         $count = Like::where('post_id', $id)->count();
 
-        return response()->json(['success' => true, 'liked' => $liked, 'count' => $count]);
+        return response()->json([
+            'success' => true, 
+            'liked' => $liked, 
+            'count' => $count,
+            'action' => $action
+        ]);
     }
 
     // 3. Xử lý Ajax Comment
@@ -80,18 +97,28 @@ class PostController extends Controller
 
         $request->validate(['content' => 'required']);
 
-        // Tạo comment cho post_id
         $comment = Comment::create([
             'user_id' => $user->id,
             'post_id' => $id,
             'content' => $request->input('content')
         ]);
 
+        // Gửi thông báo (nếu có)
+        $post = Post::find($id);
+        if ($post && $post->user_id != $user->id) {
+           $post->user->notify(new NewCommentNotification($user, $post));
+        }
+
+        // Trả về số lượng comment mới
+        $commentCount = Comment::where('post_id', $id)->count();
+
         return response()->json([
             'success' => true,
             'user_name' => $user->name,
-            'avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name),
-            'content' => $comment->content
+            'avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=random',
+            'content' => $comment->content,
+            'count' => $commentCount,
+            'created_at' => 'Vừa xong'
         ]);
     }
 }

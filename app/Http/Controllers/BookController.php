@@ -56,7 +56,8 @@ class BookController extends Controller
             ->with('user')                 
             ->latest()                     
             ->paginate(3);                 
-
+        $query = Post::with(['user', 'book'])
+            ->withCount(['likes', 'comments']); 
         return view('review-detail', compact('book', 'reviews'));
     }
     public function newBooks()
