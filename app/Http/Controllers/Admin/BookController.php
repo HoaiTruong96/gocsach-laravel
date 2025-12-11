@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Book;
 use App\Models\Category;
+use App\Models\AdminActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -53,6 +54,16 @@ class BookController extends Controller
         // 2. Gắn thể loại (Quan hệ nhiều-nhiều)
         $book->categories()->attach($request->category_ids);
 
+        // Ghi log
+        AdminActivityLog::log(
+            'create',
+            "Thêm sách mới: {$book->title}",
+            Book::class,
+            $book->id,
+            null,
+            $book->toArray()
+        );
+
         return redirect()->route('admin.books.index')->with('success', 'Thêm sách thành công!');
     }
 
@@ -74,6 +85,9 @@ class BookController extends Controller
             'cover_image' => 'nullable|image|max:2048'
         ]);
 
+        // Lưu giá trị cũ để log
+        $oldValues = $book->toArray();
+
         $data = $request->except('category_ids', 'cover_image');
 
         // Cập nhật slug nếu tiêu đề đổi
@@ -94,17 +108,40 @@ class BookController extends Controller
         $book->update($data);
         $book->categories()->sync($request->category_ids);
 
+        // Ghi log
+        AdminActivityLog::log(
+            'update',
+            "Cập nhật sách: {$book->title}",
+            Book::class,
+            $book->id,
+            $oldValues,
+            $book->fresh()->toArray()
+        );
+
         return redirect()->route('admin.books.index')->with('success', 'Cập nhật sách thành công!');
     }
 
     // Xóa
     public function destroy(Book $book)
     {
+        $bookData = $book->toArray();
+        $bookTitle = $book->title;
+
         if ($book->cover_image && Storage::disk('public')->exists($book->cover_image)) {
             Storage::disk('public')->delete($book->cover_image);
         }
 
         $book->delete();
+
+        // Ghi log
+        AdminActivityLog::log(
+            'delete',
+            "Xóa sách: {$bookTitle}",
+            Book::class,
+            $bookData['id'],
+            $bookData,
+            null
+        );
 
         return redirect()->route('admin.books.index')->with('success', 'Đã xóa sách thành công!');
     }

@@ -87,6 +87,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/reviews', [AdminController::class, 'dashboardReviews'])->name('dashboard.reviews');
     Route::get('/dashboard/users', [AdminController::class, 'dashboardUsers'])->name('dashboard.users');
+    Route::get('/dashboard/export-excel', [AdminController::class, 'exportExcel'])->name('dashboard.export');
 
     // 1. Quản lý Sách
     Route::resource('books', AdminBookController::class);
@@ -99,4 +100,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // 4. Quản lý Thành viên
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
+
+    // 5. Lịch sử hoạt động Admin
+    Route::get('/activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
+    Route::get('/activity-logs/trash', [\App\Http\Controllers\Admin\ActivityLogController::class, 'trash'])->name('activity-logs.trash');
+    Route::get('/activity-logs/{activityLog}', [\App\Http\Controllers\Admin\ActivityLogController::class, 'show'])->name('activity-logs.show');
+    Route::post('/activity-logs/cleanup', [\App\Http\Controllers\Admin\ActivityLogController::class, 'cleanup'])->name('activity-logs.cleanup');
+    Route::post('/activity-logs/{activityLog}/restore', [\App\Http\Controllers\Admin\ActivityLogController::class, 'restore'])->name('activity-logs.restore');
+    Route::post('/activity-logs/restore-trashed', [\App\Http\Controllers\Admin\ActivityLogController::class, 'restoreTrashed'])->name('activity-logs.restore-trashed');
+    Route::delete('/activity-logs/force-delete', [\App\Http\Controllers\Admin\ActivityLogController::class, 'forceDelete'])->name('activity-logs.force-delete');
 });
