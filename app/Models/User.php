@@ -4,13 +4,14 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+#use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable; #, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -43,14 +44,6 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    // protected function casts(): array
-    // {
-    //     return [
-    //         'email_verified_at' => 'datetime',
-    //         'password' => 'hashed',
-    //         'is_active' => 'boolean',
-    //     ];
-    // }
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
@@ -74,11 +67,11 @@ class User extends Authenticatable
     }
 
     public function bookshelves()
-{
-    return $this->belongsToMany(Book::class, 'bookshelves', 'user_id', 'book_id')
-                ->withPivot('status')
-                ->withTimestamps();
-}
+    {
+        return $this->belongsToMany(Book::class, 'bookshelves', 'user_id', 'book_id')
+            ->withPivot('status')
+            ->withTimestamps();
+    }
 
     public function contributedBooks()
     {
@@ -89,15 +82,15 @@ class User extends Authenticatable
     public function followings()
     {
         return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     // 5. Những người đang theo dõi tôi (Followers)
     // Bảng trung gian 'follows', khóa ngoại 'following_id' (là tôi), khóa liên kết 'follower_id' (người kia)
-    public function followers() 
+    public function followers()
     {
         return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     // 6. Hàm kiểm tra: Tôi có đang follow người có ID này không?

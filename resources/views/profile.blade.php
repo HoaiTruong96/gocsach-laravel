@@ -31,7 +31,7 @@
             {{-- CỘT TRÁI: SIDEBAR THÔNG TIN USER                               --}}
             {{-- ============================================================== --}}
             <div class="lg:col-span-1">
-                <div class="bg-white rounded-2xl shadow-soft p-6 text-center border border-gray-100 sticky top-24">
+                <div class="bg-white rounded-2xl shadow-soft p-6 text-center border border-gray-100">
                     
                     <div class="relative w-32 h-32 mx-auto mb-4 group">
                         <img src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=3E5F4E&color=fff&size=128' }}" 
@@ -263,6 +263,19 @@
                                     {{ $post->title }}
                                 </h3>
                             </div>
+                            {{-- [THÊM ĐOẠN NÀY NGAY DƯỚI TIÊU ĐỀ] --}}
+                            <div class="mt-1">
+                                @if($post->status == 'pending')
+                                    <span class="inline-block bg-yellow-100 text-yellow-800 text-[10px] font-bold px-2 py-0.5 rounded border border-yellow-200 uppercase tracking-wide">
+                                        <i class="fas fa-clock mr-1"></i> Đang chờ duyệt
+                                    </span>
+                                @elseif($post->status == 'rejected')
+                                    <span class="inline-block bg-red-100 text-red-800 text-[10px] font-bold px-2 py-0.5 rounded border border-red-200 uppercase tracking-wide">
+                                        <i class="fas fa-times-circle mr-1"></i> Bị từ chối
+                                    </span>
+                                @endif
+                            </div>
+                            
 
                             {{-- NỘI DUNG --}}
                             <div class="bg-gray-50 p-4 rounded-lg relative mb-4">

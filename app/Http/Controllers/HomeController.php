@@ -35,7 +35,7 @@ class HomeController extends Controller
                 $reviewQuery->latest();
                 break;
         }
-        $latestReviews = $reviewQuery->take(5)->get();
+        $latestReviews = $reviewQuery->where('status', 'published')->take(5)->get();
 
         // 3. Danh mục thể loại
         $categories = Category::withCount('books')->orderBy('name', 'asc')->get();
