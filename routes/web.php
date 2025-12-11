@@ -71,6 +71,12 @@ Route::middleware(['auth'])->group(function () {
 
 //code test
 //
+Route::view('/ve-chung-toi', 'pages.about')->name('page.about');
+Route::view('/dieu-khoan-su-dung', 'pages.terms')->name('page.terms');
+Route::view('/chinh-sach-bao-mat', 'pages.privacy')->name('page.privacy');
+Route::view('/lien-he', 'pages.contact')->name('page.contact');
+//
+
 Route::get('/book/{slug}', [BookController::class, 'show'])->name('book.show');
 
 Route::get('/ranking/top-liked', [RankingController::class, 'topLikedPosts']);

@@ -16,11 +16,10 @@
         </div>
     </div>
 
- <main class="container mx-auto px-4 py-12 flex-grow min-h-screen">
+    <main class="container mx-auto px-4 py-12 flex-grow min-h-screen">
         
-        {{-- [MỚI] KHU VỰC HIỂN THỊ THÔNG BÁO --}}
+        {{-- KHU VỰC HIỂN THỊ THÔNG BÁO --}}
         <div class="max-w-3xl mx-auto lg:max-w-none">
-            {{-- 1. Hiển thị lỗi (Quan trọng để biết tại sao không đăng được) --}}
             @if ($errors->any())
                 <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl shadow-sm">
                     <div class="flex items-center gap-2 mb-2 font-bold text-red-800">
@@ -34,7 +33,6 @@
                 </div>
             @endif
 
-            {{-- 2. Hiển thị thành công --}}
             @if(session('success'))
                 <div class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl shadow-sm flex items-center gap-3">
                     <i class="fas fa-check-circle text-xl text-green-600"></i>
@@ -42,11 +40,10 @@
                 </div>
             @endif
         </div>
-        {{-- [HẾT] --}}
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
 
-            {{-- CỘT TRÁI: SIDEBAR (GIỮ NGUYÊN) --}}
+            {{-- CỘT TRÁI: SIDEBAR --}}
             <div class="lg:col-span-1">
                 <div class="bg-white rounded-2xl shadow-soft p-6 text-center border border-gray-100 sticky top-24">
                     <div class="relative w-32 h-32 mx-auto mb-4 group">
@@ -89,7 +86,6 @@
                                     class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition"
                                     placeholder="Gõ tên sách (ví dụ: Rừng Na Uy)..." autocomplete="off">
                                 
-                                {{-- Dropdown kết quả --}}
                                 <div id="search-dropdown" class="hidden absolute z-50 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl max-h-80 overflow-y-auto"></div>
                             </div>
                             
@@ -136,7 +132,7 @@
                                 </div>
                             </div>
 
-                            {{-- 3. Nội dung --}}
+                            {{-- 3. Nội dung (Đã tích hợp CKEditor) --}}
                             <div class="space-y-5">
                                 <div>
                                     <label class="block text-sm font-bold text-gray-700 mb-1">Tiêu đề bài viết</label>
@@ -147,8 +143,9 @@
                                 
                                 <div>
                                     <label class="block text-sm font-bold text-gray-700 mb-1">Nội dung chi tiết</label>
-                                    <textarea name="content" rows="8" required
-                                        class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition resize-none leading-relaxed text-gray-700" 
+                                    {{-- Thêm ID="editor" để CKEditor bắt vào --}}
+                                    <textarea name="content" id="editor" rows="10" 
+                                        class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-700" 
                                         placeholder="Chia sẻ suy nghĩ chân thật của bạn..."></textarea>
                                 </div>
                             </div>
@@ -169,8 +166,28 @@
         </div>
     </main>
 
-    {{-- JAVASCRIPT GỌI API --}}
+    {{-- NHÚNG SCRIPT CKEDITOR --}}
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+    <style>
+        /* Tùy chỉnh chiều cao khung soạn thảo */
+        .ck-editor__editable_inline {
+            min-height: 300px;
+        }
+    </style>
+
+    {{-- JAVASCRIPT GỌI API & KHỞI TẠO EDITOR --}}
     <script>
+        // --- 1. Khởi tạo CKEditor ---
+        ClassicEditor
+            .create(document.querySelector('#editor'), {
+                placeholder: 'Viết nội dung review của bạn tại đây...',
+                toolbar: [ 'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'blockQuote', 'undo', 'redo' ]
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+        // --- 2. Logic Tìm kiếm & Rating (Giữ nguyên cũ) ---
         const searchInput = document.getElementById('book-search-input');
         const dropdown = document.getElementById('search-dropdown');
         const loading = document.getElementById('search-loading');
@@ -179,7 +196,6 @@
 
         let debounceTimer;
 
-        // Xử lý tìm kiếm với Debounce (tránh gọi API quá nhiều)
         searchInput.addEventListener('input', (e) => {
             clearTimeout(debounceTimer);
             const val = e.target.value.trim();
@@ -193,7 +209,6 @@
             dropdown.classList.add('hidden');
 
             debounceTimer = setTimeout(() => {
-                // GỌI API DATABASE THẬT
                 fetch(`/api/books/search?q=${encodeURIComponent(val)}`)
                     .then(res => res.json())
                     .then(books => {
@@ -204,7 +219,7 @@
                         console.error(err);
                         loading.classList.add('hidden');
                     });
-            }, 500); // Đợi 0.5s sau khi ngừng gõ mới tìm
+            }, 500);
         });
 
         function renderDropdown(books) {
@@ -225,20 +240,16 @@
         }
 
         function selectBook(book) {
-            // Điền dữ liệu vào form
             document.getElementById('selected-book-id').value = book.id;
             document.getElementById('display-book-img').src = book.cover_image || 'https://via.placeholder.com/150x200';
             document.getElementById('display-book-title').innerText = book.title;
             document.getElementById('display-book-author').innerText = book.author_name;
             document.getElementById('display-book-year').innerText = book.published_year || '';
 
-            // Ẩn bước tìm kiếm, hiện bước review
             dropdown.classList.add('hidden');
             stepSearch.classList.add('hidden');
-            
-            // Hiện form (CSS flex-col đã có sẵn trong class của form)
             stepReview.classList.remove('hidden');
-            stepReview.classList.add('flex'); // Đảm bảo bật display flex
+            stepReview.classList.add('flex');
         }
 
         function resetSearch() {
@@ -261,7 +272,6 @@
             }
         }
 
-        // Đóng dropdown khi click ra ngoài
         document.addEventListener('click', (e) => {
             if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) dropdown.classList.add('hidden');
         });
