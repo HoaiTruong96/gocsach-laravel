@@ -27,12 +27,24 @@ class ProfileController extends Controller
         $totalReviews = $user->posts()->count();
         $totalFollowing = $user->followings()->count();
         $totalFollowers = $user->followers()->count();
-        $reviews = $user->posts()
-                        ->with('book') // Lấy kèm thông tin sách để hiện ảnh/tên sách
+
+        // 2. Lấy danh sách bài Review (CÓ PHÂN QUYỀN)
+        // [SỬA ĐOẠN NÀY] Khởi tạo query
+        $reviewsQuery = $user->posts()
+                        ->with('book') // Lấy kèm thông tin sách
                         ->withCount(['likes', 'comments'])
-                        ->orderBy('created_at', 'desc')
-                        ->paginate(10);
-        // 2. Lấy sách
+                        ->orderBy('created_at', 'desc');
+
+        // Kiểm tra quyền xem:
+        // Nếu người xem KHÔNG PHẢI là chủ profile (Khách) -> Chỉ lấy bài đã duyệt (published)
+        if (Auth::id() != $user->id) {
+            $reviewsQuery->where('status', 'published');
+        }
+        // Nếu là chủ nhà (Auth::id() == $user->id) -> Không lọc, xem hết (pending, published, rejected)
+
+        $reviews = $reviewsQuery->paginate(10);
+
+        // 3. Lấy sách trong tủ
         $query = $user->bookshelves()->orderByPivot('created_at', 'desc');
 
         if ($request->has('status')) {
