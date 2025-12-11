@@ -26,19 +26,33 @@ class ProfileController extends Controller
         $totalFollowing = $user->followings()->count();
         $totalFollowers = $user->followers()->count();
 
-        // 3. LẤY SÁCH YÊU THÍCH (Chỉ lấy status = 'wishlist')
-        $myBooks = $user->bookshelves()
-                        ->wherePivot('status', 'wishlist') // <--- CHỈ LẤY YÊU THÍCH
-                        ->orderByPivot('created_at', 'desc')
-                        ->take(6) // Lấy 6 cuốn thôi cho gọn
-                        ->get();
-
-        // 4. LẤY DANH SÁCH REVIEW (Giữ nguyên)
-        $reviews = $user->posts()
-                        ->with('book')
+        // 2. Lấy danh sách bài Review (CÓ PHÂN QUYỀN)
+        // [SỬA ĐOẠN NÀY] Khởi tạo query
+        $reviewsQuery = $user->posts()
+                        ->with('book') // Lấy kèm thông tin sách
                         ->withCount(['likes', 'comments'])
-                        ->orderBy('created_at', 'desc')
-                        ->paginate(10);
+                        ->orderBy('created_at', 'desc');
+
+        // Kiểm tra quyền xem:
+        // Nếu người xem KHÔNG PHẢI là chủ profile (Khách) -> Chỉ lấy bài đã duyệt (published)
+        if (Auth::id() != $user->id) {
+            $reviewsQuery->where('status', 'published');
+        }
+        // Nếu là chủ nhà (Auth::id() == $user->id) -> Không lọc, xem hết (pending, published, rejected)
+
+        $reviews = $reviewsQuery->paginate(10);
+
+        // 3. Lấy sách trong tủ
+        $query = $user->bookshelves()->orderByPivot('created_at', 'desc');
+
+        if ($request->has('status')) {
+            $status = $request->get('status');
+            if ($status == 'favorites') $query->wherePivot('status', 'wishlist');
+            elseif ($status == 'reading') $query->wherePivot('status', 'reading');
+            elseif ($status == 'completed') $query->wherePivot('status', 'completed');
+        }
+
+        $myBooks = $query->take(12)->get();
 
         return view('profile', [
             'user' => $user,

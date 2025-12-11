@@ -1,5 +1,10 @@
 <?php
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Models\Book;
 use App\Http\Controllers\HomeController;
@@ -37,6 +42,40 @@ Route::get('/chi-tiet/{slug}/danh-gia', [BookController::class, 'showReviews'])-
 // Xem chi tiết sách
 Route::get('/chi-tiet/{slug}', [BookController::class, 'show'])->name('detail');
 Route::get('/review-search', [BookController::class, 'search'])->name('books.search');
+//
+// code test
+Route::middleware(['auth'])->group(function () {
+
+    // Route hiển thị form (Bạn đã có)
+    Route::get('/reviews/viet-bai', function () {
+        $user = Auth::user(); 
+        if (!$user) return redirect()->route('login');
+        return view('create-review', compact('user'));
+    })->name('reviews.create');
+
+    // Route API tìm sách (Bạn đã có)
+    Route::get('/api/books/search', function (Illuminate\Http\Request $request) {
+        $query = $request->get('q');
+        $books = Illuminate\Support\Facades\DB::table('books')
+            ->where('title', 'like', "%{$query}%")
+            ->orWhere('author_name', 'like', "%{$query}%")
+            ->select('id', 'title', 'author_name', 'published_year', 'cover_image')
+            ->limit(10)
+            ->get();
+        return response()->json($books);
+    });
+
+    // ▼▼▼ 2. THÊM DÒNG QUAN TRỌNG NÀY ĐỂ SỬA LỖI ROUTE NOT DEFINED ▼▼▼
+    Route::post('/posts/store', [PostController::class, 'store'])->name('posts.store');
+});
+
+//code test
+//
+Route::view('/ve-chung-toi', 'pages.about')->name('page.about');
+Route::view('/dieu-khoan-su-dung', 'pages.terms')->name('page.terms');
+Route::view('/chinh-sach-bao-mat', 'pages.privacy')->name('page.privacy');
+Route::view('/lien-he', 'pages.contact')->name('page.contact');
+//
 
 Route::get('/book/{slug}', [BookController::class, 'show'])->name('book.show');
 
@@ -86,6 +125,9 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
 
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/reviews', [AdminController::class, 'dashboardReviews'])->name('dashboard.reviews');
+    Route::get('/dashboard/users', [AdminController::class, 'dashboardUsers'])->name('dashboard.users');
+    Route::get('/dashboard/export-excel', [AdminController::class, 'exportExcel'])->name('dashboard.export');
 
     // 1. Quản lý Sách
     Route::resource('books', AdminBookController::class);
@@ -98,6 +140,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // 4. Quản lý Thành viên
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
+
+    // 5. Lịch sử hoạt động Admin
+    Route::get('/activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
+    Route::get('/activity-logs/trash', [\App\Http\Controllers\Admin\ActivityLogController::class, 'trash'])->name('activity-logs.trash');
+    Route::get('/activity-logs/{activityLog}', [\App\Http\Controllers\Admin\ActivityLogController::class, 'show'])->name('activity-logs.show');
+    Route::post('/activity-logs/cleanup', [\App\Http\Controllers\Admin\ActivityLogController::class, 'cleanup'])->name('activity-logs.cleanup');
+    Route::post('/activity-logs/{activityLog}/restore', [\App\Http\Controllers\Admin\ActivityLogController::class, 'restore'])->name('activity-logs.restore');
+    Route::post('/activity-logs/restore-trashed', [\App\Http\Controllers\Admin\ActivityLogController::class, 'restoreTrashed'])->name('activity-logs.restore-trashed');
+    Route::delete('/activity-logs/force-delete', [\App\Http\Controllers\Admin\ActivityLogController::class, 'forceDelete'])->name('activity-logs.force-delete');
 });
 Route::middleware('auth')->post('/follow/toggle', [App\Http\Controllers\FollowController::class, 'toggleFollow'])->name('follow.toggle');
 Route::get('/api/user/{id}/followers', [FollowController::class, 'getFollowers']);

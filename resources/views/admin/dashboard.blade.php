@@ -1,109 +1,271 @@
 @extends('layouts.admin')
-@section('title', 'Admin Dashboard')
-@section('header', 'Tổng Quan Hệ Thống')
+@section('title', 'Tổng Quan Hệ Thống')
+@section('header', 'Dashboard')
 
 @section('content')
-<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition">
-        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xl">
-            <i class="fas fa-book"></i>
-        </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <div
+        class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
-            <p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Tổng đầu sách</p>
-            <h3 class="text-2xl font-bold text-gray-800">{{ number_format($bookCount) }}</h3>
+            <h3 class="font-bold text-gray-700"><i class="fas fa-filter mr-2 text-blue-500"></i>Bộ lọc thời gian</h3>
+            <p class="text-xs text-gray-500">Xem chi tiết dữ liệu theo từng tháng cụ thể</p>
+        </div>
+        <div class="flex items-center gap-2" id="filter-controls">
+            <select id="filter-month"
+                class="border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 cursor-pointer">
+                @for($m = 1; $m <= 12; $m++)
+                    <option value="{{ $m }}" {{ $selectedMonth == $m ? 'selected' : '' }}>Tháng {{ $m }}</option>
+                @endfor
+            </select>
+            <select id="filter-year"
+                class="border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 cursor-pointer">
+                @for($y = date('Y'); $y >= 2023; $y--)
+                    <option value="{{ $y }}" {{ $selectedYear == $y ? 'selected' : '' }}>Năm {{ $y }}</option>
+                @endfor
+            </select>
+            <a href="{{ route('admin.dashboard.export', ['month' => $selectedMonth, 'year' => $selectedYear]) }}"
+                id="export-excel-btn"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-semibold rounded-lg shadow hover:from-green-600 hover:to-emerald-700 transition-all duration-200 hover:shadow-md">
+                <i class="fas fa-file-excel"></i>
+                <span>Xuất Excel</span>
+            </a>
+            <div id="filter-loading" class="hidden">
+                <i class="fas fa-spinner fa-spin text-blue-500"></i>
+            </div>
         </div>
     </div>
 
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition">
-        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 text-xl">
-            <i class="fas fa-users"></i>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 relative overflow-hidden group">
+            <div class="relative z-10">
+                <p class="text-blue-500 text-sm font-bold uppercase tracking-wider mb-1">TỔNG BÀI REVIEW</p>
+                <h3 class="text-3xl font-extrabold text-gray-800">{{ number_format($totalReviews) }}</h3>
+                <p class="text-gray-400 text-xs mt-2"><i class="fas fa-check-circle text-green-500 mr-1"></i> Đã xuất bản
+                </p>
+            </div>
+            <i
+                class="fas fa-file-alt absolute right-4 top-6 text-6xl text-blue-50 opacity-50 group-hover:scale-110 transition-transform"></i>
         </div>
-        <div>
-            <p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Thành viên</p>
-            <h3 class="text-2xl font-bold text-gray-800">{{ number_format($totalUsers) }}</h3>
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 relative overflow-hidden group">
+            <div class="relative z-10">
+                <p class="text-green-500 text-sm font-bold uppercase tracking-wider mb-1">TỔNG LƯỢT XEM</p>
+                <h3 class="text-3xl font-extrabold text-gray-800">{{ number_format($totalViews) }}</h3>
+                <p class="text-gray-400 text-xs mt-2">Toàn hệ thống</p>
+            </div>
+            <i
+                class="fas fa-eye absolute right-4 top-6 text-6xl text-green-50 opacity-50 group-hover:scale-110 transition-transform"></i>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 relative overflow-hidden group">
+            <div class="relative z-10">
+                <p class="text-yellow-500 text-sm font-bold uppercase tracking-wider mb-1">CHỜ DUYỆT</p>
+                <h3 class="text-3xl font-extrabold text-gray-800">{{ number_format($pendingReviews) }}</h3>
+                <p class="text-gray-400 text-xs mt-2">Cần xử lý ngay</p>
+            </div>
+            <i
+                class="fas fa-clipboard-list absolute right-4 top-6 text-6xl text-yellow-50 opacity-50 group-hover:scale-110 transition-transform"></i>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 relative overflow-hidden group">
+            <div class="relative z-10">
+                <p class="text-indigo-500 text-sm font-bold uppercase tracking-wider mb-1">THÀNH VIÊN</p>
+                <h3 class="text-3xl font-extrabold text-gray-800">{{ number_format($totalUsers) }}</h3>
+                <p class="text-gray-400 text-xs mt-2">Đang hoạt động</p>
+            </div>
+            <i
+                class="fas fa-users absolute right-4 top-6 text-6xl text-indigo-50 opacity-50 group-hover:scale-110 transition-transform"></i>
         </div>
     </div>
 
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition">
-        <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xl">
-            <i class="fas fa-star"></i>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+            <h4 class="text-blue-600 font-bold mb-6">Biểu đồ phát triển (12 tháng qua)</h4>
+            <div class="relative h-80 w-full"><canvas id="reviewChart"></canvas></div>
         </div>
-        <div>
-            <p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Đánh giá tuần này</p>
-            <h3 class="text-2xl font-bold text-gray-800">{{ number_format($newReviewsCount) }}</h3>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-4 border-b border-gray-100 bg-blue-50">
+                <h4 class="text-blue-600 font-bold text-sm">Chi tiết theo tháng</h4>
+            </div>
+            <div class="overflow-y-auto max-h-[340px]">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-gray-50 text-gray-500 font-medium sticky top-0">
+                        <tr>
+                            <th class="px-4 py-3">Tháng</th>
+                            <th class="px-4 py-3 text-right">Bài viết</th>
+                            <th class="px-4 py-3 text-right">User mới</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach($tableData as $row)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 font-medium text-gray-700">{{ $row['month'] }}</td>
+                                <td class="px-4 py-3 text-right text-blue-600 font-bold">{{ $row['reviews'] }}</td>
+                                <td class="px-4 py-3 text-right text-green-600">{{ $row['users'] }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition">
-        <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 text-xl">
-            <i class="fas fa-clock"></i>
-        </div>
-        <div>
-            <p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Review chờ duyệt</p>
-            <h3 class="text-2xl font-bold text-gray-800">{{ number_format($pendingReviewCount) }}</h3>
-        </div>
-    </div>
-</div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 
-<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-    <div class="p-6 border-b border-gray-50 flex justify-between items-center">
-        <h3 class="font-bold text-gray-800">Review Mới Nhất</h3>
-        <a href="{{ route('admin.posts.index') }}" class="text-sm text-blue-600 hover:underline">Xem tất cả</a>
+        <div id="reviews-container" class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+            @include('admin.partials.dashboard-reviews', ['monthlyReviewsList' => $monthlyReviewsList, 'selectedMonth' => $selectedMonth, 'selectedYear' => $selectedYear])
+        </div>
+
+        <div id="users-container" class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+            @include('admin.partials.dashboard-users', ['monthlyUsersList' => $monthlyUsersList, 'selectedMonth' => $selectedMonth, 'selectedYear' => $selectedYear])
+        </div>
     </div>
 
-    @if(isset($recentReviews) && $recentReviews->count() > 0)
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-            <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
-                <tr>
-                    <th class="px-6 py-3">Người dùng</th>
-                    <th class="px-6 py-3">Sách review</th>
-                    <th class="px-6 py-3">Điểm</th>
-                    <th class="px-6 py-3">Thời gian</th>
-                    <th class="px-6 py-3 text-center">Trạng thái</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-                @foreach($recentReviews as $review)
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4">
-                        <div class="flex items-center gap-3">
-                            <img src="{{ $review->user->avatar ?? 'https://ui-avatars.com/api/?name='.$review->user->name }}" class="w-8 h-8 rounded-full">
-                            <span class="text-sm font-medium text-gray-700">{{ $review->user->name }}</span>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4">
-                        <span class="text-sm text-gray-600 block truncate w-48" title="{{ $review->book->title ?? 'Sách đã xóa' }}">
-                            {{ $review->book->title ?? 'Sách đã xóa' }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4">
-                        <span class="text-yellow-500 text-sm font-bold">
-                            <i class="fas fa-star"></i> {{ $review->rating }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-500">
-                        {{ $review->created_at->diffForHumans() }}
-                    </td>
-                    <td class="px-6 py-4 text-center">
-                        @if($review->status == 'published')
-                        <span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Đã duyệt</span>
-                        @elseif($review->status == 'pending')
-                        <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">Chờ duyệt</span>
-                        @else
-                        <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-bold">{{ $review->status }}</span>
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-    @else
-    <div class="p-8 text-center text-gray-500">
-        <i class="fas fa-inbox text-4xl mb-3 text-gray-300"></i>
-        <p>Chưa có bài review nào.</p>
-    </div>
-    @endif
-</div>
+    <script>
+        // Chart initialization
+        const ctx = document.getElementById('reviewChart').getContext('2d');
+        const labels = @json($labels);
+        const dataReviews = @json($dataReviews);
+        const dataUsers = @json($dataViews);
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Bài Review', data: dataReviews, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 2, tension: 0.4, fill: true },
+                    { label: 'Thành viên', data: dataUsers, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.05)', borderWidth: 2, borderDash: [5, 5], tension: 0.4, fill: false }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } }
+        });
+
+        // AJAX functionality for filter and pagination
+        document.addEventListener('DOMContentLoaded', function () {
+            const filterMonth = document.getElementById('filter-month');
+            const filterYear = document.getElementById('filter-year');
+            const filterLoading = document.getElementById('filter-loading');
+            const reviewsContainer = document.getElementById('reviews-container');
+            const usersContainer = document.getElementById('users-container');
+
+            let currentReviewsPage = 1;
+            let currentUsersPage = 1;
+
+            // Show/hide loading indicator
+            function showLoading() {
+                filterLoading.classList.remove('hidden');
+            }
+
+            function hideLoading() {
+                filterLoading.classList.add('hidden');
+            }
+
+            // Load reviews via AJAX
+            function loadReviews(page = 1) {
+                currentReviewsPage = page;
+                const month = filterMonth.value;
+                const year = filterYear.value;
+
+                showLoading();
+
+                fetch(`{{ route('admin.dashboard.reviews') }}?month=${month}&year=${year}&page=${page}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                    .then(response => response.text())
+                    .then(html => {
+                        reviewsContainer.innerHTML = html;
+                        bindReviewsPagination();
+                        hideLoading();
+                    })
+                    .catch(error => {
+                        console.error('Error loading reviews:', error);
+                        hideLoading();
+                    });
+            }
+
+            // Load users via AJAX
+            function loadUsers(page = 1) {
+                currentUsersPage = page;
+                const month = filterMonth.value;
+                const year = filterYear.value;
+
+                showLoading();
+
+                fetch(`{{ route('admin.dashboard.users') }}?month=${month}&year=${year}&page=${page}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                    .then(response => response.text())
+                    .then(html => {
+                        usersContainer.innerHTML = html;
+                        bindUsersPagination();
+                        hideLoading();
+                    })
+                    .catch(error => {
+                        console.error('Error loading users:', error);
+                        hideLoading();
+                    });
+            }
+
+            // Bind pagination click events for reviews
+            function bindReviewsPagination() {
+                reviewsContainer.querySelectorAll('.pagination a').forEach(link => {
+                    link.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const url = new URL(this.href);
+                        const page = url.searchParams.get('page') || 1;
+                        loadReviews(page);
+                    });
+                });
+            }
+
+            // Bind pagination click events for users
+            function bindUsersPagination() {
+                usersContainer.querySelectorAll('.pagination a').forEach(link => {
+                    link.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const url = new URL(this.href);
+                        const page = url.searchParams.get('page') || 1;
+                        loadUsers(page);
+                    });
+                });
+            }
+
+            // Filter change events - auto load both sections
+            filterMonth.addEventListener('change', function () {
+                currentReviewsPage = 1;
+                currentUsersPage = 1;
+                loadReviews(1);
+                loadUsers(1);
+                updateURL();
+            });
+
+            filterYear.addEventListener('change', function () {
+                currentReviewsPage = 1;
+                currentUsersPage = 1;
+                loadReviews(1);
+                loadUsers(1);
+                updateURL();
+            });
+
+            // Update browser URL without reload
+            function updateURL() {
+                const month = filterMonth.value;
+                const year = filterYear.value;
+                const newUrl = `{{ route('admin.dashboard') }}?month=${month}&year=${year}`;
+                window.history.pushState({}, '', newUrl);
+
+                // Cập nhật link xuất Excel
+                const exportBtn = document.getElementById('export-excel-btn');
+                if (exportBtn) {
+                    exportBtn.href = `{{ route('admin.dashboard.export') }}?month=${month}&year=${year}`;
+                }
+            }
+
+            // Initial binding
+            bindReviewsPagination();
+            bindUsersPagination();
+        });
+    </script>
 @endsection
