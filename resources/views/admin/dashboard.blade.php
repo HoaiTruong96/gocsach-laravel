@@ -24,6 +24,12 @@
                     <option value="{{ $y }}" {{ $selectedYear == $y ? 'selected' : '' }}>Năm {{ $y }}</option>
                 @endfor
             </select>
+            <a href="{{ route('admin.dashboard.export', ['month' => $selectedMonth, 'year' => $selectedYear]) }}"
+                id="export-excel-btn"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-semibold rounded-lg shadow hover:from-green-600 hover:to-emerald-700 transition-all duration-200 hover:shadow-md">
+                <i class="fas fa-file-excel"></i>
+                <span>Xuất Excel</span>
+            </a>
             <div id="filter-loading" class="hidden">
                 <i class="fas fa-spinner fa-spin text-blue-500"></i>
             </div>
@@ -249,6 +255,12 @@
                 const year = filterYear.value;
                 const newUrl = `{{ route('admin.dashboard') }}?month=${month}&year=${year}`;
                 window.history.pushState({}, '', newUrl);
+
+                // Cập nhật link xuất Excel
+                const exportBtn = document.getElementById('export-excel-btn');
+                if (exportBtn) {
+                    exportBtn.href = `{{ route('admin.dashboard.export') }}?month=${month}&year=${year}`;
+                }
             }
 
             // Initial binding

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\AdminActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -25,11 +26,22 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $request->validate(['name' => 'required|unique:categories,name']);
-        Category::create([
+        $category = Category::create([
             'name' => $request->name,
             'slug' => Str::slug($request->name),
             'description' => $request->description
         ]);
+
+        // Ghi log
+        AdminActivityLog::log(
+            'create',
+            "Thêm danh mục mới: {$category->name}",
+            Category::class,
+            $category->id,
+            null,
+            $category->toArray()
+        );
+
         return back()->with('success', 'Thêm danh mục thành công');
     }
 
@@ -38,7 +50,21 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
+        $categoryData = $category->toArray();
+        $categoryName = $category->name;
+
         $category->delete();
+
+        // Ghi log
+        AdminActivityLog::log(
+            'delete',
+            "Xóa danh mục: {$categoryName}",
+            Category::class,
+            $categoryData['id'],
+            $categoryData,
+            null
+        );
+
         return back()->with('success', 'Đã xóa danh mục');
     }
 }
