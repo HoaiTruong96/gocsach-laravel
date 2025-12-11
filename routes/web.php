@@ -1,5 +1,10 @@
 <?php
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Models\Book;
 use App\Http\Controllers\HomeController;
@@ -37,7 +42,35 @@ Route::get('/chi-tiet/{slug}/danh-gia', [BookController::class, 'showReviews'])-
 // Xem chi tiết sách
 Route::get('/chi-tiet/{slug}', [BookController::class, 'show'])->name('detail');
 Route::get('/review-search', [BookController::class, 'search'])->name('books.search');
+//
+// code test
+Route::middleware(['auth'])->group(function () {
 
+    // Route hiển thị form (Bạn đã có)
+    Route::get('/reviews/viet-bai', function () {
+        $user = Auth::user(); 
+        if (!$user) return redirect()->route('login');
+        return view('create-review', compact('user'));
+    })->name('reviews.create');
+
+    // Route API tìm sách (Bạn đã có)
+    Route::get('/api/books/search', function (Illuminate\Http\Request $request) {
+        $query = $request->get('q');
+        $books = Illuminate\Support\Facades\DB::table('books')
+            ->where('title', 'like', "%{$query}%")
+            ->orWhere('author_name', 'like', "%{$query}%")
+            ->select('id', 'title', 'author_name', 'published_year', 'cover_image')
+            ->limit(10)
+            ->get();
+        return response()->json($books);
+    });
+
+    // ▼▼▼ 2. THÊM DÒNG QUAN TRỌNG NÀY ĐỂ SỬA LỖI ROUTE NOT DEFINED ▼▼▼
+    Route::post('/posts/store', [PostController::class, 'store'])->name('posts.store');
+});
+
+//code test
+//
 Route::get('/book/{slug}', [BookController::class, 'show'])->name('book.show');
 
 Route::get('/ranking/top-liked', [RankingController::class, 'topLikedPosts']);
