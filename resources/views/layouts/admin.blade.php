@@ -131,6 +131,13 @@
                             class="fas fa-history w-5 text-center {{ request()->routeIs('admin.activity-logs.*') ? 'text-white' : 'text-slate-400 group-hover:text-purple-400' }}"></i>
                         <span class="font-medium text-sm">Lịch Sử Hoạt Động</span>
                     </a>
+
+                    <a href="{{ route('admin.game.index') }}"
+                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.game.*') || request()->routeIs('admin.badges.*') || request()->routeIs('admin.challenges.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-slate-800 hover:text-white' }}">
+                        <i
+                            class="fas fa-trophy w-5 text-center {{ request()->routeIs('admin.game.*') || request()->routeIs('admin.badges.*') || request()->routeIs('admin.challenges.*') ? 'text-white' : 'text-slate-400 group-hover:text-yellow-400' }}"></i>
+                        <span class="font-medium text-sm">Thử Thách & Danh Hiệu</span>
+                    </a>
                 </div>
             </nav>
 
