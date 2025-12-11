@@ -8,7 +8,7 @@
             <div class="flex items-center text-sm text-gray-500 font-medium">
                 <a href="{{ route('home') }}" class="hover:text-brand-green transition">Trang chủ</a>
                 <span class="mx-2 text-gray-300">/</span>
-                <span class="text-brand-green font-bold">Hồ Sơ Của Tôi</span>
+                <span class="text-brand-green font-bold">Hồ sơ của {{ $user->name }}</span>
             </div>
         </div>
     </div>
@@ -226,17 +226,40 @@
                         <span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">Tổng: {{ $reviews->total() }}</span>
                     @endif
                 </div>
-
+                
                 <div class="space-y-6">
                     @forelse($reviews as $post)
-                        <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition group">
+                        <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition group relative">
                             
-                            {{-- THÔNG TIN SÁCH --}}
-                            <div class="flex justify-between items-start mb-2">
+                            {{-- [MỚI] BADGE TRẠNG THÁI (Góc trên cùng bên phải) --}}
+                            <div class="absolute top-4 right-4 z-10">
+                                @if($post->status == 'pending')
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-yellow-50 text-yellow-700 text-xs font-bold rounded-full border border-yellow-200 shadow-sm animate-pulse">
+                                        <i class="fas fa-clock"></i> Đang chờ duyệt
+                                    </span>
+                                @elseif($post->status == 'rejected')
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-red-50 text-red-700 text-xs font-bold rounded-full border border-red-200 shadow-sm">
+                                        <i class="fas fa-times-circle"></i> Bị từ chối
+                                    </span>
+                                @elseif($post->status == 'published')
+                                    {{-- Nếu bạn muốn hiện chữ Đã duyệt (thường thì không cần thiết, để trống cho đẹp) --}}
+                                    {{-- <span class="text-green-600 text-xs font-bold"><i class="fas fa-check-circle"></i> Đã duyệt</span> --}}
+                                @endif
+                            </div>
+
+                            {{-- THÔNG TIN SÁCH (Giữ nguyên) --}}
+                            <div class="flex justify-between items-start mb-4 pr-20"> {{-- Thêm pr-20 để tránh đè lên badge --}}
                                 <div class="flex items-center gap-4">
                                     <a href="{{ route('book.show', $post->book_id ?? 0) }}" class="block shrink-0">
-                                        <img src="{{ $post->book->cover_image ?? 'https://via.placeholder.com/50' }}" 
-                                             class="w-12 h-16 object-cover rounded shadow-sm border border-gray-200 group-hover:scale-105 transition duration-300">
+                                        {{-- Sửa lại đường dẫn ảnh cho chuẩn --}}
+                                        @php
+                                            $cover = $post->book->cover_image ?? null;
+                                            $coverUrl = $cover 
+                                                ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover))
+                                                : 'https://via.placeholder.com/50';
+                                        @endphp
+                                        <img src="{{ $coverUrl }}" 
+                                             class="w-12 h-16 object-cover rounded shadow-sm border border-gray-200">
                                     </a>
                                     
                                     <div>
@@ -248,7 +271,7 @@
                                         <div class="flex text-yellow-400 text-xs items-center gap-2">
                                             <div class="flex">
                                                 @for($i=1; $i<=5; $i++)
-                                                    <i class="fas fa-star {{ $i <= $post->rating ? '' : 'text-gray-300' }}"></i>
+                                                    <i class="fas fa-star {{ $i <= ($post->rating ?? 0) ? '' : 'text-gray-300' }}"></i>
                                                 @endfor
                                             </div>
                                             <span class="text-gray-400 text-[11px]">• {{ $post->created_at->format('d/m/Y H:i') }}</span>
@@ -257,58 +280,38 @@
                                 </div>
                             </div>
 
-                            {{-- [FIX] TIÊU ĐỀ BÀI VIẾT --}}
-                            <div class="mb-3 mt-4">
-                                <h3 class="text-lg font-bold text-gray-900 font-serif leading-tight">
-                                    {{ $post->title }}
-                                </h3>
-                            </div>
-                            {{-- [THÊM ĐOẠN NÀY NGAY DƯỚI TIÊU ĐỀ] --}}
-                            <div class="mt-1">
-                                @if($post->status == 'pending')
-                                    <span class="inline-block bg-yellow-100 text-yellow-800 text-[10px] font-bold px-2 py-0.5 rounded border border-yellow-200 uppercase tracking-wide">
-                                        <i class="fas fa-clock mr-1"></i> Đang chờ duyệt
-                                    </span>
-                                @elseif($post->status == 'rejected')
-                                    <span class="inline-block bg-red-100 text-red-800 text-[10px] font-bold px-2 py-0.5 rounded border border-red-200 uppercase tracking-wide">
-                                        <i class="fas fa-times-circle mr-1"></i> Bị từ chối
-                                    </span>
-                                @endif
-                            </div>
+                            {{-- TIÊU ĐỀ & NỘI DUNG --}}
+                            <h3 class="text-lg font-bold text-gray-800 mb-2 group-hover:text-brand-green transition">
+                                {{ $post->title }}
+                            </h3>
                             
-
-                            {{-- NỘI DUNG --}}
-                            <div class="bg-gray-50 p-4 rounded-lg relative mb-4">
-                                <i class="fas fa-quote-left text-gray-300 absolute top-2 left-2 text-sm"></i>
-                                <p class="text-gray-700 text-sm leading-relaxed pl-4 italic line-clamp-3">
-                                    {{ $post->content }}
-                                </p>
+                            {{-- Nội dung review (Render HTML an toàn) --}}
+                            <div class="text-gray-500 text-sm line-clamp-3 prose prose-sm max-w-none">
+                                {!! $post->content !!}
                             </div>
 
-                            {{-- NÚT TƯƠNG TÁC --}}
-                            <div class="flex items-center gap-6 text-sm text-gray-500 font-medium border-t border-gray-50 pt-3">
-                                <span class="flex items-center gap-1.5 hover:text-red-500 transition cursor-pointer">
-                                    <i class="fas fa-heart {{ $post->likes_count > 0 ? 'text-red-500' : '' }}"></i> 
-                                    {{ $post->likes_count }} Thích
+                            {{-- FOOTER --}}
+                            <div class="flex items-center justify-between mt-4 text-xs text-gray-400 border-t border-gray-50 pt-3">
+                                <span class="flex items-center gap-2">
+                                    <i class="far fa-clock"></i> {{ $post->created_at->diffForHumans() }}
                                 </span>
-                                <span class="flex items-center gap-1.5 hover:text-blue-500 transition cursor-pointer">
-                                    <i class="fas fa-comment {{ $post->comments_count > 0 ? 'text-blue-500' : '' }}"></i> 
-                                    {{ $post->comments_count }} Bình luận
-                                </span>
-                                
-                                <a href="{{ route('book.show', $post->book_id ?? 0) }}" class="ml-auto text-brand-green text-xs font-bold hover:underline uppercase tracking-wide">
-                                    Xem chi tiết <i class="fas fa-arrow-right ml-1"></i>
+
+                                <a href="{{ route('book.reviews', $post->book->slug ?? $post->book_id) }}" 
+                                   class="text-brand-green font-bold hover:underline text-xs uppercase tracking-wide flex items-center gap-1">
+                                    Xem chi tiết <i class="fas fa-arrow-right"></i>
                                 </a>
                             </div>
                         </div>
                     @empty
-                        <div class="col-span-full text-center py-12 bg-white rounded-xl border border-dashed border-gray-300 flex flex-col items-center justify-center">
-                            <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 text-gray-300">
+                        <div class="text-center py-10 bg-white rounded-xl border border-dashed border-gray-300">
+                            <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400">
                                 <i class="fas fa-pen-nib text-2xl"></i>
                             </div>
-                            <p class="text-gray-500 font-medium mb-2">Người dùng này chưa có bài viết nào.</p>
+                            <p class="text-gray-500 font-medium">Người dùng này chưa có bài viết nào.</p>
                             @if(Auth::check() && Auth::id() == $user->id)
-                                <a href="{{ route('reviews.create') }}" class="text-brand-accent font-bold hover:underline">Viết bài đầu tiên ngay</a>
+                                <a href="{{ route('reviews.create') }}" class="text-brand-accent font-bold hover:underline text-sm">
+                                    Viết bài đầu tiên ngay
+                                </a>
                             @endif
                         </div>
                     @endforelse
