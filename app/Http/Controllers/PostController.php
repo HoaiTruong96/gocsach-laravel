@@ -12,41 +12,38 @@ use Illuminate\Support\Str;
 class PostController extends Controller
 {
    public function store(Request $request)
-    {
-        $request->validate([
-            'rating' => 'required|integer|min:1|max:5',
-            'content' => 'required|min:10',
-            'book_id' => 'required|exists:books,id'
-        ]);
+{
+    // 1. Validate dữ liệu
+    $request->validate([
+        'book_id' => 'required|exists:books,id',
+        'rating'  => 'required|integer|min:1|max:5',
+        'title'   => 'required|string|max:255', // Bắt buộc có tiêu đề
+        'content' => 'required|min:10',
+    ], [
+        'book_id.exists' => 'Vui lòng chọn một cuốn sách hợp lệ từ danh sách gợi ý.',
+        'title.required' => 'Bạn chưa nhập tiêu đề bài viết.',
+        'content.min' => 'Nội dung review quá ngắn, hãy viết thêm chút nữa nhé!',
+    ]);
 
-        // Tạo tiêu đề tự động (Vì form không có ô nhập tiêu đề)
-        $title = 'Review sách #' . $request->input('book_id') . ' bởi User ' . (Auth::id() ?? 52);
-        
-        // [QUAN TRỌNG] Tạo slug từ tiêu đề + thêm thời gian để tránh trùng lặp
-        $slug = Str::slug($title) . '-' . time();
+    // 2. Tạo Slug duy nhất
+    $slug = Str::slug($request->title) . '-' . time();
 
-        // 2. Lưu vào Database
-        Post::create([
-            'user_id' => Auth::id() ?? 52, 
-            'book_id' => $request->input('book_id'),
-            
-            // Thêm tiêu đề
-            'title' => $title, 
-            
-            // [FIX LỖI] Thêm slug vào đây (Bắt buộc vì DB yêu cầu)
-            'slug' => $slug,
-
-            'rating' => $request->input('rating'),
-            
-            // Đổi 'content_text' thành 'content' để khớp với Model
-            'content' => $request->input('content'), 
-            
-            'status' => 'published',
-            'published_at' => now(),
-        ]);
-        
-        return redirect()->back()->with('success', 'Cảm ơn bạn đã đánh giá!');
-    }
+    // 3. Lưu vào Database
+    Post::create([
+        'user_id'      => Auth::id(),
+        'book_id'      => $request->book_id,
+        'title'        => $request->title, // Lấy tiêu đề từ Form
+        'slug'         => $slug,
+        'rating'       => $request->rating,
+        'content'      => $request->content,
+        'status'       => 'published',
+        'published_at' => now(),
+    ]);
+    
+    // 4. Quay về trang Profile
+    return redirect()->route('profile', Auth::id())
+                     ->with('success', 'Đăng bài review thành công!');
+}
      public function toggleLike($id)
     {
         $user = Auth::user();
