@@ -3,7 +3,6 @@
 @section('title', 'Trang Cá Nhân - ' . $user->name)
 
 @section('content')
-    <!-- Breadcrumb -->
     <div class="bg-brand-beige/30 py-4 border-b border-brand-beige">
         <div class="container mx-auto px-4">
             <div class="flex items-center text-sm text-gray-500 font-medium">
@@ -15,19 +14,29 @@
     </div>
 
     <main class="container mx-auto px-4 py-12 flex-grow min-h-screen">
+        {{-- THÔNG BÁO THÀNH CÔNG (NẾU CÓ) --}}
+        @if(session('success'))
+            <div class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg relative shadow-sm flex items-center gap-3">
+                <i class="fas fa-check-circle text-xl"></i>
+                <span class="block sm:inline font-medium">{{ session('success') }}</span>
+                <button class="absolute top-0 bottom-0 right-0 px-4 py-3" onclick="this.parentElement.remove();">
+                    <i class="fas fa-times text-green-500 hover:text-green-700"></i>
+                </button>
+            </div>
+        @endif
+
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
 
-            <!-- CỘT TRÁI: THÔNG TIN USER -->
+            {{-- ============================================================== --}}
+            {{-- CỘT TRÁI: SIDEBAR THÔNG TIN USER                               --}}
+            {{-- ============================================================== --}}
             <div class="lg:col-span-1">
                 <div class="bg-white rounded-2xl shadow-soft p-6 text-center border border-gray-100 sticky top-24">
                     
-                    <!-- Avatar -->
                     <div class="relative w-32 h-32 mx-auto mb-4 group">
-                        <!-- Logic Avatar: Nếu null thì dùng UI Avatars -->
                         <img src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=3E5F4E&color=fff&size=128' }}" 
                              class="rounded-full border-4 border-brand-beige shadow-md object-cover w-full h-full group-hover:border-brand-green transition duration-300">
                         
-                        <!-- Nút đổi ảnh (Chỉ hiện khi xem profile của chính mình) -->
                         @if(Auth::id() == $user->id)
                             <button class="absolute bottom-0 right-0 bg-white border border-gray-200 p-1.5 rounded-full text-gray-500 hover:text-brand-green hover:border-brand-green shadow-sm transition" title="Đổi ảnh đại diện">
                                 <i class="fas fa-camera text-xs"></i>
@@ -38,13 +47,11 @@
                     <h2 class="text-xl font-bold text-gray-800 font-serif">{{ $user->name }}</h2>
                     <p class="text-gray-500 text-sm mb-3">{{ $user->email }}</p>
                     
-                    <!-- Bio -->
                     <p class="text-gray-600 text-sm italic mb-4 px-2 bg-gray-50 py-2 rounded-lg border border-gray-100 relative">
                         <i class="fas fa-quote-left text-gray-300 absolute top-1 left-1 text-xs"></i>
                         {{ $user->bio ?? 'Thành viên tích cực của Góc Sách.' }}
                     </p>
 
-                    <!-- Badges (Role & Status) -->
                     <div class="flex justify-center gap-2 mb-6 flex-wrap">
                         @if($user->role == 'admin')
                             <span class="px-3 py-1 bg-red-50 text-red-600 text-xs rounded-full font-bold border border-red-100 flex items-center gap-1">
@@ -62,11 +69,10 @@
                         </span>
                     </div>
 
-                     <!-- Thống kê (Click mở Modal) -->
-                    <div class="grid grid-cols-2 gap-3 mb-6 border-t border-b border-gray-100 py-4">
+                      <div class="grid grid-cols-2 gap-3 mb-6 border-t border-b border-gray-100 py-4">
                         <div class="text-center">
                             <span class="block font-bold text-xl text-brand-green">{{ $totalBooks ?? 0 }}</span>
-                            <span class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Tủ sách</span>
+                            <span class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Sách đề xuất</span>
                         </div>
                         <div class="text-center border-l border-gray-100">
                             <span class="block font-bold text-xl text-brand-accent">{{ $totalReviews ?? 0 }}</span>
@@ -74,12 +80,10 @@
                         </div>
                         
                         <div class="text-center mt-2 pt-2 border-t border-gray-50 col-span-2 grid grid-cols-2">
-                            <!-- Nút Đang theo dõi -->
                             <div class="cursor-pointer hover:bg-gray-50 rounded transition p-1" onclick="openFollowModal('following', {{ $user->id }})">
                                 <span class="block font-bold text-lg text-gray-800">{{ $totalFollowing ?? 0 }}</span>
                                 <span class="text-xs text-gray-400 uppercase hover:text-blue-500 transition">Đang theo dõi</span>
                             </div>
-                            <!-- Nút Người theo dõi -->
                             <div class="cursor-pointer hover:bg-gray-50 rounded transition p-1" onclick="openFollowModal('followers', {{ $user->id }})">
                                 <span class="block font-bold text-lg text-gray-800" id="follower-count">{{ $totalFollowers ?? 0 }}</span>
                                 <span class="text-xs text-gray-400 uppercase hover:text-blue-500 transition">Người theo dõi</span>
@@ -92,9 +96,7 @@
                         <p><i class="fas fa-sync-alt mr-2 w-4 text-center"></i> Cập nhật: <span class="text-gray-600">{{ $user->updated_at ? $user->updated_at->format('d/m/Y') : 'N/A' }}</span></p>
                     </div>
 
-                    <!-- Các nút hành động -->
                     <div class="space-y-2">
-                        <!-- Nút Follow cho người khác (Ajax) -->
                         @if(Auth::check() && Auth::id() != $user->id)
                              <button onclick="toggleFollow({{ $user->id }})" 
                                 id="btn-follow"
@@ -106,7 +108,6 @@
                              </button>
                         @endif
 
-                        <!-- Nút cho chủ tài khoản -->
                         @if(Auth::id() == $user->id)
                             <a href="#" class="block w-full border border-brand-green text-brand-green py-2 rounded-lg font-bold text-sm hover:bg-brand-green hover:text-white transition">
                                 <i class="fas fa-edit mr-1"></i> Chỉnh sửa hồ sơ
@@ -122,73 +123,82 @@
                 </div>
             </div>
 
-            <!-- CỘT PHẢI: TỦ SÁCH -->
             <div class="lg:col-span-3">
 
                 {{-- ================================================================= --}}
-                {{-- PHẦN 1: TỦ SÁCH (CHỈ HIỂN THỊ NẾU LÀ PROFILE CỦA CHÍNH MÌNH) --}}
+                {{-- PHẦN 1: SÁCH TÔI ĐỀ XUẤT (ĐÃ SỬA GIAO DIỆN MOCKUP)                --}}
                 {{-- ================================================================= --}}
                 @if(Auth::check() && Auth::id() == $user->id)
                     <div class="bg-white rounded-xl shadow-soft p-4 mb-8 border border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
                         <h3 class="text-lg font-bold text-brand-green font-serif border-l-4 border-brand-accent pl-3">
-                            Tủ Sách Của Tôi
+                            Sách Tôi Đề Xuất
                         </h3>
                         
-                        <div class="flex bg-gray-100 p-1 rounded-lg">
-                            <a href="{{ route('profile', ['id' => $user->id]) }}" 
-                               class="px-4 py-1.5 rounded-md text-sm font-medium transition {{ $currentFilter == 'all' ? 'bg-white text-brand-green shadow-sm font-bold' : 'text-gray-500 hover:text-gray-700' }}">Tất cả</a>
-                            <a href="{{ route('profile', ['id' => $user->id, 'status' => 'reading']) }}" 
-                               class="px-4 py-1.5 rounded-md text-sm font-medium transition {{ $currentFilter == 'reading' ? 'bg-white text-brand-green shadow-sm font-bold' : 'text-gray-500 hover:text-gray-700' }}">Đang đọc</a>
-                            <a href="{{ route('profile', ['id' => $user->id, 'status' => 'favorites']) }}" 
-                               class="px-4 py-1.5 rounded-md text-sm font-medium transition {{ $currentFilter == 'favorites' ? 'bg-white text-brand-green shadow-sm font-bold' : 'text-gray-500 hover:text-gray-700' }}">Yêu thích</a>
-                            <a href="{{ route('profile', ['id' => $user->id, 'status' => 'completed']) }}" 
-                               class="px-4 py-1.5 rounded-md text-sm font-medium transition {{ $currentFilter == 'completed' ? 'bg-white text-brand-green shadow-sm font-bold' : 'text-gray-500 hover:text-gray-700' }}">Đã đọc</a>
-                        </div>
+                        {{-- Nút bấm Đề xuất --}}
+                        <a href="#" class="text-xs font-bold text-white bg-brand-accent hover:bg-[#c29263] px-4 py-2 rounded-full shadow-sm transition flex items-center gap-2 transform hover:-translate-y-0.5">
+                            <i class="fas fa-plus-circle"></i> Đề xuất sách mới
+                        </a>
                     </div>
 
-                    <!-- Grid Sách -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                        {{-- Tạm thời dùng $myBooks để hiển thị giao diện test --}}
                         @if(isset($myBooks) && count($myBooks) > 0)
                             @foreach($myBooks as $book)
                             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-card hover:-translate-y-1 transition-all duration-300 flex flex-row h-40 relative group">
+                                
+                                {{-- [MOCKUP] BADGE TRẠNG THÁI --}}
                                 <div class="absolute top-2 right-2 z-10">
-                                    @php
-                                        $statusClass = 'bg-gray-100 text-gray-500'; $statusText = 'Sách';
-                                        if(isset($book->pivot->status)) {
-                                            switch($book->pivot->status) {
-                                                case 'reading': $statusClass = 'bg-blue-50 text-blue-600 border border-blue-100'; $statusText = 'ĐANG ĐỌC'; break;
-                                                case 'wishlist': $statusClass = 'bg-pink-50 text-pink-600 border border-pink-100'; $statusText = 'YÊU THÍCH'; break;
-                                                case 'completed': $statusClass = 'bg-green-50 text-green-600 border border-green-100'; $statusText = 'ĐÃ ĐỌC'; break;
-                                            }
-                                        }
-                                    @endphp
-                                    <span class="{{ $statusClass }} text-[10px] font-bold px-2 py-1 rounded shadow-sm">{{ $statusText }}</span>
+                                    @if($loop->index % 2 == 0) 
+                                        {{-- Giả lập: ĐÃ DUYỆT --}}
+                                        <span class="bg-green-100 text-green-700 border border-green-200 text-[10px] font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1">
+                                            <i class="fas fa-check-circle"></i> ĐÃ DUYỆT
+                                        </span>
+                                    @else
+                                        {{-- Giả lập: CHỜ DUYỆT --}}
+                                        <span class="bg-yellow-50 text-yellow-700 border border-yellow-100 text-[10px] font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1">
+                                            <i class="fas fa-clock"></i> CHỜ DUYỆT
+                                        </span>
+                                    @endif
                                 </div>
+
                                 <div class="w-28 relative flex-shrink-0 bg-gray-200">
-                                    <a href="{{ route('book.show', $book->id) }}">
+                                    <a href="#">
                                         <img src="{{ $book->cover_image ?? 'https://via.placeholder.com/150x225?text=No+Image' }}" class="w-full h-full object-cover transition group-hover:opacity-90">
                                     </a>
                                 </div>
                                 <div class="p-4 flex flex-col justify-between flex-grow min-w-0">
                                     <div>
                                         <h4 class="font-bold font-serif text-gray-800 text-sm mb-1 leading-tight line-clamp-2">
-                                            <a href="{{ route('book.show', $book->id) }}" class="hover:text-brand-green transition">{{ $book->title }}</a>
+                                            <a href="#" class="hover:text-brand-green transition">
+                                                {{ $book->title }}
+                                            </a>
                                         </h4>
                                         <p class="text-xs text-gray-500 truncate">
-                                            @if(is_object($book->author)) {{ $book->author->name ?? 'N/A' }} @else {{ $book->author_id }} @endif
+                                            {{ $book->author_name ?? ($book->author->name ?? 'Tác giả') }}
+                                        </p>
+                                        <p class="text-[10px] text-gray-400 mt-1">
+                                            <i class="far fa-calendar-alt mr-1"></i> Gửi: {{ now()->format('d/m/Y') }}
                                         </p>
                                     </div>
+                                    
                                     <div class="flex justify-end mt-2">
-                                        <a href="{{ route('book.show', $book->id) }}" class="text-brand-green border border-brand-green/30 bg-brand-green/5 px-3 py-1 rounded-md text-xs font-bold hover:bg-brand-green hover:text-white transition">Xem</a>
+                                        <a href="#" class="text-brand-green border border-brand-green/30 bg-brand-green/5 px-3 py-1 rounded-md text-xs font-bold hover:bg-brand-green hover:text-white transition">
+                                            Xem chi tiết
+                                        </a>
                                     </div>
                                 </div>
                             </div>
                             @endforeach
                         @else
                             <div class="col-span-full text-center py-10 bg-white rounded-xl border border-dashed border-gray-300">
-                                <i class="fas fa-book-open text-3xl text-gray-300 mb-2"></i>
-                                <p class="text-gray-500 text-sm">Chưa có cuốn sách nào.</p>
-                                <a href="{{ route('list') }}" class="text-brand-green text-sm font-bold hover:underline mt-1 inline-block">Thêm sách ngay</a>
+                                <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400">
+                                    <i class="fas fa-book-medical text-2xl"></i>
+                                </div>
+                                <p class="text-gray-500 text-sm font-medium">Bạn chưa đề xuất cuốn sách nào.</p>
+                                <p class="text-gray-400 text-xs mt-1 mb-3">Hãy đóng góp sách mới cho cộng đồng nhé!</p>
+                                <a href="#" class="text-brand-accent text-sm font-bold hover:underline">
+                                    + Đề xuất sách ngay
+                                </a>
                             </div>
                         @endif
                     </div>
@@ -196,13 +206,22 @@
 
 
                 {{-- ================================================================= --}}
-                {{-- PHẦN 2: DANH SÁCH REVIEW (LUÔN HIỂN THỊ CHO TẤT CẢ MỌI NGƯỜI) --}}
+                {{-- PHẦN 2: DANH SÁCH REVIEW (ĐÃ FIX HIỂN THỊ TIÊU ĐỀ)                --}}
                 {{-- ================================================================= --}}
                 
                 <div class="flex items-center justify-between mb-6 border-b border-gray-200 pb-4">
-                    <h3 class="text-xl font-bold text-gray-800 font-serif border-l-4 border-brand-green pl-3">
-                        {{ isset($reviews) && $reviews->total() > 0 ? 'Bài Review Đã Đăng' : 'Chưa có bài viết nào' }}
-                    </h3>
+                    <div class="flex items-center gap-3">
+                        <h3 class="text-xl font-bold text-gray-800 font-serif border-l-4 border-brand-green pl-3">
+                            {{ isset($reviews) && $reviews->total() > 0 ? 'Bài Review Đã Đăng' : 'Chưa có bài viết nào' }}
+                        </h3>
+
+                        @if(Auth::check() && Auth::id() == $user->id)
+                            <a href="{{ route('reviews.create') }}" class="inline-flex items-center gap-1.5 bg-brand-accent hover:bg-[#c29263] text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm transition transform hover:-translate-y-0.5">
+                                <i class="fas fa-pen-nib"></i> Viết Review
+                            </a>
+                        @endif
+                    </div>
+
                     @if(isset($reviews) && $reviews->total() > 0)
                         <span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">Tổng: {{ $reviews->total() }}</span>
                     @endif
@@ -212,8 +231,8 @@
                     @forelse($reviews as $post)
                         <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition group">
                             
-                            <!-- Header Review -->
-                            <div class="flex justify-between items-start mb-4">
+                            {{-- THÔNG TIN SÁCH --}}
+                            <div class="flex justify-between items-start mb-2">
                                 <div class="flex items-center gap-4">
                                     <a href="{{ route('book.show', $post->book_id ?? 0) }}" class="block shrink-0">
                                         <img src="{{ $post->book->cover_image ?? 'https://via.placeholder.com/50' }}" 
@@ -238,15 +257,22 @@
                                 </div>
                             </div>
 
-                            <!-- Nội dung Review -->
+                            {{-- [FIX] TIÊU ĐỀ BÀI VIẾT --}}
+                            <div class="mb-3 mt-4">
+                                <h3 class="text-lg font-bold text-gray-900 font-serif leading-tight">
+                                    {{ $post->title }}
+                                </h3>
+                            </div>
+
+                            {{-- NỘI DUNG --}}
                             <div class="bg-gray-50 p-4 rounded-lg relative mb-4">
                                 <i class="fas fa-quote-left text-gray-300 absolute top-2 left-2 text-sm"></i>
-                                <p class="text-gray-700 text-sm leading-relaxed pl-4 italic">
+                                <p class="text-gray-700 text-sm leading-relaxed pl-4 italic line-clamp-3">
                                     {{ $post->content }}
                                 </p>
                             </div>
 
-                            <!-- Footer Stats -->
+                            {{-- NÚT TƯƠNG TÁC --}}
                             <div class="flex items-center gap-6 text-sm text-gray-500 font-medium border-t border-gray-50 pt-3">
                                 <span class="flex items-center gap-1.5 hover:text-red-500 transition cursor-pointer">
                                     <i class="fas fa-heart {{ $post->likes_count > 0 ? 'text-red-500' : '' }}"></i> 
@@ -268,6 +294,9 @@
                                 <i class="fas fa-pen-nib text-2xl"></i>
                             </div>
                             <p class="text-gray-500 font-medium mb-2">Người dùng này chưa có bài viết nào.</p>
+                            @if(Auth::check() && Auth::id() == $user->id)
+                                <a href="{{ route('reviews.create') }}" class="text-brand-accent font-bold hover:underline">Viết bài đầu tiên ngay</a>
+                            @endif
                         </div>
                     @endforelse
                 </div>
@@ -278,83 +307,37 @@
             </div>
 
         </div>
+        
+        {{-- Modal Follow (Giữ nguyên) --}}
         <div id="followModal" class="fixed inset-0 z-[60] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <!-- Backdrop -->
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeFollowModal()"></div>
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeFollowModal()"></div>
 
-        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md">
-                    <!-- Header Modal -->
-                    <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4 border-b border-gray-100">
-                        <div class="flex items-center justify-between">
-                            <h3 class="text-lg font-bold leading-6 text-gray-900" id="modal-title">Danh sách</h3>
-                            <button onclick="closeFollowModal()" class="text-gray-400 hover:text-gray-600 transition">
-                                <i class="fas fa-times text-xl"></i>
-                            </button>
+            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                    <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md">
+                        <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4 border-b border-gray-100">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-bold leading-6 text-gray-900" id="modal-title">Danh sách</h3>
+                                <button onclick="closeFollowModal()" class="text-gray-400 hover:text-gray-600 transition">
+                                    <i class="fas fa-times text-xl"></i>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <!-- Body Modal (List User) -->
-                    <div class="bg-white px-4 py-2 sm:p-6 max-h-[400px] overflow-y-auto" id="modal-body">
-                        <!-- Ajax sẽ chèn nội dung vào đây -->
-                        <div class="flex justify-center py-4">
-                            <i class="fas fa-spinner fa-spin text-brand-green text-2xl"></i>
+                        
+                        <div class="bg-white px-4 py-2 sm:p-6 max-h-[400px] overflow-y-auto" id="modal-body">
+                            <div class="flex justify-center py-4">
+                                <i class="fas fa-spinner fa-spin text-brand-green text-2xl"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
     </main>
 
-    <!-- SCRIPT AJAX FOLLOW -->
     <script>
-        function toggleFollow(userId) {
-            const btn = document.getElementById('btn-follow');
-            const text = document.getElementById('follow-text');
-            const icon = btn.querySelector('i');
-            const countSpan = document.getElementById('follower-count');
-
-            // Gửi Ajax
-            fetch('{{ route('follow.toggle') }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ user_id: userId })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'error') {
-                    alert(data.message);
-                    return;
-                }
-
-                // Cập nhật số lượng người theo dõi ngay lập tức
-                if (data.follower_count !== undefined) {
-                    countSpan.innerText = data.follower_count;
-                }
-
-                // Cập nhật giao diện nút bấm
-                if (data.action === 'followed') {
-                    // Trạng thái: Đã theo dõi
-                    btn.classList.remove('bg-blue-600', 'text-white', 'hover:bg-blue-700');
-                    btn.classList.add('bg-gray-200', 'text-gray-800');
-                    text.innerText = 'Đang theo dõi';
-                    icon.className = 'fas fa-check';
-                } else {
-                    // Trạng thái: Chưa theo dõi
-                    btn.classList.remove('bg-gray-200', 'text-gray-800');
-                    btn.classList.add('bg-blue-600', 'text-white', 'hover:bg-blue-700');
-                    text.innerText = 'Theo dõi';
-                    icon.className = 'fas fa-user-plus';
-                }
-            })
-            .catch(err => console.error(err));
-        }
+        // --- 1. Xử lý Nút Toggle Follow (Một hàm duy nhất) ---
         function toggleFollow(userId) {
             fetch('{{ route('follow.toggle') }}', {
                 method: 'POST',
@@ -407,7 +390,6 @@
             else title.innerText = 'Đang theo dõi';
 
             // Gọi API lấy danh sách
-            // Đảm bảo URL chính xác: /api/user/{id}/followers hoặc /api/user/{id}/following
             fetch(`/api/user/${userId}/${type}`)
                 .then(res => res.json())
                 .then(users => {
@@ -430,8 +412,6 @@
                                 <img src="${avatar}" class="w-10 h-10 rounded-full border border-gray-200 object-cover">
                                 <div>
                                     <h4 class="font-bold text-gray-800 text-sm group-hover:text-brand-green transition">${u.name}</h4>
-                                    <!-- Nếu muốn hiện thêm bio hoặc email -->
-                                    <!-- <p class="text-xs text-gray-400 truncate w-48">${u.email}</p> -->
                                 </div>
                                 <div class="ml-auto">
                                     <span class="text-xs text-gray-400 group-hover:text-brand-green"><i class="fas fa-chevron-right"></i></span>
