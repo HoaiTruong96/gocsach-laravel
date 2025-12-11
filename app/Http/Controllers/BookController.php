@@ -3,30 +3,32 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Book; // Gọi Model Book
-use App\Models\Post; // Gọi Model Post (Review)
+use App\Models\Book; 
+use App\Models\Post; 
 
 class BookController extends Controller
 {
-    // 1. TRANG CHỦ (Nếu bạn dùng HomeController thì hàm này có thể không cần thiết ở đây, nhưng cứ để nếu bạn muốn giữ)
+    // 1. TRANG CHỦ
     public function home(Request $request)
     {
-        // A. Lấy sách cho Slider (5 cuốn mới nhất)
         $books = Book::orderBy('id', 'desc')->take(5)->get();
-
         return view('home', compact('books'));
     }
 
-    // 2. TRANG CHI TIẾT SÁCH (Đã sửa lỗi thiếu code)
+    // 2. TRANG CHI TIẾT SÁCH (SỬA CHỖ NÀY)
     public function show($slug)
     {
-        // Tìm sách theo slug, nếu không thấy thì báo lỗi 404
         $book = Book::where('slug', $slug)->firstOrFail();
 
-        // (Tùy chọn) Tăng lượt xem
-        // $book->increment('view_count');
+        // [MỚI] Load quan hệ 'posts' (Review) nhưng LỌC chỉ lấy bài 'published'
+        // Cách này giúp $book->posts trong view chỉ hiện bài đã duyệt
+        $book->load(['posts' => function ($query) {
+            $query->where('status', 'published')->latest(); 
+        }, 'posts.user']); // Load kèm user để hiện avatar người review
 
-        // Trả về view chi tiết sách
+        // (Tùy chọn) Tính điểm trung bình chỉ dựa trên các bài đã duyệt
+        // $avgRating = $book->posts->where('status', 'published')->avg('rating');
+
         return view('book-detail', compact('book'));
     }
 
@@ -44,18 +46,16 @@ class BookController extends Controller
         return view('search-book', ['books' => $books]);
     }
 
-    // 4. TRANG DANH SÁCH REVIEW (MỚI THÊM)
+    // 4. TRANG DANH SÁCH REVIEW (ĐÃ ỔN - GIỮ NGUYÊN)
     public function showReviews($slug)
     {
-        // Lấy thông tin sách
         $book = Book::where('slug', $slug)->firstOrFail();
 
-        // Lấy danh sách review của sách đó, phân trang 3 bài
         $reviews = Post::where('book_id', $book->id)
-            ->where('status', 'published') // Chỉ lấy bài đã duyệt (nếu có cột status)
-            ->with('user')                 // Lấy kèm thông tin người viết
-            ->latest()                     // Mới nhất lên đầu
-            ->paginate(3);                 // 3 bài mỗi trang
+            ->where('status', 'published') // Dòng này quan trọng, giữ nguyên
+            ->with('user')                 
+            ->latest()                     
+            ->paginate(3);                 
 
         return view('review-detail', compact('book', 'reviews'));
     }
