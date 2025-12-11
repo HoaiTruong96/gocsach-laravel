@@ -99,4 +99,37 @@ class User extends Authenticatable
     {
         return $this->followings()->where('following_id', $userId)->exists();
     }
+
+    public function badges()
+    {
+        return $this->belongsToMany(Badge::class, 'user_badges')
+            ->withPivot('earned_at', 'expires_at')
+            ->withTimestamps();
+    }
+
+    public function activeBadges()
+    {
+        return $this->belongsToMany(Badge::class, 'user_badges')
+            ->withPivot('earned_at', 'expires_at')
+            ->wherePivot('expires_at', '>', now())
+            ->orWherePivotNull('expires_at')
+            ->withTimestamps();
+    }
+
+    public function challenges()
+    {
+        return $this->belongsToMany(Challenge::class, 'user_challenges')
+            ->withPivot('current_count', 'is_completed', 'completed_at')
+            ->withTimestamps();
+    }
+
+    public function userBadges()
+    {
+        return $this->hasMany(UserBadge::class);
+    }
+
+    public function userChallenges()
+    {
+        return $this->hasMany(UserChallenge::class);
+    }
 }
