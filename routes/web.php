@@ -52,6 +52,7 @@ Route::middleware(['auth'])->group(function () {
         if (!$user) return redirect()->route('login');
         return view('create-review', compact('user'));
     })->name('reviews.create');
+    Route::post('/posts/{id}/comment', [App\Http\Controllers\PostController::class, 'postComment'])->name('posts.comment');
 
     // Route API tìm sách (Bạn đã có)
     Route::get('/api/books/search', function (Illuminate\Http\Request $request) {
