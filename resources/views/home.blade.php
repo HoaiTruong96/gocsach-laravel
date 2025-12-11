@@ -167,7 +167,7 @@
                     </div>
                 </section>
 
-                {{-- SECTION 2: SÁCH MỚI CẬP NHẬT --}}
+                {{-- SECTION 2: SÁCH MỚI CẬP NHẬT (ĐÃ SỬA LỖI ẢNH) --}}
                 <section id="new-books">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-gray-800 font-serif border-l-4 border-brand-green pl-3">
@@ -179,10 +179,26 @@
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                         @if(isset($books) && $books->count() > 0)
                             @foreach($books->take(4) as $book)
+                                {{-- [LOGIC MỚI] Xử lý link ảnh ngay tại View --}}
+                                @php
+                                    $cover = $book->cover_image;
+                                    if (!$cover) {
+                                        // Không có ảnh -> Dùng ảnh giữ chỗ
+                                        $coverUrl = 'https://via.placeholder.com/150x225?text=No+Image';
+                                    } elseif (str_starts_with($cover, 'http')) {
+                                        // Link online -> Giữ nguyên
+                                        $coverUrl = $cover;
+                                    } else {
+                                        // Ảnh trong máy -> Thêm storage/ vào trước
+                                        $coverUrl = asset('storage/' . $cover);
+                                    }
+                                @endphp
+
                                 <div class="group relative">
                                     <div class="relative w-full aspect-[2/3] rounded-lg overflow-hidden shadow-md mb-3">
                                         <a href="{{ route('detail', $book->slug) }}">
-                                            <img src="{{ $book->cover_image ?? 'https://via.placeholder.com/150x225?text=No+Image' }}" 
+                                            {{-- Sử dụng biến $coverUrl đã xử lý --}}
+                                            <img src="{{ $coverUrl }}" 
                                                  alt="{{ $book->title }}" 
                                                  class="w-full h-full object-cover transform transition duration-500 group-hover:scale-110">
                                         </a>
@@ -208,7 +224,6 @@
                         </a>
                     </div>
                 </section>
-
                 {{-- SECTION 3: REVIEW CỘNG ĐỒNG --}}
                 <section id="community-posts" class="mb-16">
                     <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
