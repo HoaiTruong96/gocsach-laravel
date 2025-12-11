@@ -4,46 +4,47 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Book;
-use App\Models\Post; // <--- SỬA: Dùng Post thay vì Review
+use App\Models\Post;
 use App\Models\Category;
+use App\Models\Comment; // <--- [QUAN TRỌNG] Phải import Model Comment
 
 class HomeController extends Controller
 {
     public function index(Request $request)
     {
-        // 1. Sách mới lên kệ
-        // Lưu ý: Đã sửa thành 'categories' (số nhiều) để khớp với Model Book của bạn
-        $books = Book::with('categories')->latest()->take(6)->get();
+        // ... (Code lấy $books giữ nguyên) ...
+        $books = Book::where('is_approved', true)->with('categories')->latest()->take(10)->get();
 
-        // 2. Review cộng đồng (Thực chất là Post)
-        $filter = $request->get('filter', 'latest');
+        // --- [SỬA ĐOẠN NÀY] LOGIC REVIEW CỘNG ĐỒNG ---
         
-        // <--- SỬA: Gọi từ model Post
-        $reviewQuery = Post::with(['user', 'book']); 
+        // 1. Lấy tham số filter từ URL (mặc định là 'latest')
+        $sortReview = $request->get('sort_review', 'latest');
 
-        switch ($filter) {
-            case 'liked':
-                // Giả sử bảng posts có quan hệ likes hoặc cột likes_count
-                // Nếu chưa có quan hệ likes, có thể nó sẽ báo lỗi tiếp ở đây. 
-                // Tạm thời mình để orderBy theo rating hoặc created_at nếu chưa có like
-                $reviewQuery->withCount('likes')->orderByDesc('likes_count');
-                break;
-            case 'viewed':
-                $reviewQuery->orderByDesc('created_at'); 
-                break;
-            default: // latest
-                $reviewQuery->latest();
-                break;
+        // 2. Khởi tạo query cho Comment
+        $commentQuery = Comment::with(['user', 'book']);
+
+        // 3. Xử lý sắp xếp
+        if ($sortReview == 'popular') {
+            // Sắp xếp theo số lượng like giảm dần
+            // Chỉ đếm các row có is_like = 1
+            $commentQuery->withCount(['likes' => function ($q) {
+                $q->where('is_like', 1);
+            }])->orderByDesc('likes_count');
+        } else {
+            // Mặc định: Mới nhất
+            $commentQuery->withCount(['likes' => function ($q) {
+                $q->where('is_like', 1);
+            }])->latest();
         }
-        $latestReviews = $reviewQuery->where('status', 'published')->take(5)->get();
 
-        // 3. Danh mục thể loại
+        // 4. Phân trang (5 comment mỗi trang)
+        // ->withQueryString(): Giữ lại các tham số URL khi chuyển trang
+        // ->fragment('community-posts'): Tự động cuộn xuống phần này khi bấm trang
+        $latestComments = $commentQuery->paginate(5)->withQueryString()->fragment('community-posts');
+
+        // ... (Code danh mục category giữ nguyên) ...
         $categories = Category::withCount('books')->orderBy('name', 'asc')->get();
 
-        // 4. Top Thịnh Hành
-        $trendingBooks = Book::inRandomOrder()->take(5)->get();
-
-        // Trả về View
-        return view('home', compact('books', 'latestReviews', 'categories', 'trendingBooks', 'filter'));
+    return view('home', compact('books', 'latestComments', 'categories'));
     }
 }
