@@ -2,8 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
-
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Models\Book;
@@ -16,15 +14,13 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\RankingController;
 use App\Http\Controllers\Admin\BookController as AdminBookController;
 use App\Http\Controllers\FollowController;
-use App\Http\Controllers\Admin\ArticleController;
-use App\Http\Controllers\Admin\BannerController;
 // ====================================================
 // 1. NHÓM PUBLIC (Ai cũng xem được)
 // ====================================================
 
 // Trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/tap-chi/{slug}', [ArticleController::class, 'show'])->name('articles.show');
+
 // ===> [MỚI THÊM] Trang Danh sách sách (Frontend tĩnh) <===
 // Truy cập bằng đường dẫn: http://127.0.0.1:8000/danh-sach
 
@@ -39,12 +35,17 @@ Route::get('/danh-sach', function () {
 // Xem danh sách đánh giá của sách
 Route::get('/chi-tiet/{slug}/danh-gia', [BookController::class, 'showReviews'])->name('book.reviews');
 
-
-// --- ƯU TIÊN 2: Route ngắn hơn (Catch-all) ---
 // Xem chi tiết sách
 Route::get('/chi-tiet/{slug}', [BookController::class, 'show'])->name('detail');
+// Alias cho route chi tiết sách (giữ lại để tránh lỗi nếu view cũ còn dùng)
+Route::get('/book/{slug}', [BookController::class, 'show'])->name('book.show');
+
+// Route tìm kiếm riêng cho việc viết review (nếu còn dùng)
 Route::get('/review-search', [BookController::class, 'search'])->name('books.search');
-//
+
+// Route sách mới
+Route::get('/sach-moi', [BookController::class, 'newBooks'])->name('books.new');
+
 // code test
 Route::middleware(['auth'])->group(function () {
 
@@ -55,7 +56,6 @@ Route::middleware(['auth'])->group(function () {
             return redirect()->route('login');
         return view('create-review', compact('user'));
     })->name('reviews.create');
-    Route::post('/posts/{id}/comment', [App\Http\Controllers\PostController::class, 'postComment'])->name('posts.comment');
 
     // Route API tìm sách (Bạn đã có)
     Route::get('/api/books/search', function (Illuminate\Http\Request $request) {
@@ -73,18 +73,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/posts/store', [PostController::class, 'store'])->name('posts.store');
 });
 
-//code test
-//
+// Các trang tĩnh (Static Pages)
 Route::view('/ve-chung-toi', 'pages.about')->name('page.about');
 Route::view('/dieu-khoan-su-dung', 'pages.terms')->name('page.terms');
 Route::view('/chinh-sach-bao-mat', 'pages.privacy')->name('page.privacy');
 Route::view('/lien-he', 'pages.contact')->name('page.contact');
-//
 
-Route::get('/book/{slug}', [BookController::class, 'show'])->name('book.show');
 
-Route::get('/ranking/top-liked', [RankingController::class, 'topLikedPosts']);
-Route::post('/post/store', [PostController::class, 'store'])->name('post.store');
 // ====================================================
 // 2. NHÓM KHÁCH (Chưa đăng nhập mới được vào)
 // ====================================================
@@ -106,26 +101,53 @@ Route::middleware('guest')->group(function () {
 // ====================================================
 // 3. NHÓM THÀNH VIÊN (Phải đăng nhập mới được vào)
 // ====================================================
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth'])->group(function () {
     // Đăng xuất
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // Trang cá nhân
     Route::get('/profile/{id?}', [ProfileController::class, 'index'])
-        ->name('profile');
-    Route::post('/follow/toggle', [FollowController::class, 'toggleFollow'])->name('follow.toggle');
+    ->name('profile');
+     Route::post('/follow/toggle', [FollowController::class, 'toggleFollow'])->name('follow.toggle');
     // Gửi đánh giá (Review) - Phải đăng nhập mới được đánh giá
     // Route::post('/review', [ReviewController::class, 'store'])->name('review.store');
 
     // Đổi mật khẩu
     Route::get('/change-password', [AuthController::class, 'showChangePasswordForm'])->name('change.password');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('change.password.post');
+
+    // Xử lý bài đăng (Review)
+    Route::post('/post/store', [PostController::class, 'store'])->name('post.store');
+    // Alias dự phòng cho post store (để tránh lỗi code cũ)
+    Route::post('/posts/store', [PostController::class, 'store'])->name('posts.store');
+
+    // Route hiển thị form viết review
+    Route::get('/reviews/viet-bai', function () {
+        $user = Auth::user();
+        if (!$user) return redirect()->route('login');
+        return view('create-review', compact('user'));
+    })->name('reviews.create');
+
+    // Route API tìm sách (Dành cho form viết review)
+    Route::get('/api/books/search', function (Illuminate\Http\Request $request) {
+        $query = $request->get('q');
+        $books = Illuminate\Support\Facades\DB::table('books')
+            ->where('title', 'like', "%{$query}%")
+            ->orWhere('author_name', 'like', "%{$query}%")
+            ->select('id', 'title', 'author_name', 'published_year', 'cover_image')
+            ->limit(10)
+            ->get();
+        return response()->json($books);
+    });
 });
+
+// API Public (Không cần Auth)
+Route::get('/api/user/{id}/followers', [FollowController::class, 'getFollowers']);
+Route::get('/api/user/{id}/following', [FollowController::class, 'getFollowing']);
 
 // ====================================================
 // 4. NHÓM ADMIN (Phải có quyền Admin)
 // ====================================================
-// ... Bên trong nhóm Route admin
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
 
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
@@ -167,7 +189,3 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('challenges', \App\Http\Controllers\Admin\ChallengeController::class);
     Route::post('/challenges/{challenge}/award-badge/{userId}', [\App\Http\Controllers\Admin\ChallengeController::class, 'awardBadge'])->name('challenges.award-badge');
 });
-Route::middleware('auth')->post('/follow/toggle', [App\Http\Controllers\FollowController::class, 'toggleFollow'])->name('follow.toggle');
-Route::get('/api/user/{id}/followers', [FollowController::class, 'getFollowers']);
-Route::get('/api/user/{id}/following', [FollowController::class, 'getFollowing']);
-Route::get('/sach-moi', [BookController::class, 'newBooks'])->name('books.new');
