@@ -174,8 +174,7 @@
                         </div>
                     @endif
 
-                    {{-- [MỚI] NÚT XEM CÁC REVIEW KHÁC --}}
-                    {{-- Chỉ hiện nếu có ít nhất 1 bài review --}}
+                    {{-- NÚT XEM CÁC REVIEW KHÁC --}}
                     @if($book->posts->where('status', 'published')->count() > 0)
                         <div class="text-center border-t border-gray-100 pt-6">
                             <p class="text-gray-500 text-sm mb-3 italic">Bạn muốn đọc thêm các góc nhìn khác về cuốn sách này?</p>
@@ -186,7 +185,6 @@
                             </a>
                         </div>
                     @endif
-                    {{-- [HẾT PHẦN MỚI] --}}
 
                 </section>
 
@@ -215,7 +213,8 @@
                     <div class="space-y-6">
                         @if($comments->count() > 0)
                             @foreach($comments as $comment)
-                                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition duration-300">
+                                {{-- THẺ CHA COMMENT CÓ ID ĐỂ SCROLL --}}
+                                <div id="comment-{{ $comment->id }}" class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition duration-300">
                                     <div class="flex items-start gap-4">
                                         <div class="flex-shrink-0">
                                             <img src="https://ui-avatars.com/api/?name={{ urlencode($comment->user->name ?? 'U') }}&background=random&size=48" 
@@ -230,6 +229,52 @@
                                             </div>
                                             <div class="text-gray-700 text-sm leading-relaxed whitespace-pre-line mt-2">
                                                 {{ $comment->content }}
+                                            </div>
+
+                                            {{-- NÚT LIKE VÀ REPLY (CẬP NHẬT: REPLY INLINE) --}}
+                                            <div class="mt-4 flex flex-col gap-3 border-t border-gray-50 pt-3">
+                                                <div class="flex items-center gap-4">
+                                                    {{-- Nút Like --}}
+                                                    <button 
+                                                        type="button"
+                                                        onclick="handleLike({{ $comment->id }}, 'comment')" 
+                                                        id="like-btn-comment-{{ $comment->id }}"
+                                                        class="flex items-center gap-1.5 text-xs font-bold transition {{ Auth::check() && $comment->likes->where('user_id', Auth::id())->count() > 0 ? 'text-red-500' : 'text-gray-400 hover:text-red-500' }}">
+                                                        <i id="like-icon-comment-{{ $comment->id }}" class="{{ Auth::check() && $comment->likes->where('user_id', Auth::id())->count() > 0 ? 'fas' : 'far' }} fa-heart"></i>
+                                                        <span id="like-count-comment-{{ $comment->id }}">{{ $comment->likes->count() }}</span> Thích
+                                                    </button>
+
+                                                    {{-- Nút Reply --}}
+                                                    <button 
+                                                        type="button"
+                                                        onclick="toggleReplyForm({{ $comment->id }})" 
+                                                        class="flex items-center gap-1.5 text-xs font-bold text-gray-400 hover:text-blue-500 transition">
+                                                        <i class="far fa-comment-dots"></i> Trả lời
+                                                    </button>
+                                                </div>
+
+                                                {{-- FORM REPLY (ẨN MẶC ĐỊNH - HIỆN KHI BẤM NÚT TRẢ LỜI) --}}
+                                                <div id="reply-form-{{ $comment->id }}" class="hidden transition-all duration-300">
+                                                    <div class="flex gap-2 items-start">
+                                                        <img src="{{ Auth::check() ? (Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name).'&background=random') : 'https://ui-avatars.com/api/?name=Guest&background=gray' }}" 
+                                                             class="w-8 h-8 rounded-full border border-gray-200 mt-1">
+                                                        
+                                                        <div class="flex-1">
+                                                            <textarea id="reply-input-{{ $comment->id }}" 
+                                                                      rows="1" 
+                                                                      class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-brand-green focus:bg-white transition resize-none overflow-hidden" 
+                                                                      placeholder="Viết bình luận... (Enter để gửi)"
+                                                                      oninput="autoResize(this)"
+                                                                      onkeydown="handleEnter(event, {{ $comment->id }})"></textarea>
+                                                            
+                                                            <div class="flex justify-end mt-2 gap-2">
+                                                                <button onclick="toggleReplyForm({{ $comment->id }})" class="text-xs text-gray-500 hover:text-gray-700 font-bold px-3 py-1.5">Hủy</button>
+                                                                <button onclick="submitInlineReply({{ $comment->id }})" class="text-xs bg-brand-green text-white font-bold px-4 py-1.5 rounded-md hover:bg-[#1e3a2f] transition shadow-sm">Gửi</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {{-- KẾT THÚC FORM REPLY --}}
                                             </div>
                                         </div>
                                     </div>
@@ -271,13 +316,12 @@
                     </button>
                 </div>
 
-                {{-- Widget Gợi Ý (Optional) --}}
+                {{-- Widget Gợi Ý --}}
                 <div class="bg-brand-beige/20 rounded-2xl p-6 border border-brand-beige/50">
                     <h3 class="font-bold text-brand-green text-sm mb-4 flex items-center gap-2">
                         <i class="fas fa-lightbulb"></i> Có thể bạn thích
                     </h3>
                     <div class="space-y-4">
-                        {{-- Placeholder sách gợi ý --}}
                         <div class="flex gap-3 items-center group cursor-pointer">
                             <div class="w-12 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0">
                                 <img src="https://via.placeholder.com/50x75" class="w-full h-full object-cover">
@@ -302,4 +346,158 @@
             </aside>
         </div>
     </main>
+
+    {{-- ĐÃ XÓA MODAL POPUP Ở ĐÂY --}}
 @endsection
+
+@push('scripts')
+<script>
+    const currentUserId = "{{ Auth::id() }}";
+
+    // --- LOGIC CUỘN XUỐNG VÀ HIGHLIGHT COMMENT ---
+    document.addEventListener("DOMContentLoaded", function() {
+        if(window.location.hash) {
+            const targetId = window.location.hash.substring(1); 
+            const targetElement = document.getElementById(targetId);
+
+            if(targetElement) {
+                targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
+                targetElement.classList.add('bg-yellow-50', 'border-yellow-200'); // Highlight nhẹ
+                setTimeout(() => {
+                    targetElement.classList.remove('bg-yellow-50', 'border-yellow-200');
+                }, 3000);
+            }
+        }
+    });
+
+    // --- LOGIC LIKE ---
+    function handleLike(id, type) {
+        if (!currentUserId) {
+            alert("Vui lòng đăng nhập để thả tim!");
+            window.location.href = "/login";
+            return;
+        }
+
+        const btnId = `like-btn-${type}-${id}`;
+        const iconId = `like-icon-${type}-${id}`;
+        const countId = `like-count-${type}-${id}`;
+
+        const btn = document.getElementById(btnId);
+        const icon = document.getElementById(iconId);
+        const countSpan = document.getElementById(countId);
+
+        if (!btn) return;
+
+        const isLiked = icon.classList.contains('fas'); 
+        
+        if(isLiked) {
+            icon.classList.remove('fas', 'text-red-500');
+            icon.classList.add('far');
+            btn.classList.remove('text-red-500');
+            btn.classList.add('text-gray-400');
+            let currentCount = parseInt(countSpan.innerText);
+            countSpan.innerText = Math.max(0, currentCount - 1);
+        } else {
+            icon.classList.remove('far');
+            icon.classList.add('fas', 'bounce', 'text-red-500');
+            btn.classList.remove('text-gray-400');
+            btn.classList.add('text-red-500');
+            let currentCount = parseInt(countSpan.innerText);
+            countSpan.innerText = currentCount + 1;
+        }
+
+        fetch('/like', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ id: id, type: type })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                countSpan.innerText = data.count;
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // --- LOGIC REPLY INLINE (MỚI) ---
+    
+    // 1. Ẩn/Hiện form nhập liệu
+    function toggleReplyForm(commentId) {
+        if (!currentUserId) {
+            alert("Vui lòng đăng nhập để bình luận!");
+            window.location.href = "/login";
+            return;
+        }
+        
+        const form = document.getElementById(`reply-form-${commentId}`);
+        const input = document.getElementById(`reply-input-${commentId}`);
+        
+        if (form.classList.contains('hidden')) {
+            // Đóng tất cả các form khác đang mở để gọn màn hình
+            document.querySelectorAll('[id^="reply-form-"]').forEach(el => el.classList.add('hidden'));
+            
+            form.classList.remove('hidden');
+            input.focus();
+        } else {
+            form.classList.add('hidden');
+        }
+    }
+
+    // 2. Tự động chỉnh độ cao textarea khi gõ
+    function autoResize(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    // 3. Xử lý bấm Enter để gửi
+    function handleEnter(event, commentId) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault(); // Ngăn xuống dòng
+            submitInlineReply(commentId);
+        }
+    }
+
+    // 4. Gửi Reply qua AJAX -> Reload
+    function submitInlineReply(commentId) {
+        const input = document.getElementById(`reply-input-${commentId}`);
+        const content = input.value.trim();
+
+        if (!content) {
+            alert("Nội dung không được để trống!");
+            return;
+        }
+
+        fetch(`/comment/${commentId}/reply`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ content: content })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Tắt form và reload trang để hiện comment mới
+                toggleReplyForm(commentId); 
+                location.reload(); 
+            } else {
+                alert("Có lỗi xảy ra, vui lòng thử lại.");
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+</script>
+<style>
+    /* Animation nảy cho tim */
+    @keyframes bounce {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+    }
+    .bounce { animation: bounce 0.3s; }
+</style>
+@endpush

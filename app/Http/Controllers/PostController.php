@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Notifications\NewLikeNotification;
 use App\Notifications\NewCommentNotification;
+use App\Notifications\CommentLikedNotification;
 
 class PostController extends Controller
 {
@@ -43,11 +44,11 @@ class PostController extends Controller
     // 4. Lưu vào Database (Kết hợp cả Thumbnail và Pending)
     \App\Models\Post::create([
         'user_id'      => \Illuminate\Support\Facades\Auth::id(),
-        'book_id'      => $request->book_id,
-        'title'        => $request->title,
+        'book_id'      => $request->input('book_id'),
+        'title'        => $request->input('title'),
         'slug'         => $slug,
-        'rating'       => $request->rating,
-        'content'      => $request->content,
+        'rating'       => $request->input('rating'),
+        'content'      => $request->input('content'),
         
         'thumbnail'    => $thumbnailPath, // [QUAN TRỌNG 1] Lưu đường dẫn ảnh
         
@@ -81,7 +82,7 @@ class PostController extends Controller
 
             // Gửi thông báo (Trừ khi tự like bài mình)
             if ($post->user_id != $user->id) {
-                $post->user->notify(new NewLikeNotification($user, $post));
+                $post->user->notify(new CommentLikedNotification($user, $post));
             }
         }
 

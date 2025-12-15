@@ -50,7 +50,12 @@ class Book extends Model
     {
         return $this->hasMany(Bookshelf::class);
     }
-    
+    public function likes()
+    {
+        // Vì bảng 'likes' của bạn dùng cột 'post_id' để lưu ID bài viết/sách
+        // nên ta phải khai báo rõ khóa ngoại là 'post_id'
+        return $this->hasMany(Like::class, 'post_id');
+    }
     // --- PHẦN ĐÃ SỬA ---
     public function comments()
     {

@@ -10,11 +10,8 @@
 
         <div class="hero-slider-wrapper flex w-full transition-transform duration-700 ease-in-out" id="sliderWrapper">
             @foreach($heroSlides as $index => $slide)
-                {{-- Thêm class 'relative group/edit' để định vị nút sửa --}}
                 <div class="w-full flex-shrink-0 px-4 relative group/edit">
-                    
                     {{-- [ADMIN TOOL] Nút Sửa Banner --}}
-                    {{-- Chỉ hiện nếu $slide có ID (từ DB) và user là Admin --}}
                     @if(Auth::check() && Auth::user()->isAdmin() && isset($slide->id))
                         <a href="{{ route('admin.banners.edit', $slide->id) }}" 
                            class="absolute top-0 right-10 z-50 bg-white/90 text-blue-600 px-4 py-2 rounded-full shadow-lg hover:bg-blue-600 hover:text-white transition font-bold flex items-center gap-2 opacity-0 group-hover/edit:opacity-100 backdrop-blur-sm">
@@ -27,14 +24,10 @@
                         <div class="w-full md:w-5/12 flex justify-center md:justify-end perspective-1000">
                             <div class="relative w-48 h-72 md:w-56 md:h-80 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-r-lg rounded-l-sm transform rotate-y-12 hover:rotate-y-0 hover:scale-105 transition-all duration-700 cursor-pointer group/book">
                                 <div class="absolute inset-0 bg-white/10 opacity-0 group-hover/book:opacity-20 transition-opacity z-20"></div>
-                                
-                                {{-- Xử lý đường dẫn ảnh (Online hoặc Storage) --}}
                                 @php
-                                    // Kiểm tra xem slide là mảng hay object (để tương thích cả 2 trường hợp)
                                     $imagePath = is_object($slide) ? $slide->image : $slide['image'];
                                     $imgSrc = Str::startsWith($imagePath, 'http') ? $imagePath : asset('storage/' . $imagePath);
                                 @endphp
-                                
                                 <img src="{{ $imgSrc }}" class="w-full h-full object-cover rounded-r-lg rounded-l-sm border-l-4 border-white/10">
                                 <div class="absolute top-0 left-0 w-2 h-full bg-gradient-to-r from-white/30 to-transparent z-10"></div>
                             </div>
@@ -47,7 +40,6 @@
                                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                                     <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                                 </span>
-                                {{-- Lấy dữ liệu dạng Object --}}
                                 <span class="text-xs font-bold uppercase tracking-widest text-brand-beige">
                                     {{ is_object($slide) ? ($slide->tag ?? 'Nổi Bật') : $slide['tag'] }}
                                 </span>
@@ -67,12 +59,10 @@
                             </div>
                             
                             <p class="text-gray-200 text-lg font-light italic max-w-2xl leading-relaxed drop-shadow">
-                                {{-- Ưu tiên description, fallback về desc --}}
                                 {{ is_object($slide) ? ($slide->description ?? $slide->desc ?? '') : $slide['desc'] }}
                             </p>
                             
                             <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start pt-2">
-                                {{-- Link từ DB hoặc link mặc định --}}
                                 @php
                                     $link = is_object($slide) ? ($slide->link ?? '#') : '#';
                                 @endphp
@@ -102,7 +92,7 @@
         </div>
     </section>
 
-    {{-- MAIN LAYOUT (Giữ nguyên phần còn lại của bạn) --}}
+    {{-- MAIN LAYOUT --}}
     <main class="container mx-auto px-4 py-12">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
             
@@ -119,10 +109,8 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
-                        {{-- Bài viết lớn (Featured) --}}
                         @if(isset($featuredArticle))
                         <article class="md:col-span-3 group cursor-pointer relative">
-                            {{-- Admin Edit Button --}}
                             @if(Auth::check() && Auth::user()->isAdmin())
                                 <a href="{{ route('admin.articles.edit', $featuredArticle->id) }}" class="absolute top-4 right-4 z-20 bg-white/90 text-blue-600 p-2 rounded-full shadow-lg hover:bg-blue-600 hover:text-white transition opacity-0 group-hover:opacity-100">
                                     <i class="fas fa-edit"></i>
@@ -146,12 +134,10 @@
                         </article>
                         @endif
 
-                        {{-- Bài viết nhỏ bên cạnh --}}
                         <div class="md:col-span-2 flex flex-col gap-6">
                             @if(isset($sidebarArticles))
                                 @foreach($sidebarArticles as $article)
                                 <article class="flex flex-col group cursor-pointer relative">
-                                    {{-- Admin Edit Button --}}
                                     @if(Auth::check() && Auth::user()->isAdmin())
                                         <a href="{{ route('admin.articles.edit', $article->id) }}" class="absolute top-2 right-2 z-30 bg-white/90 text-blue-600 w-8 h-8 flex items-center justify-center rounded-full shadow-md hover:bg-blue-600 hover:text-white transition opacity-0 group-hover:opacity-100"><i class="fas fa-pencil-alt text-xs"></i></a>
                                     @endif
@@ -235,6 +221,7 @@
 
                                 <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition duration-300 flex flex-col h-full group cursor-pointer" 
                                      onclick="window.location.href='{{ $relatedBook ? route('detail', $bookSlug) : '#' }}'">
+                                    
                                     <div class="flex justify-between items-start mb-3">
                                         <div class="flex items-center gap-3">
                                             <img src="{{ $comment->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($comment->user->name ?? 'A').'&background=random' }}" class="w-10 h-10 rounded-full border border-gray-100 shadow-sm object-cover">
@@ -249,16 +236,54 @@
                                             </div>
                                         @endif
                                     </div>
+
                                     <div class="mb-3 flex-grow">
                                         <h5 class="text-sm font-bold text-gray-700 mb-1 group-hover:text-brand-green transition">Review: <span class="italic font-serif text-brand-green text-base">"{{ $bookTitle }}"</span></h5>
                                         <p class="text-gray-600 text-sm line-clamp-2 md:line-clamp-3 leading-relaxed">{{ Str::limit(strip_tags($comment->content), 200) }}</p>
                                     </div>
-                                    <div class="mt-auto flex items-center justify-between pt-3 border-t border-gray-50">
-                                        <div class="flex gap-4 text-xs text-gray-400 font-medium">
-                                            <span class="flex items-center gap-1.5 hover:text-red-500 transition {{ ($comment->likes_count ?? 0) > 0 ? 'text-red-500' : '' }}">
-                                                <i class="{{ ($comment->likes_count ?? 0) > 0 ? 'fas' : 'far' }} fa-heart"></i> {{ $comment->likes_count ?? 0 }} Thích
-                                            </span>
-                                            <span class="flex items-center gap-1.5 hover:text-blue-500 transition"><i class="far fa-comment-dots"></i> Chi tiết</span>
+
+                                    <div class="mt-auto pt-3 border-t border-gray-50">
+                                        {{-- Nút Like và Reply --}}
+                                        <div class="flex justify-between items-center">
+                                            <div class="flex gap-4 text-xs text-gray-400 font-medium">
+                                                {{-- NÚT LIKE --}}
+                                                <button 
+                                                    type="button"
+                                                    onclick="event.stopPropagation(); handleLike({{ $comment->id }}, 'comment')" 
+                                                    id="like-btn-comment-{{ $comment->id }}"
+                                                    class="flex items-center gap-1.5 transition z-20 relative {{ Auth::check() && $comment->likes->where('user_id', Auth::id())->count() > 0 ? 'text-red-500' : 'hover:text-red-500' }}">
+                                                    <i id="like-icon-comment-{{ $comment->id }}" class="{{ Auth::check() && $comment->likes->where('user_id', Auth::id())->count() > 0 ? 'fas' : 'far' }} fa-heart"></i>
+                                                    <span id="like-count-comment-{{ $comment->id }}">{{ $comment->likes_count ?? 0 }}</span> Thích
+                                                </button>
+
+                                                {{-- NÚT REPLY (INLINE) --}}
+                                                <button 
+                                                    type="button"
+                                                    onclick="event.stopPropagation(); toggleReplyForm({{ $comment->id }})" 
+                                                    class="flex items-center gap-1.5 hover:text-blue-500 transition z-20 relative">
+                                                    <i class="far fa-comment-dots"></i> Bình luận
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {{-- FORM REPLY (Ẩn mặc định) --}}
+                                        <div id="reply-form-{{ $comment->id }}" class="hidden mt-3 transition-all duration-300 z-20 relative" onclick="event.stopPropagation()">
+                                            <div class="flex gap-2">
+                                                <img src="{{ Auth::check() ? (Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name).'&background=random') : 'https://ui-avatars.com/api/?name=Guest&background=gray' }}" 
+                                                     class="w-8 h-8 rounded-full border border-gray-200">
+                                                <div class="flex-1">
+                                                    <textarea id="reply-input-{{ $comment->id }}" 
+                                                              rows="1" 
+                                                              class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-brand-green focus:bg-white transition resize-none overflow-hidden" 
+                                                              placeholder="Viết bình luận... (Enter để gửi)"
+                                                              oninput="autoResize(this)"
+                                                              onkeydown="handleEnter(event, {{ $comment->id }})"></textarea>
+                                                    <div class="flex justify-end mt-1 gap-2">
+                                                        <button onclick="toggleReplyForm({{ $comment->id }})" class="text-xs text-gray-500 hover:text-gray-700 font-bold px-2 py-1">Hủy</button>
+                                                        <button onclick="submitInlineReply({{ $comment->id }})" class="text-xs bg-brand-green text-white font-bold px-3 py-1 rounded hover:bg-[#1e3a2f] transition">Gửi</button>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -409,53 +434,182 @@
             </div> {{-- END CỘT 4 --}}
         </div>
     </main>
+
+    {{-- BỎ MODAL POPUP CŨ --}}
 @endsection
 
 @push('scripts')
 <script>
-    // --- Slider Hero ---
-    let currentSlide = 0;
-    const totalSlides = {{ count($heroSlides) }};
-    const sliderWrapper = document.getElementById('sliderWrapper');
-    
-    function updateSlider() {
-        if (!sliderWrapper) return;
-        sliderWrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
-        
-        // Update dots
-        document.querySelectorAll('.indicator-dot').forEach((dot, index) => {
-            if (index === currentSlide) {
-                dot.classList.add('bg-brand-accent', 'w-8');
-                dot.classList.remove('bg-white/30');
-            } else {
-                dot.classList.remove('bg-brand-accent', 'w-8');
-                dot.classList.add('bg-white/30');
-            }
-        });
-    }
-    function nextSlide() { currentSlide = (currentSlide + 1) % totalSlides; updateSlider(); }
-    function prevSlide() { currentSlide = (currentSlide - 1 + totalSlides) % totalSlides; updateSlider(); }
-    function goToSlide(index) { currentSlide = index; updateSlider(); }
-    if (totalSlides > 0) setInterval(nextSlide, 5000);
+    // --- Slider Hero ---
+    let currentSlide = 0;
+    const totalSlides = {{ count($heroSlides) }};
+    const sliderWrapper = document.getElementById('sliderWrapper');
+    const currentUserId = "{{ Auth::id() }}"; // Lấy ID user hiện tại để check login
 
-    // --- Slider Sách Mới (Scroll) ---
-    document.addEventListener('DOMContentLoaded', function() {
-        const slider = document.getElementById('sliderNewBooks');
-        const btnPrev = document.getElementById('btnPrevNewBooks');
-        const btnNext = document.getElementById('btnNextNewBooks');
+    function updateSlider() {
+        if (!sliderWrapper) return;
+        sliderWrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+        
+        // Update dots
+        document.querySelectorAll('.indicator-dot').forEach((dot, index) => {
+            if (index === currentSlide) {
+                dot.classList.add('bg-brand-accent', 'w-8');
+                dot.classList.remove('bg-white/30');
+            } else {
+                dot.classList.remove('bg-brand-accent', 'w-8');
+                dot.classList.add('bg-white/30');
+            }
+        });
+    }
+    function nextSlide() { currentSlide = (currentSlide + 1) % totalSlides; updateSlider(); }
+    function prevSlide() { currentSlide = (currentSlide - 1 + totalSlides) % totalSlides; updateSlider(); }
+    function goToSlide(index) { currentSlide = index; updateSlider(); }
+    if (totalSlides > 0) setInterval(nextSlide, 5000);
 
-        if(slider && btnPrev && btnNext) {
-            btnNext.addEventListener('click', () => {
-                slider.scrollBy({ left: 220, behavior: 'smooth' });
-            });
-            btnPrev.addEventListener('click', () => {
-                slider.scrollBy({ left: -220, behavior: 'smooth' });
-            });
-        }
-    });
+    // --- Slider Sách Mới (Scroll) ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const slider = document.getElementById('sliderNewBooks');
+        const btnPrev = document.getElementById('btnPrevNewBooks');
+        const btnNext = document.getElementById('btnNextNewBooks');
+
+        if(slider && btnPrev && btnNext) {
+            btnNext.addEventListener('click', () => {
+                slider.scrollBy({ left: 220, behavior: 'smooth' });
+            });
+            btnPrev.addEventListener('click', () => {
+                slider.scrollBy({ left: -220, behavior: 'smooth' });
+            });
+        }
+    });
+
+    // --- LOGIC XỬ LÝ LIKE ---
+    function handleLike(id, type) {
+        if (!currentUserId) {
+            alert("Vui lòng đăng nhập để thả tim!");
+            window.location.href = "/login";
+            return;
+        }
+
+        const btnId = `like-btn-${type}-${id}`;
+        const iconId = `like-icon-${type}-${id}`;
+        const countId = `like-count-${type}-${id}`;
+
+        const btn = document.getElementById(btnId);
+        const icon = document.getElementById(iconId);
+        const countSpan = document.getElementById(countId);
+
+        if (!btn) return;
+
+        const isLiked = icon.classList.contains('fas'); 
+        
+        if(isLiked) {
+            icon.classList.remove('fas', 'text-red-500');
+            icon.classList.add('far');
+            btn.classList.remove('text-red-500');
+            let currentCount = parseInt(countSpan.innerText);
+            countSpan.innerText = Math.max(0, currentCount - 1);
+        } else {
+            icon.classList.remove('far');
+            icon.classList.add('fas', 'bounce');
+            btn.classList.add('text-red-500');
+            let currentCount = parseInt(countSpan.innerText);
+            countSpan.innerText = currentCount + 1;
+        }
+
+        fetch('/like', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ 
+                id: id, 
+                type: type 
+            })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) countSpan.innerText = data.count;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("Có lỗi xảy ra, vui lòng thử lại.");
+        });
+    }
+
+    // --- LOGIC REPLY (INLINE - MỚI) ---
+    
+    // 1. Hiển thị/Ẩn ô nhập liệu
+    function toggleReplyForm(commentId) {
+        if (!currentUserId) {
+            alert("Vui lòng đăng nhập để bình luận!");
+            window.location.href = "/login";
+            return;
+        }
+        
+        const form = document.getElementById(`reply-form-${commentId}`);
+        const input = document.getElementById(`reply-input-${commentId}`);
+        
+        if (form.classList.contains('hidden')) {
+            // Đóng tất cả các form khác đang mở (Optional)
+            document.querySelectorAll('[id^="reply-form-"]').forEach(el => el.classList.add('hidden'));
+            
+            form.classList.remove('hidden');
+            input.focus();
+        } else {
+            form.classList.add('hidden');
+        }
+    }
+
+    // 2. Tự động chỉnh độ cao textarea
+    function autoResize(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    // 3. Xử lý Enter để gửi
+    function handleEnter(event, commentId) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault(); // Ngăn xuống dòng
+            submitInlineReply(commentId);
+        }
+    }
+
+    // 4. Gửi Reply
+    function submitInlineReply(commentId) {
+        const input = document.getElementById(`reply-input-${commentId}`);
+        const content = input.value.trim();
+
+        if (!content) {
+            alert("Nội dung không được để trống!");
+            return;
+        }
+
+        fetch(`/comment/${commentId}/reply`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ content: content })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload trang để hiển thị bình luận mới (như yêu cầu của bạn)
+                location.reload(); 
+            } else {
+                alert("Có lỗi xảy ra, vui lòng thử lại.");
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
 </script>
 <style>
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 @endpush

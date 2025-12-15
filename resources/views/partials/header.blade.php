@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -86,113 +87,7 @@
             </div>
         </div>
     </div>
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Góc Sách - Review & Share')</title>
-    
-    <!-- CDN Tailwind & FontAwesome -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
-    <!-- Config màu sắc -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'brand-green': '#1F352B',
-                        'brand-beige': '#E8E4D9',
-                        'brand-accent': '#D4A373',
-                    },
-                    animation: {
-                        'fade-in': 'fadeIn 0.2s ease-in-out',
-                        'scale-up': 'scaleUp 0.3s ease-out',
-                    },
-                    keyframes: {
-                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
-                        scaleUp: { '0%': { opacity: '0', transform: 'scale(0.95)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&family=Roboto:wght@300;400;500;700&display=swap');
-        body { font-family: 'Roboto', sans-serif; background-color: #f8f9fa; }
-        .font-serif { font-family: 'Merriweather', serif; }
-        
-        /* Dropdown CSS thuần (Hover là hiện) */
-        .dropdown-menu { display: none; }
-        .group:hover .dropdown-menu { display: block; }
-        
-        /* Cầu nối vô hình để chuột không bị hụt khi di chuyển xuống menu */
-        .dropdown-bridge::before {
-            content: "";
-            position: absolute;
-            top: -10px;
-            left: 0;
-            width: 100%;
-            height: 10px;
-            background: transparent;
-        }
 
-        /* Modal Overlay */
-        .modal-overlay {
-            background-color: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
-        }
-    </style>
-</head>
-<body class="flex flex-col min-h-screen text-gray-800">
-
-    <!-- TOP BAR: Thông tin liên hệ & Social -->
-    <div class="bg-brand-green text-white/80 text-xs py-2 hidden md:block border-b border-white/10">
-        <div class="container mx-auto px-4 flex justify-between items-center">
-            <div class="flex gap-6">
-                <a href="tel:19001234" class="hover:text-brand-accent cursor-pointer transition flex items-center">
-                    <i class="fas fa-phone-alt mr-2"></i> Hotline: 1900 1234
-                </a>
-                <a href="mailto:contact@gocsach.com" class="hover:text-brand-accent cursor-pointer transition flex items-center">
-                    <i class="fas fa-envelope mr-2"></i> contact@gocsach.com
-                </a>
-            </div>
-            <div class="flex gap-4 items-center">
-                <!-- Nút mở Modal Trợ giúp -->
-                <button onclick="openModal('helpModal')" class="hover:text-white transition focus:outline-none">Trợ giúp</button>
-                <span class="text-white/20">|</span>
-                <!-- Nút mở Modal Quy tắc -->
-                <button onclick="openModal('rulesModal')" class="hover:text-white transition focus:outline-none">Quy tắc cộng đồng</button>
-                
-                <div class="flex gap-3 ml-4">
-                    <a href="#" class="hover:text-brand-accent transition"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="hover:text-brand-accent transition"><i class="fab fa-instagram"></i></a>
-                    <a href="#" class="hover:text-brand-accent transition"><i class="fab fa-youtube"></i></a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- HEADER MAIN -->
-    <header class="bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 shadow-sm transition-all duration-300">
-        <div class="container mx-auto px-4 py-3">
-            <div class="flex flex-wrap justify-between items-center gap-4">
-                
-                <!-- 1. Logo -->
-                <div class="flex items-center gap-4">
-                    <a href="{{ route('home') }}" class="flex items-center gap-2 group">
-                        <div class="w-10 h-10 bg-brand-green text-white rounded-lg flex items-center justify-center shadow-md transform group-hover:rotate-6 transition-transform duration-300">
-                            <i class="fas fa-book-reader text-lg"></i>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-xl font-bold font-serif text-brand-green leading-none tracking-tight">GÓC SÁCH</span>
-                            <span class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Review & Share</span>
-                        </div>
-                    </a>
-                </div>
-    <!-- HEADER MAIN -->
     <header class="bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 shadow-sm transition-all duration-300">
         <div class="container mx-auto px-4 py-3">
             <div class="flex flex-wrap justify-between items-center gap-4">
@@ -269,7 +164,7 @@
                                                 <p class="text-sm text-gray-700 line-clamp-2">
                                                     <span class="font-bold">{{ $notification->data['user_name'] ?? 'Ai đó' }}</span> 
                                                     {{ $notification->data['message'] ?? 'đã tương tác với bạn' }}
-                                                    <span class="font-bold">"{{ $notification->data['post_title'] ?? '' }}"</span>
+                                                   <span class="font-bold block text-xs text-gray-500 italic">"{{ Str::limit($notification->data['post_title'] ?? '', 50) }}"</span>
                                                 </p>
                                                 <p class="text-[10px] text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
                                             </div>
@@ -343,19 +238,14 @@
                 </div>
             </div>
 
-            <!-- 4. Navigation Links -->
-            <div class="hidden md:flex justify-center mt-2 border-t border-gray-100 pt-3">
+            
             <!-- 4. Navigation Links -->
             <div class="hidden md:flex justify-center mt-2 border-t border-gray-100 pt-3">
                 <nav class="flex items-center gap-8 text-sm font-semibold text-gray-500">
                     <a href="{{ route('home') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('home') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Trang Chủ</a>
                     <a href="{{ route('list') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('list') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Danh Sách</a>
                     <a href="{{ route('books.search') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('books.search') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Review Hay</a>
-                    <a href="{{ route('books.new') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('books.new') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Sách Mới</a>
-                    <a href="{{ route('home') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('home') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Trang Chủ</a>
-                    <a href="{{ route('list') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('list') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Danh Sách</a>
-                    <a href="{{ route('books.search') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('books.search') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Review Hay</a>
-                    <a href="{{ route('books.new') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('books.new') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Sách Mới</a>
+                    
                     <a href="#" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all">Tác Giả</a>
                 </nav>
             </div>
