@@ -9,12 +9,8 @@ class Like extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'post_id' // Giữ nguyên theo database của bạn
-    ];
+    protected $fillable = ['user_id', 'post_id'];
 
-    // Quan hệ: Like thuộc về 1 User
     public function user()
     {
         return $this->belongsTo(User::class);
