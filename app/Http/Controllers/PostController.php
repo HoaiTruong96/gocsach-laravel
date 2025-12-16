@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Post; 
-use Illuminate\Support\Facades\Auth; 
+use App\Models\Post;
 use App\Models\Like;
 use App\Models\Comment;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use App\Notifications\NewLikeNotification;
+use App\Notifications\NewCommentNotification;
+use App\Notifications\CommentLikedNotification;
 
 class PostController extends Controller
 {
@@ -41,11 +44,11 @@ class PostController extends Controller
     // 4. Lưu vào Database (Kết hợp cả Thumbnail và Pending)
     \App\Models\Post::create([
         'user_id'      => \Illuminate\Support\Facades\Auth::id(),
-        'book_id'      => $request->book_id,
-        'title'        => $request->title,
+        'book_id'      => $request->input('book_id'),
+        'title'        => $request->input('title'),
         'slug'         => $slug,
-        'rating'       => $request->rating,
-        'content'      => $request->content,
+        'rating'       => $request->input('rating'),
+        'content'      => $request->input('content'),
         
         'thumbnail'    => $thumbnailPath, // [QUAN TRỌNG 1] Lưu đường dẫn ảnh
         
@@ -61,45 +64,71 @@ class PostController extends Controller
      public function toggleLike($id)
     {
         $user = Auth::user();
-        if (!$user) return response()->json(['error' => 'Bạn cần đăng nhập!']);
+        if (!$user) return response()->json(['error' => 'Bạn cần đăng nhập!'], 401);
 
-        // Tìm like theo post_id
+        $post = Post::find($id);
+        if (!$post) return response()->json(['error' => 'Bài viết không tồn tại!'], 404);
+
+        // Tìm like
         $like = Like::where('user_id', $user->id)->where('post_id', $id)->first();
+        $liked = false;
 
         if ($like) {
-            $like->delete();
+            $like->delete(); // Unlike
             $liked = false;
         } else {
-            Like::create(['user_id' => $user->id, 'post_id' => $id]);
+            Like::create(['user_id' => $user->id, 'post_id' => $id]); // Like
             $liked = true;
+
+            // Gửi thông báo (Trừ khi tự like bài mình)
+            if ($post->user_id != $user->id) {
+                $post->user->notify(new CommentLikedNotification($user, $post));
+            }
         }
 
-        // Đếm lại số like của post này
+        // Đếm lại số like
         $count = Like::where('post_id', $id)->count();
 
-        return response()->json(['success' => true, 'liked' => $liked, 'count' => $count]);
+        return response()->json([
+            'success' => true, 
+            'liked' => $liked, 
+            'count' => $count
+        ]);
     }
 
     // 3. Xử lý Ajax Comment
     public function postComment(Request $request, $id)
     {
         $user = Auth::user();
-        if (!$user) return response()->json(['error' => 'Bạn cần đăng nhập!']);
+        if (!$user) return response()->json(['error' => 'Bạn cần đăng nhập!'], 401);
 
         $request->validate(['content' => 'required']);
 
-        // Tạo comment cho post_id
+        $post = Post::find($id);
+        if (!$post) return response()->json(['error' => 'Bài viết không tồn tại!'], 404);
+
+        // Lưu comment
         $comment = Comment::create([
             'user_id' => $user->id,
             'post_id' => $id,
             'content' => $request->input('content')
         ]);
 
+        // Gửi thông báo (Trừ khi tự comment bài mình)
+        if ($post->user_id != $user->id) {
+           $post->user->notify(new NewCommentNotification($user, $post));
+        }
+
+        // Đếm lại số comment
+        $commentCount = Comment::where('post_id', $id)->count();
+
         return response()->json([
             'success' => true,
             'user_name' => $user->name,
-            'avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name),
-            'content' => $comment->content
+            'avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=random',
+            'content' => $comment->content,
+            'count' => $commentCount,
+            'created_at' => 'Vừa xong'
         ]);
     }
 }
