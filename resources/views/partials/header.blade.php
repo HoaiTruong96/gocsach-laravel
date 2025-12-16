@@ -6,11 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Góc Sách - Review & Share')</title>
     
-    <!-- CDN Tailwind & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
-    <!-- Config màu sắc -->
     <script>
         tailwind.config = {
             theme: {
@@ -61,7 +59,6 @@
 </head>
 <body class="flex flex-col min-h-screen text-gray-800">
 
-    <!-- TOP BAR: Thông tin liên hệ & Social -->
     <div class="bg-brand-green text-white/80 text-xs py-2 hidden md:block border-b border-white/10">
         <div class="container mx-auto px-4 flex justify-between items-center">
             <div class="flex gap-6">
@@ -73,10 +70,8 @@
                 </a>
             </div>
             <div class="flex gap-4 items-center">
-                <!-- Nút mở Modal Trợ giúp -->
                 <button onclick="openModal('helpModal')" class="hover:text-white transition focus:outline-none">Trợ giúp</button>
                 <span class="text-white/20">|</span>
-                <!-- Nút mở Modal Quy tắc -->
                 <button onclick="openModal('rulesModal')" class="hover:text-white transition focus:outline-none">Quy tắc cộng đồng</button>
                 
                 <div class="flex gap-3 ml-4">
@@ -92,7 +87,6 @@
         <div class="container mx-auto px-4 py-3">
             <div class="flex flex-wrap justify-between items-center gap-4">
                 
-                <!-- 1. Logo -->
                 <div class="flex items-center gap-4">
                     <a href="{{ route('home') }}" class="flex items-center gap-2 group">
                         <div class="w-10 h-10 bg-brand-green text-white rounded-lg flex items-center justify-center shadow-md transform group-hover:rotate-6 transition-transform duration-300">
@@ -105,10 +99,10 @@
                     </a>
                 </div>
 
-                <!-- 2. Search Bar -->
                 <div class="hidden md:flex flex-1 max-w-2xl px-8 relative z-40">
-                    <form action="{{ route('books.search') }}" method="GET" class="relative w-full flex items-center">
-                        <!-- Dropdown Danh mục (Giữ nguyên code cũ của bạn) -->
+                    {{-- [QUAN TRỌNG] Form này trỏ về route 'list' (Danh sách sách) --}}
+                    <form action="{{ route('list') }}" method="GET" class="relative w-full flex items-center">
+                        
                         <div class="absolute left-0 pl-1 z-50 group pb-4 -mb-4"> 
                             <div class="flex items-center cursor-pointer bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full transition relative z-20">
                                 <span class="text-gray-600 text-xs font-bold mr-1">Danh mục</span>
@@ -116,18 +110,21 @@
                             </div>
                             <div class="dropdown-menu dropdown-bridge absolute top-full left-0 mt-0 bg-white rounded-xl shadow-2xl border border-gray-100 p-4 min-w-[600px] max-w-[800px] z-10">
                                 <div class="grid grid-rows-[repeat(10,minmax(0,1fr))] grid-flow-col gap-x-8 gap-y-2">
-                                    <a href="{{ route('books.search') }}" class="text-sm text-gray-600 hover:text-brand-green hover:font-bold truncate flex items-center">
+                                    {{-- [ĐÃ SỬA] Link "Tất cả" trỏ về danh sách sách --}}
+                                    <a href="{{ route('list') }}" class="text-sm text-gray-600 hover:text-brand-green hover:font-bold truncate flex items-center">
                                         <i class="fas fa-caret-right text-gray-300 mr-2 text-xs"></i> Tất cả
                                     </a>
                                     @if(isset($menuCategories))
                                         @foreach($menuCategories as $cat)
-                                            <a href="{{ route('books.search', ['category_id' => $cat->id]) }}" class="text-sm text-gray-600 hover:text-brand-green hover:font-bold truncate block py-0.5">{{ $cat->name }}</a>
+                                            {{-- [ĐÃ SỬA] Link từng danh mục cũng trỏ về danh sách sách --}}
+                                            <a href="{{ route('list', ['category_id' => $cat->id]) }}" class="text-sm text-gray-600 hover:text-brand-green hover:font-bold truncate block py-0.5">{{ $cat->name }}</a>
                                         @endforeach
                                     @endif
                                 </div>
                             </div>
                         </div>
 
+                        {{-- Input tìm kiếm --}}
                         <input type="text" name="keyword" value="{{ request('keyword') }}" placeholder="Nhập tên sách, tác giả..." class="w-full bg-gray-50 border border-gray-200 hover:border-brand-green/30 focus:border-brand-green/50 rounded-full py-2.5 pl-28 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green/10 transition-all text-gray-700 placeholder-gray-400 shadow-inner">
                         <button type="submit" class="absolute right-2 top-1.5 w-8 h-8 bg-brand-green text-white rounded-full flex items-center justify-center hover:bg-brand-accent transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5"><i class="fas fa-search text-xs"></i></button>
                     </form>
@@ -243,7 +240,11 @@
             <div class="hidden md:flex justify-center mt-2 border-t border-gray-100 pt-3">
                 <nav class="flex items-center gap-8 text-sm font-semibold text-gray-500">
                     <a href="{{ route('home') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('home') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Trang Chủ</a>
+                    
+                    {{-- [ĐÃ SỬA] Trang Danh Sách --}}
                     <a href="{{ route('list') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('list') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Danh Sách</a>
+                    
+                    {{-- Trang Review Hay (Vẫn giữ link này cho review nếu cần) --}}
                     <a href="{{ route('books.search') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('books.search') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Review Hay</a>
                     
                     <a href="#" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all">Tác Giả</a>
@@ -252,15 +253,11 @@
         </div>
     </header>
 
-    <!-- ===== CÁC POPUP (MODAL) ===== -->
-
-    <!-- 1. Modal Quy Tắc Cộng Đồng -->
     <div id="rulesModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="fixed inset-0 modal-overlay transition-opacity" onclick="closeModal('rulesModal')"></div>
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
             <div class="flex min-h-full items-center justify-center p-4 text-center">
                 <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:w-full sm:max-w-lg animate-scale-up">
-                    <!-- Header -->
                     <div class="bg-brand-green px-4 py-3 sm:px-6 flex justify-between items-center">
                         <h3 class="text-lg font-bold leading-6 text-white" id="modal-title">
                             <i class="fas fa-gavel mr-2"></i> Quy Tắc Cộng Đồng
@@ -269,21 +266,16 @@
                             <i class="fas fa-times text-xl"></i>
                         </button>
                     </div>
-                    <!-- Body -->
                     <div class="px-4 py-5 sm:p-6 text-sm text-gray-600 space-y-3 max-h-[400px] overflow-y-auto">
                         <p class="font-bold text-gray-800">1. Tôn trọng lẫn nhau:</p>
                         <p>Không sử dụng ngôn từ đả kích, xúc phạm hoặc phân biệt đối xử với các thành viên khác.</p>
-                        
                         <p class="font-bold text-gray-800 mt-2">2. Không Spam:</p>
                         <p>Không đăng tải các nội dung quảng cáo, tin rác hoặc bình luận trùng lặp nhiều lần.</p>
-                        
                         <p class="font-bold text-gray-800 mt-2">3. Bản quyền nội dung:</p>
                         <p>Chỉ chia sẻ những nội dung bạn có quyền sở hữu hoặc trích dẫn nguồn rõ ràng. Không đăng tải sách lậu.</p>
-
                         <p class="font-bold text-gray-800 mt-2">4. Review trung thực:</p>
                         <p>Đánh giá sách dựa trên trải nghiệm thực tế, không thiên vị hoặc cố tình dìm hàng.</p>
                     </div>
-                    <!-- Footer -->
                     <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                         <button type="button" class="inline-flex w-full justify-center rounded-md bg-brand-green px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-green/90 sm:ml-3 sm:w-auto" onclick="closeModal('rulesModal')">Đã hiểu</button>
                     </div>
@@ -292,7 +284,6 @@
         </div>
     </div>
 
-    <!-- 2. Modal Trợ Giúp -->
     <div id="helpModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="fixed inset-0 modal-overlay transition-opacity" onclick="closeModal('helpModal')"></div>
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
@@ -337,7 +328,6 @@
         </div>
     </div>
 
-    <!-- Script điều khiển Modal -->
     <script>
         function openModal(modalId) {
             document.getElementById(modalId).classList.remove('hidden');
@@ -347,7 +337,6 @@
             document.getElementById(modalId).classList.add('hidden');
         }
 
-        // Đóng modal khi nhấn ESC
         document.addEventListener('keydown', function(event) {
             if (event.key === "Escape") {
                 document.querySelectorAll('[id$="Modal"]').forEach(el => el.classList.add('hidden'));

@@ -99,42 +99,10 @@ class User extends Authenticatable
     {
         return $this->followings()->where('following_id', $userId)->exists();
     }
-
-    public function badges()
-    {
-        return $this->belongsToMany(Badge::class, 'user_badges')
-            ->withPivot('earned_at', 'expires_at')
-            ->withTimestamps();
-    }
-
-    public function activeBadges()
-    {
-        return $this->belongsToMany(Badge::class, 'user_badges')
-            ->withPivot('earned_at', 'expires_at')
-            ->wherePivot('expires_at', '>', now())
-            ->orWherePivotNull('expires_at')
-            ->withTimestamps();
-    }
-
-    public function challenges()
-    {
-        return $this->belongsToMany(Challenge::class, 'user_challenges')
-            ->withPivot('current_count', 'is_completed', 'completed_at')
-            ->withTimestamps();
-    }
-
-    public function userBadges()
-    {
-        return $this->hasMany(UserBadge::class);
-    }
-
-    public function userChallenges()
-    {
-        return $this->hasMany(UserChallenge::class);
-    }
-
     public function isAdmin()
-    {
-        return $this->role === 'admin';
-    }
+{
+    // Kiểm tra xem user có phải admin không
+    // Ví dụ: nếu cột role là 'admin' hoặc cột type là 1
+    return $this->role === 'admin'; 
+}
 }
