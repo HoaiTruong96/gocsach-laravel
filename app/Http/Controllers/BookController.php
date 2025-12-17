@@ -8,6 +8,7 @@ use App\Models\Post;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\Category;
+
 class BookController extends Controller
 {
     // --- HÀM HỖ TRỢ: Lấy sách kèm tính toán điểm trung bình ---
@@ -26,7 +27,6 @@ class BookController extends Controller
                     ->orderBy('id', 'desc')
                     ->take(5)
                     ->get();
-
 
         $filter = $request->get('filter', 'latest');
         $query = Post::with(['user', 'book'])
@@ -55,7 +55,7 @@ class BookController extends Controller
         return $this->index($request);
     }
 
-    // 2. TRANG CHI TIẾT SÁCH
+    // 2. TRANG CHI TIẾT SÁCH (ĐÃ SỬA LỖI)
     public function show($id)
     {
         $query = $this->getBookQuery();
@@ -66,80 +66,71 @@ class BookController extends Controller
             $query->where('slug', $id);
         }
 
-        $book = $query->firstOrFail();
+        // 1. Lấy thông tin sách
+        $book = $query->with('categories')->firstOrFail();
         $book->avg_rating = round($book->posts_avg_rating ?? 0, 1);
 
+        // 2. Tăng lượt xem (Session check)
         $sessionKey = 'book_viewed_' . $book->id;
         if (!Session::has($sessionKey)) {
             $book->increment('view_count');
             Session::put($sessionKey, true);
         }
 
-        $book->load([
-            'categories',
-            'posts' => function($q) {
-                $q->where('status', 'published')->latest();
-            },
-            'posts.user',
-            'posts.comments' => function($q) {
-                $q->latest(); 
-            },
-            'posts.comments.user',
-            'posts.comments.likes'
-        ]);
+        // 3. [FIXED] Lấy danh sách Review (có phân trang) để biến $reviews tồn tại
+        $reviews = $book->posts()
+                        ->with(['user', 'likes', 'comments.user']) // Eager load để tối ưu
+                        ->where('status', 'published')
+                        ->orderBy('created_at', 'desc')
+                        ->paginate(5); // 5 review mỗi trang
 
-        // Truyền biến $relatedBooks sang View
+        // 4. [FIXED] Lấy sách liên quan (cùng danh mục) để biến $relatedBooks tồn tại
+        $relatedBooks = Book::where('is_approved', true)
+                            ->whereHas('categories', function($q) use ($book) {
+                                $q->whereIn('categories.id', $book->categories->pluck('id'));
+                            })
+                            ->where('id', '!=', $book->id) // Trừ cuốn hiện tại ra
+                            ->take(4)
+                            ->get();
+
+        // Truyền đủ 3 biến: book, reviews, relatedBooks sang View
         return view('book-detail', compact('book', 'reviews', 'relatedBooks'));
     }
 
-    // 3. TÌM KIẾM (Đã thêm Validation số âm & Cảnh báo số đặc biệt)
+    // 3. TÌM KIẾM
     public function search(Request $request)
     {
         // 1. Lấy tham số
         $keyword = $request->input('keyword');
         $filterType = $request->input('filter_type', 'title');
 
-        // --- VALIDATION & WARNING LOGIC ---
-        
-        // Kiểm tra nếu đang lọc theo tiêu chí số (view, rating, review) và có nhập liệu
+        // Validation & Warning Logic
         if ($keyword !== null && $keyword !== '' && in_array($filterType, ['view_count', 'avg_rating', 'total_reviews']) && is_numeric($keyword)) {
-            
-            // 1. Chặn số âm
             if ($keyword < 0) {
-                // Trả về trang tìm kiếm (reset kết quả) kèm thông báo lỗi
                 return redirect()->route('books.search', ['filter_type' => $filterType])
                     ->with('error', 'Giá trị tìm kiếm không được là số âm!');
             }
-
-            // 2. Cảnh báo số đặc biệt (Ví dụ: 13, 666...)
             $specialNumbers = [13, 666, 0]; 
             if (in_array(intval($keyword), $specialNumbers)) {
                 session()->flash('warning', "Bạn đang tìm kiếm con số đặc biệt ($keyword). Kết quả có thể rất ít hoặc không có!");
             }
         }
-        // ----------------------------------
 
-        // 2. Khởi tạo Query
+        // 2. Query
         $query = Book::query();
 
         // 3. Xử lý Lọc
         if ($keyword !== null && $keyword !== '') {
             switch ($filterType) {
                 case 'view_count':
-                    $query->where('view_count', '>=', intval($keyword))
-                          ->orderBy('view_count', 'desc');
+                    $query->where('view_count', '>=', intval($keyword))->orderBy('view_count', 'desc');
                     break;
-
                 case 'avg_rating':
-                    $query->where('avg_rating', '>=', floatval($keyword))
-                          ->orderBy('avg_rating', 'desc');
+                    $query->where('avg_rating', '>=', floatval($keyword))->orderBy('avg_rating', 'desc');
                     break;
-
                 case 'total_reviews':
-                    $query->where('total_reviews', '>=', intval($keyword))
-                          ->orderBy('total_reviews', 'desc');
+                    $query->where('total_reviews', '>=', intval($keyword))->orderBy('total_reviews', 'desc');
                     break;
-
                 case 'title':
                 default:
                     $query->where(function($q) use ($keyword) {
@@ -155,15 +146,12 @@ class BookController extends Controller
         // 4. Phân trang
         $books = $query->paginate(12)->withQueryString();
 
-        return view('search-book', [
-            'books' => $books
-        ]);
+        return view('search-book', ['books' => $books]);
     }
 
-    // 4. SÁCH MỚI CẬP NHẬT
+    // 4. SÁCH MỚI CẬP NHẬT (LIST)
     public function list(Request $request)
     {
-        // ... (Giữ nguyên logic query filter cũ của bạn) ...
         $query = $this->getBookQuery();
 
         if ($request->has('categories') && is_array($request->categories)) {
@@ -177,29 +165,23 @@ class BookController extends Controller
             $query->having('posts_avg_rating', '>=', $rating);
         }
 
-        // ... (Giữ nguyên logic sort) ...
-        // 4. Sắp xếp (Sorting)
-    $sort = $request->get('sort', 'newest'); // Mặc định là mới nhất
+        $sort = $request->get('sort', 'newest'); 
 
-    switch ($sort) {
-    case 'view_desc':
-        $query->orderBy('view_count', 'desc'); // Xem nhiều nhất
-        break;
-    
-    case 'rating_desc':
-        // Sắp xếp theo cột điểm trung bình (được tạo ra bởi withAvg)
-        $query->orderBy('posts_avg_rating', 'desc'); 
-        break;
-    
-    case 'title_asc':  // <--- THÊM MỚI: Sắp xếp tên A-Z (Nếu muốn)
-        $query->orderBy('title', 'asc');
-        break;
-
-    case 'newest':
-    default:
-        $query->orderBy('created_at', 'desc'); // Mặc định: Mới nhất
-        break;
-    }
+        switch ($sort) {
+            case 'view_desc':
+                $query->orderBy('view_count', 'desc');
+                break;
+            case 'rating_desc':
+                $query->orderBy('posts_avg_rating', 'desc'); 
+                break;
+            case 'title_asc':
+                $query->orderBy('title', 'asc');
+                break;
+            case 'newest':
+            default:
+                $query->orderBy('created_at', 'desc'); 
+                break;
+        }
 
         $books = $query->paginate(12)->withQueryString();
 
@@ -208,10 +190,8 @@ class BookController extends Controller
             return $book;
         });
 
-        // 2. LẤY DANH SÁCH THỂ LOẠI TỪ DB (Có thể thêm ->orderBy('name') cho đẹp)
         $categories = Category::all(); 
 
-        // 3. TRUYỀN BIẾN $categories SANG VIEW
         return view('list', [
             'books' => $books,
             'categories' => $categories, 
@@ -221,19 +201,25 @@ class BookController extends Controller
 
     // 5. TRANG HIỂN THỊ ĐÁNH GIÁ SÁCH
     public function showReviews($slug)
-    {
-        $book = $this->getBookQuery()
-                    ->where('slug', $slug)
-                    ->with(['posts' => function($q) {
-                        $q->where('status', 'published')->latest();
-                    }])
-                    ->firstOrFail();
-        
-        $book->avg_rating = round($book->posts_avg_rating ?? 0, 1);
+{
+    $book = $this->getBookQuery()
+                ->where('slug', $slug)
+                ->firstOrFail();
+    
+    $book->avg_rating = round($book->posts_avg_rating ?? 0, 1);
 
-        return view('book-reviews', [
-            'book' => $book,
-            'pageTitle' => 'Đánh giá sách: ' . $book->title
-        ]);
-    }
+    // Lấy danh sách review có phân trang
+    $reviews = $book->posts()
+                    ->with(['user', 'likes', 'comments.user'])
+                    ->where('status', 'published')
+                    ->latest()
+                    ->paginate(10);
+
+    // Trả về view đúng tên (kiểm tra lại tên file trong resources/views của bạn)
+    return view('review-detail', [ // <-- Đảm bảo tên này khớp với tên file .blade.php
+        'book' => $book,
+        'reviews' => $reviews,
+        'pageTitle' => 'Đánh giá sách: ' . $book->title
+    ]);
+}
 }

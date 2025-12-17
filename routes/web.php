@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\BookController as AdminBookController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\BannerController;
+use App\Http\Controllers\ChallengeController;
 
 // ====================================================
 // 1. NHÓM PUBLIC (Ai cũng xem được)

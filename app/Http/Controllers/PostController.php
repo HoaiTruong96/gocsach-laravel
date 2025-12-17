@@ -14,9 +14,10 @@ use App\Notifications\CommentLikedNotification;
 
 class PostController extends Controller
 {
-   public function store(Request $request)
-   {
-        // 1. Validate dữ liệu
+    // 1. Tạo bài viết mới
+    public function store(Request $request)
+    {
+        // Validate dữ liệu
         $request->validate([
             'book_id' => 'required|exists:books,id',
             'rating'  => 'required|integer|min:1|max:5',
@@ -29,60 +30,63 @@ class PostController extends Controller
             'content.min' => 'Nội dung review quá ngắn.',
             'thumbnail.image' => 'File tải lên phải là hình ảnh.',
             'thumbnail.max' => 'Ảnh không được lớn hơn 2MB.',
+        ]); // [ĐÃ SỬA] Thêm dấu đóng ngoặc bị thiếu
+
+        // [ĐÃ SỬA] Xử lý Upload Ảnh (Code cũ bị thiếu đoạn này)
+        $thumbnailPath = null;
+        if ($request->hasFile('thumbnail')) {
+            $thumbnailPath = $request->file('thumbnail')->store('posts', 'public');
+        }
+
+        // Tạo Slug
+        $slug = Str::slug($request->title) . '-' . time();
+
+        // [ĐÃ SỬA] Gán vào biến $post để dùng ở dưới
+        $post = Post::create([
+            'user_id'      => Auth::id(),
+            'book_id'      => $request->input('book_id'),
+            'title'        => $request->input('title'),
+            'slug'         => $slug,
+            'rating'       => $request->input('rating'),
+            'content'      => $request->input('content'),
+            'thumbnail'    => $thumbnailPath,
+            'status'       => 'pending', // Mặc định chờ duyệt
+            'published_at' => null,
         ]);
-
-    // 3. Tạo Slug
-    $slug = \Illuminate\Support\Str::slug($request->title) . '-' . time();
-
-    // 4. Lưu vào Database (Kết hợp cả Thumbnail và Pending)
-    \App\Models\Post::create([
-        'user_id'      => \Illuminate\Support\Facades\Auth::id(),
-        'book_id'      => $request->input('book_id'),
-        'title'        => $request->input('title'),
-        'slug'         => $slug,
-        'rating'       => $request->input('rating'),
-        'content'      => $request->input('content'),
         
-        'thumbnail'    => $thumbnailPath, // [QUAN TRỌNG 1] Lưu đường dẫn ảnh
-        
-        // 5. Cập nhật tiến độ Thử Thách
-        // Lưu ý: Vì status là 'pending' nên đoạn này tạm thời sẽ KHÔNG chạy ngay.
-        // Logic cộng điểm nên được đặt ở Controller của Admin khi bấm nút "Duyệt bài".
+        // Cập nhật tiến độ (Chỉ chạy nếu status là published - logic admin duyệt sau này)
         if ($post->status == 'published') {
             Auth::user()->updateChallengeProgress();
         }
         
-        return redirect()->route('profile', Auth::id())
+        return redirect()->route('detail', $post->book->slug)
                         ->with('success', 'Đã gửi bài viết! Vui lòng chờ Admin phê duyệt.');
    }
 
-    // Toggle Like (Giữ nguyên)
+    // 2. Xử lý Like (Dùng AJAX)
     public function toggleLike($id)
     {
         $user = Auth::user();
-        if (!$user) return response()->json(['error' => 'Bạn cần đăng nhập!'], 401);
+        if (!$user) return response()->json(['error' => 'Unauthenticated'], 401);
 
         $post = Post::find($id);
         if (!$post) return response()->json(['error' => 'Bài viết không tồn tại!'], 404);
 
-        // Tìm like
         $like = Like::where('user_id', $user->id)->where('post_id', $id)->first();
         $liked = false;
 
         if ($like) {
-            $like->delete(); // Unlike
+            $like->delete();
             $liked = false;
         } else {
-            Like::create(['user_id' => $user->id, 'post_id' => $id]); // Like
+            Like::create(['user_id' => $user->id, 'post_id' => $id]);
             $liked = true;
 
-            // Gửi thông báo (Trừ khi tự like bài mình)
             if ($post->user_id != $user->id) {
                 $post->user->notify(new CommentLikedNotification($user, $post));
             }
         }
 
-        // Đếm lại số like
         $count = Like::where('post_id', $id)->count();
 
         return response()->json([
@@ -92,39 +96,28 @@ class PostController extends Controller
         ]);
     }
 
-    // Post Comment (Giữ nguyên)
+    // 3. Xử lý Bình luận (Form Submit)
     public function postComment(Request $request, $id)
     {
         $user = Auth::user();
-        if (!$user) return response()->json(['error' => 'Bạn cần đăng nhập!'], 401);
+        if (!$user) return redirect()->route('login');
 
-        $request->validate(['content' => 'required']);
+        $request->validate(['content' => 'required|max:500']);
 
         $post = Post::find($id);
-        if (!$post) return response()->json(['error' => 'Bài viết không tồn tại!'], 404);
+        if (!$post) return redirect()->back()->with('error', 'Bài viết không tồn tại!');
 
-        // Lưu comment
-        $comment = Comment::create([
+        Comment::create([
             'user_id' => $user->id,
             'post_id' => $id,
             'content' => $request->input('content')
         ]);
 
-        // Gửi thông báo (Trừ khi tự comment bài mình)
         if ($post->user_id != $user->id) {
            $post->user->notify(new NewCommentNotification($user, $post));
         }
 
-        // Đếm lại số comment
-        $commentCount = Comment::where('post_id', $id)->count();
-
-        return response()->json([
-            'success' => true,
-            'user_name' => $user->name,
-            'avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=random',
-            'content' => $comment->content,
-            'count' => $commentCount,
-            'created_at' => 'Vừa xong'
-        ]);
+        // [QUAN TRỌNG] Redirect back để hiển thị lại trang
+        return redirect()->back()->with('success', 'Đã đăng bình luận thành công!');
     }
 }

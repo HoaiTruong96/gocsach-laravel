@@ -27,7 +27,9 @@ class User extends Authenticatable
         'is_active' => 'boolean',
     ];
 
-    // --- 1. CÁC MỐI QUAN HỆ CƠ BẢN ---
+    // =========================================================================
+    // 1. CÁC MỐI QUAN HỆ CƠ BẢN
+    // =========================================================================
 
     public function posts() 
     { 
@@ -50,14 +52,14 @@ class User extends Authenticatable
             ->withPivot('status')->withTimestamps();
     }
 
-    // --- [PHẦN QUAN TRỌNG ĐÃ SỬA] ---
-
     public function contributedBooks() 
     { 
         return $this->hasMany(Book::class, 'created_by_user_id'); 
     }
 
-    // --- 2. QUAN HỆ FOLLOW ---
+    // =========================================================================
+    // 2. TÍNH NĂNG MẠNG XÃ HỘI (Follow)
+    // =========================================================================
 
     public function followings() 
     {
@@ -69,57 +71,16 @@ class User extends Authenticatable
         return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id')->withTimestamps();
     }
 
+    // [ĐÃ SỬA] Hàm này chỉ trả về True/False xem có follow chưa
     public function isFollowing($userId) 
     {
-        // Lấy tất cả thử thách user đã tham gia
-        $joinedChallenges = $this->challenges; 
-
-        foreach ($joinedChallenges as $challenge) {
-            
-            // A. Đếm số lượng bài review HỢP LỆ
-            // - Status phải là 'published'
-            // - Ngày tạo phải nằm trong khoảng thời gian của thử thách
-            $validPostsCount = $this->posts()
-                ->where('status', 'published')
-                ->where('created_at', '>=', $challenge->start_date)
-                // Lấy đến cuối ngày kết thúc (23:59:59)
-                ->where('created_at', '<=', Carbon::parse($challenge->end_date)->endOfDay())
-                ->count();
-
-            // B. Kiểm tra đã hoàn thành chưa
-            $isCompleted = $validPostsCount >= $challenge->target_count;
-            
-            // C. Chuẩn bị dữ liệu cập nhật
-            $pivotData = [
-                'current_count' => $validPostsCount, // Cập nhật con số thực tế
-                'is_completed'  => $isCompleted
-            ];
-
-            // Nếu hoàn thành mà chưa có ngày ghi nhận thì thêm vào
-            if ($isCompleted && !$challenge->pivot->completed_at) {
-                $pivotData['completed_at'] = now();
-            }
-
-            // D. Lưu vào bảng user_challenges
-            $this->challenges()->updateExistingPivot($challenge->id, $pivotData);
-
-            // E. Trao Huy Hiệu (Badge) nếu xong
-            if ($isCompleted) {
-                // Kiểm tra để tránh trao trùng lặp
-                if (!$this->badges()->where('badge_id', $challenge->badge_id)->exists()) {
-                    $this->badges()->attach($challenge->badge_id, [
-                        'earned_at' => now()
-                    ]);
-                }
-            }
-        }
+        return $this->followings()->where('following_id', $userId)->exists();
     }
 
-   
+    // =========================================================================
+    // 3. HỆ THỐNG THỬ THÁCH & DANH HIỆU
+    // =========================================================================
 
-    // --- 3. LOGIC THỬ THÁCH VÀ DANH HIỆU (BADGES & CHALLENGES) ---
-
-    // Quan hệ với Badge (Huy hiệu)
     public function badges()
     {
         return $this->belongsToMany(Badge::class, 'user_badges')
@@ -127,7 +88,6 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    // Lấy danh hiệu còn hiệu lực
     public function activeBadges()
     {
         return $this->belongsToMany(Badge::class, 'user_badges')
@@ -139,7 +99,6 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    // Quan hệ với Thử thách
     public function challenges()
     {
         return $this->belongsToMany(Challenge::class, 'user_challenges')
@@ -147,44 +106,34 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    // --- 4. HÀM TÍNH ĐIỂM THỬ THÁCH (CHUẨN XÁC) ---
+    // --- HÀM TÍNH ĐIỂM CHUẨN XÁC ---
     public function updateChallengeProgress()
     {
-        // Lấy tất cả thử thách user đã tham gia
         $joinedChallenges = $this->challenges; 
 
         foreach ($joinedChallenges as $challenge) {
             
-            // Xử lý ngày tháng an toàn:
-            // Bắt đầu từ 00:00:00 của ngày start
             $startDate = Carbon::parse($challenge->start_date)->startOfDay();
-            // Kết thúc lúc 23:59:59 của ngày end
             $endDate   = Carbon::parse($challenge->end_date)->endOfDay();
 
-            // Đếm bài viết hợp lệ (Đã duyệt + Nằm trong khoảng thời gian)
             $validPostsCount = $this->posts()
                 ->where('status', 'published')
                 ->whereBetween('created_at', [$startDate, $endDate]) 
                 ->count();
 
-            // Kiểm tra điều kiện hoàn thành
             $isCompleted = $validPostsCount >= $challenge->target_count;
             
-            // Chuẩn bị dữ liệu cập nhật
             $pivotData = [
                 'current_count' => $validPostsCount,
                 'is_completed'  => $isCompleted
             ];
 
-            // Nếu vừa hoàn thành xong thì ghi nhận ngày hoàn thành
             if ($isCompleted && !$challenge->pivot->completed_at) {
                 $pivotData['completed_at'] = now();
             }
 
-            // Lưu vào DB
             $this->challenges()->updateExistingPivot($challenge->id, $pivotData);
 
-            // Trao huy hiệu nếu xong
             if ($isCompleted) {
                 if (!$this->badges()->where('badge_id', $challenge->badge_id)->exists()) {
                     $this->badges()->attach($challenge->badge_id, [
@@ -194,10 +143,9 @@ class User extends Authenticatable
             }
         }
     }
-    public function isAdmin()
-    {
-        // Kiểm tra xem user có phải admin không
-        // Ví dụ: nếu cột role là 'admin' hoặc cột type là 1
-        return $this->role === 'admin';
+
+    public function isAdmin() 
+    { 
+        return $this->role === 'admin'; 
     }
 }
