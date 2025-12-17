@@ -248,6 +248,10 @@
                     <a href="{{ route('books.search') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('books.search') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Review Hay</a>
                     
                     <a href="#" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all">Tác Giả</a>
+                    <a href="{{ route('challenges.index') }}" 
+                        class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all flex items-center gap-1 {{ request()->routeIs('challenges.*') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">
+                        <i class="fas fa-flag-checkered text-brand-accent"></i> Thử Thách
+                    </a>
                 </nav>
             </div>
         </div>
