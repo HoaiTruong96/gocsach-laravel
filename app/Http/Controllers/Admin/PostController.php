@@ -33,10 +33,24 @@ class PostController extends Controller
         $post = Post::findOrFail($id);
         $oldStatus = $post->status;
 
-        // Duyệt bài hoặc Từ chối
-        $post->update(['status' => $request->status]);
+        // 1. Chuẩn bị dữ liệu cập nhật
+        $updateData = ['status' => $request->status];
 
-        // Ghi log
+        // Nếu chuyển sang 'published' thì cập nhật ngày đăng (nếu chưa có)
+        if ($request->status == 'published' && is_null($post->published_at)) {
+            $updateData['published_at'] = now();
+        }
+
+        // 2. Thực hiện cập nhật
+        $post->update($updateData);
+
+        // 3. [QUAN TRỌNG] Cập nhật tiến độ Thử Thách cho User
+        // Chỉ chạy khi bài viết được DUYỆT (published)
+        if ($request->status == 'published' && $post->user) {
+            $post->user->updateChallengeProgress();
+        }
+
+        // 4. Ghi log hoạt động Admin
         $actionType = $request->status === 'published' ? 'approve' : 'reject';
         $bookTitle = $post->book->title ?? 'Sách đã xóa';
         $actionDesc = $request->status === 'published'
@@ -52,7 +66,7 @@ class PostController extends Controller
             ['status' => $request->status]
         );
 
-        return back()->with('success', 'Cập nhật trạng thái bài viết thành công!');
+        return back()->with('success', 'Cập nhật trạng thái và tính điểm thử thách thành công!');
     }
 
     /**
