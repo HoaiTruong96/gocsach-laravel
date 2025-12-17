@@ -56,7 +56,7 @@
                 <div class="mb-6">
                     <div class="flex justify-between items-center mb-2">
                         <label class="text-gray-700 text-sm font-bold">Mật khẩu</label>
-                        <a href="{{ route('forgot.password') }}" class="text-xs text-brand-brown hover:underline">Quên mật khẩu?</a>
+                        <a href="{{ route('forgot.password') }}" class="text-xs text-brand-brown hover:underline" tabindex="-1">Quên mật khẩu?</a>
                     </div>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fas fa-lock"></i></span>
