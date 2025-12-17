@@ -31,10 +31,18 @@ class PostController extends Controller
             'thumbnail.max' => 'Ảnh không được lớn hơn 2MB.',
         ]);
 
-    // 3. Tạo Slug
+    // 3. Xử lý Thumbnail (nếu có)
+    $thumbnailPath = null;
+    if ($request->hasFile('thumbnail')) {
+        $thumbnailPath = $request->file('thumbnail')->store('thumbnails', 'public');
+    }
+
+    // 4. Tạo Slug
     $slug = \Illuminate\Support\Str::slug($request->title) . '-' . time();
 
-    // 4. Lưu vào Database (Kết hợp cả Thumbnail và Pending)
+    // 5. Lưu vào Database
+    // Lưu ý: Bài viết mới sẽ có status mặc định là 'pending' (chờ duyệt)
+    // Tiến độ Thử Thách sẽ được cập nhật khi Admin duyệt bài (trong Admin\PostController)
     \App\Models\Post::create([
         'user_id'      => \Illuminate\Support\Facades\Auth::id(),
         'book_id'      => $request->input('book_id'),
@@ -42,18 +50,12 @@ class PostController extends Controller
         'slug'         => $slug,
         'rating'       => $request->input('rating'),
         'content'      => $request->input('content'),
-        
-        'thumbnail'    => $thumbnailPath, // [QUAN TRỌNG 1] Lưu đường dẫn ảnh
-        
-        // 5. Cập nhật tiến độ Thử Thách
-        // Lưu ý: Vì status là 'pending' nên đoạn này tạm thời sẽ KHÔNG chạy ngay.
-        // Logic cộng điểm nên được đặt ở Controller của Admin khi bấm nút "Duyệt bài".
-        if ($post->status == 'published') {
-            Auth::user()->updateChallengeProgress();
-        }
-        
-        return redirect()->route('profile', Auth::id())
-                        ->with('success', 'Đã gửi bài viết! Vui lòng chờ Admin phê duyệt.');
+        'thumbnail'    => $thumbnailPath,
+        'status'       => 'pending', // Mặc định chờ duyệt
+    ]);
+
+    return redirect()->route('profile', Auth::id())
+                    ->with('success', 'Đã gửi bài viết! Vui lòng chờ Admin phê duyệt.');
    }
 
     // Toggle Like (Giữ nguyên)
