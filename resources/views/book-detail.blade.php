@@ -14,7 +14,7 @@
             <div class="flex items-center text-sm text-gray-500 font-medium">
                 <a href="{{ route('home') }}" class="hover:text-brand-green transition">Trang chủ</a>
                 <span class="mx-2 text-gray-300">/</span>
-                <a href="{{ route('list') }}" class="hover:text-brand-green transition">
+                <a href="{{ route('books.list') }}" class="hover:text-brand-green transition">
                     {{ isset($book->categories) && $book->categories->isNotEmpty() ? $book->categories->first()->name : 'Sách' }}
                 </a>
                 <span class="mx-2 text-gray-300">/</span>
@@ -321,6 +321,7 @@
                     <h3 class="font-bold text-brand-green text-sm mb-4 flex items-center gap-2">
                         <i class="fas fa-lightbulb"></i> Có thể bạn thích
                     </h3>
+                    
                     <div class="space-y-4">
                         <div class="flex gap-3 items-center group cursor-pointer">
                             <div class="w-12 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0">

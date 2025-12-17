@@ -16,7 +16,7 @@ use App\Http\Controllers\Admin\BookController as AdminBookController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\BannerController;
-use App\Http\Controllers\ChallengeController;
+
 // ====================================================
 // 1. NHÓM PUBLIC (Ai cũng xem được)
 // ====================================================
@@ -34,17 +34,10 @@ Route::view('/lien-he', 'pages.contact')->name('page.contact');
 Route::get('/tap-chi/{slug}', [ArticleController::class, 'show'])->name('articles.show');
 
 // Trang Danh sách sách
-Route::get('/danh-sach', function () {
-    $books = Book::with('categories')->latest()->paginate(12);
-    return view('list', compact('books'));
-})->name('list');
-
-// Trang Sách Mới
-Route::get('/sach-moi', [BookController::class, 'newBooks'])->name('books.new');
+Route::get('/danh-sach', [BookController::class, 'list'])->name('books.list');
 
 // Tìm kiếm Review/Sách
 Route::get('/review-search', [BookController::class, 'search'])->name('books.search');
-Route::get('/ajax-search', [BookController::class, 'ajaxSearch'])->name('ajax.search');
 
 // Xem chi tiết sách & Đánh giá
 Route::get('/chi-tiet/{slug}', [BookController::class, 'show'])->name('detail');
@@ -77,6 +70,7 @@ Route::middleware('guest')->group(function () {
 // Route cho trang Thử Thách
 // Code này chạy qua Controller để lấy dữ liệu rồi mới trả về View
 Route::get('/thu-thach', [ChallengeController::class, 'index'])->name('challenges.index');
+
 
 // ====================================================
 // 3. NHÓM THÀNH VIÊN (AUTH REQUIRED)

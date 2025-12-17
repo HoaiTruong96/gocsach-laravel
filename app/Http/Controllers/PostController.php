@@ -31,31 +31,19 @@ class PostController extends Controller
             'thumbnail.max' => 'Ảnh không được lớn hơn 2MB.',
         ]);
 
-        // 2. Xử lý Upload Ảnh
-        $thumbnailPath = null;
-        if ($request->hasFile('thumbnail')) {
-            $thumbnailPath = $request->file('thumbnail')->store('posts', 'public');
-        }
+    // 3. Tạo Slug
+    $slug = \Illuminate\Support\Str::slug($request->title) . '-' . time();
 
-        // 3. Tạo Slug
-        $slug = Str::slug($request->title) . '-' . time();
-
-        // 4. Lưu vào Database
-        $post = Post::create([
-            'user_id'      => Auth::id(),
-            'book_id'      => $request->input('book_id'),
-            'title'        => $request->input('title'),
-            'slug'         => $slug,
-            'rating'       => $request->input('rating'),
-            'content'      => $request->input('content'),
-            'thumbnail'    => $thumbnailPath,
-            
-            // [ĐÃ SỬA] Đặt trạng thái là 'pending' để chờ Admin duyệt
-            'status'       => 'pending', 
-            
-            // [ĐÃ SỬA] Chưa duyệt thì chưa có ngày đăng
-            'published_at' => null,
-        ]);
+    // 4. Lưu vào Database (Kết hợp cả Thumbnail và Pending)
+    \App\Models\Post::create([
+        'user_id'      => \Illuminate\Support\Facades\Auth::id(),
+        'book_id'      => $request->input('book_id'),
+        'title'        => $request->input('title'),
+        'slug'         => $slug,
+        'rating'       => $request->input('rating'),
+        'content'      => $request->input('content'),
+        
+        'thumbnail'    => $thumbnailPath, // [QUAN TRỌNG 1] Lưu đường dẫn ảnh
         
         // 5. Cập nhật tiến độ Thử Thách
         // Lưu ý: Vì status là 'pending' nên đoạn này tạm thời sẽ KHÔNG chạy ngay.
@@ -77,21 +65,24 @@ class PostController extends Controller
         $post = Post::find($id);
         if (!$post) return response()->json(['error' => 'Bài viết không tồn tại!'], 404);
 
+        // Tìm like
         $like = Like::where('user_id', $user->id)->where('post_id', $id)->first();
         $liked = false;
 
         if ($like) {
-            $like->delete();
+            $like->delete(); // Unlike
             $liked = false;
         } else {
-            Like::create(['user_id' => $user->id, 'post_id' => $id]);
+            Like::create(['user_id' => $user->id, 'post_id' => $id]); // Like
             $liked = true;
 
+            // Gửi thông báo (Trừ khi tự like bài mình)
             if ($post->user_id != $user->id) {
                 $post->user->notify(new CommentLikedNotification($user, $post));
             }
         }
 
+        // Đếm lại số like
         $count = Like::where('post_id', $id)->count();
 
         return response()->json([
@@ -112,16 +103,19 @@ class PostController extends Controller
         $post = Post::find($id);
         if (!$post) return response()->json(['error' => 'Bài viết không tồn tại!'], 404);
 
+        // Lưu comment
         $comment = Comment::create([
             'user_id' => $user->id,
             'post_id' => $id,
             'content' => $request->input('content')
         ]);
 
+        // Gửi thông báo (Trừ khi tự comment bài mình)
         if ($post->user_id != $user->id) {
            $post->user->notify(new NewCommentNotification($user, $post));
         }
 
+        // Đếm lại số comment
         $commentCount = Comment::where('post_id', $id)->count();
 
         return response()->json([
