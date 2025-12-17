@@ -66,6 +66,16 @@ class PostController extends Controller
                     \Log::error("Lỗi gửi thông báo duyệt bài: " . $e->getMessage());
                 }
             }
+
+            // 4. [FIX BUG] Cập nhật tiến độ Thử Thách cho người viết bài
+            // Khi bài viết được duyệt, tính lại số bài review hợp lệ của user
+            if ($post->user) {
+                try {
+                    $post->user->updateChallengeProgress();
+                } catch (\Exception $e) {
+                    \Log::error("Lỗi cập nhật tiến độ thử thách: " . $e->getMessage());
+                }
+            }
         }
 
         return back()->with('success', 'Cập nhật trạng thái bài viết thành công!');
