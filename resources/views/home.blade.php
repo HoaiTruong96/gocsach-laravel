@@ -115,13 +115,20 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+                        {{-- BÀI VIẾT CHÍNH (FEATURED) --}}
                         @if(isset($featuredArticle))
-                        <article class="md:col-span-3 group cursor-pointer relative">
+                        <article class="md:col-span-3 group cursor-pointer relative" 
+                                 onclick="window.location.href='{{ route('article.detail', $featuredArticle->slug) }}'">
+                            
                             @if(Auth::check() && Auth::user()->isAdmin())
-                                <a href="{{ route('admin.articles.edit', $featuredArticle->id) }}" class="absolute top-4 right-4 z-20 bg-white/90 text-blue-600 p-2 rounded-full shadow-lg hover:bg-blue-600 hover:text-white transition opacity-0 group-hover:opacity-100">
+                                {{-- Nút sửa (Ngăn chặn click bong bóng để không nhảy trang) --}}
+                                <a href="{{ route('admin.articles.edit', $featuredArticle->id) }}" 
+                                   onclick="event.stopPropagation()" 
+                                   class="absolute top-4 right-4 z-20 bg-white/90 text-blue-600 p-2 rounded-full shadow-lg hover:bg-blue-600 hover:text-white transition opacity-0 group-hover:opacity-100">
                                     <i class="fas fa-edit"></i>
                                 </a>
                             @endif
+
                             <div class="relative h-64 md:h-80 rounded-2xl overflow-hidden mb-4 shadow-md">
                                 <img src="{{ $featuredArticle->thumbnail }}" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-700">
                                 <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
@@ -139,10 +146,21 @@
                         </article>
                         @endif
 
+                        {{-- DANH SÁCH BÀI VIẾT PHỤ (SIDEBAR) --}}
                         <div class="md:col-span-2 flex flex-col gap-6">
                             @if(isset($sidebarArticles))
                                 @foreach($sidebarArticles as $article)
-                                <article class="flex flex-col group cursor-pointer relative">
+                                <article class="flex flex-col group cursor-pointer relative" 
+                                         onclick="window.location.href='{{ route('article.detail', $article->slug) }}'">
+                                    
+                                    @if(Auth::check() && Auth::user()->isAdmin())
+                                         <a href="{{ route('admin.articles.edit', $article->id) }}" 
+                                            onclick="event.stopPropagation()"
+                                            class="absolute top-2 right-2 z-20 bg-white/90 text-blue-600 p-1.5 rounded-full shadow hover:bg-blue-600 hover:text-white opacity-0 group-hover:opacity-100 transition">
+                                            <i class="fas fa-edit text-xs"></i>
+                                        </a>
+                                    @endif
+
                                     <div class="h-32 rounded-xl overflow-hidden mb-3 relative">
                                         <img src="{{ $article->thumbnail }}" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-500">
                                     </div>
@@ -209,7 +227,7 @@
                             <p class="text-sm text-gray-500 pl-4 mt-1">Góc chia sẻ cảm nhận chân thực từ độc giả</p>
                         </div>
                         
-                        {{-- Bộ lọc Review (ĐÃ SỬA ID và CLASS để dùng JS) --}}
+                        {{-- Bộ lọc Review --}}
                         <div class="bg-gray-100 p-1 rounded-full flex text-xs font-bold shadow-inner">
                             <button onclick="loadComments('latest')" 
                                     id="tab-latest"
@@ -253,7 +271,7 @@
             {{-- [CỘT PHẢI - 4 PHẦN] --}}
             <div class="lg:col-span-4">
                 <div class="space-y-8">
-                    {{-- Widget 1: Top Thịnh Hành --}}
+                    {{-- Widget 1: Top Thịnh Hành (Để trôi tự nhiên, không sticky) --}}
                     <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-soft">
                         <h3 class="font-serif font-bold text-lg text-gray-800 mb-5 flex items-center gap-2">
                             <span class="text-brand-accent">🔥</span> Top Thịnh Hành
@@ -287,72 +305,81 @@
                         </div>
                     </div>
 
-                    {{-- Widget 2: Thể Loại (Sticky) --}}
-                    <div class="bg-brand-beige/30 rounded-xl p-6 border border-brand-beige sticky top-28">
-                        <h3 class="font-serif font-bold text-lg text-brand-green mb-4 flex items-center gap-2"><i class="fas fa-tags text-brand-accent"></i> Thể Loại</h3>
-                        <div class="flex flex-wrap gap-2">
-                            @if(isset($categories) && $categories->count() > 0)
-                                @foreach($categories as $category)
-                                    <a href="{{ route('list', ['category' => $category->id]) }}" class="group flex items-center gap-2 bg-white text-gray-600 px-3 py-1.5 rounded-full text-xs font-bold border border-gray-100 hover:border-brand-accent hover:text-brand-accent hover:shadow-md transition-all duration-300">
-                                        <span>{{ $category->name }}</span>
-                                        <span class="bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full text-[10px] group-hover:bg-brand-accent/10 group-hover:text-brand-accent transition">
-                                            {{ $category->books_count ?? 0 }}
-                                        </span>
-                                    </a>
-                                @endforeach
-                            @else
-                                <span class="text-sm text-gray-400 italic">Đang cập nhật...</span>
+                    {{-- [MỚI] GOM 2 WIDGET DƯỚI VÀO 1 DIV STICKY --}}
+                    {{-- top-24 để chừa khoảng cách với header khi cuộn xuống --}}
+                    <div class="sticky top-24 space-y-6">
+                        
+                        {{-- Widget 2: Thể Loại --}}
+                        {{-- Đã xóa class sticky cũ ở đây --}}
+                        <div class="bg-brand-beige/30 rounded-xl p-6 border border-brand-beige">
+                            <h3 class="font-serif font-bold text-lg text-brand-green mb-4 flex items-center gap-2"><i class="fas fa-tags text-brand-accent"></i> Thể Loại</h3>
+                            <div class="flex flex-wrap gap-2">
+                                @if(isset($categories) && $categories->count() > 0)
+                                    @foreach($categories as $category)
+                                        <a href="{{ route('list', ['category' => $category->id]) }}" class="group flex items-center gap-2 bg-white text-gray-600 px-3 py-1.5 rounded-full text-xs font-bold border border-gray-100 hover:border-brand-accent hover:text-brand-accent hover:shadow-md transition-all duration-300">
+                                            <span>{{ $category->name }}</span>
+                                            <span class="bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full text-[10px] group-hover:bg-brand-accent/10 group-hover:text-brand-accent transition">
+                                                {{ $category->books_count ?? 0 }}
+                                            </span>
+                                        </a>
+                                    @endforeach
+                                @else
+                                    <span class="text-sm text-gray-400 italic">Đang cập nhật...</span>
+                                @endif
+                            </div>
+                            
+                            @if(isset($categories) && $categories->count() > 10)
+                                <div class="mt-4 text-center">
+                                    <a href="{{ route('list') }}" class="text-xs text-brand-green font-bold hover:underline">Xem tất cả thể loại</a>
+                                </div>
                             @endif
                         </div>
-                        
-                        @if(isset($categories) && $categories->count() > 10)
-                            <div class="mt-4 text-center">
-                                <a href="{{ route('list') }}" class="text-xs text-brand-green font-bold hover:underline">Xem tất cả thể loại</a>
+
+                        {{-- Widget 3: Liên Kết Mua Sách --}}
+                        {{-- Đã xóa class sticky cũ ở đây --}}
+                        <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+                            <h3 class="font-serif font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
+                                <span class="text-brand-accent">🛒</span> Mua Sách Giá Tốt
+                            </h3>
+                            
+                            <div class="space-y-3">
+                                <a href="https://tiki.vn/nha-sach-tiki/c8322" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition group bg-white">
+                                    <div class="flex items-center gap-3">
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/4/43/Logo_Tiki_2023.png" class="w-8 h-8 object-contain" alt="Tiki">
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-sm text-gray-700 group-hover:text-blue-600">Tiki Trading</span>
+                                            <span class="text-[10px] text-green-600 font-bold bg-green-100 px-1.5 py-0.5 rounded w-fit">Giảm tới 35%</span>
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-external-link-alt text-gray-300 text-xs group-hover:text-blue-500"></i>
+                                </a>
+
+                                <a href="https://shopee.vn/nhasachphuongnam" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-orange-400 hover:bg-orange-50 transition group bg-white">
+                                    <div class="flex items-center gap-3">
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg" class="w-8 h-8 object-contain" alt="Shopee">
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-sm text-gray-700 group-hover:text-orange-600">Shopee Mall</span>
+                                            <span class="text-[10px] text-orange-500 font-bold bg-orange-100 px-1.5 py-0.5 rounded w-fit">Freeship Extra</span>
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-external-link-alt text-gray-300 text-xs group-hover:text-orange-500"></i>
+                                </a>
+
+                                <a href="https://www.fahasa.com/" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-red-400 hover:bg-red-50 transition group bg-white">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-xs">F</div>
+                                        <div class="flex flex-col">
+                                            <span class="font-bold text-sm text-gray-700 group-hover:text-red-600">Fahasa.com</span>
+                                            <span class="text-[10px] text-gray-500">Sách chính hãng</span>
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-external-link-alt text-gray-300 text-xs group-hover:text-red-500"></i>
+                                </a>
                             </div>
-                        @endif
-                    </div>
-
-                    {{-- Widget 3: Liên Kết Mua Sách --}}
-                    <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm mt-6 sticky top-[30rem]">
-                        <h3 class="font-serif font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
-                            <span class="text-brand-accent">🛒</span> Mua Sách Giá Tốt
-                        </h3>
-                        
-                        <div class="space-y-3">
-                            <a href="https://tiki.vn/nha-sach-tiki/c8322" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition group bg-white">
-                                <div class="flex items-center gap-3">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/43/Logo_Tiki_2023.png" class="w-8 h-8 object-contain" alt="Tiki">
-                                    <div class="flex flex-col">
-                                        <span class="font-bold text-sm text-gray-700 group-hover:text-blue-600">Tiki Trading</span>
-                                        <span class="text-[10px] text-green-600 font-bold bg-green-100 px-1.5 py-0.5 rounded w-fit">Giảm tới 35%</span>
-                                    </div>
-                                </div>
-                                <i class="fas fa-external-link-alt text-gray-300 text-xs group-hover:text-blue-500"></i>
-                            </a>
-
-                            <a href="https://shopee.vn/nhasachphuongnam" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-orange-400 hover:bg-orange-50 transition group bg-white">
-                                <div class="flex items-center gap-3">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg" class="w-8 h-8 object-contain" alt="Shopee">
-                                    <div class="flex flex-col">
-                                        <span class="font-bold text-sm text-gray-700 group-hover:text-orange-600">Shopee Mall</span>
-                                        <span class="text-[10px] text-orange-500 font-bold bg-orange-100 px-1.5 py-0.5 rounded w-fit">Freeship Extra</span>
-                                    </div>
-                                </div>
-                                <i class="fas fa-external-link-alt text-gray-300 text-xs group-hover:text-orange-500"></i>
-                            </a>
-
-                            <a href="https://www.fahasa.com/" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-red-400 hover:bg-red-50 transition group bg-white">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-xs">F</div>
-                                    <div class="flex flex-col">
-                                        <span class="font-bold text-sm text-gray-700 group-hover:text-red-600">Fahasa.com</span>
-                                        <span class="text-[10px] text-gray-500">Sách chính hãng</span>
-                                    </div>
-                                </div>
-                                <i class="fas fa-external-link-alt text-gray-300 text-xs group-hover:text-red-500"></i>
-                            </a>
                         </div>
-                    </div>
+
+                    </div> {{-- END DIV STICKY GROUP --}}
+
                 </div>
             </div> {{-- END CỘT 4 --}}
         </div>
@@ -361,9 +388,59 @@
 
 @push('scripts')
 <script>
-    // --- 1. AJAX LOAD COMMENTS (NEW) ---
-    function loadComments(sortType) {
-        // A. Cập nhật giao diện Tab (Active/Inactive)
+    // ==========================================
+    // 1. AJAX REVIEW LOGIC (NEW: Sort + Pagination)
+    // ==========================================
+    let currentSortType = 'latest'; 
+
+    function loadComments(param) {
+        let url = '';
+
+        // Trường hợp 1: Chuyển Tab (param = 'latest' hoặc 'popular')
+        if (param === 'latest' || param === 'popular') {
+            currentSortType = param;
+            url = `/?sort_review=${param}`; // Reset về trang 1
+            updateTabUI(param);
+        } 
+        // Trường hợp 2: Chuyển trang (param là URL phân trang)
+        else {
+            url = param;
+            if (!url.includes('sort_review')) {
+                url += `&sort_review=${currentSortType}`;
+            }
+        }
+
+        // Hiện Loading
+        const container = document.getElementById('comments-container');
+        const spinner = document.getElementById('loading-spinner');
+        if(spinner) spinner.classList.remove('hidden'); 
+
+        // Gọi Ajax
+        fetch(url, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(response => response.text())
+        .then(html => {
+            const spinnerHtml = `<div id="loading-spinner" class="hidden absolute inset-0 bg-white/80 z-10 flex items-center justify-center"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-green"></div></div>`;
+            container.innerHTML = spinnerHtml + html;
+            
+            // Gán lại sự kiện cho phân trang mới sinh ra
+            attachPaginationEvents();
+            
+            // Scroll nhẹ
+            document.getElementById('community-posts').scrollIntoView({ behavior: 'smooth' });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Có lỗi khi tải dữ liệu.');
+        })
+        .finally(() => {
+            const newSpinner = document.getElementById('loading-spinner');
+            if(newSpinner) newSpinner.classList.add('hidden');
+        });
+    }
+
+    function updateTabUI(sortType) {
         const tabLatest = document.getElementById('tab-latest');
         const tabPopular = document.getElementById('tab-popular');
         const activeClass = ['bg-white', 'text-brand-green', 'shadow-sm'];
@@ -380,40 +457,28 @@
             tabLatest.classList.remove(...activeClass);
             tabLatest.classList.add(...inactiveClass);
         }
+    }
 
-        // B. Hiển thị Loading
-        const container = document.getElementById('comments-container');
-        const spinner = document.getElementById('loading-spinner');
-        if(spinner) spinner.classList.remove('hidden'); 
-
-        // C. Gọi Ajax
-        fetch(`/?sort_review=${sortType}`, {
-            headers: {
-                "X-Requested-With": "XMLHttpRequest" // Báo hiệu Ajax cho Laravel
-            }
-        })
-        .then(response => response.text())
-        .then(html => {
-            // Thay thế nội dung cũ bằng HTML mới
-            // Giữ lại spinner để lần sau dùng tiếp (vì khi replace innerHTML sẽ mất spinner cũ)
-            const spinnerHtml = `<div id="loading-spinner" class="hidden absolute inset-0 bg-white/80 z-10 flex items-center justify-center"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-green"></div></div>`;
-            container.innerHTML = spinnerHtml + html;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Có lỗi khi tải dữ liệu.');
-        })
-        .finally(() => {
-            // Ẩn Loading (tìm lại spinner mới được inject vào)
-            const newSpinner = document.getElementById('loading-spinner');
-            if(newSpinner) newSpinner.classList.add('hidden');
+    function attachPaginationEvents() {
+        const paginationLinks = document.querySelectorAll('.ajax-pagination-link');
+        paginationLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = this.getAttribute('href');
+                if (url) loadComments(url);
+            });
         });
     }
 
+    // ==========================================
+    // 2. HERO SLIDER & OTHER EVENTS
+    // ==========================================
     document.addEventListener('DOMContentLoaded', function() {
-        // ==========================================
-        // 2. HERO SLIDER LOGIC
-        // ==========================================
+        
+        // --- Init Pagination Events ---
+        attachPaginationEvents();
+
+        // --- Hero Slider ---
         const sliderWrapper = document.getElementById('sliderWrapper');
         const dots = document.querySelectorAll('.indicator-dot');
         const prevBtn = document.getElementById('heroPrevBtn');
@@ -438,26 +503,10 @@
                 });
             }
 
-            function nextSlide() {
-                currentSlide = (currentSlide + 1) % totalSlides;
-                updateSlider();
-                resetTimer();
-            }
-
-            function prevSlide() {
-                currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-                updateSlider();
-                resetTimer();
-            }
-
-            function startTimer() {
-                slideInterval = setInterval(nextSlide, 5000);
-            }
-
-            function resetTimer() {
-                clearInterval(slideInterval);
-                startTimer();
-            }
+            function nextSlide() { currentSlide = (currentSlide + 1) % totalSlides; updateSlider(); resetTimer(); }
+            function prevSlide() { currentSlide = (currentSlide - 1 + totalSlides) % totalSlides; updateSlider(); resetTimer(); }
+            function startTimer() { slideInterval = setInterval(nextSlide, 5000); }
+            function resetTimer() { clearInterval(slideInterval); startTimer(); }
 
             if(nextBtn) nextBtn.addEventListener('click', nextSlide);
             if(prevBtn) prevBtn.addEventListener('click', prevSlide);
@@ -470,92 +519,62 @@
                     resetTimer();
                 });
             });
-
             startTimer();
         } else {
             if(prevBtn) prevBtn.style.display = 'none';
             if(nextBtn) nextBtn.style.display = 'none';
         }
 
-        // ==========================================
-        // 3. SLIDER SÁCH MỚI
-        // ==========================================
+        // --- New Books Slider ---
         const sliderNewBooks = document.getElementById('sliderNewBooks');
         const btnPrevNew = document.getElementById('btnPrevNewBooks');
         const btnNextNew = document.getElementById('btnNextNewBooks');
 
         if(sliderNewBooks && btnPrevNew && btnNextNew) {
-            btnNextNew.addEventListener('click', () => {
-                sliderNewBooks.scrollBy({ left: 220, behavior: 'smooth' });
-            });
-            btnPrevNew.addEventListener('click', () => {
-                sliderNewBooks.scrollBy({ left: -220, behavior: 'smooth' });
-            });
+            btnNextNew.addEventListener('click', () => { sliderNewBooks.scrollBy({ left: 220, behavior: 'smooth' }); });
+            btnPrevNew.addEventListener('click', () => { sliderNewBooks.scrollBy({ left: -220, behavior: 'smooth' }); });
         }
 
-        // ==========================================
-        // 4. LOGIC LIKE & REPLY
-        // ==========================================
+        // --- Logic Like/Reply ---
         const currentUserId = "{{ Auth::id() }}";
 
         window.handleLike = function(id, type) {
-            if (!currentUserId) {
-                alert("Vui lòng đăng nhập để thả tim!");
-                window.location.href = "/login";
-                return;
-            }
-
+            if (!currentUserId) { alert("Vui lòng đăng nhập!"); window.location.href = "/login"; return; }
+            
             const btn = document.getElementById(`like-btn-${type}-${id}`);
             const icon = document.getElementById(`like-icon-${type}-${id}`);
             const countSpan = document.getElementById(`like-count-${type}-${id}`);
-
             if (!btn) return;
 
             const isLiked = icon.classList.contains('fas'); 
-            
             if(isLiked) {
-                icon.classList.remove('fas', 'text-red-500');
-                icon.classList.add('far');
+                icon.classList.remove('fas', 'text-red-500'); icon.classList.add('far');
                 btn.classList.remove('text-red-500');
-                let currentCount = parseInt(countSpan.innerText);
-                countSpan.innerText = Math.max(0, currentCount - 1);
+                countSpan.innerText = Math.max(0, parseInt(countSpan.innerText) - 1);
             } else {
-                icon.classList.remove('far');
-                icon.classList.add('fas', 'bounce');
+                icon.classList.remove('far'); icon.classList.add('fas', 'bounce');
                 btn.classList.add('text-red-500');
-                let currentCount = parseInt(countSpan.innerText);
-                countSpan.innerText = currentCount + 1;
+                countSpan.innerText = parseInt(countSpan.innerText) + 1;
             }
 
             fetch('/like', { 
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 body: JSON.stringify({ id: id, type: type })
             })
-            .then(response => response.json())
-            .then(data => { if (data.success) countSpan.innerText = data.count; })
-            .catch(error => console.error('Error:', error));
+            .then(res => res.json())
+            .then(data => { if(data.success) countSpan.innerText = data.count; })
+            .catch(err => console.error(err));
         };
 
         window.toggleReplyForm = function(commentId) {
-            if (!currentUserId) {
-                alert("Vui lòng đăng nhập để bình luận!");
-                window.location.href = "/login";
-                return;
-            }
+            if (!currentUserId) { alert("Vui lòng đăng nhập!"); window.location.href = "/login"; return; }
             const form = document.getElementById(`reply-form-${commentId}`);
             const input = document.getElementById(`reply-input-${commentId}`);
+            document.querySelectorAll('[id^="reply-form-"]').forEach(el => el.classList.add('hidden'));
             
-            if (form.classList.contains('hidden')) {
-                document.querySelectorAll('[id^="reply-form-"]').forEach(el => el.classList.add('hidden'));
-                form.classList.remove('hidden');
-                input.focus();
-            } else {
-                form.classList.add('hidden');
-            }
+            if (form.classList.contains('hidden')) { form.classList.remove('hidden'); input.focus(); } 
+            else { form.classList.add('hidden'); }
         };
 
         window.autoResize = function(textarea) {
@@ -573,30 +592,25 @@
         window.submitInlineReply = function(commentId) {
             const input = document.getElementById(`reply-input-${commentId}`);
             const content = input.value.trim();
-            if (!content) { alert("Nội dung không được để trống!"); return; }
+            if (!content) { alert("Nội dung trống!"); return; }
 
             fetch(`/comment/${commentId}/reply`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 body: JSON.stringify({ content: content })
             })
-            .then(response => response.json())
+            .then(res => res.json())
             .then(data => {
                 if (data.success) location.reload();
-                else alert("Có lỗi xảy ra, vui lòng thử lại.");
+                else alert("Lỗi!");
             })
-            .catch(error => console.error('Error:', error));
+            .catch(err => console.error(err));
         };
     });
 </script>
 <style>
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    
-    /* Animation fade in cho ajax */
     .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 </style>
