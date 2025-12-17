@@ -27,9 +27,7 @@ class User extends Authenticatable
         'is_active' => 'boolean',
     ];
 
-    // =========================================================================
-    // 1. CÁC MỐI QUAN HỆ CƠ BẢN (Review, Comment, Like, Sách)
-    // =========================================================================
+    // --- 1. CÁC MỐI QUAN HỆ CƠ BẢN ---
 
     public function posts() 
     { 
@@ -63,23 +61,18 @@ class User extends Authenticatable
         return $this->hasMany(Book::class, 'created_by_user_id'); 
     }
 
-    // =========================================================================
-    // 2. TÍNH NĂNG MẠNG XÃ HỘI (Follow)
-    // =========================================================================
+    // --- 2. QUAN HỆ FOLLOW ---
 
-    // Những người TÔI đang theo dõi
     public function followings() 
     {
         return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id')->withTimestamps();
     }
 
-    // Những người đang theo dõi TÔI
     public function followers() 
     {
         return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id')->withTimestamps();
     }
 
-    // Kiểm tra tôi có đang follow người này không
     public function isFollowing($userId) 
     {
         // Lấy tất cả thử thách user đã tham gia
@@ -126,18 +119,12 @@ class User extends Authenticatable
         }
     }
 
-    // =========================================================================
-    // 3. PHÂN QUYỀN (Admin)
-    // =========================================================================
-
     public function isAdmin() 
     { 
         return $this->role === 'admin'; 
     }
 
-    // =========================================================================
-    // 4. HỆ THỐNG THỬ THÁCH & DANH HIỆU (Gamification)
-    // =========================================================================
+    // --- 3. LOGIC THỬ THÁCH VÀ DANH HIỆU (BADGES & CHALLENGES) ---
 
     // Quan hệ với Badge (Huy hiệu)
     public function badges()
@@ -147,7 +134,7 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    // Lấy danh hiệu còn hiệu lực (để hiển thị)
+    // Lấy danh hiệu còn hiệu lực
     public function activeBadges()
     {
         return $this->belongsToMany(Badge::class, 'user_badges')
@@ -167,7 +154,7 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    // --- HÀM TÍNH ĐIỂM CHUẨN XÁC ---
+    // --- 4. HÀM TÍNH ĐIỂM THỬ THÁCH (CHUẨN XÁC) ---
     public function updateChallengeProgress()
     {
         // Lấy tất cả thử thách user đã tham gia
