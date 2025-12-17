@@ -34,13 +34,7 @@ Route::view('/lien-he', 'pages.contact')->name('page.contact');
 Route::get('/tap-chi/{slug}', [ArticleController::class, 'show'])->name('articles.show');
 
 // Trang Danh sách sách
-Route::get('/danh-sach', function () {
-    $books = Book::with('categories')->latest()->paginate(12);
-    return view('list', compact('books'));
-})->name('list');
-
-// Trang Sách Mới
-Route::get('/sach-moi', [BookController::class, 'newBooks'])->name('books.new');
+Route::get('/danh-sach', [BookController::class, 'list'])->name('books.list');
 
 // Tìm kiếm Review/Sách
 Route::get('/review-search', [BookController::class, 'search'])->name('books.search');
@@ -73,6 +67,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/check-secret', [AuthController::class, 'checkSecret'])->name('check.secret');
     Route::post('/update-password', [AuthController::class, 'updatePassword'])->name('update.password');
 });
+// Route cho trang Thử Thách
+// Code này chạy qua Controller để lấy dữ liệu rồi mới trả về View
+Route::get('/thu-thach', [ChallengeController::class, 'index'])->name('challenges.index');
 
 
 // ====================================================
@@ -126,6 +123,8 @@ Route::middleware('auth')->group(function () {
             ->get();
         return response()->json($books);
     });
+    // chalenges
+    Route::post('/challenge/join/{id}', [ChallengeController::class, 'join'])->name('challenge.join');
 });
 
 
