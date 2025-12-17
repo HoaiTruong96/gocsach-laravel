@@ -1,4 +1,5 @@
 {{-- Top Bar --}}
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <div class="bg-brand-green text-white/80 text-xs py-2 hidden md:block border-b border-white/10">
     <div class="container mx-auto px-4 flex justify-between items-center">
         <div class="flex gap-6">

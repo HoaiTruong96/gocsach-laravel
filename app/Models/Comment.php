@@ -39,4 +39,9 @@ class Comment extends Model
     {
         return $this->hasMany(CommentLike::class, 'comment_id');
     }
+    // app/Models/Comment.php
+    public function replies()
+    {
+        return $this->hasMany(Comment::class, 'parent_id')->latest();
+    }
 }

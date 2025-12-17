@@ -17,6 +17,7 @@ use App\Http\Controllers\FollowController;
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\ChallengeController;
+use App\Http\Controllers\CommentController;
 
 // ====================================================
 // 1. NHÓM PUBLIC (Ai cũng xem được)
@@ -30,7 +31,7 @@ Route::view('/ve-chung-toi', 'pages.about')->name('page.about');
 Route::view('/dieu-khoan-su-dung', 'pages.terms')->name('page.terms');
 Route::view('/chinh-sach-bao-mat', 'pages.privacy')->name('page.privacy');
 Route::view('/lien-he', 'pages.contact')->name('page.contact');
-
+Route::post('/post/{post_id}/comment', [CommentController::class, 'store'])->middleware('auth');
 // AJAX Live Search (cho Header)
 Route::get('/ajax-search', function (Illuminate\Http\Request $request) {
     $keyword = $request->get('keyword');
