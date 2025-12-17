@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Book;
-use App\Models\Post;
+use App\Models\Book; 
+use App\Models\Post; 
+use Illuminate\Support\Str; // [MỚI] Thêm thư viện xử lý chuỗi
 
 class BookController extends Controller
 {
-    // 1. TRANG CHỦ
+    // =========================================================================
+    // 1. TRANG CHỦ 
+    // =========================================================================
     public function index(Request $request)
     {
         $books = Book::orderBy('id', 'desc')->take(5)->get();
@@ -42,7 +45,9 @@ class BookController extends Controller
         return $this->index($request);
     }
 
+    // =========================================================================
     // 2. TRANG CHI TIẾT SÁCH
+    // =========================================================================
     public function show($id)
     {
         // Tìm sách theo ID hoặc Slug
@@ -75,7 +80,9 @@ class BookController extends Controller
         return view('book-detail', compact('book', 'reviews'));
     }
 
-    // 3. TÌM KIẾM
+    // =========================================================================
+    // 3. TÌM KIẾM (TRANG KẾT QUẢ)
+    // =========================================================================
     public function search(Request $request)
     {
         $keyword = $request->input('keyword');
@@ -89,11 +96,53 @@ class BookController extends Controller
         return view('search-book', ['books' => $books]);
     }
 
-    // 4. SÁCH MỚI CẬP NHẬT
+    // =========================================================================
+    // 4. AJAX SEARCH (CHO THANH TÌM KIẾM HEADER)
+    // =========================================================================
+    public function ajaxSearch(Request $request)
+{
+    $keyword = $request->get('keyword');
+    
+    if(empty($keyword)) {
+        return response()->json([]);
+    }
+
+    $books = Book::where('title', 'like', '%' . $keyword . '%')
+                ->take(5)
+                ->get()
+                ->map(function($book) {
+                    
+                    // Xử lý ảnh: Check xem là link online hay file upload
+                    $cover = $book->cover_image;
+                    if (!empty($cover) && str_starts_with($cover, 'http')) {
+                        $imageUrl = $cover; 
+                    } else {
+                        $imageUrl = $cover ? asset('storage/' . $cover) : 'https://via.placeholder.com/50'; 
+                    }
+
+                    return [
+                        'title' => $book->title,
+                        'author_name' => $book->author_name ?? 'Đang cập nhật',
+                        'image_url' => $imageUrl,
+                        
+                        // [QUAN TRỌNG] Tạo đường dẫn chuẩn từ Server gửi xuống
+                        // Giả sử tên route chi tiết sách của bạn là 'detail'. 
+                        // Nếu tên route khác (ví dụ: 'books.show'), hãy đổi 'detail' thành tên đó.
+                        'url' => route('detail', $book->slug), 
+                    ];
+                });
+
+    return response()->json($books);
+}
+
+    // =========================================================================
+    // 5. SÁCH MỚI CẬP NHẬT
+    // =========================================================================
     public function newBooks()
     {
-        // Kiểm tra xem có quan hệ category không để tránh lỗi
-        $books = Book::orderBy('created_at', 'desc')->paginate(12);
+        $books = Book::with('category')
+                     ->orderBy('created_at', 'desc')
+                     ->paginate(12);
 
         return view('list', [
             'books' => $books,
@@ -101,26 +150,18 @@ class BookController extends Controller
         ]);
     }
 
-    // 5. TRANG HIỂN THỊ TẤT CẢ ĐÁNH GIÁ CỦA SÁCH
+    // =========================================================================
+    // 6. TRANG HIỂN THỊ ĐÁNH GIÁ SÁCH
+    // =========================================================================
     public function showReviews($slug)
     {
-        // 1. Tìm sách trước
-        $book = Book::where('slug', $slug)->firstOrFail();
+        $book = Book::where('slug', $slug)
+                    ->with('reviews')
+                    ->firstOrFail();
 
-        // 2. Lấy danh sách review của sách đó (Phân trang)
-        // [QUAN TRỌNG] Eager loading 'user' để hiển thị avatar, tên người viết
-        // Eager loading 'activeBadges' để hiện huy hiệu (như bạn yêu cầu lúc nãy)
-        $reviews = Post::where('book_id', $book->id)
-            ->where('status', 'published')
-            ->with(['user.activeBadges', 'comments.user', 'likes']) 
-            ->withCount(['comments', 'likes'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10); // Phân trang 10 bài/trang
-
-        // 3. Trả về view 'review-detail' (Tên view bạn đã tạo)
-        return view('review-detail', [
+        return view('book-reviews', [
             'book' => $book,
-            'reviews' => $reviews
+            'pageTitle' => 'Đánh giá sách: ' . $book->title
         ]);
     }
     public function ajaxSearch(Request $request)

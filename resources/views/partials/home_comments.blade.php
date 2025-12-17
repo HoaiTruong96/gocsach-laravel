@@ -1,5 +1,6 @@
 @if(isset($latestComments) && $latestComments->count() > 0)
     @foreach($latestComments as $comment) 
+        {{-- (Phần hiển thị comment giữ nguyên như cũ - mình chỉ rút gọn để tập trung vào phân trang) --}}
         @php
             $relatedBook = $comment->book ?? ($comment->post->book ?? null);
             $bookTitle = $relatedBook->title ?? 'Sách ẩn';
@@ -9,7 +10,7 @@
 
         <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition duration-300 flex flex-col h-full group cursor-pointer animate-fade-in" 
              onclick="window.location.href='{{ $relatedBook ? route('detail', $bookSlug) : '#' }}'">
-            
+            {{-- ... (Nội dung comment giữ nguyên) ... --}}
             <div class="flex justify-between items-start mb-3">
                 <div class="flex items-center gap-3">
                     <img src="{{ $comment->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($comment->user->name ?? 'A').'&background=random' }}" class="w-10 h-10 rounded-full border border-gray-100 shadow-sm object-cover">
@@ -62,12 +63,51 @@
         </div>
     @endforeach
 
-    {{-- PHÂN TRANG --}}
+    {{-- PHÂN TRANG TÙY CHỈNH (Custom Pagination) --}}
     @if ($latestComments->hasPages())
-        <div class="mt-10 flex justify-center">
-             {{ $latestComments->appends(request()->query())->links('pagination::tailwind') }}
+        <div class="mt-8 flex justify-center">
+            <nav class="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">
+                {{-- Previous --}}
+                @if ($latestComments->onFirstPage())
+                    <span class="w-8 h-8 flex items-center justify-center rounded-full text-gray-300 cursor-not-allowed">
+                        <i class="fas fa-chevron-left text-xs"></i>
+                    </span>
+                @else
+                    <a href="{{ $latestComments->previousPageUrl() }}" class="ajax-pagination-link w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-brand-green transition">
+                        <i class="fas fa-chevron-left text-xs"></i>
+                    </a>
+                @endif
+
+                {{-- Pagination Elements --}}
+                @foreach ($latestComments->getUrlRange(1, $latestComments->lastPage()) as $page => $url)
+                    @if ($page == $latestComments->currentPage())
+                        <span class="w-8 h-8 flex items-center justify-center rounded-full bg-brand-green text-white font-bold text-sm shadow-md">
+                            {{ $page }}
+                        </span>
+                    @elseif ($page == 1 || $page == $latestComments->lastPage() || abs($page - $latestComments->currentPage()) <= 2) 
+                        {{-- Hiển thị trang đầu, trang cuối, và các trang xung quanh trang hiện tại --}}
+                        <a href="{{ $url }}" class="ajax-pagination-link w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-brand-green text-sm font-medium transition">
+                            {{ $page }}
+                        </a>
+                    @elseif (abs($page - $latestComments->currentPage()) == 3)
+                        <span class="text-gray-300 px-1">...</span>
+                    @endif
+                @endforeach
+
+                {{-- Next --}}
+                @if ($latestComments->hasMorePages())
+                    <a href="{{ $latestComments->nextPageUrl() }}" class="ajax-pagination-link w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-brand-green transition">
+                        <i class="fas fa-chevron-right text-xs"></i>
+                    </a>
+                @else
+                    <span class="w-8 h-8 flex items-center justify-center rounded-full text-gray-300 cursor-not-allowed">
+                        <i class="fas fa-chevron-right text-xs"></i>
+                    </span>
+                @endif
+            </nav>
         </div>
     @endif
+
 @else
     <div class="col-span-full py-12 text-center bg-white rounded-xl border border-dashed border-gray-300">
         <i class="far fa-comments text-4xl text-gray-300 mb-3"></i>

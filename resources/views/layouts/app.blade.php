@@ -108,41 +108,40 @@
 
                 // 3. Hiển thị kết quả
                 function renderResults(books) {
-                    if (books.length > 0) {
-                        let html = '<ul class="divide-y divide-gray-100">';
-                        
-                        books.forEach(book => {
-                            // Xử lý ảnh
-                            let imgUrl = book.cover_image 
-                                ? (book.cover_image.startsWith('http') ? book.cover_image : '/storage/' + book.cover_image)
-                                : 'https://via.placeholder.com/50';
-                            
-                            // Link chi tiết (Sửa lại route cho đúng với web của bạn)
-                            let detailUrl = `/sach/${book.slug}`; 
+    if (books.length > 0) {
+        let html = '<ul class="divide-y divide-gray-100">';
+        
+        books.forEach(book => {
+            // Ảnh đã được xử lý từ Controller nên dùng trực tiếp
+            let imgUrl = book.image_url; 
+            
+            // [ĐÃ SỬA] Dùng link chuẩn từ Controller gửi xuống
+            let detailUrl = book.url; 
 
-                            html += `
-                                <li>
-                                    <a href="${detailUrl}" class="flex items-center gap-3 p-3 hover:bg-gray-50 transition cursor-pointer text-left">
-                                        <img src="${imgUrl}" class="w-10 h-14 object-cover rounded shadow-sm border border-gray-200">
-                                        <div>
-                                            <h4 class="text-sm font-bold text-gray-800 line-clamp-1">${book.title}</h4>
-                                            <p class="text-xs text-gray-500">${book.author_name || 'Đang cập nhật'}</p>
-                                        </div>
-                                    </a>
-                                </li>
-                            `;
-                        });
-                        
-                        // Link xem tất cả
-                        html += `
-                            <li class="bg-gray-50 text-center p-2">
-                                <button onclick="window.location.href='/danh-sach-sach?keyword=' + encodeURIComponent(document.getElementById('header-search-input').value)" class="text-xs font-bold text-brand-green hover:underline">
-                                    Xem tất cả kết quả
-                                </button>
-                            </li>
-                        `;
+            html += `
+                <li>
+                    <a href="${detailUrl}" class="flex items-center gap-3 p-3 hover:bg-gray-50 transition cursor-pointer text-left">
+                        <img src="${imgUrl}" class="w-10 h-14 object-cover rounded shadow-sm border border-gray-200">
+                        <div>
+                            <h4 class="text-sm font-bold text-gray-800 line-clamp-1">${book.title}</h4>
+                            <p class="text-xs text-gray-500">${book.author_name}</p>
+                        </div>
+                    </a>
+                </li>
+            `;
+        });
+        
+        // Link xem tất cả
+        let keyword = document.getElementById('header-search-input').value;
+        html += `
+            <li class="bg-gray-50 text-center p-2">
+                <button onclick="window.location.href='/danh-sach-sach?keyword=' + encodeURIComponent('${keyword}')" class="text-xs font-bold text-brand-green hover:underline">
+                    Xem tất cả kết quả
+                </button>
+            </li>
+        `;
 
-                        html += '</ul>';
+        html += '</ul>';
                         resultsBox.innerHTML = html;
                         resultsBox.classList.remove('hidden');
                     } else {

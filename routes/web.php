@@ -31,7 +31,7 @@ Route::view('/chinh-sach-bao-mat', 'pages.privacy')->name('page.privacy');
 Route::view('/lien-he', 'pages.contact')->name('page.contact');
 
 // Trang chi tiết bài viết Tạp chí
-Route::get('/tap-chi/{slug}', [ArticleController::class, 'show'])->name('articles.show');
+Route::get('/tap-chi/{slug}', [ArticleController::class, 'show'])->name('article.detail');
 
 // Trang Danh sách sách
 Route::get('/danh-sach', function () {
