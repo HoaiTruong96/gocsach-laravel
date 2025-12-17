@@ -306,7 +306,7 @@
                     </div>
 
                     {{-- Widget 2: Thể Loại --}}
-                    <div class="bg-brand-beige/30 rounded-xl p-6 border border-brand-beige sticky top-24">
+                    <div class="bg-brand-beige/30 rounded-xl p-6 border border-brand-beige">
                         <h3 class="font-serif font-bold text-lg text-brand-green mb-4 flex items-center gap-2"><i class="fas fa-tags text-brand-accent"></i> Thể Loại</h3>
                         <div class="flex flex-wrap gap-2">
                             @if(isset($categories) && $categories->count() > 0)
