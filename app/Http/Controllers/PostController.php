@@ -31,23 +31,30 @@ class PostController extends Controller
             'thumbnail.max' => 'Ảnh không được lớn hơn 2MB.',
         ]);
 
-    // 3. Tạo Slug
-    $slug = \Illuminate\Support\Str::slug($request->title) . '-' . time();
+        // 2. Xử lý upload thumbnail (nếu có)
+        $thumbnailPath = null;
+        if ($request->hasFile('thumbnail')) {
+            $thumbnailPath = $request->file('thumbnail')->store('posts/thumbnails', 'public');
+        }
 
-    // 4. Lưu vào Database (Kết hợp cả Thumbnail và Pending)
-    \App\Models\Post::create([
-        'user_id'      => \Illuminate\Support\Facades\Auth::id(),
-        'book_id'      => $request->input('book_id'),
-        'title'        => $request->input('title'),
-        'slug'         => $slug,
-        'rating'       => $request->input('rating'),
-        'content'      => $request->input('content'),
-        
-        'thumbnail'    => $thumbnailPath, // [QUAN TRỌNG 1] Lưu đường dẫn ảnh
-        
-        // 5. Cập nhật tiến độ Thử Thách
-        // Lưu ý: Vì status là 'pending' nên đoạn này tạm thời sẽ KHÔNG chạy ngay.
-        // Logic cộng điểm nên được đặt ở Controller của Admin khi bấm nút "Duyệt bài".
+        // 3. Tạo Slug
+        $slug = Str::slug($request->title) . '-' . time();
+
+        // 4. Lưu vào Database với status = pending
+        $post = Post::create([
+            'user_id'   => Auth::id(),
+            'book_id'   => $request->input('book_id'),
+            'title'     => $request->input('title'),
+            'slug'      => $slug,
+            'rating'    => $request->input('rating'),
+            'content'   => $request->input('content'),
+            'thumbnail' => $thumbnailPath,
+            'status'    => 'pending', // Chờ Admin duyệt
+        ]);
+
+        // 5. Cập nhật tiến độ Thử Thách (Chỉ khi bài đã được duyệt)
+        // Lưu ý: Logic này thường được đặt ở Admin Controller khi duyệt bài
+        // Ở đây chỉ là placeholder, sẽ không chạy vì status = pending
         if ($post->status == 'published') {
             Auth::user()->updateChallengeProgress();
         }

@@ -43,7 +43,7 @@
 
             {{-- Search Bar --}}
             <div class="hidden md:flex flex-1 max-w-2xl px-8 relative z-40">
-                <form action="{{ route('books.search') }}" method="GET" class="relative w-full flex items-center">
+                <form action="{{ route('books.search') }}" method="GET" class="relative w-full flex items-center" id="header-search-form">
                     
                     {{-- Dropdown Danh Mục --}}
                     <div class="absolute left-0 pl-1 z-50 group pb-4 -mb-4"> 
@@ -77,12 +77,12 @@
                     <button type="submit" class="absolute right-2 top-1.5 w-8 h-8 bg-brand-green text-white rounded-full flex items-center justify-center hover:bg-brand-accent transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                         <i class="fas fa-search text-xs"></i>
                     </button>
-
-                    {{-- Kết quả Ajax --}}
-                    <div id="header-search-results" class="absolute top-full left-0 w-full bg-white shadow-xl rounded-xl mt-2 hidden z-[60] overflow-hidden border border-gray-100 max-h-[400px] overflow-y-auto">
-                        {{-- JS sẽ render kết quả vào đây --}}
-                    </div>
                 </form>
+
+                {{-- Kết quả Ajax (Đặt NGOÀI form để tránh form submit) --}}
+                <div id="header-search-results" class="absolute top-full left-0 w-full bg-white shadow-xl rounded-xl mt-2 hidden z-[60] overflow-hidden border border-gray-100 max-h-[400px] overflow-y-auto">
+                    {{-- JS sẽ render kết quả vào đây --}}
+                </div>
             </div>
         
             {{-- User & Notification Actions --}}
@@ -315,3 +315,133 @@
         100% { opacity: 1; transform: scale(1); }
     }
 </style>
+
+{{-- Live Search Script --}}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('header-search-input');
+    const resultsBox = document.getElementById('header-search-results');
+    let timeout = null;
+
+    if (searchInput && resultsBox) {
+        // 1. Khi người dùng gõ phím
+        searchInput.addEventListener('input', function() {
+            const keyword = this.value.trim();
+            clearTimeout(timeout);
+
+            if (keyword.length < 2) { 
+                resultsBox.classList.add('hidden');
+                resultsBox.innerHTML = '';
+                return;
+            }
+
+            // Hiển thị loading
+            resultsBox.innerHTML = '<div class="p-4 text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Đang tìm kiếm...</div>';
+            resultsBox.classList.remove('hidden');
+
+            // Debounce 300ms
+            timeout = setTimeout(() => {
+                fetchResults(keyword);
+            }, 300);
+        });
+
+        // 2. Gửi Ajax lên Server
+        function fetchResults(keyword) {
+            fetch(`/ajax-search?keyword=${encodeURIComponent(keyword)}`)
+                .then(response => response.json())
+                .then(data => {
+                    renderResults(data, keyword);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    resultsBox.innerHTML = '<div class="p-4 text-center text-red-400">Có lỗi xảy ra</div>';
+                });
+        }
+
+        // 3. Hiển thị kết quả
+        function renderResults(books, keyword) {
+            if (books.length > 0) {
+                let html = '<ul class="divide-y divide-gray-100">';
+                
+                books.forEach(book => {
+                    // Xử lý ảnh bìa
+                    let imgUrl = book.cover_image 
+                        ? (book.cover_image.startsWith('http') ? book.cover_image : '/storage/' + book.cover_image)
+                        : 'https://via.placeholder.com/50x70?text=No+Image';
+                    
+                    // URL chi tiết sách (dùng slug hoặc ID nếu slug không có)
+                    let detailUrl = `/chi-tiet/${book.slug || book.id}`;
+
+                    // Highlight từ khóa trong title
+                    let highlightedTitle = book.title.replace(
+                        new RegExp(`(${keyword})`, 'gi'), 
+                        '<span class="bg-yellow-200 text-gray-900 font-bold">$1</span>'
+                    );
+
+                    html += `
+                        <li>
+                            <a href="${detailUrl}" class="search-result-link flex items-center gap-3 p-3 hover:bg-gray-50 transition cursor-pointer">
+                                <img src="${imgUrl}" class="w-10 h-14 object-cover rounded shadow-sm border border-gray-200 flex-shrink-0" onerror="this.src='https://via.placeholder.com/50x70?text=No+Image'">
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="text-sm font-bold text-gray-800 line-clamp-1">${highlightedTitle}</h4>
+                                    <p class="text-xs text-gray-500">${book.author_name || 'Đang cập nhật'}</p>
+                                    ${book.avg_rating ? `<div class="flex items-center gap-1 mt-0.5"><i class="fas fa-star text-yellow-400 text-[10px]"></i><span class="text-[10px] text-gray-400">${parseFloat(book.avg_rating).toFixed(1)}</span></div>` : ''}
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                            </a>
+                        </li>
+                    `;
+                });
+                
+                // Link xem tất cả
+                html += `
+                    <li class="bg-gradient-to-r from-gray-50 to-white text-center p-3 border-t border-gray-100">
+                        <a href="/danh-sach-sach?keyword=${encodeURIComponent(keyword)}" class="text-sm font-bold text-brand-green hover:text-brand-accent transition flex items-center justify-center gap-2">
+                            <span>Xem tất cả kết quả</span>
+                            <i class="fas fa-arrow-right text-xs"></i>
+                        </a>
+                    </li>
+                `;
+
+                html += '</ul>';
+                resultsBox.innerHTML = html;
+            } else {
+                resultsBox.innerHTML = `
+                    <div class="p-6 text-center">
+                        <i class="far fa-frown text-3xl text-gray-300 mb-2"></i>
+                        <p class="text-sm text-gray-400">Không tìm thấy sách nào với từ khóa "<strong>${keyword}</strong>"</p>
+                        <a href="/danh-sach-sach" class="text-xs text-brand-green hover:underline mt-2 inline-block">Xem tất cả sách →</a>
+                    </div>
+                `;
+            }
+            resultsBox.classList.remove('hidden');
+        }
+
+        // 4. Click ra ngoài thì ẩn dropdown (nhưng cho phép click vào link bên trong)
+        document.addEventListener('click', function(e) {
+            // Nếu click vào link bên trong resultsBox thì cho phép navigation
+            if (e.target.closest('#header-search-results a')) {
+                return; // Không làm gì, để link hoạt động bình thường
+            }
+            
+            if (!searchInput.contains(e.target) && !resultsBox.contains(e.target)) {
+                resultsBox.classList.add('hidden');
+            }
+        });
+
+        // 5. Nhấn ESC để đóng dropdown
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                resultsBox.classList.add('hidden');
+            }
+        });
+
+        // 6. Focus lại input thì hiện dropdown nếu có kết quả
+        searchInput.addEventListener('focus', function() {
+            if (resultsBox.innerHTML.trim() !== '' && this.value.length >= 2) {
+                resultsBox.classList.remove('hidden');
+            }
+        });
+    }
+});
+</script>
