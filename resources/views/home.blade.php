@@ -149,7 +149,7 @@
                                             onclick="event.stopPropagation()"
                                             class="absolute top-2 right-2 z-20 bg-white/90 text-blue-600 p-1.5 rounded-full shadow hover:bg-blue-600 hover:text-white opacity-0 group-hover:opacity-100 transition">
                                             <i class="fas fa-edit text-xs"></i>
-                                        </a>
+                                         </a>
                                     @endif
 
                                     <div class="h-32 rounded-xl overflow-hidden mb-3 relative">
@@ -210,35 +210,38 @@
                     </div>
                 </section>
 
-                {{-- 3. CỘNG ĐỒNG REVIEW (AJAX READY) --}}
-                <section id="community-posts" class="mb-16 scroll-mt-24">
-                    <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-800 font-serif border-l-4 border-brand-accent pl-3">Cộng Đồng Review</h2>
-                            <p class="text-sm text-gray-500 pl-4 mt-1">Góc chia sẻ cảm nhận chân thực từ độc giả</p>
-                        </div>
-                        
-                        {{-- Bộ lọc Review --}}
-                        <div class="bg-gray-100 p-1 rounded-full flex text-xs font-bold shadow-inner">
-                            <button onclick="loadComments('latest')" 
-                                    id="tab-latest"
-                                    class="px-5 py-2 rounded-full transition-all duration-300 bg-white text-brand-green shadow-sm">
-                                Mới nhất
-                            </button>
-                            <button onclick="loadComments('popular')" 
-                                    id="tab-popular"
-                                    class="px-5 py-2 rounded-full transition-all duration-300 text-gray-500 hover:text-gray-700">
-                                Nổi bật nhất
-                            </button>
-                        </div>
-                    </div>
-                    
-                    {{-- Container chứa danh sách comment (AJAX sẽ load vào đây) --}}
-                    <div id="comments-container" class="grid grid-cols-1 gap-6 min-h-[200px] relative">
-                        {{-- Loading Spinner (Ẩn mặc định) --}}
-                        <div id="loading-spinner" class="hidden absolute inset-0 bg-white/80 z-10 flex items-center justify-center">
-                            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-green"></div>
-                        </div>
+                {{-- 3. CỘNG ĐỒNG REVIEW --}}
+<section id="community-posts" class="mb-16 scroll-mt-24">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-1 h-8 bg-brand-accent rounded-full"></div> {{-- Thanh trang trí --}}
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800 font-serif leading-none">Cộng Đồng Review</h2>
+                <p class="text-xs text-gray-500 mt-1">Góc chia sẻ cảm nhận từ độc giả</p>
+            </div>
+        </div>
+        
+        {{-- Bộ lọc Review --}}
+        <div class="bg-white p-1 rounded-full border border-gray-200 flex text-xs font-bold shadow-sm">
+            <button onclick="loadComments('latest')" 
+                    id="tab-latest"
+                    class="px-4 py-1.5 rounded-full transition-all duration-300 bg-brand-green text-white shadow-sm">
+                Mới nhất
+            </button>
+            <button onclick="loadComments('popular')" 
+                    id="tab-popular"
+                    class="px-4 py-1.5 rounded-full transition-all duration-300 text-gray-500 hover:bg-gray-50">
+                Nổi bật
+            </button>
+        </div>
+    </div>
+    
+    {{-- Container chứa danh sách comment --}}
+    <div id="comments-container" class="relative min-h-[200px]">
+        {{-- Loading Spinner --}}
+        <div id="loading-spinner" class="hidden absolute inset-0 bg-white/90 z-20 flex items-center justify-center rounded-2xl transition-opacity duration-300">
+            <div class="animate-spin rounded-full h-8 w-8 border-2 border-brand-green border-t-transparent"></div>
+        </div>
 
                                 <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition duration-300 flex flex-col h-full group cursor-pointer" 
                                      onclick="window.location.href='{{ $relatedBook ? route('detail', $bookSlug) : '#' }}'">
@@ -420,9 +423,9 @@
                                             
                                             <div class="flex items-center gap-2 text-xs mt-1">
                                                 <span class="text-yellow-500 font-bold flex items-center">
-    {{ number_format($book->posts_avg_rating ?? $book->avg_rating ?? 0, 1) }} 
-    <i class="fas fa-star text-[10px] ml-0.5"></i>
-</span>
+                                                    {{ number_format($book->posts_avg_rating ?? $book->avg_rating ?? 0, 1) }} 
+                                                    <i class="fas fa-star text-[10px] ml-0.5"></i>
+                                                </span>
                                                 <span class="text-gray-400">|</span>
                                                 <span class="text-gray-500 flex items-center" title="Lượt xem"><i class="far fa-eye mr-1"></i> {{ number_format($book->view_count) }}</span>
                                             </div>
@@ -435,15 +438,14 @@
                         </div>
                     </div>
 
-                    {{{-- Widget 2: Thể Loại --}}
-                    <div class="bg-brand-beige/30 rounded-xl p-6 border border-brand-beige sticky top-24">
+                    {{-- Widget 2: Thể Loại --}}
+                    <div class="bg-brand-beige/30 rounded-xl p-6 border border-brand-beige">
                         <h3 class="font-serif font-bold text-lg text-brand-green mb-4 flex items-center gap-2"><i class="fas fa-tags text-brand-accent"></i> Thể Loại</h3>
                         <div class="flex flex-wrap gap-2">
                             @if(isset($categories) && $categories->count() > 0)
                                 @foreach($categories as $category)
                                     <a href="{{ route('books.list', ['categories' => [$category->name]]) }}" class="group flex items-center gap-2 bg-white text-gray-600 px-3 py-1.5 rounded-full text-xs font-bold border border-gray-100 hover:border-brand-accent hover:text-brand-accent hover:shadow-md transition-all duration-300">
                                         <span>{{ $category->name }}</span>
-                                        {{-- Hiển thị số lượng sách (Badge nhỏ) --}}
                                         <span class="bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full text-[10px] group-hover:bg-brand-accent/10 group-hover:text-brand-accent transition">
                                             {{ $category->books_count ?? 0 }}
                                         </span>
@@ -453,183 +455,84 @@
                                 <span class="text-sm text-gray-400 italic">Đang cập nhật...</span>
                             @endif
                         </div>
+
+                        @if(isset($categories) && $categories->count() > 10)
+                            <div class="mt-4 text-center">
+                                <a href="{{ route('books.list') }}" class="text-xs text-brand-green font-bold hover:underline">Xem tất cả thể loại</a>
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- Widget 3: Liên Kết Mua Sách --}}
+                    <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+                        <h3 class="font-serif font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
+                            <span class="text-brand-accent">🛒</span> Mua Sách Giá Tốt
+                        </h3>
                         
-                        {{-- Widget 2: Thể Loại --}}
-                        {{-- Đã xóa class sticky cũ ở đây --}}
-                        <div class="bg-brand-beige/30 rounded-xl p-6 border border-brand-beige">
-                            <h3 class="font-serif font-bold text-lg text-brand-green mb-4 flex items-center gap-2"><i class="fas fa-tags text-brand-accent"></i> Thể Loại</h3>
-                            <div class="flex flex-wrap gap-2">
-                                @if(isset($categories) && $categories->count() > 0)
-                                    @foreach($categories as $category)
-                                        <a href="{{ route('list', ['category' => $category->id]) }}" class="group flex items-center gap-2 bg-white text-gray-600 px-3 py-1.5 rounded-full text-xs font-bold border border-gray-100 hover:border-brand-accent hover:text-brand-accent hover:shadow-md transition-all duration-300">
-                                            <span>{{ $category->name }}</span>
-                                            <span class="bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full text-[10px] group-hover:bg-brand-accent/10 group-hover:text-brand-accent transition">
-                                                {{ $category->books_count ?? 0 }}
-                                            </span>
-                                        </a>
-                                    @endforeach
-                                @else
-                                    <span class="text-sm text-gray-400 italic">Đang cập nhật...</span>
-                                @endif
-                            </div>
-                            
-                            @if(isset($categories) && $categories->count() > 10)
-                                <div class="mt-4 text-center">
-                                    <a href="{{ route('list') }}" class="text-xs text-brand-green font-bold hover:underline">Xem tất cả thể loại</a>
+                        <div class="space-y-3">
+                            <a href="https://tiki.vn/nha-sach-tiki/c8322" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition group bg-white">
+                                <div class="flex items-center gap-3">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/43/Logo_Tiki_2023.png" class="w-8 h-8 object-contain" alt="Tiki">
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-sm text-gray-700 group-hover:text-blue-600">Tiki Trading</span>
+                                        <span class="text-[10px] text-green-600 font-bold bg-green-100 px-1.5 py-0.5 rounded w-fit">Giảm tới 35%</span>
+                                    </div>
                                 </div>
-                            @endif
+                                <i class="fas fa-external-link-alt text-gray-300 text-xs group-hover:text-blue-500"></i>
+                            </a>
+
+                            <a href="https://shopee.vn/nhasachphuongnam" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-orange-400 hover:bg-orange-50 transition group bg-white">
+                                <div class="flex items-center gap-3">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg" class="w-8 h-8 object-contain" alt="Shopee">
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-sm text-gray-700 group-hover:text-orange-600">Shopee Mall</span>
+                                        <span class="text-[10px] text-orange-500 font-bold bg-orange-100 px-1.5 py-0.5 rounded w-fit">Freeship Extra</span>
+                                    </div>
+                                </div>
+                                <i class="fas fa-external-link-alt text-gray-300 text-xs group-hover:text-orange-500"></i>
+                            </a>
+
+                            <a href="https://www.fahasa.com/" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-red-400 hover:bg-red-50 transition group bg-white">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-xs">F</div>
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-sm text-gray-700 group-hover:text-red-600">Fahasa.com</span>
+                                        <span class="text-[10px] text-gray-500">Sách chính hãng</span>
+                                    </div>
+                                </div>
+                                <i class="fas fa-external-link-alt text-gray-300 text-xs group-hover:text-red-500"></i>
+                            </a>
                         </div>
+                    </div>
 
-                        {{-- Widget 3: Liên Kết Mua Sách --}}
-                        {{-- Đã xóa class sticky cũ ở đây --}}
-                        <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
-                            <h3 class="font-serif font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
-                                <span class="text-brand-accent">🛒</span> Mua Sách Giá Tốt
-                            </h3>
-                            
-                            <div class="space-y-3">
-                                <a href="https://tiki.vn/nha-sach-tiki/c8322" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition group bg-white">
-                                    <div class="flex items-center gap-3">
-                                        <img src="https://upload.wikimedia.org/wikipedia/commons/4/43/Logo_Tiki_2023.png" class="w-8 h-8 object-contain" alt="Tiki">
-                                        <div class="flex flex-col">
-                                            <span class="font-bold text-sm text-gray-700 group-hover:text-blue-600">Tiki Trading</span>
-                                            <span class="text-[10px] text-green-600 font-bold bg-green-100 px-1.5 py-0.5 rounded w-fit">Giảm tới 35%</span>
-                                        </div>
-                                    </div>
-                                    <i class="fas fa-external-link-alt text-gray-300 text-xs group-hover:text-blue-500"></i>
-                                </a>
+                </div> {{-- END DIV STICKY GROUP --}}
 
-                                <a href="https://shopee.vn/nhasachphuongnam" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-orange-400 hover:bg-orange-50 transition group bg-white">
-                                    <div class="flex items-center gap-3">
-                                        <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg" class="w-8 h-8 object-contain" alt="Shopee">
-                                        <div class="flex flex-col">
-                                            <span class="font-bold text-sm text-gray-700 group-hover:text-orange-600">Shopee Mall</span>
-                                            <span class="text-[10px] text-orange-500 font-bold bg-orange-100 px-1.5 py-0.5 rounded w-fit">Freeship Extra</span>
-                                        </div>
-                                    </div>
-                                    <i class="fas fa-external-link-alt text-gray-300 text-xs group-hover:text-orange-500"></i>
-                                </a>
+            </div>
+        </div> {{-- END CỘT 4 --}}
+    </div>
+</main>
 
-                                <a href="https://www.fahasa.com/" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-red-400 hover:bg-red-50 transition group bg-white">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-xs">F</div>
-                                        <div class="flex flex-col">
-                                            <span class="font-bold text-sm text-gray-700 group-hover:text-red-600">Fahasa.com</span>
-                                            <span class="text-[10px] text-gray-500">Sách chính hãng</span>
-                                        </div>
-                                    </div>
-                                    <i class="fas fa-external-link-alt text-gray-300 text-xs group-hover:text-red-500"></i>
-                                </a>
-                            </div>
-                        </div>
-
-                    </div> {{-- END DIV STICKY GROUP --}}
-
-                </div>
-            </div> {{-- END CỘT 4 --}}
-        </div>
-    </main>
-
-    {{-- BỎ MODAL POPUP CŨ --}}
+{{-- BỎ MODAL POPUP CŨ --}}
 @endsection
 
 @push('scripts')
 <script>
-    // --- Slider Hero ---
-    let currentSlide = 0;
-    const totalSlides = {{ count($heroSlides) }};
-    const sliderWrapper = document.getElementById('sliderWrapper');
-    const currentUserId = "{{ Auth::id() }}"; // Lấy ID user hiện tại để check login
+    // --- KHAI BÁO BIẾN TOÀN CỤC ---
+    const currentUserId = "{{ Auth::id() }}";
 
-    function updateSlider() {
-        if (!sliderWrapper) return;
-        sliderWrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+    // --- 1. SLIDER & CÁC SỰ KIỆN KHỞI TẠO ---
+    document.addEventListener('DOMContentLoaded', function() {
         
-        // Update dots
-        document.querySelectorAll('.indicator-dot').forEach((dot, index) => {
-            if (index === currentSlide) {
-                dot.classList.add('bg-brand-accent', 'w-8');
-                dot.classList.remove('bg-white/30');
-            } else {
-                dot.classList.remove('bg-brand-accent', 'w-8');
-                dot.classList.add('bg-white/30');
-    // --- 1. AJAX LOAD COMMENTS (NEW) ---
-    function loadComments(sortType) {
-        // A. Cập nhật giao diện Tab (Active/Inactive)
-        const tabLatest = document.getElementById('tab-latest');
-        const tabPopular = document.getElementById('tab-popular');
-        const activeClass = ['bg-white', 'text-brand-green', 'shadow-sm'];
-        const inactiveClass = ['text-gray-500', 'hover:text-gray-700'];
-
-        if (sortType === 'latest') {
-            tabLatest.classList.add(...activeClass);
-            tabLatest.classList.remove(...inactiveClass);
-            tabPopular.classList.remove(...activeClass);
-            tabPopular.classList.add(...inactiveClass);
-        } else {
-            tabPopular.classList.add(...activeClass);
-            tabPopular.classList.remove(...inactiveClass);
-            tabLatest.classList.remove(...activeClass);
-            tabLatest.classList.add(...inactiveClass);
-        }
-
-        // B. Hiển thị Loading
-        const container = document.getElementById('comments-container');
-        const spinner = document.getElementById('loading-spinner');
-        if(spinner) spinner.classList.remove('hidden'); 
-
-        // C. Gọi Ajax
-        fetch(`/?sort_review=${sortType}`, {
-            headers: {
-                "X-Requested-With": "XMLHttpRequest" // Báo hiệu Ajax cho Laravel
-
-            }
-        })
-        .then(response => response.text())
-        .then(html => {
-            // Thay thế nội dung cũ bằng HTML mới
-            // Giữ lại spinner để lần sau dùng tiếp (vì khi replace innerHTML sẽ mất spinner cũ)
-            const spinnerHtml = `<div id="loading-spinner" class="hidden absolute inset-0 bg-white/80 z-10 flex items-center justify-center"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-green"></div></div>`;
-            container.innerHTML = spinnerHtml + html;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Có lỗi khi tải dữ liệu.');
-        })
-        .finally(() => {
-            // Ẩn Loading (tìm lại spinner mới được inject vào)
-            const newSpinner = document.getElementById('loading-spinner');
-            if(newSpinner) newSpinner.classList.add('hidden');
-        });
-    }
-    function nextSlide() { currentSlide = (currentSlide + 1) % totalSlides; updateSlider(); }
-    function prevSlide() { currentSlide = (currentSlide - 1 + totalSlides) % totalSlides; updateSlider(); }
-    function goToSlide(index) { currentSlide = index; updateSlider(); }
-    if (totalSlides > 0) setInterval(nextSlide, 5000);
-
-    // --- Slider Sách Mới (Scroll) ---
-    document.addEventListener('DOMContentLoaded', function() {
-        const slider = document.getElementById('sliderNewBooks');
-        const btnPrev = document.getElementById('btnPrevNewBooks');
-        const btnNext = document.getElementById('btnNextNewBooks');
-
-        if(slider && btnPrev && btnNext) {
-            btnNext.addEventListener('click', () => {
-                slider.scrollBy({ left: 220, behavior: 'smooth' });
-    document.addEventListener('DOMContentLoaded', function() {
-        // ==========================================
-        // 2. HERO SLIDER LOGIC
-        // ==========================================
+        // A. HERO SLIDER
         const sliderWrapper = document.getElementById('sliderWrapper');
         const dots = document.querySelectorAll('.indicator-dot');
         const prevBtn = document.getElementById('heroPrevBtn');
         const nextBtn = document.getElementById('heroNextBtn');
-        
         const totalSlides = {{ isset($heroSlides) ? count($heroSlides) : 0 }};
         let currentSlide = 0;
         let slideInterval;
 
-        if(totalSlides > 1) {
+        if (totalSlides > 1) {
             function updateSlider() {
                 if (!sliderWrapper) return;
                 sliderWrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
@@ -665,13 +568,12 @@
                 startTimer();
             }
 
-            if(nextBtn) nextBtn.addEventListener('click', nextSlide);
-            if(prevBtn) prevBtn.addEventListener('click', prevSlide);
+            if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+            if (prevBtn) prevBtn.addEventListener('click', prevSlide);
 
             dots.forEach((dot) => {
                 dot.addEventListener('click', function() {
-                    const index = parseInt(this.getAttribute('data-index'));
-                    currentSlide = index;
+                    currentSlide = parseInt(this.getAttribute('data-index'));
                     updateSlider();
                     resetTimer();
                 });
@@ -679,13 +581,12 @@
 
             startTimer();
         } else {
+            // Ẩn nút điều hướng nếu chỉ có 1 slide
             if(prevBtn) prevBtn.style.display = 'none';
             if(nextBtn) nextBtn.style.display = 'none';
         }
 
-        // ==========================================
-        // 3. SLIDER SÁCH MỚI
-        // ==========================================
+        // B. NEW BOOKS SLIDER (Scroll ngang)
         const sliderNewBooks = document.getElementById('sliderNewBooks');
         const btnPrevNew = document.getElementById('btnPrevNewBooks');
         const btnNextNew = document.getElementById('btnNextNewBooks');
@@ -699,176 +600,205 @@
             });
         }
 
-        // ==========================================
-        // 4. LOGIC LIKE & REPLY
-        // ==========================================
-        const currentUserId = "{{ Auth::id() }}";
+        // C. GẮN SỰ KIỆN PHÂN TRANG (Cho dữ liệu load lần đầu)
+        attachPaginationEvents();
+    });
 
-        window.handleLike = function(id, type) {
-            if (!currentUserId) {
-                alert("Vui lòng đăng nhập để thả tim!");
-                window.location.href = "/login";
-                return;
+    // --- 2. CÁC HÀM XỬ LÝ AJAX (Định nghĩa global để onclick gọi được) ---
+
+    // Hàm load comment (Dùng cho cả Tab và Phân trang)
+    function loadComments(urlOrSortType) {
+        let url;
+        
+        // Kiểm tra xem input là URL (từ phân trang) hay loại sắp xếp (từ tab)
+        if (urlOrSortType.includes('http')) {
+            url = urlOrSortType; 
+        } else {
+            // Cập nhật giao diện Tab
+            updateTabUI(urlOrSortType);
+            url = `/?sort_review=${urlOrSortType}`;
+        }
+
+        // Show spinner
+        const spinner = document.getElementById('loading-spinner');
+        const contentWrapper = document.getElementById('comments-content-wrapper');
+        
+        if(spinner) spinner.classList.remove('hidden');
+        if(contentWrapper) contentWrapper.style.opacity = '0.5';
+
+        // Fetch Data
+        fetch(url, {
+            headers: { "X-Requested-With": "XMLHttpRequest" } // Báo hiệu Ajax
+        })
+        .then(response => response.text())
+        .then(html => {
+            if(contentWrapper) {
+                contentWrapper.innerHTML = html;
+                contentWrapper.style.opacity = '1';
+                
+                // Gắn lại sự kiện cho các link phân trang mới
+                attachPaginationEvents();
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Có lỗi khi tải dữ liệu.');
+        })
+        .finally(() => {
+            if(spinner) spinner.classList.add('hidden');
+        });
+    }
 
-            const btn = document.getElementById(`like-btn-${type}-${id}`);
-            const icon = document.getElementById(`like-icon-${type}-${id}`);
-            const countSpan = document.getElementById(`like-count-${type}-${id}`);
-
-            if (!btn) return;
-
-            const isLiked = icon.classList.contains('fas'); 
-            
-            if(isLiked) {
-                icon.classList.remove('fas', 'text-red-500');
-                icon.classList.add('far');
-                btn.classList.remove('text-red-500');
-                let currentCount = parseInt(countSpan.innerText);
-                countSpan.innerText = Math.max(0, currentCount - 1);
-            } else {
-                icon.classList.remove('far');
-                icon.classList.add('fas', 'bounce');
-                btn.classList.add('text-red-500');
-                let currentCount = parseInt(countSpan.innerText);
-                countSpan.innerText = currentCount + 1;
-            }
-
-            fetch('/like', { 
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ id: id, type: type })
-            })
-            .then(response => response.json())
-            .then(data => { if (data.success) countSpan.innerText = data.count; })
-            .catch(error => console.error('Error:', error));
-        };
-
-        window.toggleReplyForm = function(commentId) {
-            if (!currentUserId) {
-                alert("Vui lòng đăng nhập để bình luận!");
-                window.location.href = "/login";
-                return;
-            }
-            const form = document.getElementById(`reply-form-${commentId}`);
-            const input = document.getElementById(`reply-input-${commentId}`);
-            
-            if (form.classList.contains('hidden')) {
-                document.querySelectorAll('[id^="reply-form-"]').forEach(el => el.classList.add('hidden'));
-                form.classList.remove('hidden');
-                input.focus();
-            } else {
-                form.classList.add('hidden');
-            }
-        };
-
-        window.autoResize = function(textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = textarea.scrollHeight + 'px';
-        };
-
-        window.handleEnter = function(event, commentId) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                window.submitInlineReply(commentId);
-            }
-=========
+    // Cập nhật UI Tab
     function updateTabUI(sortType) {
         const tabLatest = document.getElementById('tab-latest');
         const tabPopular = document.getElementById('tab-popular');
         const activeClass = ['bg-white', 'text-brand-green', 'shadow-sm'];
         const inactiveClass = ['text-gray-500', 'hover:text-gray-700'];
 
+        // Reset
+        tabLatest.classList.remove(...activeClass);
+        tabLatest.classList.add(...inactiveClass);
+        tabPopular.classList.remove(...activeClass);
+        tabPopular.classList.add(...inactiveClass);
+
+        // Active logic
         if (sortType === 'latest') {
             tabLatest.classList.add(...activeClass);
             tabLatest.classList.remove(...inactiveClass);
-            tabPopular.classList.remove(...activeClass);
-            tabPopular.classList.add(...inactiveClass);
         } else {
             tabPopular.classList.add(...activeClass);
             tabPopular.classList.remove(...inactiveClass);
-            tabLatest.classList.remove(...activeClass);
-            tabLatest.classList.add(...inactiveClass);
         }
     }
 
+    // Gắn sự kiện click cho link phân trang (để chặn reload)
     function attachPaginationEvents() {
-        const paginationLinks = document.querySelectorAll('.ajax-pagination-link');
-        paginationLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const url = this.getAttribute('href');
-                if (url) loadComments(url);
-            });
+        const links = document.querySelectorAll('.ajax-pagination-link');
+        links.forEach(link => {
+            // Xóa sự kiện cũ để tránh duplicate
+            link.removeEventListener('click', handlePaginationClick);
+            // Thêm sự kiện mới
+            link.addEventListener('click', handlePaginationClick);
         });
     }
 
-    // ==========================================
-    // 2. HERO SLIDER & OTHER EVENTS
-    // ==========================================
-    document.addEventListener('DOMContentLoaded', function() {
-        const slider = document.getElementById('sliderNewBooks');
-        const btnPrev = document.getElementById('btnPrevNewBooks');
-        const btnNext = document.getElementById('btnNextNewBooks');
+    // Xử lý khi click phân trang
+    function handlePaginationClick(e) {
+        e.preventDefault(); 
+        const url = this.getAttribute('href');
+        if (url) {
+            loadComments(url);
+        }
+    }
 
-        if(sliderNewBooks && btnPrevNew && btnNextNew) {
-            btnNextNew.addEventListener('click', () => { sliderNewBooks.scrollBy({ left: 220, behavior: 'smooth' }); });
-            btnPrevNew.addEventListener('click', () => { sliderNewBooks.scrollBy({ left: -220, behavior: 'smooth' }); });
+    // --- 3. LIKE & REPLY SYSTEM ---
+
+    function handleLike(id, type) {
+        if (!currentUserId) {
+            alert("Vui lòng đăng nhập để thả tim!");
+            window.location.href = "/login";
+            return;
         }
 
-        // --- Logic Like/Reply ---
-        const currentUserId = "{{ Auth::id() }}";
+        const btn = document.getElementById(`like-btn-${type}-${id}`);
+        const icon = document.getElementById(`like-icon-${type}-${id}`);
+        const countSpan = document.getElementById(`like-count-${type}-${id}`);
 
-        window.handleLike = function(id, type) {
-            if (!currentUserId) { alert("Vui lòng đăng nhập!"); window.location.href = "/login"; return; }
-            
-            const btn = document.getElementById(`like-btn-${type}-${id}`);
-            const icon = document.getElementById(`like-icon-${type}-${id}`);
-            const countSpan = document.getElementById(`like-count-${type}-${id}`);
-            if (!btn) return;
+        if (!btn) return;
 
-            const isLiked = icon.classList.contains('fas'); 
-            if(isLiked) {
-                icon.classList.remove('fas', 'text-red-500'); icon.classList.add('far');
-                btn.classList.remove('text-red-500');
-                countSpan.innerText = Math.max(0, parseInt(countSpan.innerText) - 1);
-            } else {
-                icon.classList.remove('far'); icon.classList.add('fas', 'bounce');
-                btn.classList.add('text-red-500');
-                countSpan.innerText = parseInt(countSpan.innerText) + 1;
+        const isLiked = icon.classList.contains('fas'); 
+        
+        // Optimistic UI Update (Cập nhật giao diện ngay lập tức)
+        if(isLiked) {
+            icon.classList.remove('fas', 'text-red-500');
+            icon.classList.add('far');
+            btn.classList.remove('text-red-500');
+            let currentCount = parseInt(countSpan.innerText);
+            countSpan.innerText = Math.max(0, currentCount - 1);
+        } else {
+            icon.classList.remove('far');
+            icon.classList.add('fas', 'bounce');
+            btn.classList.add('text-red-500');
+            let currentCount = parseInt(countSpan.innerText);
+            countSpan.innerText = currentCount + 1;
+        }
+
+        // Gửi request lên server
+        fetch('/like', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ id: id, type: type })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Server xác nhận thành công, cập nhật lại số lượng chính xác
+                countSpan.innerText = data.count;
             }
+        })
+        .catch(error => console.error('Error:', error));
+    }
 
-            fetch('/like', { 
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                body: JSON.stringify({ id: id, type: type })
-            })
-            .then(res => res.json())
-            .then(data => { if(data.success) countSpan.innerText = data.count; })
-            .catch(err => console.error(err));
-        };
+    function toggleReplyForm(commentId) {
+        if (!currentUserId) {
+            alert("Vui lòng đăng nhập để bình luận!");
+            window.location.href = "/login";
+            return;
+        }
+        
+        const form = document.getElementById(`reply-form-${commentId}`);
+        const input = document.getElementById(`reply-input-${commentId}`);
+        
+        // Đóng các form khác
+        document.querySelectorAll('[id^="reply-form-"]').forEach(el => el.classList.add('hidden'));
+        
+        if (form.classList.contains('hidden')) {
+            form.classList.remove('hidden');
+            input.focus();
+        } else {
+            form.classList.add('hidden');
+        }
+    }
 
-        window.toggleReplyForm = function(commentId) {
-            if (!currentUserId) { alert("Vui lòng đăng nhập!"); window.location.href = "/login"; return; }
-            const form = document.getElementById(`reply-form-${commentId}`);
-            const input = document.getElementById(`reply-input-${commentId}`);
-            document.querySelectorAll('[id^="reply-form-"]').forEach(el => el.classList.add('hidden'));
-            
-            if (form.classList.contains('hidden')) { form.classList.remove('hidden'); input.focus(); } 
-            else { form.classList.add('hidden'); }
-        };
+    function autoResize(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
 
-        window.autoResize = function(textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = textarea.scrollHeight + 'px';
-        };
+    function handleEnter(event, commentId) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            submitInlineReply(commentId);
+        }
+    }
 
-        window.handleEnter = function(event, commentId) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                window.submitInlineReply(commentId);
+    function submitInlineReply(commentId) {
+        const input = document.getElementById(`reply-input-${commentId}`);
+        const content = input.value.trim();
+
+        if (!content) {
+            alert("Nội dung không được để trống!");
+            return;
+        }
+
+        fetch(`/comment/${commentId}/reply`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ content: content })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Reload để thấy comment mới
+            } else {
+                alert("Có lỗi xảy ra, vui lòng thử lại.");
             }
         };
 

@@ -115,10 +115,7 @@ class User extends Authenticatable
         }
     }
 
-    public function isAdmin() 
-    { 
-        return $this->role === 'admin'; 
-    }
+   
 
     // --- 3. LOGIC THỬ THÁCH VÀ DANH HIỆU (BADGES & CHALLENGES) ---
 
@@ -196,5 +193,11 @@ class User extends Authenticatable
                 }
             }
         }
+    }
+    public function isAdmin()
+    {
+        // Kiểm tra xem user có phải admin không
+        // Ví dụ: nếu cột role là 'admin' hoặc cột type là 1
+        return $this->role === 'admin';
     }
 }
