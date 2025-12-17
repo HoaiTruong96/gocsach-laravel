@@ -51,7 +51,8 @@ class User extends Authenticatable
         'is_active' => 'boolean',
     ];
 
-    // Quan hệ
+    // --- CÁC MỐI QUAN HỆ (RELATIONSHIPS) ---
+
     public function posts()
     {
         return $this->hasMany(Post::class);
@@ -79,30 +80,58 @@ class User extends Authenticatable
         return $this->hasMany(Book::class, 'created_by_user_id');
     }
 
-    // Quan hệ giữa người dùng và người theo dõi
+    // Những người TÔI đang theo dõi (Following)
     public function followings()
     {
         return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id')
             ->withTimestamps();
     }
 
-    // 5. Những người đang theo dõi tôi (Followers)
-    // Bảng trung gian 'follows', khóa ngoại 'following_id' (là tôi), khóa liên kết 'follower_id' (người kia)
+    // Những người đang theo dõi TÔI (Followers)
     public function followers()
     {
         return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id')
             ->withTimestamps();
     }
 
-    // 6. Hàm kiểm tra: Tôi có đang follow người có ID này không?
+    // Hàm kiểm tra: Tôi có đang follow người này không?
     public function isFollowing($userId)
     {
         return $this->followings()->where('following_id', $userId)->exists();
     }
+
     public function isAdmin()
-{
-    // Kiểm tra xem user có phải admin không
-    // Ví dụ: nếu cột role là 'admin' hoặc cột type là 1
-    return $this->role === 'admin'; 
-}
+    {
+        return $this->role === 'admin'; 
+    }
+
+    // --- [PHẦN MỚI THÊM ĐỂ SỬA LỖI] ---
+
+    // 1. Quan hệ với Badge (Huy hiệu)
+    public function badges()
+    {
+        return $this->belongsToMany(Badge::class, 'user_badges')
+            ->withPivot('earned_at', 'expires_at')
+            ->withTimestamps();
+    }
+
+    // 2. [QUAN TRỌNG] Lấy danh hiệu còn hiệu lực (Hàm gây lỗi ActiveBadges)
+    public function activeBadges()
+    {
+        return $this->belongsToMany(Badge::class, 'user_badges')
+            ->withPivot('earned_at', 'expires_at')
+            ->where(function ($query) {
+                $query->where('expires_at', '>', now())
+                      ->orWhereNull('expires_at');
+            })
+            ->withTimestamps();
+    }
+
+    // 3. Quan hệ với Thử thách (Chuẩn bị cho tính năng Challenges)
+    public function challenges()
+    {
+        return $this->belongsToMany(Challenge::class, 'user_challenges')
+            ->withPivot('current_progress', 'status', 'joined_at', 'completed_at')
+            ->withTimestamps();
+    }
 }
