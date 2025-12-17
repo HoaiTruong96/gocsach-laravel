@@ -7,25 +7,27 @@ use App\Models\Book;
 use App\Models\Category;
 use App\Models\Comment;
 use App\Models\Article;
-use App\Models\Banner; // <--- [QUAN TRỌNG] Import Model Banner
+use App\Models\Banner;
+use App\Models\Like;         // Model cho Post Like
+use App\Models\CommentLike;  // Model cho Comment Like
+use Illuminate\Support\Facades\Auth;
+use App\Notifications\CommentLikedNotification;
+use App\Notifications\CommentRepliedNotification;
 
 class HomeController extends Controller
 {
     public function index(Request $request)
     {
-        // 1. [MỚI] Lấy Banner Slider từ Database
-        // Lấy các banner đang active, sắp xếp theo thứ tự ưu tiên (order)
+        // 1. Banner Slider
         $heroSlides = Banner::where('is_active', true)
                             ->orderBy('order', 'asc')
                             ->latest()
                             ->get();
 
-        // Fallback: Nếu trong Database chưa có banner nào (lần đầu chạy),
-        // tạo một collection giả lập để giao diện không bị trống.
         if ($heroSlides->isEmpty()) {
             $heroSlides = collect([
                 (object)[
-                    'id' => null, // Không có ID để không hiện nút sửa
+                    'id' => null,
                     'title' => 'Cây Cam Ngọt Của Tôi',
                     'tag' => 'Sách Kinh Điển',
                     'description' => '"Vị chua chát của cái nghèo hòa trộn với vị ngọt ngào của trí tưởng tượng..."',
@@ -36,59 +38,172 @@ class HomeController extends Controller
             ]);
         }
 
-        // 2. Sách mới cập nhật (Lấy 10 cuốn cho slider)
+        // 2. Sách mới
         $books = Book::where('is_approved', true)
                     ->with('categories')
                     ->latest()
                     ->take(10)
                     ->get();
 
-        // 3. Phần Tạp Chí Đọc (Lấy từ bảng articles)
-        // a. Bài tiêu điểm (To nhất)
+        // 3. Tạp chí đọc
         $featuredArticle = Article::with('user')
                             ->where('is_featured', true)
                             ->latest()
                             ->first();
 
-        // b. Các bài nhỏ bên cạnh (Không lấy bài featured để tránh trùng)
         $sidebarArticles = Article::with('user')
-                            ->where('is_featured', false) // Lấy bài thường
+                            ->where('is_featured', false)
                             ->latest()
                             ->take(2)
                             ->get();
 
-        // 4. Review Cộng Đồng (Logic phân trang + lọc tim)
+        // 4. Review Cộng Đồng
         $sortReview = $request->get('sort_review', 'latest');
         $commentQuery = Comment::with(['user', 'book']);
 
+        // Đếm like của comment
+        $commentQuery->withCount('likes'); 
+
         if ($sortReview == 'popular') {
-            // Sắp xếp theo số lượng like giảm dần (chỉ đếm is_like = 1)
-            $commentQuery->withCount(['likes' => function ($q) {
-                $q->where('is_like', 1);
-            }])->orderByDesc('likes_count');
+            $commentQuery->orderByDesc('likes_count');
         } else {
-            // Mặc định: Mới nhất
-            $commentQuery->withCount(['likes' => function ($q) {
-                $q->where('is_like', 1);
-            }])->latest();
+            $commentQuery->latest();
         }
 
-        // Phân trang 5 item, giữ tham số URL, tự scroll xuống phần review
         $latestComments = $commentQuery->paginate(5)
-                                       ->withQueryString()
-                                       ->fragment('community-posts');
+                                     ->withQueryString()
+                                     ->fragment('community-posts');
 
-        // 5. Danh mục thể loại (Sidebar phải)
+        // 5. Danh mục
         $categories = Category::withCount('books')->orderBy('name', 'asc')->get();
 
-        // Trả về View với đầy đủ dữ liệu
         return view('home', compact(
-            'heroSlides',      // <--- Biến mới cho Slider
+            'heroSlides',
             'books', 
             'latestComments', 
             'categories', 
             'featuredArticle', 
             'sidebarArticles'
         ));
+    }
+
+    // --- LOGIC XỬ LÝ LIKE ---
+    public function toggleLike(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer',
+            'type' => 'required|in:post,comment', 
+        ]);
+
+        $userId = Auth::id();
+        $id = $request->id;
+        $type = $request->type;
+        $liked = false;
+        $count = 0;
+
+        if ($type === 'post') {
+            // --- LIKE BÀI VIẾT (POST) ---
+            $existingLike = Like::where('user_id', $userId)->where('post_id', $id)->first();
+
+            if ($existingLike) {
+                $existingLike->delete(); // Unlike
+                $liked = false;
+            } else {
+                Like::create([
+                    'user_id' => $userId, 
+                    'post_id' => $id
+                ]); 
+                $liked = true;
+            }
+            
+            $count = Like::where('post_id', $id)->count();
+
+        } else {
+            // --- LIKE BÌNH LUẬN (COMMENT) ---
+            $existingLike = CommentLike::where('user_id', $userId)->where('comment_id', $id)->first();
+
+            if ($existingLike) {
+                $existingLike->delete(); // Unlike
+                $liked = false;
+            } else {
+                CommentLike::create([
+                    'user_id' => $userId, 
+                    'comment_id' => $id,
+                    'is_like' => 1 
+                ]); 
+                $liked = true;
+
+                // --- GỬI THÔNG BÁO ---
+                $comment = Comment::find($id);
+                
+                // Kiểm tra: Chỉ gửi nếu comment tồn tại VÀ người like KHÔNG PHẢI người viết
+                if ($comment && $comment->user_id != $userId) {
+                    try {
+                        $comment->user->notify(new CommentLikedNotification(Auth::user(), $comment));
+                    } catch (\Exception $e) {
+                        // Bỏ qua lỗi nếu gửi thông báo thất bại
+                    }
+                }
+            }
+
+            $count = CommentLike::where('comment_id', $id)->count();
+        }
+
+        return response()->json([
+            'success' => true,
+            'liked' => $liked,
+            'count' => $count,
+            'type' => $type
+        ]);
+    }
+
+    // --- LOGIC REPLY ---
+    public function storeReply(Request $request, $id)
+    {
+        $request->validate(['content' => 'required|max:500']);
+        
+        $parentComment = Comment::findOrFail($id);
+        $user = Auth::user();
+        
+        $reply = new Comment();
+        $reply->user_id = $user->id;
+        $reply->post_id = $parentComment->post_id; 
+        $reply->parent_id = $id;
+        $reply->content = $request->input('content');
+        $reply->save();
+
+        // --- GỬI THÔNG BÁO ---
+        // Chỉ gửi thông báo nếu người trả lời KHÔNG PHẢI người viết comment gốc
+        if ($parentComment->user_id != $user->id) {
+            try {
+                $parentComment->user->notify(new CommentRepliedNotification($user, $reply));
+            } catch (\Exception $e) {
+                // Bỏ qua lỗi
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'user_name' => $user->name,
+            'user_avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=random',
+            'content' => $reply->content,
+            'time' => 'Vừa xong'
+        ]);
+    }
+
+    // --- XỬ LÝ THÔNG BÁO ---
+    public function markAllAsRead()
+    {
+        Auth::user()->unreadNotifications->markAsRead();
+        return back();
+    }
+
+    public function markAsRead($id)
+    {
+        $notification = Auth::user()->notifications()->findOrFail($id);
+        $notification->markAsRead();
+
+        $link = $notification->data['link'] ?? route('home');
+        return redirect($link);
     }
 }
