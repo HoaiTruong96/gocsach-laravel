@@ -241,13 +241,25 @@
             </div>
         </div>
 
-        <div class="hidden md:flex justify-center mt-2 border-t border-gray-100 pt-3">
-            <nav class="flex items-center gap-8 text-sm font-semibold text-gray-500">
-                <a href="{{ route('home') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('home') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Trang Chủ</a>
-                <a href="{{ route('list') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('list') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Danh Sách</a>
-                <a href="{{ route('books.search') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('books.search') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Review Hay</a>
-                <a href="#" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all">Tác Giả</a>
-            </nav>
+            
+            <!-- 4. Navigation Links -->
+            <div class="hidden md:flex justify-center mt-2 border-t border-gray-100 pt-3">
+                <nav class="flex items-center gap-8 text-sm font-semibold text-gray-500">
+                    <a href="{{ route('home') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('home') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Trang Chủ</a>
+                    
+                    {{-- [ĐÃ SỬA] Trang Danh Sách --}}
+                    <a href="{{ route('list') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('list') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Danh Sách</a>
+                    
+                    {{-- Trang Review Hay (Vẫn giữ link này cho review nếu cần) --}}
+                    <a href="{{ route('books.search') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('books.search') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Review Hay</a>
+                    
+                    <a href="#" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all">Tác Giả</a>
+                    <a href="{{ route('challenges.index') }}" 
+                        class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all flex items-center gap-1 {{ request()->routeIs('challenges.*') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">
+                        <i class="fas fa-flag-checkered text-brand-accent"></i> Thử Thách
+                    </a>
+                </nav>
+            </div>
         </div>
     </div>
 </header>

@@ -27,30 +27,27 @@ class User extends Authenticatable
         'is_active' => 'boolean',
     ];
 
-    // --- CÁC MỐI QUAN HỆ (RELATIONSHIPS) ---
+    // --- 1. CÁC MỐI QUAN HỆ CƠ BẢN ---
 
-    public function posts()
-    {
-        return $this->hasMany(Post::class);
+    public function posts() 
+    { 
+        return $this->hasMany(Post::class); 
     }
 
-    public function posts() { return $this->hasMany(Post::class); }
-    public function comments() { return $this->hasMany(Comment::class); }
-    public function likes() { return $this->hasMany(Like::class); }
+    public function comments() 
+    { 
+        return $this->hasMany(Comment::class); 
+    }
+
+    public function likes() 
+    { 
+        return $this->hasMany(Like::class); 
+    }
     
-    public function bookshelves() {
+    public function bookshelves() 
+    {
         return $this->belongsToMany(Book::class, 'bookshelves', 'user_id', 'book_id')
             ->withPivot('status')->withTimestamps();
-    }
-
-    public function contributedBooks() { return $this->hasMany(Book::class, 'created_by_user_id'); }
-
-    // Follows
-    public function followings() {
-        return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id')->withTimestamps();
-    }
-    public function followers() {
-        return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id')->withTimestamps();
     }
     public function isFollowing($userId) {
         return $this->followings()->where('following_id', $userId)->exists();
@@ -59,37 +56,24 @@ class User extends Authenticatable
 
     // --- [PHẦN QUAN TRỌNG ĐÃ SỬA] ---
 
-    // 1. Quan hệ với Badge
-    public function badges()
-    {
-        return $this->belongsToMany(Badge::class, 'user_badges')
-            ->withPivot('earned_at', 'expires_at')
-            ->withTimestamps();
+    public function contributedBooks() 
+    { 
+        return $this->hasMany(Book::class, 'created_by_user_id'); 
     }
 
-    // Những người TÔI đang theo dõi (Following)
-    public function followings()
+    // --- 2. QUAN HỆ FOLLOW ---
+
+    public function followings() 
     {
-        return $this->belongsToMany(Badge::class, 'user_badges')
-            ->withPivot('earned_at', 'expires_at')
-            ->where(function ($query) {
-                $query->where('expires_at', '>', now())
-                      ->orWhereNull('expires_at');
-            })
-            ->withTimestamps();
+        return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id')->withTimestamps();
     }
 
-    // Những người đang theo dõi TÔI (Followers)
-    public function followers()
+    public function followers() 
     {
-        // Database dùng: current_count, is_completed (Không phải current_progress, status)
-        return $this->belongsToMany(Challenge::class, 'user_challenges')
-            ->withPivot('current_count', 'is_completed', 'completed_at')
-            ->withTimestamps();
+        return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id')->withTimestamps();
     }
 
-    // Hàm kiểm tra: Tôi có đang follow người này không?
-    public function isFollowing($userId)
+    public function isFollowing($userId) 
     {
         // Lấy tất cả thử thách user đã tham gia
         $joinedChallenges = $this->challenges; 
@@ -135,14 +119,14 @@ class User extends Authenticatable
         }
     }
 
-    public function isAdmin()
-    {
+    public function isAdmin() 
+    { 
         return $this->role === 'admin'; 
     }
 
-    // --- [PHẦN MỚI THÊM ĐỂ SỬA LỖI] ---
+    // --- 3. LOGIC THỬ THÁCH VÀ DANH HIỆU (BADGES & CHALLENGES) ---
 
-    // 1. Quan hệ với Badge (Huy hiệu)
+    // Quan hệ với Badge (Huy hiệu)
     public function badges()
     {
         return $this->belongsToMany(Badge::class, 'user_badges')
@@ -150,7 +134,7 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    // 2. [QUAN TRỌNG] Lấy danh hiệu còn hiệu lực (Hàm gây lỗi ActiveBadges)
+    // Lấy danh hiệu còn hiệu lực
     public function activeBadges()
     {
         return $this->belongsToMany(Badge::class, 'user_badges')
@@ -162,11 +146,59 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    // 3. Quan hệ với Thử thách (Chuẩn bị cho tính năng Challenges)
+    // Quan hệ với Thử thách
     public function challenges()
     {
         return $this->belongsToMany(Challenge::class, 'user_challenges')
-            ->withPivot('current_progress', 'status', 'joined_at', 'completed_at')
+            ->withPivot('current_count', 'is_completed', 'completed_at')
             ->withTimestamps();
+    }
+
+    // --- 4. HÀM TÍNH ĐIỂM THỬ THÁCH (CHUẨN XÁC) ---
+    public function updateChallengeProgress()
+    {
+        // Lấy tất cả thử thách user đã tham gia
+        $joinedChallenges = $this->challenges; 
+
+        foreach ($joinedChallenges as $challenge) {
+            
+            // Xử lý ngày tháng an toàn:
+            // Bắt đầu từ 00:00:00 của ngày start
+            $startDate = Carbon::parse($challenge->start_date)->startOfDay();
+            // Kết thúc lúc 23:59:59 của ngày end
+            $endDate   = Carbon::parse($challenge->end_date)->endOfDay();
+
+            // Đếm bài viết hợp lệ (Đã duyệt + Nằm trong khoảng thời gian)
+            $validPostsCount = $this->posts()
+                ->where('status', 'published')
+                ->whereBetween('created_at', [$startDate, $endDate]) 
+                ->count();
+
+            // Kiểm tra điều kiện hoàn thành
+            $isCompleted = $validPostsCount >= $challenge->target_count;
+            
+            // Chuẩn bị dữ liệu cập nhật
+            $pivotData = [
+                'current_count' => $validPostsCount,
+                'is_completed'  => $isCompleted
+            ];
+
+            // Nếu vừa hoàn thành xong thì ghi nhận ngày hoàn thành
+            if ($isCompleted && !$challenge->pivot->completed_at) {
+                $pivotData['completed_at'] = now();
+            }
+
+            // Lưu vào DB
+            $this->challenges()->updateExistingPivot($challenge->id, $pivotData);
+
+            // Trao huy hiệu nếu xong
+            if ($isCompleted) {
+                if (!$this->badges()->where('badge_id', $challenge->badge_id)->exists()) {
+                    $this->badges()->attach($challenge->badge_id, [
+                        'earned_at' => now()
+                    ]);
+                }
+            }
+        }
     }
 }
