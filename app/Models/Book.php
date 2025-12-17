@@ -30,10 +30,17 @@ class Book extends Model
         'is_approved' => 'boolean',
     ];
 
-    // Quan hệ
+    // --- CÁC MỐI QUAN HỆ ---
+
     public function categories()
     {
         return $this->belongsToMany(Category::class, 'book_category');
+    }
+
+    // Thêm hàm này để tránh lỗi nếu Controller có gọi $book->category
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 
     public function creator()
@@ -41,7 +48,15 @@ class Book extends Model
         return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
+    // Quan hệ gốc với bảng posts
     public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    // [QUAN TRỌNG] Thêm hàm này để sửa lỗi "Call to undefined method reviews"
+    // Nó hoạt động y hệt posts(), chỉ là tên khác để Controller gọi được
+    public function reviews()
     {
         return $this->hasMany(Post::class);
     }
@@ -50,13 +65,13 @@ class Book extends Model
     {
         return $this->hasMany(Bookshelf::class);
     }
+
     public function likes()
     {
         // Vì bảng 'likes' của bạn dùng cột 'post_id' để lưu ID bài viết/sách
-        // nên ta phải khai báo rõ khóa ngoại là 'post_id'
         return $this->hasMany(Like::class, 'post_id');
     }
-    // --- PHẦN ĐÃ SỬA ---
+
     public function comments()
     {
         // Tham số thứ 2 ('post_id'): Tên cột khóa ngoại trong bảng comments
