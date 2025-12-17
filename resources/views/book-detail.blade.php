@@ -41,7 +41,13 @@
                 {{-- Ảnh Bìa --}}
                 <div class="md:col-span-4 lg:col-span-3">
                     <div class="relative w-full aspect-[2/3] rounded-r-lg rounded-l-sm shadow-book transform hover:scale-[1.02] transition duration-500 cursor-pointer group">
-                        <img src="{{ !empty($book->cover_image) ? $book->cover_image : 'https://via.placeholder.com/300x450?text=No+Image' }}" 
+                        @php
+                            $cover = $book->cover_image ?? null;
+                            $coverUrl = $cover 
+                                ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover))
+                                : 'https://via.placeholder.com/300x450?text=No+Image';
+                        @endphp
+                        <img src="{{ $coverUrl }}" 
                              alt="{{ $book->title }}" 
                              class="w-full h-full object-cover rounded-r-lg rounded-l-sm border-l-4 border-gray-200"
                              onerror="this.onerror=null; this.src='https://via.placeholder.com/300x450?text=No+Image'">

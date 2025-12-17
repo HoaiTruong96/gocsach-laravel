@@ -202,7 +202,13 @@
 
                                 <div class="w-28 relative flex-shrink-0 bg-gray-200">
                                     <a href="#">
-                                        <img src="{{ $book->cover_image ?? 'https://via.placeholder.com/150x225?text=No+Image' }}" class="w-full h-full object-cover transition group-hover:opacity-90">
+                                        @php
+                                            $cover = $book->cover_image ?? null;
+                                            $coverUrl = $cover 
+                                                ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover))
+                                                : 'https://via.placeholder.com/150x225?text=No+Image';
+                                        @endphp
+                                        <img src="{{ $coverUrl }}" class="w-full h-full object-cover transition group-hover:opacity-90">
                                     </a>
                                 </div>
                                 <div class="p-4 flex flex-col justify-between flex-grow min-w-0">

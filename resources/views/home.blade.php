@@ -124,7 +124,8 @@
                                 </a>
                             @endif
                             <div class="relative h-64 md:h-80 rounded-2xl overflow-hidden mb-4 shadow-md">
-                                <img src="{{ $featuredArticle->thumbnail }}" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-700">
+                                @php $thumbUrl = Str::startsWith($featuredArticle->thumbnail, 'http') ? $featuredArticle->thumbnail : asset('storage/' . $featuredArticle->thumbnail); @endphp
+                                <img src="{{ $thumbUrl }}" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-700">
                                 <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
                                 <span class="absolute top-4 left-4 bg-brand-accent text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                                     {{ $featuredArticle->tag ?? 'Tiêu Điểm' }}
@@ -153,7 +154,8 @@
                                     @endif
 
                                     <div class="h-32 rounded-xl overflow-hidden mb-3 relative">
-                                        <img src="{{ $article->thumbnail }}" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-500">
+                                        @php $thumbUrl = Str::startsWith($article->thumbnail, 'http') ? $article->thumbnail : asset('storage/' . $article->thumbnail); @endphp
+                                        <img src="{{ $thumbUrl }}" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-500">
                                     </div>
                                     <div>
                                         <span class="text-brand-green text-xs font-bold uppercase">{{ $article->tag ?? 'Tin Tức' }}</span>
