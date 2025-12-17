@@ -5,23 +5,33 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Book; 
 use App\Models\Post; 
-use Illuminate\Support\Str; // Thư viện xử lý chuỗi
-
+use Illuminate\Support\Facades\Session;
+use Illuminate\Database\Eloquent\Builder;
+use App\Models\Category;
 class BookController extends Controller
 {
-    // =========================================================================
-    // 1. TRANG CHỦ 
-    // =========================================================================
-    public function index(Request $request)
+    // --- HÀM HỖ TRỢ: Lấy sách kèm tính toán điểm trung bình ---
+    private function getBookQuery()
     {
-        $books = Book::orderBy('id', 'desc')->take(5)->get();
+        return Book::where('is_approved', true)
+                   ->withAvg(['posts' => function($q) {
+                       $q->where('status', 'published');
+                   }], 'rating'); 
+    }
+
+    // 1. TRANG CHỦ 
+    public function index(Request $request)
+    {   
+        $books = $this->getBookQuery()
+                    ->orderBy('id', 'desc')
+                    ->take(5)
+                    ->get();
+
 
         $filter = $request->get('filter', 'latest');
-        
-        // Chỉ lấy những bài đã được duyệt (published) nếu có cột status
-        // Nếu chưa có cột status thì bỏ dòng ->where('status', 'published')
         $query = Post::with(['user', 'book'])
-            ->withCount(['likes', 'comments']);
+            ->where('status', 'published') 
+            ->withCount(['likes', 'comments']); 
 
         if ($filter == 'viewed') {
             $query->orderBy('view_count', 'desc');
@@ -40,153 +50,137 @@ class BookController extends Controller
         ]);
     }
 
-    public function home(Request $request)
+    public function home(Request $request) 
     {
         return $this->index($request);
     }
 
-    // =========================================================================
     // 2. TRANG CHI TIẾT SÁCH
-    // =========================================================================
     public function show($id)
     {
-        // 1. Tìm sách hiện tại
-        $query = Book::with(['categories']) // Load thêm categories để tìm sách liên quan
-            ->withCount(['posts' => function ($q) {
-                $q->where('status', 'published');
-            }]);
+        $query = $this->getBookQuery();
 
         if (is_numeric($id)) {
-            $book = $query->find($id);
+            $query->where('id', $id);
         } else {
-            $book = $query->where('slug', $id)->firstOrFail();
+            $query->where('slug', $id);
         }
 
-        if (!$book) {
-            return redirect()->route('home')->with('error', 'Không tìm thấy sách!');
+        $book = $query->firstOrFail();
+        $book->avg_rating = round($book->posts_avg_rating ?? 0, 1);
+
+        $sessionKey = 'book_viewed_' . $book->id;
+        if (!Session::has($sessionKey)) {
+            $book->increment('view_count');
+            Session::put($sessionKey, true);
         }
 
-        // Tăng view
-        $book->increment('view_count');
-
-        // 2. Lấy Review (Giữ nguyên code cũ)
-        $reviews = $book->reviews()
-            ->where('status', 'published')
-            ->with(['user', 'likes', 'comments'])
-            ->orderBy('created_at', 'desc')
-            ->take(3)
-            ->get();
-
-        // 3. [MỚI] Lấy sách liên quan (Cùng danh mục)
-        $relatedBooks = collect();
-        
-        if ($book->categories->isNotEmpty()) {
-            // Lấy danh sách ID các danh mục của sách này
-            $categoryIds = $book->categories->pluck('id');
-
-            $relatedBooks = Book::whereHas('categories', function ($q) use ($categoryIds) {
-                                    $q->whereIn('categories.id', $categoryIds);
-                                })
-                                ->where('id', '!=', $book->id) // Loại trừ sách đang xem
-                                ->inRandomOrder() // Lấy ngẫu nhiên
-                                ->take(5) // Lấy 5 cuốn
-                                ->get();
-        }
-
-        // Nếu không có sách cùng danh mục, lấy sách ngẫu nhiên khác
-        if ($relatedBooks->isEmpty()) {
-            $relatedBooks = Book::where('id', '!=', $book->id)
-                                ->inRandomOrder()
-                                ->take(5)
-                                ->get();
-        }
+        $book->load([
+            'categories',
+            'posts' => function($q) {
+                $q->where('status', 'published')->latest();
+            },
+            'posts.user',
+            'posts.comments' => function($q) {
+                $q->latest(); 
+            },
+            'posts.comments.user',
+            'posts.comments.likes'
+        ]);
 
         // Truyền biến $relatedBooks sang View
         return view('book-detail', compact('book', 'reviews', 'relatedBooks'));
     }
 
-    // =========================================================================
-    // 3. TÌM KIẾM (TRANG KẾT QUẢ RIÊNG)
-    // =========================================================================
+    // 3. TÌM KIẾM
     public function search(Request $request)
     {
         $keyword = $request->input('keyword');
+        $query = $this->getBookQuery();
 
         if ($keyword) {
-            $books = Book::where('title', 'LIKE', "%{$keyword}%")->get();
+            $books = $query->where('title', 'LIKE', "%{$keyword}%")->get();
         } else {
-            $books = Book::orderBy('id', 'desc')->limit(12)->get();
+            $books = $query->orderBy('id', 'desc')->limit(12)->get();
+        }
+
+        foreach($books as $book) {
+            $book->avg_rating = round($book->posts_avg_rating ?? 0, 1);
         }
 
         return view('search-book', ['books' => $books]);
     }
 
-    // =========================================================================
-    // 4. AJAX SEARCH (CHO THANH TÌM KIẾM HEADER - ĐÃ SỬA URL & ẢNH)
-    // =========================================================================
-    public function ajaxSearch(Request $request)
+    // 4. SÁCH MỚI CẬP NHẬT
+    public function list(Request $request)
     {
-        $keyword = $request->get('keyword');
-        
-        if(empty($keyword)) {
-            return response()->json([]);
+        // ... (Giữ nguyên logic query filter cũ của bạn) ...
+        $query = $this->getBookQuery();
+
+        if ($request->has('categories') && is_array($request->categories)) {
+            $query->whereHas('categories', function ($q) use ($request) {
+                $q->whereIn('name', $request->categories);
+            });
         }
 
-        $books = Book::where('title', 'like', '%' . $keyword . '%')
-                    ->take(5)
-                    ->get()
-                    ->map(function($book) {
-                        
-                        // Xử lý ảnh: Check link online hoặc file upload
-                        $cover = $book->cover_image;
-                        $imageUrl = 'https://via.placeholder.com/50';
+        if ($request->has('rating')) {
+            $rating = (int) $request->rating;
+            $query->having('posts_avg_rating', '>=', $rating);
+        }
 
-                        if (!empty($cover)) {
-                            // Dùng Str::startsWith để kiểm tra http
-                            if (Str::startsWith($cover, 'http')) {
-                                $imageUrl = $cover;
-                            } else {
-                                $imageUrl = asset('storage/' . $cover);
-                            }
-                        }
+        // ... (Giữ nguyên logic sort) ...
+        // 4. Sắp xếp (Sorting)
+    $sort = $request->get('sort', 'newest'); // Mặc định là mới nhất
 
-                        return [
-                            'title' => $book->title,
-                            'author_name' => $book->author_name ?? 'Đang cập nhật',
-                            'image_url' => $imageUrl, 
-                            
-                            // Link chi tiết chuẩn (Sử dụng route 'detail')
-                            // Đảm bảo trong web.php có: Route::get('/chi-tiet/{slug}', ...)->name('detail');
-                            'url' => route('detail', $book->slug), 
-                        ];
-                    });
+    switch ($sort) {
+    case 'view_desc':
+        $query->orderBy('view_count', 'desc'); // Xem nhiều nhất
+        break;
+    
+    case 'rating_desc':
+        // Sắp xếp theo cột điểm trung bình (được tạo ra bởi withAvg)
+        $query->orderBy('posts_avg_rating', 'desc'); 
+        break;
+    
+    case 'title_asc':  // <--- THÊM MỚI: Sắp xếp tên A-Z (Nếu muốn)
+        $query->orderBy('title', 'asc');
+        break;
 
-        return response()->json($books);
+    case 'newest':
+    default:
+        $query->orderBy('created_at', 'desc'); // Mặc định: Mới nhất
+        break;
     }
 
-    // =========================================================================
-    // 5. SÁCH MỚI CẬP NHẬT
-    // =========================================================================
-    public function newBooks()
-    {
-        $books = Book::with('category')
-                     ->orderBy('created_at', 'desc')
-                     ->paginate(12);
+        $books = $query->paginate(12)->withQueryString();
 
+        $books->getCollection()->transform(function ($book) {
+            $book->avg_rating = round($book->posts_avg_rating ?? 0, 1);
+            return $book;
+        });
+
+        // 2. LẤY DANH SÁCH THỂ LOẠI TỪ DB (Có thể thêm ->orderBy('name') cho đẹp)
+        $categories = Category::all(); 
+
+        // 3. TRUYỀN BIẾN $categories SANG VIEW
         return view('list', [
             'books' => $books,
-            'pageTitle' => 'Sách Mới Cập Nhật'
+            'categories' => $categories, 
+            'pageTitle' => 'Tất Cả Sách'
         ]);
     }
 
-    // =========================================================================
-    // 6. TRANG HIỂN THỊ ĐÁNH GIÁ SÁCH
-    // =========================================================================
+    // 5. TRANG HIỂN THỊ ĐÁNH GIÁ SÁCH
     public function showReviews($slug)
     {
-        $book = Book::where('slug', $slug)
-                    ->with('reviews')
+        $book = $this->getBookQuery()
+                    ->where('slug', $slug)
+                    ->with(['posts' => function($q) {
+                        $q->where('status', 'published')->latest();
+                    }])
                     ->firstOrFail();
+        
+        $book->avg_rating = round($book->posts_avg_rating ?? 0, 1);
 
         return view('book-reviews', [
             'book' => $book,

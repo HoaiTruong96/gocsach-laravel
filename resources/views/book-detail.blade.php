@@ -14,7 +14,7 @@
             <div class="flex items-center text-sm text-gray-500 font-medium">
                 <a href="{{ route('home') }}" class="hover:text-brand-green transition">Trang chủ</a>
                 <span class="mx-2 text-gray-300">/</span>
-                <a href="{{ route('list') }}" class="hover:text-brand-green transition">
+                <a href="{{ route('books.list') }}" class="hover:text-brand-green transition">
                     {{ isset($book->categories) && $book->categories->isNotEmpty() ? $book->categories->first()->name : 'Sách' }}
                 </a>
                 <span class="mx-2 text-gray-300">/</span>
@@ -323,38 +323,24 @@
                     </h3>
                     
                     <div class="space-y-4">
-                        @if(isset($relatedBooks) && $relatedBooks->count() > 0)
-                            @foreach($relatedBooks as $related)
-                                @php
-                                    // Xử lý ảnh bìa
-                                    $cover = $related->cover_image;
-                                    $imgSrc = !empty($cover) 
-                                        ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover)) 
-                                        : 'https://via.placeholder.com/50x75?text=No+Image';
-                                @endphp
-
-                                <a href="{{ route('detail', $related->slug) }}" class="flex gap-3 items-center group cursor-pointer">
-                                    {{-- Ảnh nhỏ --}}
-                                    <div class="w-12 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0 border border-gray-200 shadow-sm">
-                                        <img src="{{ $imgSrc }}" 
-                                             alt="{{ $related->title }}" 
-                                             class="w-full h-full object-cover transform group-hover:scale-110 transition duration-300">
-                                    </div>
-                                    
-                                    {{-- Thông tin --}}
-                                    <div class="flex-1 min-w-0"> {{-- min-w-0 để truncate hoạt động --}}
-                                        <h4 class="text-sm font-bold text-gray-800 line-clamp-2 group-hover:text-brand-accent transition leading-tight mb-1" title="{{ $related->title }}">
-                                            {{ $related->title }}
-                                        </h4>
-                                        <span class="text-xs text-gray-500 truncate block">
-                                            {{ $related->author_name ?? 'N/A' }}
-                                        </span>
-                                    </div>
-                                </a>
-                            @endforeach
-                        @else
-                            <p class="text-xs text-gray-400 italic text-center py-2">Chưa có gợi ý phù hợp.</p>
-                        @endif
+                        <div class="flex gap-3 items-center group cursor-pointer">
+                            <div class="w-12 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0">
+                                <img src="https://via.placeholder.com/50x75" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-brand-accent transition">Nhà Giả Kim</h4>
+                                <span class="text-xs text-gray-500">Paulo Coelho</span>
+                            </div>
+                        </div>
+                         <div class="flex gap-3 items-center group cursor-pointer">
+                            <div class="w-12 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0">
+                                <img src="https://via.placeholder.com/50x75" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-brand-accent transition">Hoàng Tử Bé</h4>
+                                <span class="text-xs text-gray-500">Saint-Exupéry</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
