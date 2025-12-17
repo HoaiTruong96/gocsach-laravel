@@ -77,9 +77,7 @@ class User extends Authenticatable
         return $this->followings()->where('following_id', $userId)->exists();
     }
 
-    // =========================================================================
-    // 3. HỆ THỐNG THỬ THÁCH & DANH HIỆU
-    // =========================================================================
+   
 
     public function badges()
     {
