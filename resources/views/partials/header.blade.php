@@ -104,18 +104,21 @@
                             </div>
                             <div class="dropdown-menu dropdown-bridge absolute top-full left-0 mt-0 bg-white rounded-xl shadow-2xl border border-gray-100 p-4 min-w-[600px] max-w-[800px] z-10">
                                 <div class="grid grid-rows-[repeat(10,minmax(0,1fr))] grid-flow-col gap-x-8 gap-y-2">
-                                    <a href="{{ route('books.search') }}" class="text-sm text-gray-600 hover:text-brand-green hover:font-bold truncate flex items-center">
+                                    {{-- [ĐÃ SỬA] Link "Tất cả" trỏ về danh sách sách --}}
+                                    <a href="{{ route('list') }}" class="text-sm text-gray-600 hover:text-brand-green hover:font-bold truncate flex items-center">
                                         <i class="fas fa-caret-right text-gray-300 mr-2 text-xs"></i> Tất cả
                                     </a>
                                     @if(isset($menuCategories))
                                         @foreach($menuCategories as $cat)
-                                            <a href="{{ route('books.search', ['category_id' => $cat->id]) }}" class="text-sm text-gray-600 hover:text-brand-green hover:font-bold truncate block py-0.5">{{ $cat->name }}</a>
+                                            {{-- [ĐÃ SỬA] Link từng danh mục cũng trỏ về danh sách sách --}}
+                                            <a href="{{ route('list', ['category_id' => $cat->id]) }}" class="text-sm text-gray-600 hover:text-brand-green hover:font-bold truncate block py-0.5">{{ $cat->name }}</a>
                                         @endforeach
                                     @endif
                                 </div>
                             </div>
                         </div>
 
+                        {{-- Input tìm kiếm --}}
                         <input type="text" name="keyword" value="{{ request('keyword') }}" placeholder="Nhập tên sách, tác giả..." class="w-full bg-gray-50 border border-gray-200 hover:border-brand-green/30 focus:border-brand-green/50 rounded-full py-2.5 pl-28 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green/10 transition-all text-gray-700 placeholder-gray-400 shadow-inner">
                         <button type="submit" class="absolute right-2 top-1.5 w-8 h-8 bg-brand-green text-white rounded-full flex items-center justify-center hover:bg-brand-accent transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5"><i class="fas fa-search text-xs"></i></button>
                     </form>

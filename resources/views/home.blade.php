@@ -94,6 +94,39 @@
 
     {{-- MAIN LAYOUT --}}
     <main class="container mx-auto px-4 py-12">
+        
+        {{-- ================================================================= --}}
+        {{-- [MỚI] KHU VỰC TÌM KIẾM (Đã chỉnh sửa để hoạt động với BookController) --}}
+        {{-- ================================================================= --}}
+        <div class="relative w-full max-w-2xl mx-auto -mt-20 mb-16 z-30">
+            <div class="bg-white p-2 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-gray-100">
+                <form action="{{ route('list') }}" method="GET" class="relative group flex items-center">
+                    <div class="pl-4 text-gray-400">
+                        <i class="fas fa-search text-lg"></i>
+                    </div>
+                    
+                    <input 
+                        type="text" 
+                        name="keyword" 
+                        id="search-input"
+                        autocomplete="off" 
+                        placeholder="Tìm kiếm sách, tác giả, thể loại..." 
+                        class="w-full pl-4 pr-4 py-3 rounded-full border-none focus:ring-0 outline-none text-gray-700 font-medium placeholder-gray-400"
+                    >
+                    
+                    <button type="submit" class="bg-brand-green text-white px-6 py-2.5 rounded-full font-bold hover:bg-green-700 transition-colors shadow-lg shadow-brand-green/30 flex-shrink-0 mr-1">
+                        Tìm Kiếm
+                    </button>
+
+                    {{-- [MỚI] KHU VỰC GỢI Ý KẾT QUẢ (AJAX DROPDOWN) --}}
+                    <div id="search-suggestions" class="hidden absolute left-0 right-0 top-full mt-3 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-[100]">
+                        {{-- Kết quả Ajax sẽ được JS đổ vào đây --}}
+                    </div>
+                </form>
+            </div>
+        </div>
+        {{-- ================================================================= --}}
+
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
             
             {{-- [CỘT TRÁI - 8 PHẦN] --}}
@@ -163,8 +196,12 @@
                         <h2 class="text-2xl font-bold text-gray-800 font-serif border-l-4 border-brand-green pl-3">Sách Mới Cập Nhật</h2>
                         <a href="{{ route('books.list') }}" class="text-xs font-bold px-3 py-1 bg-gray-100 text-gray-500 hover:bg-brand-green hover:text-white rounded-full transition">Xem kho sách</a>
                     </div>
-                    <div class="relative px-2">
-                        <button id="btnPrevNewBooks" class="absolute left-0 top-1/3 -translate-y-1/2 -ml-5 z-10 w-10 h-10 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-brand-green hover:scale-110 transition opacity-0 group-hover/slider:opacity-100 duration-300"><i class="fas fa-chevron-left"></i></button>
+                    
+                    <div class="relative px-2"> {{-- Thêm padding để nút không bị dính sát --}}
+                        <button id="btnPrevNewBooks" class="absolute left-0 top-1/3 -translate-y-1/2 -ml-5 z-10 w-10 h-10 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-brand-green hover:scale-110 transition opacity-0 group-hover/slider:opacity-100 duration-300">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+
                         <div id="sliderNewBooks" class="flex gap-5 overflow-x-auto scroll-smooth no-scrollbar pb-4" style="scroll-behavior: smooth;">
                             @if(isset($books) && $books->count() > 0)
                                 @foreach($books->take(10) as $book) 
@@ -173,6 +210,8 @@
                                             ? (str_starts_with($book->cover_image, 'http') ? $book->cover_image : asset('storage/' . $book->cover_image))
                                             : 'https://via.placeholder.com/150x225?text=No+Image';
                                     @endphp
+
+                                    {{-- [SỬA] Giới hạn chiều rộng thẻ chứa sách --}}
                                     <div class="w-32 md:w-40 flex-shrink-0 group flex flex-col">
                                         <div class="relative w-full aspect-[2/3] rounded-lg overflow-hidden shadow-md mb-2 border border-gray-100 bg-gray-50">
                                             <a href="{{ route('detail', $book->slug) }}">
@@ -201,6 +240,8 @@
                             <h2 class="text-2xl font-bold text-gray-800 font-serif border-l-4 border-brand-accent pl-3">Cộng Đồng Review</h2>
                             <p class="text-sm text-gray-500 pl-4 mt-1">Góc chia sẻ cảm nhận chân thực từ độc giả</p>
                         </div>
+                        
+                        {{-- [MỚI] Bộ lọc Review --}}
                         <div class="bg-gray-100 p-1 rounded-full flex text-xs font-bold shadow-inner">
                             <a href="{{ route('home', array_merge(request()->query(), ['sort_review' => 'latest', 'page' => 1])) }}#community-posts" 
                                class="px-5 py-2 rounded-full transition-all duration-300 {{ request('sort_review', 'latest') == 'latest' ? 'bg-white text-brand-green shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">Mới nhất</a>
@@ -289,39 +330,62 @@
                                 </div>
                              @endforeach
 
-                             {{-- PHÂN TRANG CUSTOM --}}
+                             {{-- PHÂN TRANG (Custom trực tiếp, không cần file ngoài) --}}
                              @if ($latestComments->hasPages())
                                  <div class="mt-10 flex justify-center">
                                      <nav role="navigation" aria-label="Pagination" class="flex items-center gap-1 bg-white p-1.5 rounded-full shadow-sm border border-gray-100">
+                                         
+                                         {{-- Nút Previous --}}
                                          @if ($latestComments->onFirstPage())
                                              <span class="w-9 h-9 flex items-center justify-center rounded-full text-gray-300 cursor-not-allowed"><i class="fas fa-chevron-left text-xs"></i></span>
                                          @else
                                              <a href="{{ $latestComments->previousPageUrl() }}#community-posts" class="w-9 h-9 flex items-center justify-center rounded-full text-gray-500 hover:bg-brand-green hover:text-white transition-all"><i class="fas fa-chevron-left text-xs"></i></a>
                                          @endif
 
+                                         {{-- Logic hiển thị số trang (Window +/- 2) --}}
                                          @php
                                              $currentPage = $latestComments->currentPage();
                                              $lastPage = $latestComments->lastPage();
                                              $start = max(1, $currentPage - 2);
                                              $end = min($lastPage, $currentPage + 2);
+                                             
+                                             // Điều chỉnh nếu đang ở mấy trang đầu hoặc cuối để luôn hiện đủ 5 nút nếu có thể
                                              if($lastPage > 5) {
                                                  if($currentPage <= 3) { $end = 5; }
                                                  if($currentPage >= $lastPage - 2) { $start = $lastPage - 4; }
                                              }
                                          @endphp
 
-                                         @if($start > 1) <a href="{{ $latestComments->url(1) }}#community-posts" class="w-9 h-9 flex items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 text-sm font-medium">1</a> @if($start > 2) <span class="w-9 h-9 flex items-center justify-center text-gray-300 text-xs">...</span> @endif @endif
+                                         {{-- Nút trang đầu tiên + Dấu ... nếu cần --}}
+                                         @if($start > 1)
+                                             <a href="{{ $latestComments->url(1) }}#community-posts" class="w-9 h-9 flex items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 text-sm font-medium transition">1</a>
+                                             @if($start > 2)
+                                                 <span class="w-9 h-9 flex items-center justify-center text-gray-300 text-xs">...</span>
+                                             @endif
+                                         @endif
 
+                                         {{-- Vòng lặp các trang ở giữa --}}
                                          @for ($i = $start; $i <= $end; $i++)
                                              @if ($i == $currentPage)
-                                                 <span class="w-9 h-9 flex items-center justify-center rounded-full bg-brand-green text-white font-bold text-sm shadow-md">{{ $i }}</span>
+                                                 <span class="w-9 h-9 flex items-center justify-center rounded-full bg-brand-green text-white font-bold text-sm shadow-md">
+                                                     {{ $i }}
+                                                 </span>
                                              @else
-                                                 <a href="{{ $latestComments->url($i) }}#community-posts" class="w-9 h-9 flex items-center justify-center rounded-full text-gray-600 hover:bg-brand-green/10 hover:text-brand-green text-sm font-medium">{{ $i }}</a>
+                                                 <a href="{{ $latestComments->url($i) }}#community-posts" class="w-9 h-9 flex items-center justify-center rounded-full text-gray-600 hover:bg-brand-green/10 hover:text-brand-green text-sm font-medium transition-all">
+                                                     {{ $i }}
+                                                 </a>
                                              @endif
                                          @endfor
 
-                                         @if($end < $lastPage) @if($end < $lastPage - 1) <span class="w-9 h-9 flex items-center justify-center text-gray-300 text-xs">...</span> @endif <a href="{{ $latestComments->url($lastPage) }}#community-posts" class="w-9 h-9 flex items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 text-sm font-medium">{{ $lastPage }}</a> @endif
+                                         {{-- Dấu ... + Nút trang cuối nếu cần --}}
+                                         @if($end < $lastPage)
+                                             @if($end < $lastPage - 1)
+                                                 <span class="w-9 h-9 flex items-center justify-center text-gray-300 text-xs">...</span>
+                                             @endif
+                                             <a href="{{ $latestComments->url($lastPage) }}#community-posts" class="w-9 h-9 flex items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 text-sm font-medium transition">{{ $lastPage }}</a>
+                                         @endif
 
+                                         {{-- Nút Next --}}
                                          @if ($latestComments->hasMorePages())
                                              <a href="{{ $latestComments->nextPageUrl() }}#community-posts" class="w-9 h-9 flex items-center justify-center rounded-full text-gray-500 hover:bg-brand-green hover:text-white transition-all"><i class="fas fa-chevron-right text-xs"></i></a>
                                          @else
@@ -390,7 +454,7 @@
                         </div>
                     </div>
 
-                    {{-- Widget 2: Thể Loại (ĐỘNG) --}}
+                    {{{-- Widget 2: Thể Loại --}}
                     <div class="bg-brand-beige/30 rounded-xl p-6 border border-brand-beige sticky top-24">
                         <h3 class="font-serif font-bold text-lg text-brand-green mb-4 flex items-center gap-2"><i class="fas fa-tags text-brand-accent"></i> Thể Loại</h3>
                         <div class="flex flex-wrap gap-2">
@@ -398,43 +462,70 @@
                                 @foreach($categories as $category)
                                     <a href="{{ route('books.list', ['categories' => [$category->name]]) }}" class="group flex items-center gap-2 bg-white text-gray-600 px-3 py-1.5 rounded-full text-xs font-bold border border-gray-100 hover:border-brand-accent hover:text-brand-accent hover:shadow-md transition-all duration-300">
                                         <span>{{ $category->name }}</span>
-                                        <span class="bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full text-[10px] group-hover:bg-brand-accent/10 group-hover:text-brand-accent transition">{{ $category->books_count ?? 0 }}</span>
+                                        {{-- Hiển thị số lượng sách (Badge nhỏ) --}}
+                                        <span class="bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full text-[10px] group-hover:bg-brand-accent/10 group-hover:text-brand-accent transition">
+                                            {{ $category->books_count ?? 0 }}
+                                        </span>
                                     </a>
                                 @endforeach
                             @else
                                 <span class="text-sm text-gray-400 italic">Đang cập nhật...</span>
                             @endif
                         </div>
+                        
+                        {{-- Nút xem tất cả nếu danh sách quá dài --}}
+                        @if(isset($categories) && $categories->count() > 10)
+                            <div class="mt-4 text-center">
+                                <a href="{{ route('list') }}" class="text-xs text-brand-green font-bold hover:underline">Xem tất cả thể loại</a>
+                            </div>
+                        @endif
                     </div>
-
-                    {{-- Widget 3: Mua Sách Giá Tốt --}}
-                    <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm mt-6 sticky top-[300px]"> {{-- Top cao hơn để không đè Widget Thể loại --}}
-                        <h3 class="font-serif font-bold text-lg text-gray-800 mb-4 flex items-center gap-2"><span class="text-brand-accent">🛒</span> Mua Sách Giá Tốt</h3>
+                </div>
+                {{-- Widget 3: Liên Kết Mua Sách --}}
+                    <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm mt-6 sticky top-24">
+                        <h3 class="font-serif font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
+                            <span class="text-brand-accent">🛒</span> Mua Sách Giá Tốt
+                        </h3>
+                        
                         <div class="space-y-3">
+                            {{-- Link Tiki --}}
                             <a href="https://tiki.vn/nha-sach-tiki/c8322" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition group bg-white">
                                 <div class="flex items-center gap-3">
                                     <img src="https://upload.wikimedia.org/wikipedia/commons/4/43/Logo_Tiki_2023.png" class="w-8 h-8 object-contain" alt="Tiki">
-                                    <div class="flex flex-col"><span class="font-bold text-sm text-gray-700 group-hover:text-blue-600">Tiki Trading</span><span class="text-[10px] text-green-600 font-bold bg-green-100 px-1.5 py-0.5 rounded w-fit">Giảm tới 35%</span></div>
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-sm text-gray-700 group-hover:text-blue-600">Tiki Trading</span>
+                                        <span class="text-[10px] text-green-600 font-bold bg-green-100 px-1.5 py-0.5 rounded w-fit">Giảm tới 35%</span>
+                                    </div>
                                 </div>
                                 <i class="fas fa-external-link-alt text-gray-300 text-xs group-hover:text-blue-500"></i>
                             </a>
+
+                            {{-- Link Shopee --}}
                             <a href="https://shopee.vn/nhasachphuongnam" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-orange-400 hover:bg-orange-50 transition group bg-white">
                                 <div class="flex items-center gap-3">
                                     <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg" class="w-8 h-8 object-contain" alt="Shopee">
-                                    <div class="flex flex-col"><span class="font-bold text-sm text-gray-700 group-hover:text-orange-600">Shopee Mall</span><span class="text-[10px] text-orange-500 font-bold bg-orange-100 px-1.5 py-0.5 rounded w-fit">Freeship Extra</span></div>
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-sm text-gray-700 group-hover:text-orange-600">Shopee Mall</span>
+                                        <span class="text-[10px] text-orange-500 font-bold bg-orange-100 px-1.5 py-0.5 rounded w-fit">Freeship Extra</span>
+                                    </div>
                                 </div>
                                 <i class="fas fa-external-link-alt text-gray-300 text-xs group-hover:text-orange-500"></i>
                             </a>
+
+                            {{-- Link Fahasa --}}
                             <a href="https://www.fahasa.com/" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-red-400 hover:bg-red-50 transition group bg-white">
                                 <div class="flex items-center gap-3">
+                                    {{-- Logo Fahasa (Placeholder text nếu không có ảnh) --}}
                                     <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-xs">F</div>
-                                    <div class="flex flex-col"><span class="font-bold text-sm text-gray-700 group-hover:text-red-600">Fahasa.com</span><span class="text-[10px] text-gray-500">Sách chính hãng</span></div>
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-sm text-gray-700 group-hover:text-red-600">Fahasa.com</span>
+                                        <span class="text-[10px] text-gray-500">Sách chính hãng</span>
+                                    </div>
                                 </div>
                                 <i class="fas fa-external-link-alt text-gray-300 text-xs group-hover:text-red-500"></i>
                             </a>
                         </div>
                     </div>
-                </div>
             </div> {{-- END CỘT 4 --}}
         </div>
     </main>

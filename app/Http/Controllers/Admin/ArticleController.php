@@ -21,7 +21,7 @@ class ArticleController extends Controller
         $article = Article::where('slug', $slug)->firstOrFail();
         // Tăng view (nếu bảng articles có cột view_count)
         // $article->increment('view_count'); 
-
+        
         return view('articles.show', compact('article'));
     }
 
@@ -54,7 +54,7 @@ class ArticleController extends Controller
             if ($article->thumbnail && !Str::startsWith($article->thumbnail, 'http')) {
                 Storage::delete('public/' . $article->thumbnail);
             }
-
+            
             // Lưu ảnh mới
             $path = $request->file('thumbnail')->store('articles', 'public');
             $data['thumbnail'] = $path;
