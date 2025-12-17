@@ -154,39 +154,4 @@ class User extends Authenticatable
             }
         }
     }
-
-    public function isAdmin()
-    {
-        return $this->role === 'admin'; 
-    }
-
-    // --- [PHẦN MỚI THÊM ĐỂ SỬA LỖI] ---
-
-    // 1. Quan hệ với Badge (Huy hiệu)
-    public function badges()
-    {
-        return $this->belongsToMany(Badge::class, 'user_badges')
-            ->withPivot('earned_at', 'expires_at')
-            ->withTimestamps();
-    }
-
-    // 2. [QUAN TRỌNG] Lấy danh hiệu còn hiệu lực (Hàm gây lỗi ActiveBadges)
-    public function activeBadges()
-    {
-        return $this->belongsToMany(Badge::class, 'user_badges')
-            ->withPivot('earned_at', 'expires_at')
-            ->where(function ($query) {
-                $query->where('expires_at', '>', now())
-                      ->orWhereNull('expires_at');
-            })
-            ->withTimestamps();
-    }
-
-    // 3. Quan hệ với Thử thách (Chuẩn bị cho tính năng Challenges)
-    public function challenges()
-    {
-        return $this->belongsToMany(Challenge::class, 'user_challenges')
-            ->withPivot('current_progress', 'status', 'joined_at', 'completed_at')
-            ->withTimestamps();
-    }
 }
