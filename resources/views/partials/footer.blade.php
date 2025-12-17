@@ -64,27 +64,27 @@
                     <ul class="space-y-3 text-sm text-gray-300">
                         <li>
                             {{-- Link tới danh sách, lọc theo slug 'tieu-thuyet' (khớp với Database của bạn) --}}
-                            <a href="{{ route('list', ['category' => 'tieu-thuyet']) }}" class="hover:text-white transition flex items-center gap-2">
+                            <a href="{{ route('books.list', ['category' => 'tieu-thuyet']) }}" class="hover:text-white transition flex items-center gap-2">
                                 <i class="fas fa-book text-xs opacity-50"></i> Tiểu thuyết
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('list', ['category' => 'kinh-te']) }}" class="hover:text-white transition flex items-center gap-2">
+                            <a href="{{ route('books.list', ['category' => 'kinh-te']) }}" class="hover:text-white transition flex items-center gap-2">
                                 <i class="fas fa-book text-xs opacity-50"></i> Kinh tế & Kinh doanh
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('list', ['category' => 'tam-ly-ky-nang-song']) }}" class="hover:text-white transition flex items-center gap-2">
+                            <a href="{{ route('books.list', ['category' => 'tam-ly-ky-nang-song']) }}" class="hover:text-white transition flex items-center gap-2">
                                 <i class="fas fa-book text-xs opacity-50"></i> Tâm lý - Kỹ năng
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('list', ['category' => 'van-hoc-nuoc-ngoai']) }}" class="hover:text-white transition flex items-center gap-2">
+                            <a href="{{ route('books.list', ['category' => 'van-hoc-nuoc-ngoai']) }}" class="hover:text-white transition flex items-center gap-2">
                                 <i class="fas fa-book text-xs opacity-50"></i> Văn học kinh điển
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('list', ['category' => 'thieu-nhi']) }}" class="hover:text-white transition flex items-center gap-2">
+                            <a href="{{ route('books.list', ['category' => 'thieu-nhi']) }}" class="hover:text-white transition flex items-center gap-2">
                                 <i class="fas fa-book text-xs opacity-50"></i> Thiếu nhi
                             </a>
                         </li>
@@ -104,7 +104,7 @@
             </div>
 
             <div class="border-t border-gray-600/50 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-400">
-                <p>Copyright © {{ date('Y') }} Mọt Sách Review. All rights reserved.</p>
+                <p>Copyright © {{ date('Y') }} Góc Sách Review. All rights reserved.</p>
                 <div class="flex gap-6">
                     <a href="{{ route('page.privacy') }}" class="hover:text-white transition">Privacy Policy</a>
                     <a href="{{ route('page.terms') }}" class="hover:text-white transition">Terms of Service</a>

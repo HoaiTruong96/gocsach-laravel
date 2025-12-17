@@ -15,28 +15,21 @@ use App\Notifications\CommentLikedNotification;
 class PostController extends Controller
 {
    public function store(Request $request)
-{
-    // 1. Validate dữ liệu (Bao gồm cả ảnh thumbnail)
-    $request->validate([
-        'book_id' => 'required|exists:books,id',
-        'rating'  => 'required|integer|min:1|max:5',
-        'title'   => 'required|string|max:255',
-        'content' => 'required|min:10',
-        'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validate ảnh
-    ], [
-        'book_id.exists' => 'Vui lòng chọn một cuốn sách hợp lệ.',
-        'title.required' => 'Bạn chưa nhập tiêu đề bài viết.',
-        'content.min' => 'Nội dung review quá ngắn.',
-        'thumbnail.image' => 'File tải lên phải là hình ảnh.',
-        'thumbnail.max' => 'Ảnh không được lớn hơn 2MB.',
-    ]);
-
-    // 2. Xử lý Upload Ảnh (Nếu có)
-    $thumbnailPath = null;
-    if ($request->hasFile('thumbnail')) {
-        // Lưu ảnh vào thư mục storage/app/public/posts
-        $thumbnailPath = $request->file('thumbnail')->store('posts', 'public');
-    }
+   {
+        // 1. Validate dữ liệu
+        $request->validate([
+            'book_id' => 'required|exists:books,id',
+            'rating'  => 'required|integer|min:1|max:5',
+            'title'   => 'required|string|max:255',
+            'content' => 'required|min:10',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            'book_id.exists' => 'Vui lòng chọn một cuốn sách hợp lệ.',
+            'title.required' => 'Bạn chưa nhập tiêu đề bài viết.',
+            'content.min' => 'Nội dung review quá ngắn.',
+            'thumbnail.image' => 'File tải lên phải là hình ảnh.',
+            'thumbnail.max' => 'Ảnh không được lớn hơn 2MB.',
+        ]);
 
     // 3. Tạo Slug
     $slug = \Illuminate\Support\Str::slug($request->title) . '-' . time();
@@ -52,16 +45,19 @@ class PostController extends Controller
         
         'thumbnail'    => $thumbnailPath, // [QUAN TRỌNG 1] Lưu đường dẫn ảnh
         
-        'status'       => 'pending',      // [QUAN TRỌNG 2] Đặt trạng thái chờ duyệt
+        // 5. Cập nhật tiến độ Thử Thách
+        // Lưu ý: Vì status là 'pending' nên đoạn này tạm thời sẽ KHÔNG chạy ngay.
+        // Logic cộng điểm nên được đặt ở Controller của Admin khi bấm nút "Duyệt bài".
+        if ($post->status == 'published') {
+            Auth::user()->updateChallengeProgress();
+        }
         
-        'published_at' => now(),          // Ngày gửi bài
-    ]);
-    
-    // 5. Quay về Profile với thông báo chờ duyệt
-    return redirect()->route('profile', \Illuminate\Support\Facades\Auth::id())
-                     ->with('success', 'Bài viết đã được gửi và đang chờ Admin phê duyệt!');
-}
-     public function toggleLike($id)
+        return redirect()->route('profile', Auth::id())
+                        ->with('success', 'Đã gửi bài viết! Vui lòng chờ Admin phê duyệt.');
+   }
+
+    // Toggle Like (Giữ nguyên)
+    public function toggleLike($id)
     {
         $user = Auth::user();
         if (!$user) return response()->json(['error' => 'Bạn cần đăng nhập!'], 401);
@@ -96,7 +92,7 @@ class PostController extends Controller
         ]);
     }
 
-    // 3. Xử lý Ajax Comment
+    // Post Comment (Giữ nguyên)
     public function postComment(Request $request, $id)
     {
         $user = Auth::user();
