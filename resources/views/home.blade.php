@@ -128,7 +128,6 @@
                                     <i class="fas fa-edit"></i>
                                 </a>
                             @endif
-
                             <div class="relative h-64 md:h-80 rounded-2xl overflow-hidden mb-4 shadow-md">
                                 <img src="{{ $featuredArticle->thumbnail }}" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-700">
                                 <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
@@ -388,147 +387,37 @@
 
 @push('scripts')
 <script>
-    // ==========================================
-    // 1. AJAX REVIEW LOGIC (NEW: Sort + Pagination)
-    // ==========================================
-    let currentSortType = 'latest'; 
+    // --- Slider Hero ---
+    let currentSlide = 0;
+    const totalSlides = {{ count($heroSlides) }};
+    const sliderWrapper = document.getElementById('sliderWrapper');
+    const currentUserId = "{{ Auth::id() }}"; // Lấy ID user hiện tại để check login
 
-    function loadComments(param) {
-        let url = '';
-
-        // Trường hợp 1: Chuyển Tab (param = 'latest' hoặc 'popular')
-        if (param === 'latest' || param === 'popular') {
-            currentSortType = param;
-            url = `/?sort_review=${param}`; // Reset về trang 1
-            updateTabUI(param);
-        } 
-        // Trường hợp 2: Chuyển trang (param là URL phân trang)
-        else {
-            url = param;
-            if (!url.includes('sort_review')) {
-                url += `&sort_review=${currentSortType}`;
+    function updateSlider() {
+        if (!sliderWrapper) return;
+        sliderWrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+        
+        // Update dots
+        document.querySelectorAll('.indicator-dot').forEach((dot, index) => {
+            if (index === currentSlide) {
+                dot.classList.add('bg-brand-accent', 'w-8');
+                dot.classList.remove('bg-white/30');
+            } else {
+                dot.classList.remove('bg-brand-accent', 'w-8');
+                dot.classList.add('bg-white/30');
             }
-        }
-
-        // Hiện Loading
-        const container = document.getElementById('comments-container');
-        const spinner = document.getElementById('loading-spinner');
-        if(spinner) spinner.classList.remove('hidden'); 
-
-        // Gọi Ajax
-        fetch(url, {
-            headers: { "X-Requested-With": "XMLHttpRequest" }
-        })
-        .then(response => response.text())
-        .then(html => {
-            const spinnerHtml = `<div id="loading-spinner" class="hidden absolute inset-0 bg-white/80 z-10 flex items-center justify-center"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-green"></div></div>`;
-            container.innerHTML = spinnerHtml + html;
-            
-            // Gán lại sự kiện cho phân trang mới sinh ra
-            attachPaginationEvents();
-            
-            // Scroll nhẹ
-            document.getElementById('community-posts').scrollIntoView({ behavior: 'smooth' });
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Có lỗi khi tải dữ liệu.');
-        })
-        .finally(() => {
-            const newSpinner = document.getElementById('loading-spinner');
-            if(newSpinner) newSpinner.classList.add('hidden');
         });
     }
+    function nextSlide() { currentSlide = (currentSlide + 1) % totalSlides; updateSlider(); }
+    function prevSlide() { currentSlide = (currentSlide - 1 + totalSlides) % totalSlides; updateSlider(); }
+    function goToSlide(index) { currentSlide = index; updateSlider(); }
+    if (totalSlides > 0) setInterval(nextSlide, 5000);
 
-    function updateTabUI(sortType) {
-        const tabLatest = document.getElementById('tab-latest');
-        const tabPopular = document.getElementById('tab-popular');
-        const activeClass = ['bg-white', 'text-brand-green', 'shadow-sm'];
-        const inactiveClass = ['text-gray-500', 'hover:text-gray-700'];
-
-        if (sortType === 'latest') {
-            tabLatest.classList.add(...activeClass);
-            tabLatest.classList.remove(...inactiveClass);
-            tabPopular.classList.remove(...activeClass);
-            tabPopular.classList.add(...inactiveClass);
-        } else {
-            tabPopular.classList.add(...activeClass);
-            tabPopular.classList.remove(...inactiveClass);
-            tabLatest.classList.remove(...activeClass);
-            tabLatest.classList.add(...inactiveClass);
-        }
-    }
-
-    function attachPaginationEvents() {
-        const paginationLinks = document.querySelectorAll('.ajax-pagination-link');
-        paginationLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const url = this.getAttribute('href');
-                if (url) loadComments(url);
-            });
-        });
-    }
-
-    // ==========================================
-    // 2. HERO SLIDER & OTHER EVENTS
-    // ==========================================
+    // --- Slider Sách Mới (Scroll) ---
     document.addEventListener('DOMContentLoaded', function() {
-        
-        // --- Init Pagination Events ---
-        attachPaginationEvents();
-
-        // --- Hero Slider ---
-        const sliderWrapper = document.getElementById('sliderWrapper');
-        const dots = document.querySelectorAll('.indicator-dot');
-        const prevBtn = document.getElementById('heroPrevBtn');
-        const nextBtn = document.getElementById('heroNextBtn');
-        
-        const totalSlides = {{ isset($heroSlides) ? count($heroSlides) : 0 }};
-        let currentSlide = 0;
-        let slideInterval;
-
-        if(totalSlides > 1) {
-            function updateSlider() {
-                if (!sliderWrapper) return;
-                sliderWrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
-                dots.forEach((dot, index) => {
-                    if (index === currentSlide) {
-                        dot.classList.add('bg-brand-accent', 'w-8');
-                        dot.classList.remove('bg-white/30');
-                    } else {
-                        dot.classList.remove('bg-brand-accent', 'w-8');
-                        dot.classList.add('bg-white/30');
-                    }
-                });
-            }
-
-            function nextSlide() { currentSlide = (currentSlide + 1) % totalSlides; updateSlider(); resetTimer(); }
-            function prevSlide() { currentSlide = (currentSlide - 1 + totalSlides) % totalSlides; updateSlider(); resetTimer(); }
-            function startTimer() { slideInterval = setInterval(nextSlide, 5000); }
-            function resetTimer() { clearInterval(slideInterval); startTimer(); }
-
-            if(nextBtn) nextBtn.addEventListener('click', nextSlide);
-            if(prevBtn) prevBtn.addEventListener('click', prevSlide);
-
-            dots.forEach((dot) => {
-                dot.addEventListener('click', function() {
-                    const index = parseInt(this.getAttribute('data-index'));
-                    currentSlide = index;
-                    updateSlider();
-                    resetTimer();
-                });
-            });
-            startTimer();
-        } else {
-            if(prevBtn) prevBtn.style.display = 'none';
-            if(nextBtn) nextBtn.style.display = 'none';
-        }
-
-        // --- New Books Slider ---
-        const sliderNewBooks = document.getElementById('sliderNewBooks');
-        const btnPrevNew = document.getElementById('btnPrevNewBooks');
-        const btnNextNew = document.getElementById('btnNextNewBooks');
+        const slider = document.getElementById('sliderNewBooks');
+        const btnPrev = document.getElementById('btnPrevNewBooks');
+        const btnNext = document.getElementById('btnNextNewBooks');
 
         if(sliderNewBooks && btnPrevNew && btnNextNew) {
             btnNextNew.addEventListener('click', () => { sliderNewBooks.scrollBy({ left: 220, behavior: 'smooth' }); });
