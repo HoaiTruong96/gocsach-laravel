@@ -22,7 +22,7 @@
             <p class="text-gray-500 text-lg">Chọn tiêu chí, nhập thông tin và nhấn nút để lọc sách từ thư viện</p>
         </div>
 
-        <!-- KHU VỰC THÔNG BÁO LỖI (Mới thêm) -->
+        <!-- KHU VỰC THÔNG BÁO LỖI -->
         <div class="max-w-3xl mx-auto mb-6">
             @if(session('error'))
                 <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-sm flex items-center animate-pulse">
@@ -104,12 +104,48 @@
                 </form>
             </div>
             
-            <!-- Quick Suggestions -->
-            <div class="mt-4 text-center text-sm text-gray-500 flex flex-wrap justify-center gap-x-4 gap-y-2">
-                <span class="text-gray-400">Gợi ý nhanh:</span>
-                <button type="button" onclick="quickFilter('view_count', 2000)" class="hover:text-brand-green hover:underline transition"><i class="fas fa-eye text-xs"></i> >2k Xem</button>
-                <button type="button" onclick="quickFilter('avg_rating', 4.5)" class="hover:text-brand-green hover:underline transition"><i class="fas fa-star text-xs"></i> >4.5 Sao</button>
-                <button type="button" onclick="resetFilter('Nguyễn Nhật Ánh')" class="hover:text-brand-green hover:underline transition"><i class="fas fa-book text-xs"></i> Nguyễn Nhật Ánh</button>
+            <!-- Quick Suggestions (ĐÃ CẬP NHẬT NGẪU NHIÊN TỪ DB) -->
+            <div class="mt-4 text-center text-sm text-gray-500 flex flex-wrap justify-center gap-3">
+                <span class="text-gray-400 flex items-center">Gợi ý nhanh:</span>
+                
+                @php
+                    // Mảng dữ liệu ngẫu nhiên cho số liệu
+                    $randomViews = [1000, 2000, 3000, 5000, 10000];
+                    $view = $randomViews[array_rand($randomViews)];
+
+                    $randomRatings = [3.5, 4.0, 4.2, 4.5, 4.8];
+                    $rating = $randomRatings[array_rand($randomRatings)];
+
+                    // Lấy tên tác giả ngẫu nhiên trực tiếp từ Database
+                    try {
+                        $author = \App\Models\Book::inRandomOrder()->value('author_name');
+                    } catch (\Exception $e) {
+                        $author = null;
+                    }
+
+                    // Fallback nếu chưa có dữ liệu hoặc lỗi
+                    if (!$author) {
+                        $author = 'Nguyễn Nhật Ánh';
+                    }
+                @endphp
+
+                {{-- Button 1: Lượt xem Ngẫu nhiên --}}
+                <button type="button" onclick="quickFilter('view_count', {{ $view }})" 
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-white text-gray-600 text-xs font-medium hover:border-brand-green hover:text-brand-green hover:bg-green-50 transition-all shadow-sm">
+                    <i class="fas fa-eye text-blue-500"></i> > {{ $view >= 1000 ? ($view/1000) . 'k' : $view }} Xem
+                </button>
+
+                {{-- Button 2: Đánh giá Ngẫu nhiên --}}
+                <button type="button" onclick="quickFilter('avg_rating', {{ $rating }})" 
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-white text-gray-600 text-xs font-medium hover:border-brand-green hover:text-brand-green hover:bg-green-50 transition-all shadow-sm">
+                    <i class="fas fa-star text-yellow-500"></i> > {{ $rating }} Sao
+                </button>
+
+                {{-- Button 3: Tác giả Ngẫu nhiên từ DB --}}
+                <button type="button" onclick="resetFilter('{{ $author }}')" 
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-white text-gray-600 text-xs font-medium hover:border-brand-green hover:text-brand-green hover:bg-green-50 transition-all shadow-sm">
+                    <i class="fas fa-book text-brand-green"></i> {{ $author }}
+                </button>
             </div>
         </div>
 
@@ -199,7 +235,6 @@
 
     </main>
 
-    <!-- Script UI Interaction -->
     <script>
         function toggleDropdown() {
             document.getElementById('filterMenu').classList.toggle('hidden');
@@ -213,24 +248,30 @@
             }
         });
 
-        // Hàm chọn Filter (Thêm logic chặn số âm ở UI)
+        // Hàm helper để cập nhật input
+        function updateInputAttributes(inputType, placeholder) {
+            const input = document.getElementById('searchInput');
+            input.placeholder = placeholder;
+            input.type = inputType;
+            
+            if(inputType === 'number') {
+                input.setAttribute('min', '0');
+                input.setAttribute('step', 'any');
+            } else {
+                input.removeAttribute('min');
+                input.removeAttribute('step');
+            }
+        }
+
         function selectFilter(filterKey, label, placeholder, inputType) {
             document.getElementById('filterTypeInput').value = filterKey;
             document.getElementById('currentFilterLabel').textContent = label;
             document.getElementById('filterMenu').classList.add('hidden');
             
             const input = document.getElementById('searchInput');
-            input.placeholder = placeholder;
             input.value = ''; 
-            input.type = inputType; 
             
-            // Nếu là input số, thêm thuộc tính min="0" để ngăn nhập số âm từ giao diện
-            if(inputType === 'number') {
-                input.setAttribute('min', '0');
-            } else {
-                input.removeAttribute('min');
-            }
-            
+            updateInputAttributes(inputType, placeholder);
             input.focus();
         }
 
@@ -251,5 +292,29 @@
             document.getElementById('searchInput').value = value;
             document.getElementById('searchForm').submit();
         }
+
+        // Khôi phục trạng thái input khi tải lại trang
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentType = document.getElementById('filterTypeInput').value;
+            let placeholder = 'Nhập tên sách, tác giả...';
+            let inputType = 'text';
+
+            switch(currentType) {
+                case 'view_count':
+                    placeholder = 'Nhập số lượt xem tối thiểu...';
+                    inputType = 'number';
+                    break;
+                case 'avg_rating':
+                    placeholder = 'Nhập điểm tối thiểu (1-5)...';
+                    inputType = 'number';
+                    break;
+                case 'total_reviews':
+                    placeholder = 'Nhập số bài review tối thiểu...';
+                    inputType = 'number';
+                    break;
+            }
+            
+            updateInputAttributes(inputType, placeholder);
+        });
     </script>
 @endsection
