@@ -128,7 +128,6 @@
                                     <i class="fas fa-edit"></i>
                                 </a>
                             @endif
-
                             <div class="relative h-64 md:h-80 rounded-2xl overflow-hidden mb-4 shadow-md">
                                 <img src="{{ $featuredArticle->thumbnail }}" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-700">
                                 <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
@@ -457,7 +456,6 @@
             tabLatest.classList.remove(...activeClass);
             tabLatest.classList.add(...inactiveClass);
         }
-    }
 
     function attachPaginationEvents() {
         const paginationLinks = document.querySelectorAll('.ajax-pagination-link');
