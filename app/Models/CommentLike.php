@@ -9,14 +9,9 @@ class CommentLike extends Model
 {
     use HasFactory;
 
-    // Khai báo tên bảng (dựa theo hình ảnh bạn gửi)
-    protected $table = 'comment_likes'; 
+    protected $table = 'comment_likes'; // Quan trọng: Khai báo đúng tên bảng
 
-    protected $fillable = [
-        'user_id',
-        'comment_id', //
-        'is_like',    //
-    ];
+    protected $fillable = ['user_id', 'comment_id', 'is_like'];
 
     public function user()
     {
