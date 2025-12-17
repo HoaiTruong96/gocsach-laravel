@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Book; 
 use App\Models\Post; 
-use Illuminate\Support\Str; // [MỚI] Thêm thư viện xử lý chuỗi
+use Illuminate\Support\Str; // Thư viện xử lý chuỗi
 
 class BookController extends Controller
 {
@@ -18,9 +18,9 @@ class BookController extends Controller
 
         $filter = $request->get('filter', 'latest');
         
-        // Chỉ lấy những bài đã được duyệt (published)
+        // Chỉ lấy những bài đã được duyệt (published) nếu có cột status
+        // Nếu chưa có cột status thì bỏ dòng ->where('status', 'published')
         $query = Post::with(['user', 'book'])
-            ->where('status', 'published') // [QUAN TRỌNG]
             ->withCount(['likes', 'comments']);
 
         if ($filter == 'viewed') {
@@ -50,10 +50,11 @@ class BookController extends Controller
     // =========================================================================
     public function show($id)
     {
-        // Tìm sách theo ID hoặc Slug
-        $query = Book::withCount(['posts' => function ($q) {
-            $q->where('status', 'published'); // Chỉ đếm bài đã duyệt
-        }]);
+        // 1. Tìm sách hiện tại
+        $query = Book::with(['categories']) // Load thêm categories để tìm sách liên quan
+            ->withCount(['posts' => function ($q) {
+                $q->where('status', 'published');
+            }]);
 
         if (is_numeric($id)) {
             $book = $query->find($id);
@@ -65,11 +66,10 @@ class BookController extends Controller
             return redirect()->route('home')->with('error', 'Không tìm thấy sách!');
         }
 
-        // Tăng lượt xem (nếu cần)
+        // Tăng view
         $book->increment('view_count');
 
-        // Lấy 3 review mới nhất để hiện ở trang chi tiết (Eager loading tối ưu)
-        // Dùng quan hệ 'reviews' đã định nghĩa trong Model
+        // 2. Lấy Review (Giữ nguyên code cũ)
         $reviews = $book->reviews()
             ->where('status', 'published')
             ->with(['user', 'likes', 'comments'])
@@ -77,11 +77,36 @@ class BookController extends Controller
             ->take(3)
             ->get();
 
-        return view('book-detail', compact('book', 'reviews'));
+        // 3. [MỚI] Lấy sách liên quan (Cùng danh mục)
+        $relatedBooks = collect();
+        
+        if ($book->categories->isNotEmpty()) {
+            // Lấy danh sách ID các danh mục của sách này
+            $categoryIds = $book->categories->pluck('id');
+
+            $relatedBooks = Book::whereHas('categories', function ($q) use ($categoryIds) {
+                                    $q->whereIn('categories.id', $categoryIds);
+                                })
+                                ->where('id', '!=', $book->id) // Loại trừ sách đang xem
+                                ->inRandomOrder() // Lấy ngẫu nhiên
+                                ->take(5) // Lấy 5 cuốn
+                                ->get();
+        }
+
+        // Nếu không có sách cùng danh mục, lấy sách ngẫu nhiên khác
+        if ($relatedBooks->isEmpty()) {
+            $relatedBooks = Book::where('id', '!=', $book->id)
+                                ->inRandomOrder()
+                                ->take(5)
+                                ->get();
+        }
+
+        // Truyền biến $relatedBooks sang View
+        return view('book-detail', compact('book', 'reviews', 'relatedBooks'));
     }
 
     // =========================================================================
-    // 3. TÌM KIẾM (TRANG KẾT QUẢ)
+    // 3. TÌM KIẾM (TRANG KẾT QUẢ RIÊNG)
     // =========================================================================
     public function search(Request $request)
     {
@@ -97,43 +122,47 @@ class BookController extends Controller
     }
 
     // =========================================================================
-    // 4. AJAX SEARCH (CHO THANH TÌM KIẾM HEADER)
+    // 4. AJAX SEARCH (CHO THANH TÌM KIẾM HEADER - ĐÃ SỬA URL & ẢNH)
     // =========================================================================
     public function ajaxSearch(Request $request)
-{
-    $keyword = $request->get('keyword');
-    
-    if(empty($keyword)) {
-        return response()->json([]);
-    }
+    {
+        $keyword = $request->get('keyword');
+        
+        if(empty($keyword)) {
+            return response()->json([]);
+        }
 
-    $books = Book::where('title', 'like', '%' . $keyword . '%')
-                ->take(5)
-                ->get()
-                ->map(function($book) {
-                    
-                    // Xử lý ảnh: Check xem là link online hay file upload
-                    $cover = $book->cover_image;
-                    if (!empty($cover) && str_starts_with($cover, 'http')) {
-                        $imageUrl = $cover; 
-                    } else {
-                        $imageUrl = $cover ? asset('storage/' . $cover) : 'https://via.placeholder.com/50'; 
-                    }
-
-                    return [
-                        'title' => $book->title,
-                        'author_name' => $book->author_name ?? 'Đang cập nhật',
-                        'image_url' => $imageUrl,
+        $books = Book::where('title', 'like', '%' . $keyword . '%')
+                    ->take(5)
+                    ->get()
+                    ->map(function($book) {
                         
-                        // [QUAN TRỌNG] Tạo đường dẫn chuẩn từ Server gửi xuống
-                        // Giả sử tên route chi tiết sách của bạn là 'detail'. 
-                        // Nếu tên route khác (ví dụ: 'books.show'), hãy đổi 'detail' thành tên đó.
-                        'url' => route('detail', $book->slug), 
-                    ];
-                });
+                        // Xử lý ảnh: Check link online hoặc file upload
+                        $cover = $book->cover_image;
+                        $imageUrl = 'https://via.placeholder.com/50';
 
-    return response()->json($books);
-}
+                        if (!empty($cover)) {
+                            // Dùng Str::startsWith để kiểm tra http
+                            if (Str::startsWith($cover, 'http')) {
+                                $imageUrl = $cover;
+                            } else {
+                                $imageUrl = asset('storage/' . $cover);
+                            }
+                        }
+
+                        return [
+                            'title' => $book->title,
+                            'author_name' => $book->author_name ?? 'Đang cập nhật',
+                            'image_url' => $imageUrl, 
+                            
+                            // Link chi tiết chuẩn (Sử dụng route 'detail')
+                            // Đảm bảo trong web.php có: Route::get('/chi-tiet/{slug}', ...)->name('detail');
+                            'url' => route('detail', $book->slug), 
+                        ];
+                    });
+
+        return response()->json($books);
+    }
 
     // =========================================================================
     // 5. SÁCH MỚI CẬP NHẬT
@@ -164,34 +193,4 @@ class BookController extends Controller
             'pageTitle' => 'Đánh giá sách: ' . $book->title
         ]);
     }
-    public function ajaxSearch(Request $request)
-{
-    $keyword = $request->get('keyword');
-    
-    if(empty($keyword)) {
-        return response()->json([]);
-    }
-
-    $books = Book::where('title', 'like', '%' . $keyword . '%')
-                ->take(5)
-                ->get()
-                ->map(function($book) {
-                    // 1. Xử lý logic ảnh (Giống hệt bên Blade view)
-                    $cover = $book->cover_image;
-                    if (!empty($cover) && str_starts_with($cover, 'http')) {
-                        $imageUrl = $cover; // Nếu là link online thì giữ nguyên
-                    } else {
-                        $imageUrl = $cover ? asset('storage/' . $cover) : 'https://via.placeholder.com/50'; // Nếu là file thì thêm storage/
-                    }
-
-                    return [
-                        'title' => $book->title,
-                        'author_name' => $book->author_name,
-                        'image_url' => $imageUrl, // Dùng biến đã xử lý
-                        'url' => route('detail', $book->slug), 
-                    ];
-                });
-
-    return response()->json($books);
-}
 }
