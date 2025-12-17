@@ -90,6 +90,45 @@
                             </div>
                         </div>
                     </div>
+                    {{-- [MỚI] KHUNG HIỂN THỊ DANH HIỆU (BADGES) --}}
+                    @if($user->activeBadges && $user->activeBadges->count() > 0)
+                        <div class="mb-6 border-t border-b border-gray-100 py-4">
+                            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">
+                                <i class="fas fa-medal mr-1"></i> Danh Hiệu
+                            </h4>
+                            
+                            <div class="flex justify-center flex-wrap gap-3">
+                                @foreach($user->activeBadges as $badge)
+                                    @php
+                                        // Kiểm tra icon là link online hay file trong storage
+                                        $iconUrl = \Illuminate\Support\Str::startsWith($badge->icon, 'http') 
+                                            ? $badge->icon 
+                                            : asset('storage/' . $badge->icon);
+                                    @endphp
+                                    
+                                    <div class="group relative cursor-help">
+                                        {{-- Icon Huy Hiệu --}}
+                                        <img src="{{ $iconUrl }}" 
+                                             alt="{{ $badge->name }}" 
+                                             class="w-12 h-12 object-contain drop-shadow-sm transform group-hover:scale-110 transition duration-300">
+                                        
+                                        {{-- Tooltip hiển thị tên khi di chuột vào --}}
+                                        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-max">
+                                            <div class="bg-gray-800 text-white text-xs rounded py-1 px-3 shadow-lg text-center">
+                                                <div class="font-bold">{{ $badge->name }}</div>
+                                                @if($badge->description)
+                                                    <div class="text-[10px] text-gray-300 font-normal">{{ $badge->description }}</div>
+                                                @endif
+                                            </div>
+                                            {{-- Mũi tên nhỏ của tooltip --}}
+                                            <div class="w-2 h-2 bg-gray-800 transform rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2"></div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                    {{-- KẾT THÚC KHUNG DANH HIỆU --}}
                     
                     <div class="text-xs text-gray-400 space-y-1.5 mb-6 text-left pl-2">
                         <p><i class="far fa-calendar-alt mr-2 w-4 text-center"></i> Tham gia: <span class="text-gray-600">{{ $user->created_at ? $user->created_at->format('d/m/Y') : 'N/A' }}</span></p>

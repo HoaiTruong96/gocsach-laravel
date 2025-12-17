@@ -104,7 +104,7 @@
             </div>
 
             <div class="border-t border-gray-600/50 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-400">
-                <p>Copyright © {{ date('Y') }} Mọt Sách Review. All rights reserved.</p>
+                <p>Copyright © {{ date('Y') }} Góc Sách Review. All rights reserved.</p>
                 <div class="flex gap-6">
                     <a href="{{ route('page.privacy') }}" class="hover:text-white transition">Privacy Policy</a>
                     <a href="{{ route('page.terms') }}" class="hover:text-white transition">Terms of Service</a>

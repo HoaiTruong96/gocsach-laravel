@@ -4,20 +4,24 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use stdClass;
 use App\Models\User;
 
 class ProfileController extends Controller
 {
-     public function index(Request $request, $id = null)
+    public function index(Request $request, $id = null)
     {
-        // 1. XÁC ĐỊNH USER
+        // 1. XÁC ĐỊNH USER VÀ LẤY KÈM HUY HIỆU (BADGES)
         if ($id) {
-            $user = User::find($id);
+            // [QUAN TRỌNG] Thêm with('activeBadges') để lấy danh hiệu còn hạn
+            $user = User::with('activeBadges')->find($id);
+            
             if (!$user) return redirect()->route('home')->with('error', 'Người dùng không tồn tại!');
         } else {
             $user = Auth::user();
             if (!$user) return redirect()->route('login');
+            
+            // Nếu là chính mình, nạp thêm quan hệ badges vào
+            $user->load('activeBadges');
         }
 
         // 2. THỐNG KÊ
@@ -26,8 +30,7 @@ class ProfileController extends Controller
         $totalFollowing = $user->followings()->count();
         $totalFollowers = $user->followers()->count();
 
-        // 2. Lấy danh sách bài Review (CÓ PHÂN QUYỀN)
-        // [SỬA ĐOẠN NÀY] Khởi tạo query
+        // 3. Lấy danh sách bài Review (CÓ PHÂN QUYỀN)
         $reviewsQuery = $user->posts()
                         ->with('book') // Lấy kèm thông tin sách
                         ->withCount(['likes', 'comments'])
@@ -38,11 +41,11 @@ class ProfileController extends Controller
         if (Auth::id() != $user->id) {
             $reviewsQuery->where('status', 'published');
         }
-        // Nếu là chủ nhà (Auth::id() == $user->id) -> Không lọc, xem hết (pending, published, rejected)
+        // Nếu là chủ nhà -> Xem hết (pending, published, rejected)
 
         $reviews = $reviewsQuery->paginate(10);
 
-        // 3. Lấy sách trong tủ
+        // 4. Lấy sách trong tủ
         $query = $user->bookshelves()->orderByPivot('created_at', 'desc');
 
         if ($request->has('status')) {
@@ -57,7 +60,7 @@ class ProfileController extends Controller
         return view('profile', [
             'user' => $user,
             'reviews' => $reviews,
-            'myBooks' => $myBooks, // Biến này giờ chỉ chứa sách yêu thích
+            'myBooks' => $myBooks,
             'totalBooks' => $totalBooks,
             'totalReviews' => $totalReviews,
             'totalFollowing' => $totalFollowing,

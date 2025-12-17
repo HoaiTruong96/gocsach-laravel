@@ -88,7 +88,8 @@ class BookController extends Controller
             'posts.comments.likes'
         ]);
 
-        return view('book-detail', compact('book'));
+        // Truyền biến $relatedBooks sang View
+        return view('book-detail', compact('book', 'reviews', 'relatedBooks'));
     }
 
     // 3. TÌM KIẾM

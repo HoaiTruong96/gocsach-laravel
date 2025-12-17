@@ -67,7 +67,9 @@ class HomeController extends Controller
 
         // 4. Review Cộng Đồng
         $sortReview = $request->get('sort_review', 'latest');
-        $commentQuery = Comment::with(['user', 'book']);
+        
+        $commentQuery = Comment::with(['user', 'book', 'likes']);
+        $commentQuery->withCount('likes'); // Đếm số like để sắp xếp
 
         // Đếm like của comment
         $commentQuery->withCount('likes'); 

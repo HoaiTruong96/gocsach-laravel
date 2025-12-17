@@ -321,6 +321,7 @@
                     <h3 class="font-bold text-brand-green text-sm mb-4 flex items-center gap-2">
                         <i class="fas fa-lightbulb"></i> Có thể bạn thích
                     </h3>
+                    
                     <div class="space-y-4">
                         <div class="flex gap-3 items-center group cursor-pointer">
                             <div class="w-12 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0">
