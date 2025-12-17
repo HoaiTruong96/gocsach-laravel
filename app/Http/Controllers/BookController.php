@@ -75,18 +75,72 @@ class BookController extends Controller
         return view('book-detail', compact('book', 'reviews'));
     }
 
-    // 3. TÌM KIẾM
+    // 3. TÌM KIẾM (Đã thêm Validation số âm & Cảnh báo số đặc biệt)
     public function search(Request $request)
     {
+        // 1. Lấy tham số
         $keyword = $request->input('keyword');
+        $filterType = $request->input('filter_type', 'title');
 
-        if ($keyword) {
-            $books = Book::where('title', 'LIKE', "%{$keyword}%")->get();
+        // --- VALIDATION & WARNING LOGIC ---
+        
+        // Kiểm tra nếu đang lọc theo tiêu chí số (view, rating, review) và có nhập liệu
+        if ($keyword !== null && $keyword !== '' && in_array($filterType, ['view_count', 'avg_rating', 'total_reviews']) && is_numeric($keyword)) {
+            
+            // 1. Chặn số âm
+            if ($keyword < 0) {
+                // Trả về trang tìm kiếm (reset kết quả) kèm thông báo lỗi
+                return redirect()->route('books.search', ['filter_type' => $filterType])
+                    ->with('error', 'Giá trị tìm kiếm không được là số âm!');
+            }
+
+            // 2. Cảnh báo số đặc biệt (Ví dụ: 13, 666...)
+            $specialNumbers = [13, 666, 0]; 
+            if (in_array(intval($keyword), $specialNumbers)) {
+                session()->flash('warning', "Bạn đang tìm kiếm con số đặc biệt ($keyword). Kết quả có thể rất ít hoặc không có!");
+            }
+        }
+        // ----------------------------------
+
+        // 2. Khởi tạo Query
+        $query = Book::query();
+
+        // 3. Xử lý Lọc
+        if ($keyword !== null && $keyword !== '') {
+            switch ($filterType) {
+                case 'view_count':
+                    $query->where('view_count', '>=', intval($keyword))
+                          ->orderBy('view_count', 'desc');
+                    break;
+
+                case 'avg_rating':
+                    $query->where('avg_rating', '>=', floatval($keyword))
+                          ->orderBy('avg_rating', 'desc');
+                    break;
+
+                case 'total_reviews':
+                    $query->where('total_reviews', '>=', intval($keyword))
+                          ->orderBy('total_reviews', 'desc');
+                    break;
+
+                case 'title':
+                default:
+                    $query->where(function($q) use ($keyword) {
+                        $q->where('title', 'like', "%{$keyword}%")
+                          ->orWhere('author_name', 'like', "%{$keyword}%");
+                    })->orderBy('view_count', 'desc');
+                    break;
+            }
         } else {
-            $books = Book::orderBy('id', 'desc')->limit(12)->get();
+            $query->orderBy('view_count', 'desc');
         }
 
-        return view('search-book', ['books' => $books]);
+        // 4. Phân trang
+        $books = $query->paginate(12)->withQueryString();
+
+        return view('search-book', [
+            'books' => $books
+        ]);
     }
 
     // 4. SÁCH MỚI CẬP NHẬT
