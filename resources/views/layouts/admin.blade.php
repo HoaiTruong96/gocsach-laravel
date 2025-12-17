@@ -37,7 +37,24 @@
         }
 
         .sidebar-scroll::-webkit-scrollbar-track {
-            background: #1e293b;
+            background: transparent;
+        }
+
+        .sidebar-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .dark .sidebar-scroll::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+
+        .dark .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
         }
 
         .sidebar-scroll::-webkit-scrollbar-thumb {
@@ -247,18 +264,19 @@
     <div class="flex min-h-screen">
 
         <aside
-            class="w-72 bg-slate-900 text-slate-300 flex-shrink-0 hidden lg:flex flex-col sticky top-0 h-screen shadow-xl z-50">
+            class="w-72 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 flex-shrink-0 hidden lg:flex flex-col sticky top-0 h-screen shadow-xl dark:shadow-none border-r border-gray-200 dark:border-slate-800 z-50 transition-colors duration-300">
 
             {{-- 1. Brand Logo --}}
             <div
-                class="h-16 flex items-center gap-3 px-6 border-b border-slate-800 bg-slate-950/50 backdrop-blur-sm sticky top-0 z-10">
+                class="h-16 flex items-center gap-3 px-6 border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-950/50 backdrop-blur-sm sticky top-0 z-10 transition-colors duration-300">
                 <div
                     class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
                     <i class="fas fa-shield-alt text-sm"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg text-white tracking-tight">Admin Panel</h1>
-                    <p class="text-[12px] text-slate-500 font-medium uppercase tracking-wider">Quản trị hệ thống</p>
+                    <h1 class="font-bold text-lg text-slate-800 dark:text-white tracking-tight">Admin Panel</h1>
+                    <p class="text-[12px] text-slate-400 dark:text-slate-500 font-medium uppercase tracking-wider">Quản
+                        trị hệ thống</p>
                 </div>
             </div>
 
@@ -269,7 +287,7 @@
                 <div>
                     <p class="px-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tổng Quan</p>
                     <a href="{{ route('admin.dashboard') }}"
-                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-slate-800 hover:text-white' }}">
+                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                         <i
                             class="fas fa-chart-pie w-5 text-center {{ request()->routeIs('admin.dashboard') ? 'text-white' : 'text-slate-400 group-hover:text-blue-400' }}"></i>
                         <span class="font-medium text-sm">Dashboard</span>
@@ -282,7 +300,7 @@
 
                     {{-- [MỚI] Quản lý Banner --}}
                     <a href="{{ route('admin.banners.index') }}"
-                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.banners.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-slate-800 hover:text-white' }}">
+                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.banners.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                         <i
                             class="fas fa-images w-5 text-center {{ request()->routeIs('admin.banners.*') ? 'text-white' : 'text-slate-400 group-hover:text-pink-400' }}"></i>
                         <span class="font-medium text-sm">Quản lý Banner</span>
@@ -290,28 +308,28 @@
 
                     {{-- [MỚI] Quản lý Tạp chí (Article) - Thêm luôn để tiện --}}
                     <a href="{{ route('admin.articles.index') }}"
-                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.articles.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-slate-800 hover:text-white' }}">
+                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.articles.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                         <i
                             class="fas fa-newspaper w-5 text-center {{ request()->routeIs('admin.articles.*') ? 'text-white' : 'text-slate-400 group-hover:text-teal-400' }}"></i>
                         <span class="font-medium text-sm">Tạp Chí Đọc</span>
                     </a>
 
                     <a href="{{ route('admin.books.index') }}"
-                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.books.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-slate-800 hover:text-white' }}">
+                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.books.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                         <i
                             class="fas fa-book w-5 text-center {{ request()->routeIs('admin.books.*') ? 'text-white' : 'text-slate-400 group-hover:text-emerald-400' }}"></i>
                         <span class="font-medium text-sm">Quản lý Sách</span>
                     </a>
 
                     <a href="{{ route('admin.categories.index') }}"
-                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.categories.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-slate-800 hover:text-white' }}">
+                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.categories.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                         <i
                             class="fas fa-tags w-5 text-center {{ request()->routeIs('admin.categories.*') ? 'text-white' : 'text-slate-400 group-hover:text-orange-400' }}"></i>
                         <span class="font-medium text-sm">Danh Mục</span>
                     </a>
 
                     <a href="{{ route('admin.posts.index') }}"
-                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.posts.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-slate-800 hover:text-white' }}">
+                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.posts.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                         <i
                             class="fas fa-star w-5 text-center {{ request()->routeIs('admin.posts.*') ? 'text-white' : 'text-slate-400 group-hover:text-yellow-400' }}"></i>
                         <span class="font-medium text-sm">Kiểm Duyệt Bài</span>
@@ -326,21 +344,21 @@
                     <p class="px-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Hệ Thống</p>
 
                     <a href="{{ route('admin.users.index') }}"
-                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.users.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-slate-800 hover:text-white' }}">
+                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.users.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                         <i
                             class="fas fa-users w-5 text-center {{ request()->routeIs('admin.users.*') ? 'text-white' : 'text-slate-400 group-hover:text-indigo-400' }}"></i>
                         <span class="font-medium text-sm">Thành Viên</span>
                     </a>
 
                     <a href="{{ route('admin.activity-logs.index') }}"
-                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.activity-logs.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-slate-800 hover:text-white' }}">
+                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.activity-logs.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                         <i
                             class="fas fa-history w-5 text-center {{ request()->routeIs('admin.activity-logs.*') ? 'text-white' : 'text-slate-400 group-hover:text-purple-400' }}"></i>
                         <span class="font-medium text-sm">Lịch Sử Hoạt Động</span>
                     </a>
 
                     <a href="{{ route('admin.game.index') }}"
-                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.game.*') || request()->routeIs('admin.badges.*') || request()->routeIs('admin.challenges.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-slate-800 hover:text-white' }}">
+                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.game.*') || request()->routeIs('admin.badges.*') || request()->routeIs('admin.challenges.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                         <i
                             class="fas fa-trophy w-5 text-center {{ request()->routeIs('admin.game.*') || request()->routeIs('admin.badges.*') || request()->routeIs('admin.challenges.*') ? 'text-white' : 'text-slate-400 group-hover:text-yellow-400' }}"></i>
                         <span class="font-medium text-sm">Thử Thách & Danh Hiệu</span>
@@ -349,9 +367,10 @@
             </nav>
 
             {{-- 3. Footer Actions --}}
-            <div class="p-4 border-t border-slate-800 bg-slate-950/30">
+            <div
+                class="p-4 border-t border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-950/30 transition-colors duration-300">
                 <a href="{{ route('home') }}"
-                    class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:bg-slate-800 hover:text-white rounded-lg transition-all mb-2 group">
+                    class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-white rounded-lg transition-all mb-2 group">
                     <i class="fas fa-external-link-alt w-5 text-center group-hover:text-blue-400"></i>
                     <span class="text-sm">Xem Trang Chủ</span>
                 </a>
@@ -359,7 +378,7 @@
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
                     <button type="submit"
-                        class="w-full flex items-center gap-3 px-3 py-2 text-slate-400 hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-all text-left group">
+                        class="w-full flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition-all text-left group">
                         <i class="fas fa-sign-out-alt w-5 text-center group-hover:text-red-500"></i>
                         <span class="text-sm font-medium">Đăng Xuất</span>
                     </button>

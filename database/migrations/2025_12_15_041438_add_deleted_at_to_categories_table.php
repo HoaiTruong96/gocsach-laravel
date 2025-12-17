@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up()
 {
-    Schema::table('categories', function (Blueprint $table) {
-        $table->softDeletes(); // Lệnh này sẽ thêm cột deleted_at
-    });
+    if (!Schema::hasColumn('categories', 'deleted_at')) {
+        Schema::table('categories', function (Blueprint $table) {
+            $table->softDeletes();
+        });
+    }
 }
 
 public function down()

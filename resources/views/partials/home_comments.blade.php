@@ -109,21 +109,46 @@
     {{-- PHÂN TRANG --}}
     @if ($latestComments->hasPages())
         <div class="mt-8 flex justify-center">
-            <div class="bg-white px-1 py-1 rounded-full shadow-sm border border-gray-200 inline-flex items-center">
+            <nav class="inline-flex items-center bg-white rounded-full shadow-sm border border-gray-200 px-2 py-1" aria-label="Pagination">
                 @if (!$latestComments->onFirstPage())
-                    <a href="{{ $latestComments->previousPageUrl() }}" class="ajax-pagination-link w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-brand-green transition">
-                        <i class="fas fa-chevron-left text-xs"></i>
+                    <a href="{{ $latestComments->previousPageUrl() }}" class="ajax-pagination-link p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-brand-green transition mr-2" aria-label="Previous page">
+                        <i class="fas fa-chevron-left text-sm"></i>
                     </a>
                 @endif
 
-                <span class="px-4 text-xs font-bold text-gray-600">Trang {{ $latestComments->currentPage() }}</span>
+                @php
+                    $start = max(1, $latestComments->currentPage() - 2);
+                    $end = min($latestComments->lastPage(), $latestComments->currentPage() + 2);
+                @endphp
+
+                @if($start > 1)
+                    <a href="{{ $latestComments->url(1) }}" class="ajax-pagination-link px-3 py-1 rounded-full text-gray-500 hover:bg-gray-100 transition">1</a>
+                    @if($start > 2)
+                        <span class="px-2 text-gray-400">…</span>
+                    @endif
+                @endif
+
+                @for($i = $start; $i <= $end; $i++)
+                    @if($i == $latestComments->currentPage())
+                        <span class="px-3 py-1 rounded-full bg-brand-green text-white font-bold mx-1">{{ $i }}</span>
+                    @else
+                        <a href="{{ $latestComments->url($i) }}" class="ajax-pagination-link px-3 py-1 rounded-full text-gray-600 hover:bg-gray-100 transition mx-1">{{ $i }}</a>
+                    @endif
+                @endfor
+
+                @if($end < $latestComments->lastPage())
+                    @if($end < $latestComments->lastPage() - 1)
+                        <span class="px-2 text-gray-400">…</span>
+                    @endif
+                    <a href="{{ $latestComments->url($latestComments->lastPage()) }}" class="ajax-pagination-link px-3 py-1 rounded-full text-gray-600 hover:bg-gray-100 transition ml-2">{{ $latestComments->lastPage() }}</a>
+                @endif
 
                 @if ($latestComments->hasMorePages())
-                    <a href="{{ $latestComments->nextPageUrl() }}" class="ajax-pagination-link w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-brand-green transition">
-                        <i class="fas fa-chevron-right text-xs"></i>
+                    <a href="{{ $latestComments->nextPageUrl() }}" class="ajax-pagination-link p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-brand-green transition ml-2" aria-label="Next page">
+                        <i class="fas fa-chevron-right text-sm"></i>
                     </a>
                 @endif
-            </div>
+            </nav>
         </div>
     @endif
 
