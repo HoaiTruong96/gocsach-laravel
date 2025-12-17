@@ -100,4 +100,34 @@ class BookController extends Controller
             'pageTitle' => 'Đánh giá sách: ' . $book->title
         ]);
     }
+    public function ajaxSearch(Request $request)
+{
+    $keyword = $request->get('keyword');
+    
+    if(empty($keyword)) {
+        return response()->json([]);
+    }
+
+    $books = Book::where('title', 'like', '%' . $keyword . '%')
+                ->take(5)
+                ->get()
+                ->map(function($book) {
+                    // 1. Xử lý logic ảnh (Giống hệt bên Blade view)
+                    $cover = $book->cover_image;
+                    if (!empty($cover) && str_starts_with($cover, 'http')) {
+                        $imageUrl = $cover; // Nếu là link online thì giữ nguyên
+                    } else {
+                        $imageUrl = $cover ? asset('storage/' . $cover) : 'https://via.placeholder.com/50'; // Nếu là file thì thêm storage/
+                    }
+
+                    return [
+                        'title' => $book->title,
+                        'author_name' => $book->author_name,
+                        'image_url' => $imageUrl, // Dùng biến đã xử lý
+                        'url' => route('detail', $book->slug), 
+                    ];
+                });
+
+    return response()->json($books);
+}
 }
