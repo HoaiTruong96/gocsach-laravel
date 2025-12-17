@@ -387,33 +387,294 @@
 
 @push('scripts')
 <script>
-    // --- Slider Hero ---
-    let currentSlide = 0;
-    const totalSlides = {{ count($heroSlides) }};
-    const sliderWrapper = document.getElementById('sliderWrapper');
-    const currentUserId = "{{ Auth::id() }}"; // Lấy ID user hiện tại để check login
+<<<<<<<<< Temporary merge branch 1
+    // --- 1. AJAX LOAD COMMENTS (NEW) ---
+    function loadComments(sortType) {
+        // A. Cập nhật giao diện Tab (Active/Inactive)
+        const tabLatest = document.getElementById('tab-latest');
+        const tabPopular = document.getElementById('tab-popular');
+        const activeClass = ['bg-white', 'text-brand-green', 'shadow-sm'];
+        const inactiveClass = ['text-gray-500', 'hover:text-gray-700'];
 
-    function updateSlider() {
-        if (!sliderWrapper) return;
-        sliderWrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
-        
-        // Update dots
-        document.querySelectorAll('.indicator-dot').forEach((dot, index) => {
-            if (index === currentSlide) {
-                dot.classList.add('bg-brand-accent', 'w-8');
-                dot.classList.remove('bg-white/30');
-            } else {
-                dot.classList.remove('bg-brand-accent', 'w-8');
-                dot.classList.add('bg-white/30');
+        if (sortType === 'latest') {
+            tabLatest.classList.add(...activeClass);
+            tabLatest.classList.remove(...inactiveClass);
+            tabPopular.classList.remove(...activeClass);
+            tabPopular.classList.add(...inactiveClass);
+        } else {
+            tabPopular.classList.add(...activeClass);
+            tabPopular.classList.remove(...inactiveClass);
+            tabLatest.classList.remove(...activeClass);
+            tabLatest.classList.add(...inactiveClass);
+        }
+
+        // B. Hiển thị Loading
+=========
+    // ==========================================
+    // 1. AJAX REVIEW LOGIC (NEW: Sort + Pagination)
+    // ==========================================
+    let currentSortType = 'latest'; 
+
+    function loadComments(param) {
+        let url = '';
+
+        // Trường hợp 1: Chuyển Tab (param = 'latest' hoặc 'popular')
+        if (param === 'latest' || param === 'popular') {
+            currentSortType = param;
+            url = `/?sort_review=${param}`; // Reset về trang 1
+            updateTabUI(param);
+        } 
+        // Trường hợp 2: Chuyển trang (param là URL phân trang)
+        else {
+            url = param;
+            if (!url.includes('sort_review')) {
+                url += `&sort_review=${currentSortType}`;
             }
+        }
+
+        // Hiện Loading
+>>>>>>>>> Temporary merge branch 2
+        const container = document.getElementById('comments-container');
+        const spinner = document.getElementById('loading-spinner');
+        if(spinner) spinner.classList.remove('hidden'); 
+
+<<<<<<<<< Temporary merge branch 1
+        // C. Gọi Ajax
+        fetch(`/?sort_review=${sortType}`, {
+            headers: {
+                "X-Requested-With": "XMLHttpRequest" // Báo hiệu Ajax cho Laravel
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            // Thay thế nội dung cũ bằng HTML mới
+            // Giữ lại spinner để lần sau dùng tiếp (vì khi replace innerHTML sẽ mất spinner cũ)
+            const spinnerHtml = `<div id="loading-spinner" class="hidden absolute inset-0 bg-white/80 z-10 flex items-center justify-center"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-green"></div></div>`;
+            container.innerHTML = spinnerHtml + html;
+=========
+        // Gọi Ajax
+        fetch(url, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(response => response.text())
+        .then(html => {
+            const spinnerHtml = `<div id="loading-spinner" class="hidden absolute inset-0 bg-white/80 z-10 flex items-center justify-center"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-green"></div></div>`;
+            container.innerHTML = spinnerHtml + html;
+            
+            // Gán lại sự kiện cho phân trang mới sinh ra
+            attachPaginationEvents();
+            
+            // Scroll nhẹ
+            document.getElementById('community-posts').scrollIntoView({ behavior: 'smooth' });
+>>>>>>>>> Temporary merge branch 2
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Có lỗi khi tải dữ liệu.');
+        })
+        .finally(() => {
+<<<<<<<<< Temporary merge branch 1
+            // Ẩn Loading (tìm lại spinner mới được inject vào)
+=========
+>>>>>>>>> Temporary merge branch 2
+            const newSpinner = document.getElementById('loading-spinner');
+            if(newSpinner) newSpinner.classList.add('hidden');
         });
     }
-    function nextSlide() { currentSlide = (currentSlide + 1) % totalSlides; updateSlider(); }
-    function prevSlide() { currentSlide = (currentSlide - 1 + totalSlides) % totalSlides; updateSlider(); }
-    function goToSlide(index) { currentSlide = index; updateSlider(); }
-    if (totalSlides > 0) setInterval(nextSlide, 5000);
 
-    // --- Slider Sách Mới (Scroll) ---
+<<<<<<<<< Temporary merge branch 1
+    document.addEventListener('DOMContentLoaded', function() {
+        // ==========================================
+        // 2. HERO SLIDER LOGIC
+        // ==========================================
+        const sliderWrapper = document.getElementById('sliderWrapper');
+        const dots = document.querySelectorAll('.indicator-dot');
+        const prevBtn = document.getElementById('heroPrevBtn');
+        const nextBtn = document.getElementById('heroNextBtn');
+        
+        const totalSlides = {{ isset($heroSlides) ? count($heroSlides) : 0 }};
+        let currentSlide = 0;
+        let slideInterval;
+
+        if(totalSlides > 1) {
+            function updateSlider() {
+                if (!sliderWrapper) return;
+                sliderWrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+                dots.forEach((dot, index) => {
+                    if (index === currentSlide) {
+                        dot.classList.add('bg-brand-accent', 'w-8');
+                        dot.classList.remove('bg-white/30');
+                    } else {
+                        dot.classList.remove('bg-brand-accent', 'w-8');
+                        dot.classList.add('bg-white/30');
+                    }
+                });
+            }
+
+            function nextSlide() {
+                currentSlide = (currentSlide + 1) % totalSlides;
+                updateSlider();
+                resetTimer();
+            }
+
+            function prevSlide() {
+                currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+                updateSlider();
+                resetTimer();
+            }
+
+            function startTimer() {
+                slideInterval = setInterval(nextSlide, 5000);
+            }
+
+            function resetTimer() {
+                clearInterval(slideInterval);
+                startTimer();
+            }
+
+            if(nextBtn) nextBtn.addEventListener('click', nextSlide);
+            if(prevBtn) prevBtn.addEventListener('click', prevSlide);
+
+            dots.forEach((dot) => {
+                dot.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    currentSlide = index;
+                    updateSlider();
+                    resetTimer();
+                });
+            });
+
+            startTimer();
+        } else {
+            if(prevBtn) prevBtn.style.display = 'none';
+            if(nextBtn) nextBtn.style.display = 'none';
+        }
+
+        // ==========================================
+        // 3. SLIDER SÁCH MỚI
+        // ==========================================
+        const sliderNewBooks = document.getElementById('sliderNewBooks');
+        const btnPrevNew = document.getElementById('btnPrevNewBooks');
+        const btnNextNew = document.getElementById('btnNextNewBooks');
+
+        if(sliderNewBooks && btnPrevNew && btnNextNew) {
+            btnNextNew.addEventListener('click', () => {
+                sliderNewBooks.scrollBy({ left: 220, behavior: 'smooth' });
+            });
+            btnPrevNew.addEventListener('click', () => {
+                sliderNewBooks.scrollBy({ left: -220, behavior: 'smooth' });
+            });
+        }
+
+        // ==========================================
+        // 4. LOGIC LIKE & REPLY
+        // ==========================================
+        const currentUserId = "{{ Auth::id() }}";
+
+        window.handleLike = function(id, type) {
+            if (!currentUserId) {
+                alert("Vui lòng đăng nhập để thả tim!");
+                window.location.href = "/login";
+                return;
+            }
+
+            const btn = document.getElementById(`like-btn-${type}-${id}`);
+            const icon = document.getElementById(`like-icon-${type}-${id}`);
+            const countSpan = document.getElementById(`like-count-${type}-${id}`);
+
+            if (!btn) return;
+
+            const isLiked = icon.classList.contains('fas'); 
+            
+            if(isLiked) {
+                icon.classList.remove('fas', 'text-red-500');
+                icon.classList.add('far');
+                btn.classList.remove('text-red-500');
+                let currentCount = parseInt(countSpan.innerText);
+                countSpan.innerText = Math.max(0, currentCount - 1);
+            } else {
+                icon.classList.remove('far');
+                icon.classList.add('fas', 'bounce');
+                btn.classList.add('text-red-500');
+                let currentCount = parseInt(countSpan.innerText);
+                countSpan.innerText = currentCount + 1;
+            }
+
+            fetch('/like', { 
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ id: id, type: type })
+            })
+            .then(response => response.json())
+            .then(data => { if (data.success) countSpan.innerText = data.count; })
+            .catch(error => console.error('Error:', error));
+        };
+
+        window.toggleReplyForm = function(commentId) {
+            if (!currentUserId) {
+                alert("Vui lòng đăng nhập để bình luận!");
+                window.location.href = "/login";
+                return;
+            }
+            const form = document.getElementById(`reply-form-${commentId}`);
+            const input = document.getElementById(`reply-input-${commentId}`);
+            
+            if (form.classList.contains('hidden')) {
+                document.querySelectorAll('[id^="reply-form-"]').forEach(el => el.classList.add('hidden'));
+                form.classList.remove('hidden');
+                input.focus();
+            } else {
+                form.classList.add('hidden');
+            }
+        };
+
+        window.autoResize = function(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        };
+
+        window.handleEnter = function(event, commentId) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                window.submitInlineReply(commentId);
+            }
+=========
+    function updateTabUI(sortType) {
+        const tabLatest = document.getElementById('tab-latest');
+        const tabPopular = document.getElementById('tab-popular');
+        const activeClass = ['bg-white', 'text-brand-green', 'shadow-sm'];
+        const inactiveClass = ['text-gray-500', 'hover:text-gray-700'];
+
+        if (sortType === 'latest') {
+            tabLatest.classList.add(...activeClass);
+            tabLatest.classList.remove(...inactiveClass);
+            tabPopular.classList.remove(...activeClass);
+            tabPopular.classList.add(...inactiveClass);
+        } else {
+            tabPopular.classList.add(...activeClass);
+            tabPopular.classList.remove(...inactiveClass);
+            tabLatest.classList.remove(...activeClass);
+            tabLatest.classList.add(...inactiveClass);
+        }
+    }
+
+    function attachPaginationEvents() {
+        const paginationLinks = document.querySelectorAll('.ajax-pagination-link');
+        paginationLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = this.getAttribute('href');
+                if (url) loadComments(url);
+            });
+        });
+    }
+
+    // ==========================================
+    // 2. HERO SLIDER & OTHER EVENTS
+    // ==========================================
     document.addEventListener('DOMContentLoaded', function() {
         const slider = document.getElementById('sliderNewBooks');
         const btnPrev = document.getElementById('btnPrevNewBooks');
