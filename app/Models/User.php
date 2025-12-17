@@ -27,7 +27,12 @@ class User extends Authenticatable
         'is_active' => 'boolean',
     ];
 
-    // --- CÁC MỐI QUAN HỆ CƠ BẢN ---
+    // --- CÁC MỐI QUAN HỆ (RELATIONSHIPS) ---
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
 
     public function posts() { return $this->hasMany(Post::class); }
     public function comments() { return $this->hasMany(Comment::class); }
@@ -62,7 +67,8 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    public function activeBadges()
+    // Những người TÔI đang theo dõi (Following)
+    public function followings()
     {
         return $this->belongsToMany(Badge::class, 'user_badges')
             ->withPivot('earned_at', 'expires_at')
@@ -73,8 +79,8 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    // 2. [ĐÃ SỬA] Quan hệ Challenges (Khớp tên cột trong Database gocsach_db.sql)
-    public function challenges()
+    // Những người đang theo dõi TÔI (Followers)
+    public function followers()
     {
         // Database dùng: current_count, is_completed (Không phải current_progress, status)
         return $this->belongsToMany(Challenge::class, 'user_challenges')
@@ -82,8 +88,8 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    // 3. [MỚI HOÀN TOÀN] Hàm tính điểm chuẩn xác
-    public function updateChallengeProgress()
+    // Hàm kiểm tra: Tôi có đang follow người này không?
+    public function isFollowing($userId)
     {
         // Lấy tất cả thử thách user đã tham gia
         $joinedChallenges = $this->challenges; 
@@ -127,5 +133,40 @@ class User extends Authenticatable
                 }
             }
         }
+    }
+
+    public function isAdmin()
+    {
+        return $this->role === 'admin'; 
+    }
+
+    // --- [PHẦN MỚI THÊM ĐỂ SỬA LỖI] ---
+
+    // 1. Quan hệ với Badge (Huy hiệu)
+    public function badges()
+    {
+        return $this->belongsToMany(Badge::class, 'user_badges')
+            ->withPivot('earned_at', 'expires_at')
+            ->withTimestamps();
+    }
+
+    // 2. [QUAN TRỌNG] Lấy danh hiệu còn hiệu lực (Hàm gây lỗi ActiveBadges)
+    public function activeBadges()
+    {
+        return $this->belongsToMany(Badge::class, 'user_badges')
+            ->withPivot('earned_at', 'expires_at')
+            ->where(function ($query) {
+                $query->where('expires_at', '>', now())
+                      ->orWhereNull('expires_at');
+            })
+            ->withTimestamps();
+    }
+
+    // 3. Quan hệ với Thử thách (Chuẩn bị cho tính năng Challenges)
+    public function challenges()
+    {
+        return $this->belongsToMany(Challenge::class, 'user_challenges')
+            ->withPivot('current_progress', 'status', 'joined_at', 'completed_at')
+            ->withTimestamps();
     }
 }
