@@ -20,33 +20,30 @@ class AdminController extends Controller
         $pendingReviews = Post::where('status', 'pending')->whereNotNull('book_id')->count();
         $totalUsers = User::where('role', 'user')->count();
 
-        // Biểu đồ xử lý (12 tháng gần đây)
+        // Lọc theo tháng/năm - định nghĩa trước để sử dụng cho biểu đồ
+        $selectedMonth = $request->input('month', date('m'));
+        $selectedYear = $request->input('year', date('Y'));
+
+        // Biểu đồ xử lý (12 tháng của năm được chọn)
         $labels = [];
         $dataReviews = [];
         $dataViews = [];
 
-        for ($i = 11; $i >= 0; $i--) {
-            $month = Carbon::now()->subMonths($i);
-            $labels[] = "Th " . $month->month;
-            $dataReviews[] = Post::whereYear('created_at', $month->year)->whereMonth('created_at', $month->month)->whereNotNull('book_id')->count();
-            $dataViews[] = User::whereYear('created_at', $month->year)->whereMonth('created_at', $month->month)->count();
+        for ($month = 1; $month <= 12; $month++) {
+            $labels[] = "Th " . $month;
+            $dataReviews[] = Post::whereYear('created_at', $selectedYear)->whereMonth('created_at', $month)->whereNotNull('book_id')->count();
+            $dataViews[] = User::whereYear('created_at', $selectedYear)->whereMonth('created_at', $month)->count();
         }
 
-        // Bảng xử lý
+        // Bảng xử lý (12 tháng của năm được chọn)
         $tableData = [];
-        foreach (array_reverse($labels) as $index => $label) {
-            $realIndex = 11 - $index;
+        for ($month = 12; $month >= 1; $month--) {
             $tableData[] = [
-                'month' => $label . '/' . Carbon::now()->subMonths($index)->year,
-                'reviews' => $dataReviews[$realIndex],
-                'users' => $dataViews[$realIndex]
+                'month' => "Tháng {$month}/{$selectedYear}",
+                'reviews' => $dataReviews[$month - 1],
+                'users' => $dataViews[$month - 1]
             ];
         }
-
-        // Lọc theo tháng
-        // Ghi chú: Mặc định lấy tháng hiện tại nếu không chọn
-        $selectedMonth = $request->input('month', date('m'));
-        $selectedYear = $request->input('year', date('Y'));
 
         // Lấy danh sách Review trong tháng đã chọn
         $monthlyReviewsList = Post::with(['user', 'book'])
