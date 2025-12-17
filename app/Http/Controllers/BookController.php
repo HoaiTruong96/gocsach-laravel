@@ -80,11 +80,11 @@ class BookController extends Controller
             'posts' => function($q) {
                 $q->where('status', 'published')->latest();
             },
-            'posts.user',
+            'posts.user.activeBadges',
             'posts.comments' => function($q) {
                 $q->latest(); 
             },
-            'posts.comments.user',
+            'posts.comments.user.activeBadges',
             'posts.comments.likes'
         ]);
 
@@ -243,7 +243,7 @@ class BookController extends Controller
         // Lấy danh sách reviews (posts) có phân trang
         $reviews = Post::where('book_id', $book->id)
                     ->where('status', 'published')
-                    ->with(['user', 'comments.user'])
+                    ->with(['user.activeBadges', 'comments.user.activeBadges', 'likes'])
                     ->withCount(['likes', 'comments'])
                     ->latest()
                     ->paginate(10);
