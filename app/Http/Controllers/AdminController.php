@@ -51,14 +51,18 @@ class AdminController extends Controller
             ->whereYear('created_at', $selectedYear)
             ->whereMonth('created_at', $selectedMonth)
             ->latest()
-            ->paginate(5, ['*'], 'reviews_page');
+            ->paginate(5, ['*'], 'reviews_page')
+            ->withPath(route('admin.dashboard.reviews'))
+            ->appends(['month' => $selectedMonth, 'year' => $selectedYear]);
 
         // Lấy danh sách User đăng ký trong tháng đã chọn
         $monthlyUsersList = User::where('role', 'user')
             ->whereYear('created_at', $selectedYear)
             ->whereMonth('created_at', $selectedMonth)
             ->latest()
-            ->paginate(5, ['*'], 'users_page');
+            ->paginate(5, ['*'], 'users_page')
+            ->withPath(route('admin.dashboard.users'))
+            ->appends(['month' => $selectedMonth, 'year' => $selectedYear]);
 
         return view('admin.dashboard', compact(
             'totalReviews',
@@ -89,7 +93,9 @@ class AdminController extends Controller
             ->whereYear('created_at', $selectedYear)
             ->whereMonth('created_at', $selectedMonth)
             ->latest()
-            ->paginate(5);
+            ->paginate(5)
+            ->withPath(route('admin.dashboard.reviews'))
+            ->appends(['month' => $selectedMonth, 'year' => $selectedYear]);
 
         return view('admin.partials.dashboard-reviews', compact(
             'monthlyReviewsList',
@@ -110,7 +116,9 @@ class AdminController extends Controller
             ->whereYear('created_at', $selectedYear)
             ->whereMonth('created_at', $selectedMonth)
             ->latest()
-            ->paginate(5);
+            ->paginate(5)
+            ->withPath(route('admin.dashboard.users'))
+            ->appends(['month' => $selectedMonth, 'year' => $selectedYear]);
 
         return view('admin.partials.dashboard-users', compact(
             'monthlyUsersList',

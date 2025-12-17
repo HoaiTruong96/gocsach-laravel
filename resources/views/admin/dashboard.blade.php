@@ -151,23 +151,15 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div id="reviews-container"
-            class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden transition-colors duration-300 flex flex-col min-h-[300px] relative">
-            <div id="reviews-loading"
-                class="absolute inset-0 bg-white/80 dark:bg-slate-800/80 flex items-center justify-center z-10 hidden rounded-lg">
-                <i class="fas fa-spinner fa-spin text-2xl text-blue-500"></i>
-            </div>
-            <div id="reviews-content">
+            class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden transition-colors duration-300 flex flex-col min-h-[300px]">
+            <div id="reviews-content" class="transition-opacity duration-200">
                 @include('admin.partials.dashboard-reviews', ['monthlyReviewsList' => $monthlyReviewsList, 'selectedMonth' => $selectedMonth, 'selectedYear' => $selectedYear])
             </div>
         </div>
 
         <div id="users-container"
-            class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden transition-colors duration-300 flex flex-col min-h-[300px] relative">
-            <div id="users-loading"
-                class="absolute inset-0 bg-white/80 dark:bg-slate-800/80 flex items-center justify-center z-10 hidden rounded-lg">
-                <i class="fas fa-spinner fa-spin text-2xl text-green-500"></i>
-            </div>
-            <div id="users-content">
+            class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden transition-colors duration-300 flex flex-col min-h-[300px]">
+            <div id="users-content" class="transition-opacity duration-200">
                 @include('admin.partials.dashboard-users', ['monthlyUsersList' => $monthlyUsersList, 'selectedMonth' => $selectedMonth, 'selectedYear' => $selectedYear])
             </div>
         </div>
@@ -196,29 +188,34 @@
         document.addEventListener('DOMContentLoaded', function () {
             const filterMonth = document.getElementById('filter-month');
             const filterYear = document.getElementById('filter-year');
-            const reviewsContainer = document.getElementById('reviews-container');
-            const usersContainer = document.getElementById('users-container');
-            const reviewsLoading = document.getElementById('reviews-loading');
-            const usersLoading = document.getElementById('users-loading');
+            const reviewsContent = document.getElementById('reviews-content');
+            const usersContent = document.getElementById('users-content');
 
-            // Show/hide both loading spinners together
+            // Show/hide loading via opacity
+            function showLoading(element) {
+                if (element) element.classList.add('opacity-50', 'pointer-events-none');
+            }
+
+            function hideLoading(element) {
+                if (element) element.classList.remove('opacity-50', 'pointer-events-none');
+            }
+
             function showBothLoading() {
-                reviewsLoading.classList.remove('hidden');
-                usersLoading.classList.remove('hidden');
+                showLoading(reviewsContent);
+                showLoading(usersContent);
             }
 
             function hideBothLoading() {
-                reviewsLoading.classList.add('hidden');
-                usersLoading.classList.add('hidden');
+                hideLoading(reviewsContent);
+                hideLoading(usersContent);
             }
 
             // Load reviews via AJAX
-            function loadReviews(page = 1, showLoading = true) {
+            function loadReviews(page = 1) {
                 const month = filterMonth.value;
                 const year = filterYear.value;
-                const reviewsContent = document.getElementById('reviews-content');
 
-                if (showLoading) reviewsLoading.classList.remove('hidden');
+                showLoading(reviewsContent);
 
                 return fetch(`{{ route('admin.dashboard.reviews') }}?month=${month}&year=${year}&page=${page}`, {
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -227,21 +224,20 @@
                     .then(html => {
                         reviewsContent.innerHTML = html;
                         bindReviewsPagination();
-                        if (showLoading) reviewsLoading.classList.add('hidden');
+                        hideLoading(reviewsContent);
                     })
                     .catch(error => {
                         console.error('Error loading reviews:', error);
-                        if (showLoading) reviewsLoading.classList.add('hidden');
+                        hideLoading(reviewsContent);
                     });
             }
 
             // Load users via AJAX
-            function loadUsers(page = 1, showLoading = true) {
+            function loadUsers(page = 1) {
                 const month = filterMonth.value;
                 const year = filterYear.value;
-                const usersContent = document.getElementById('users-content');
 
-                if (showLoading) usersLoading.classList.remove('hidden');
+                showLoading(usersContent);
 
                 return fetch(`{{ route('admin.dashboard.users') }}?month=${month}&year=${year}&page=${page}`, {
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -250,40 +246,56 @@
                     .then(html => {
                         usersContent.innerHTML = html;
                         bindUsersPagination();
-                        if (showLoading) usersLoading.classList.add('hidden');
+                        hideLoading(usersContent);
                     })
                     .catch(error => {
                         console.error('Error loading users:', error);
-                        if (showLoading) usersLoading.classList.add('hidden');
+                        hideLoading(usersContent);
                     });
             }
 
-            // Bind pagination click events
-            function bindReviewsPagination() {
-                const reviewsContent = document.getElementById('reviews-content');
-                if (!reviewsContent) return;
-                reviewsContent.querySelectorAll('.pagination a').forEach(link => {
-                    link.addEventListener('click', function (e) {
-                        e.preventDefault();
-                        const url = new URL(this.href);
-                        const page = url.searchParams.get('page') || 1;
-                        loadReviews(page, true);
-                    });
+            // Reload cả 2 section cùng lúc
+            function reloadBoth(reviewsPage = 1, usersPage = 1) {
+                showBothLoading();
+                return Promise.all([
+                    loadReviews(reviewsPage),
+                    loadUsers(usersPage)
+                ]).then(() => {
+                    hideBothLoading();
                 });
             }
 
-            function bindUsersPagination() {
-                const usersContent = document.getElementById('users-content');
-                if (!usersContent) return;
-                usersContent.querySelectorAll('.pagination a').forEach(link => {
-                    link.addEventListener('click', function (e) {
-                        e.preventDefault();
-                        const url = new URL(this.href);
+            // EVENT DELEGATION - bind 1 lần trên container, hoạt động cho tất cả pagination links
+            // Không cần rebind sau khi content thay đổi
+            reviewsContent.addEventListener('click', function (e) {
+                const link = e.target.closest('a.ajax-pagination-link, nav[role="navigation"] a');
+                if (link && link.href) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    try {
+                        const url = new URL(link.href);
                         const page = url.searchParams.get('page') || 1;
-                        loadUsers(page, true);
-                    });
-                });
-            }
+                        reloadBoth(page, 1);
+                    } catch (err) {
+                        console.error('Pagination error:', err);
+                    }
+                }
+            });
+
+            usersContent.addEventListener('click', function (e) {
+                const link = e.target.closest('a.ajax-pagination-link, nav[role="navigation"] a');
+                if (link && link.href) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    try {
+                        const url = new URL(link.href);
+                        const page = url.searchParams.get('page') || 1;
+                        reloadBoth(1, page);
+                    } catch (err) {
+                        console.error('Pagination error:', err);
+                    }
+                }
+            });
 
             // Custom Dropdown Functionality
             const monthDropdown = document.getElementById('month-dropdown');
@@ -344,8 +356,8 @@
                     // Load data
                     showBothLoading();
                     Promise.all([
-                        loadReviews(1, false),
-                        loadUsers(1, false)
+                        loadReviews(1),
+                        loadUsers(1)
                     ]).then(() => {
                         hideBothLoading();
                         updateURL();
@@ -382,10 +394,6 @@
                     exportBtn.href = `{{ route('admin.dashboard.export') }}?month=${month}&year=${year}`;
                 }
             }
-
-            // Initial binding
-            bindReviewsPagination();
-            bindUsersPagination();
         });
     </script>
 @endsection
