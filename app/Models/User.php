@@ -49,10 +49,6 @@ class User extends Authenticatable
         return $this->belongsToMany(Book::class, 'bookshelves', 'user_id', 'book_id')
             ->withPivot('status')->withTimestamps();
     }
-    public function isFollowing($userId) {
-        return $this->followings()->where('following_id', $userId)->exists();
-    }
-    public function isAdmin() { return $this->role === 'admin'; }
 
     // --- [PHẦN QUAN TRỌNG ĐÃ SỬA] ---
 
