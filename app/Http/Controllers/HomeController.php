@@ -8,8 +8,8 @@ use App\Models\Category;
 use App\Models\Comment;
 use App\Models\Article;
 use App\Models\Banner;
-use App\Models\Like;        // Model cho Post Like
-use App\Models\CommentLike; // Model cho Comment Like
+use App\Models\Like;         // Model cho Post Like
+use App\Models\CommentLike;  // Model cho Comment Like
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\CommentLikedNotification;
 use App\Notifications\CommentRepliedNotification;
@@ -24,7 +24,6 @@ class HomeController extends Controller
                             ->latest()
                             ->get();
 
-        // Dữ liệu giả nếu chưa có banner
         if ($heroSlides->isEmpty()) {
             $heroSlides = collect([
                 (object)[
@@ -42,10 +41,18 @@ class HomeController extends Controller
         // 2. Sách mới
         $books = Book::where('is_approved', true)
                     ->with('categories')
+                    ->withAvg(['posts' => function($q) {
+                        $q->where('status', 'published'); // Chỉ tính bài đã duyệt
+                    }], 'rating')
                     ->latest()
-                    ->take(10)
+                    ->take(10) // Lấy 10 cuốn (dùng chung cho cả Slider và Top thịnh hành)
                     ->get();
 
+        // [QUAN TRỌNG] Ghi đè giá trị hiển thị bằng giá trị tính toán
+        foreach($books as $book) {
+            // Lấy điểm posts_avg_rating vừa tính, làm tròn 1 số lẻ
+            $book->avg_rating = round($book->posts_avg_rating ?? 0, 1);
+        }
         // 3. Tạp chí đọc
         $featuredArticle = Article::with('user')
                             ->where('is_featured', true)
@@ -58,30 +65,28 @@ class HomeController extends Controller
                             ->take(2)
                             ->get();
 
-        // 4. Review Cộng Đồng (XỬ LÝ AJAX TẠI ĐÂY)
+        // 4. Review Cộng Đồng
         $sortReview = $request->get('sort_review', 'latest');
         
         $commentQuery = Comment::with(['user', 'book', 'likes']);
         $commentQuery->withCount('likes'); // Đếm số like để sắp xếp
 
-        // Logic sắp xếp
+        // Đếm like của comment
+        $commentQuery->withCount('likes'); 
+
         if ($sortReview == 'popular') {
             $commentQuery->orderByDesc('likes_count');
         } else {
             $commentQuery->latest();
         }
 
-        $latestComments = $commentQuery->paginate(5)->withQueryString();
-
-        // [QUAN TRỌNG] Kiểm tra nếu là request AJAX thì chỉ trả về phần view bình luận
-        if ($request->ajax() && $request->has('sort_review')) {
-            return view('partials.home_comments', compact('latestComments'))->render();
-        }
+        $latestComments = $commentQuery->paginate(5)
+                                     ->withQueryString()
+                                     ->fragment('community-posts');
 
         // 5. Danh mục
         $categories = Category::withCount('books')->orderBy('name', 'asc')->get();
 
-        // Trả về view trang chủ đầy đủ nếu không phải AJAX
         return view('home', compact(
             'heroSlides',
             'books', 
@@ -107,32 +112,50 @@ class HomeController extends Controller
         $count = 0;
 
         if ($type === 'post') {
+            // --- LIKE BÀI VIẾT (POST) ---
             $existingLike = Like::where('user_id', $userId)->where('post_id', $id)->first();
+
             if ($existingLike) {
-                $existingLike->delete();
+                $existingLike->delete(); // Unlike
                 $liked = false;
             } else {
-                Like::create(['user_id' => $userId, 'post_id' => $id]); 
+                Like::create([
+                    'user_id' => $userId, 
+                    'post_id' => $id
+                ]); 
                 $liked = true;
             }
+            
             $count = Like::where('post_id', $id)->count();
+
         } else {
+            // --- LIKE BÌNH LUẬN (COMMENT) ---
             $existingLike = CommentLike::where('user_id', $userId)->where('comment_id', $id)->first();
+
             if ($existingLike) {
-                $existingLike->delete();
+                $existingLike->delete(); // Unlike
                 $liked = false;
             } else {
-                CommentLike::create(['user_id' => $userId, 'comment_id' => $id, 'is_like' => 1]); 
+                CommentLike::create([
+                    'user_id' => $userId, 
+                    'comment_id' => $id,
+                    'is_like' => 1 
+                ]); 
                 $liked = true;
-                
-                // Gửi thông báo
+
+                // --- GỬI THÔNG BÁO ---
                 $comment = Comment::find($id);
+                
+                // Kiểm tra: Chỉ gửi nếu comment tồn tại VÀ người like KHÔNG PHẢI người viết
                 if ($comment && $comment->user_id != $userId) {
                     try {
                         $comment->user->notify(new CommentLikedNotification(Auth::user(), $comment));
-                    } catch (\Exception $e) {}
+                    } catch (\Exception $e) {
+                        // Bỏ qua lỗi nếu gửi thông báo thất bại
+                    }
                 }
             }
+
             $count = CommentLike::where('comment_id', $id)->count();
         }
 
@@ -159,10 +182,14 @@ class HomeController extends Controller
         $reply->content = $request->input('content');
         $reply->save();
 
+        // --- GỬI THÔNG BÁO ---
+        // Chỉ gửi thông báo nếu người trả lời KHÔNG PHẢI người viết comment gốc
         if ($parentComment->user_id != $user->id) {
             try {
                 $parentComment->user->notify(new CommentRepliedNotification($user, $reply));
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+                // Bỏ qua lỗi
+            }
         }
 
         return response()->json([
@@ -188,5 +215,21 @@ class HomeController extends Controller
 
         $link = $notification->data['link'] ?? route('home');
         return redirect($link);
+    }
+    public function readNotification($id)
+    {
+        // Tìm thông báo trong danh sách của user hiện tại
+        $notification = Auth::user()->notifications()->find($id);
+
+        if ($notification) {
+            $notification->markAsRead(); // Đánh dấu đã đọc
+            
+            // Nếu thông báo có link (đã set ở Bước 1), chuyển hướng tới đó
+            if (isset($notification->data['link'])) {
+                return redirect($notification->data['link']);
+            }
+        }
+
+        return redirect()->back();
     }
 }
