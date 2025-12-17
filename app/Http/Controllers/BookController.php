@@ -88,8 +88,20 @@ class BookController extends Controller
             'posts.comments.likes'
         ]);
 
-        // Truyền biến $relatedBooks sang View
-        return view('book-detail', compact('book', 'reviews', 'relatedBooks'));
+        // Lấy sách liên quan (cùng thể loại, loại trừ sách hiện tại)
+        $categoryIds = $book->categories->pluck('id')->toArray();
+        $relatedBooks = Book::where('is_approved', true)
+            ->where('id', '!=', $book->id)
+            ->whereHas('categories', function($q) use ($categoryIds) {
+                $q->whereIn('categories.id', $categoryIds);
+            })
+            ->withAvg(['posts' => function($q) {
+                $q->where('status', 'published');
+            }], 'rating')
+            ->take(5)
+            ->get();
+
+        return view('book-detail', compact('book', 'relatedBooks'));
     }
 
     // 3. TÌM KIẾM (Đã thêm Validation số âm & Cảnh báo số đặc biệt)
