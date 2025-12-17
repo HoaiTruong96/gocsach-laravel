@@ -236,15 +236,21 @@ class BookController extends Controller
     {
         $book = $this->getBookQuery()
                     ->where('slug', $slug)
-                    ->with(['posts' => function($q) {
-                        $q->where('status', 'published')->latest();
-                    }])
                     ->firstOrFail();
         
         $book->avg_rating = round($book->posts_avg_rating ?? 0, 1);
 
-        return view('book-reviews', [
+        // Lấy danh sách reviews (posts) có phân trang
+        $reviews = Post::where('book_id', $book->id)
+                    ->where('status', 'published')
+                    ->with(['user', 'comments.user'])
+                    ->withCount(['likes', 'comments'])
+                    ->latest()
+                    ->paginate(10);
+
+        return view('review-detail', [
             'book' => $book,
+            'reviews' => $reviews,
             'pageTitle' => 'Đánh giá sách: ' . $book->title
         ]);
     }

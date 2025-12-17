@@ -31,36 +31,31 @@ class PostController extends Controller
             'thumbnail.max' => 'Ảnh không được lớn hơn 2MB.',
         ]);
 
-        // 2. Xử lý upload thumbnail (nếu có)
-        $thumbnailPath = null;
-        if ($request->hasFile('thumbnail')) {
-            $thumbnailPath = $request->file('thumbnail')->store('posts/thumbnails', 'public');
-        }
+    // 3. Xử lý Thumbnail (nếu có)
+    $thumbnailPath = null;
+    if ($request->hasFile('thumbnail')) {
+        $thumbnailPath = $request->file('thumbnail')->store('thumbnails', 'public');
+    }
 
-        // 3. Tạo Slug
-        $slug = Str::slug($request->title) . '-' . time();
+    // 4. Tạo Slug
+    $slug = \Illuminate\Support\Str::slug($request->title) . '-' . time();
 
-        // 4. Lưu vào Database với status = pending
-        $post = Post::create([
-            'user_id'   => Auth::id(),
-            'book_id'   => $request->input('book_id'),
-            'title'     => $request->input('title'),
-            'slug'      => $slug,
-            'rating'    => $request->input('rating'),
-            'content'   => $request->input('content'),
-            'thumbnail' => $thumbnailPath,
-            'status'    => 'pending', // Chờ Admin duyệt
-        ]);
+    // 5. Lưu vào Database
+    // Lưu ý: Bài viết mới sẽ có status mặc định là 'pending' (chờ duyệt)
+    // Tiến độ Thử Thách sẽ được cập nhật khi Admin duyệt bài (trong Admin\PostController)
+    \App\Models\Post::create([
+        'user_id'      => \Illuminate\Support\Facades\Auth::id(),
+        'book_id'      => $request->input('book_id'),
+        'title'        => $request->input('title'),
+        'slug'         => $slug,
+        'rating'       => $request->input('rating'),
+        'content'      => $request->input('content'),
+        'thumbnail'    => $thumbnailPath,
+        'status'       => 'pending', // Mặc định chờ duyệt
+    ]);
 
-        // 5. Cập nhật tiến độ Thử Thách (Chỉ khi bài đã được duyệt)
-        // Lưu ý: Logic này thường được đặt ở Admin Controller khi duyệt bài
-        // Ở đây chỉ là placeholder, sẽ không chạy vì status = pending
-        if ($post->status == 'published') {
-            Auth::user()->updateChallengeProgress();
-        }
-        
-        return redirect()->route('profile', Auth::id())
-                        ->with('success', 'Đã gửi bài viết! Vui lòng chờ Admin phê duyệt.');
+    return redirect()->route('profile', Auth::id())
+                    ->with('success', 'Đã gửi bài viết! Vui lòng chờ Admin phê duyệt.');
    }
 
     // Toggle Like (Giữ nguyên)
