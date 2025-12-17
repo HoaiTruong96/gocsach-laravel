@@ -34,13 +34,7 @@ Route::view('/lien-he', 'pages.contact')->name('page.contact');
 Route::get('/tap-chi/{slug}', [ArticleController::class, 'show'])->name('articles.show');
 
 // Trang Danh sách sách
-Route::get('/danh-sach', function () {
-    $books = Book::with('categories')->latest()->paginate(12);
-    return view('list', compact('books'));
-})->name('list');
-
-// Trang Sách Mới
-Route::get('/sach-moi', [BookController::class, 'newBooks'])->name('books.new');
+Route::get('/danh-sach', [BookController::class, 'list'])->name('books.list');
 
 // Tìm kiếm Review/Sách
 Route::get('/review-search', [BookController::class, 'search'])->name('books.search');

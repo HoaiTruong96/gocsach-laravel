@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -6,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Góc Sách - Review & Share')</title>
     
-    <!-- CDN Tailwind & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
-    <!-- Config màu sắc -->
     <script>
         tailwind.config = {
             theme: {
@@ -37,11 +34,9 @@
         body { font-family: 'Roboto', sans-serif; background-color: #f8f9fa; }
         .font-serif { font-family: 'Merriweather', serif; }
         
-        /* Dropdown CSS thuần (Hover là hiện) */
         .dropdown-menu { display: none; }
         .group:hover .dropdown-menu { display: block; }
         
-        /* Cầu nối vô hình để chuột không bị hụt khi di chuyển xuống menu */
         .dropdown-bridge::before {
             content: "";
             position: absolute;
@@ -52,7 +47,6 @@
             background: transparent;
         }
 
-        /* Modal Overlay */
         .modal-overlay {
             background-color: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(4px);
@@ -61,7 +55,6 @@
 </head>
 <body class="flex flex-col min-h-screen text-gray-800">
 
-    <!-- TOP BAR: Thông tin liên hệ & Social -->
     <div class="bg-brand-green text-white/80 text-xs py-2 hidden md:block border-b border-white/10">
         <div class="container mx-auto px-4 flex justify-between items-center">
             <div class="flex gap-6">
@@ -73,10 +66,8 @@
                 </a>
             </div>
             <div class="flex gap-4 items-center">
-                <!-- Nút mở Modal Trợ giúp -->
                 <button onclick="openModal('helpModal')" class="hover:text-white transition focus:outline-none">Trợ giúp</button>
                 <span class="text-white/20">|</span>
-                <!-- Nút mở Modal Quy tắc -->
                 <button onclick="openModal('rulesModal')" class="hover:text-white transition focus:outline-none">Quy tắc cộng đồng</button>
                 
                 <div class="flex gap-3 ml-4">
@@ -92,7 +83,6 @@
         <div class="container mx-auto px-4 py-3">
             <div class="flex flex-wrap justify-between items-center gap-4">
                 
-                <!-- 1. Logo -->
                 <div class="flex items-center gap-4">
                     <a href="{{ route('home') }}" class="flex items-center gap-2 group">
                         <div class="w-10 h-10 bg-brand-green text-white rounded-lg flex items-center justify-center shadow-md transform group-hover:rotate-6 transition-transform duration-300">
@@ -105,10 +95,8 @@
                     </a>
                 </div>
 
-                <!-- 2. Search Bar -->
                 <div class="hidden md:flex flex-1 max-w-2xl px-8 relative z-40">
                     <form action="{{ route('books.search') }}" method="GET" class="relative w-full flex items-center">
-                        <!-- Dropdown Danh mục (Giữ nguyên code cũ của bạn) -->
                         <div class="absolute left-0 pl-1 z-50 group pb-4 -mb-4"> 
                             <div class="flex items-center cursor-pointer bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full transition relative z-20">
                                 <span class="text-gray-600 text-xs font-bold mr-1">Danh mục</span>
@@ -133,13 +121,10 @@
                     </form>
                 </div>
             
-                <!-- 3. User Menu (Sửa lỗi & Thêm tính năng) -->
-                <!-- 3. User Menu & Notification -->
                 <div class="flex items-center gap-3 md:gap-5">
                     @auth
-                        <!-- Notification Bell -->
                         <div class="relative group pb-4 -mb-4"> 
-                            <button class="text-gray-500 hover:text-brand-green transition relative p-2">
+                            <button class="text-gray-500 hover:text-brand-green transition relative p-2 focus:outline-none">
                                 <i class="far fa-bell text-xl"></i>
                                 @if(Auth::user()->unreadNotifications->count() > 0)
                                     <span class="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white animate-bounce">
@@ -151,30 +136,62 @@
                                 <div class="px-4 py-3 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
                                     <span class="text-sm font-bold text-gray-700">Thông báo</span>
                                     @if(Auth::user()->unreadNotifications->count() > 0)
-                                        <a href="{{ route('notification.readAll') }}" class="text-[10px] text-blue-500 hover:underline">Đánh dấu đã đọc</a>
+                                        <a href="{{ route('notification.readAll') }}" class="text-[10px] text-blue-500 hover:underline cursor-pointer">Đánh dấu đã đọc</a>
                                     @endif
                                 </div>
                                 <div class="max-h-80 overflow-y-auto">
                                     @forelse(Auth::user()->notifications as $notification)
-                                        <a href="{{ route('notification.read', $notification->id) }}" class="flex gap-3 px-4 py-3 hover:bg-gray-50 transition border-b border-gray-50 {{ $notification->read_at ? 'opacity-60' : 'bg-blue-50/30' }}">
-                                            <div class="flex-shrink-0">
-                                                <img src="{{ $notification->data['user_avatar'] ?? 'https://ui-avatars.com/api/?name=User' }}" class="w-8 h-8 rounded-full">
+                                        @php
+                                            // Kiểm tra xem đây có phải là thông báo Duyệt bài (System) hay không
+                                            // Dựa vào việc check xem có tồn tại key 'icon' trong data không (do class PostApprovedNotification gửi lên)
+                                            $isSystemNotification = isset($notification->data['icon']);
+                                        @endphp
+
+                                        <a href="{{ route('notification.read', $notification->id) }}" class="flex gap-3 px-4 py-3 hover:bg-gray-50 transition border-b border-gray-50 {{ $notification->read_at ? 'opacity-60 grayscale-[0.5]' : 'bg-blue-50/30' }}">
+                                            
+                                            {{-- PHẦN HÌNH ẢNH: ICON HOẶC AVATAR --}}
+                                            <div class="flex-shrink-0 mt-1">
+                                                @if($isSystemNotification)
+                                                    {{-- Nếu là System (Duyệt bài) -> Hiện Icon --}}
+                                                    <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                                                        <i class="{{ $notification->data['icon'] }} {{ $notification->data['color'] ?? 'text-green-600' }} text-sm"></i>
+                                                    </div>
+                                                @else
+                                                    {{-- Nếu là Like/Comment -> Hiện Avatar User (NHƯ CŨ) --}}
+                                                    <img src="{{ $notification->data['user_avatar'] ?? 'https://ui-avatars.com/api/?name=User' }}" class="w-8 h-8 rounded-full border border-gray-100 object-cover">
+                                                @endif
                                             </div>
-                                            <div>
-                                                <p class="text-sm text-gray-700 line-clamp-2">
-                                                    <span class="font-bold">{{ $notification->data['user_name'] ?? 'Ai đó' }}</span> 
-                                                    {{ $notification->data['message'] ?? 'đã tương tác với bạn' }}
-                                                   <span class="font-bold block text-xs text-gray-500 italic">"{{ Str::limit($notification->data['post_title'] ?? '', 50) }}"</span>
+
+                                            {{-- PHẦN NỘI DUNG --}}
+                                            <div class="flex-1">
+                                                @if($isSystemNotification)
+                                                    {{-- Nội dung cho Duyệt Bài (Theo yêu cầu của bạn) --}}
+                                                    <p class="text-sm font-bold text-gray-800">Bài viết của bạn đã được duyệt</p>
+                                                    <p class="text-xs text-gray-600 line-clamp-2 mt-0.5">
+                                                        {{ $notification->data['message'] ?? '' }}
+                                                    </p>
+                                                @else
+                                                    {{-- Nội dung cho Like/Comment (NHƯ CŨ) --}}
+                                                    <p class="text-sm text-gray-700 line-clamp-2">
+                                                        <span class="font-bold text-gray-900">{{ $notification->data['user_name'] ?? 'Ai đó' }}</span> 
+                                                        {{ $notification->data['message'] ?? 'đã tương tác với bạn' }}
+                                                        <span class="font-bold block text-xs text-gray-500 italic mt-0.5">"{{ Str::limit($notification->data['post_title'] ?? '', 50) }}"</span>
+                                                    </p>
+                                                @endif
+
+                                                <p class="text-[10px] text-gray-400 mt-1 flex items-center">
+                                                    <i class="far fa-clock mr-1"></i> {{ $notification->created_at->diffForHumans() }}
                                                 </p>
-                                                <p class="text-[10px] text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
                                             </div>
+
+                                            {{-- CHẤM XANH CHƯA ĐỌC --}}
                                             @if(!$notification->read_at)
-                                                <div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                                                <div class="w-2 h-2 bg-brand-green rounded-full mt-2 shrink-0"></div>
                                             @endif
                                         </a>
                                     @empty
                                         <div class="text-center py-8 text-gray-400">
-                                            <i class="far fa-bell-slash text-2xl mb-2"></i>
+                                            <i class="far fa-bell-slash text-2xl mb-2 text-gray-300"></i>
                                             <p class="text-xs">Không có thông báo mới</p>
                                         </div>
                                     @endforelse
@@ -182,7 +199,6 @@
                             </div>
                         </div>
 
-                        <!-- Dropdown User (Đã bỏ Tủ Sách) -->
                         <div class="relative group pb-2 -mb-2 z-50">
                              <a href="{{ route('profile') }}" class="flex items-center gap-2 focus:outline-none py-1 group-hover:opacity-80 transition cursor-pointer relative z-20">
                                 <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name).'&background=3E5F4E&color=fff&size=40' }}" 
@@ -210,8 +226,6 @@
                                     <i class="fas fa-user-circle w-5 mr-2 text-gray-400"></i> Hồ sơ cá nhân
                                 </a>
                                 
-                                <!-- [ĐÃ XÓA MỤC TỦ SÁCH CỦA TÔI TẠI ĐÂY] -->
-
                                 <a href="{{ route('change.password') }}" class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-brand-green transition mx-2 rounded-md">
                                     <i class="fas fa-key w-5 mr-2 text-gray-400"></i> Đổi mật khẩu
                                 </a>
@@ -227,7 +241,6 @@
                             </div>
                         </div>
                     @else
-                        <!-- Guest -->
                         <div class="flex items-center gap-3">
                             <a href="{{ route('login') }}" class="text-gray-600 hover:text-brand-green font-bold text-sm px-3 py-2 rounded-lg hover:bg-gray-100 transition hidden sm:block">Đăng Nhập</a>
                             <a href="{{ route('register') }}" class="bg-brand-green text-white px-5 py-2.5 rounded-full hover:bg-[#16271f] transition font-bold shadow-md text-sm flex items-center gap-2">
@@ -238,52 +251,32 @@
                 </div>
             </div>
 
-            
-            <!-- 4. Navigation Links -->
             <div class="hidden md:flex justify-center mt-2 border-t border-gray-100 pt-3">
                 <nav class="flex items-center gap-8 text-sm font-semibold text-gray-500">
                     <a href="{{ route('home') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('home') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Trang Chủ</a>
-                    <a href="{{ route('list') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('list') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Danh Sách</a>
+                    <a href="{{ route('books.list') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('books.list') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Danh Sách</a>
                     <a href="{{ route('books.search') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('books.search') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Review Hay</a>
-                    
                     <a href="#" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all">Tác Giả</a>
                 </nav>
             </div>
         </div>
     </header>
 
-    <!-- ===== CÁC POPUP (MODAL) ===== -->
-
-    <!-- 1. Modal Quy Tắc Cộng Đồng -->
     <div id="rulesModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="fixed inset-0 modal-overlay transition-opacity" onclick="closeModal('rulesModal')"></div>
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
             <div class="flex min-h-full items-center justify-center p-4 text-center">
                 <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:w-full sm:max-w-lg animate-scale-up">
-                    <!-- Header -->
                     <div class="bg-brand-green px-4 py-3 sm:px-6 flex justify-between items-center">
-                        <h3 class="text-lg font-bold leading-6 text-white" id="modal-title">
-                            <i class="fas fa-gavel mr-2"></i> Quy Tắc Cộng Đồng
-                        </h3>
-                        <button onclick="closeModal('rulesModal')" class="text-white/70 hover:text-white transition">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
+                        <h3 class="text-lg font-bold leading-6 text-white" id="modal-title"><i class="fas fa-gavel mr-2"></i> Quy Tắc Cộng Đồng</h3>
+                        <button onclick="closeModal('rulesModal')" class="text-white/70 hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
                     </div>
-                    <!-- Body -->
                     <div class="px-4 py-5 sm:p-6 text-sm text-gray-600 space-y-3 max-h-[400px] overflow-y-auto">
-                        <p class="font-bold text-gray-800">1. Tôn trọng lẫn nhau:</p>
-                        <p>Không sử dụng ngôn từ đả kích, xúc phạm hoặc phân biệt đối xử với các thành viên khác.</p>
-                        
-                        <p class="font-bold text-gray-800 mt-2">2. Không Spam:</p>
-                        <p>Không đăng tải các nội dung quảng cáo, tin rác hoặc bình luận trùng lặp nhiều lần.</p>
-                        
-                        <p class="font-bold text-gray-800 mt-2">3. Bản quyền nội dung:</p>
-                        <p>Chỉ chia sẻ những nội dung bạn có quyền sở hữu hoặc trích dẫn nguồn rõ ràng. Không đăng tải sách lậu.</p>
-
-                        <p class="font-bold text-gray-800 mt-2">4. Review trung thực:</p>
-                        <p>Đánh giá sách dựa trên trải nghiệm thực tế, không thiên vị hoặc cố tình dìm hàng.</p>
+                        <p class="font-bold text-gray-800">1. Tôn trọng lẫn nhau:</p><p>Không sử dụng ngôn từ đả kích, xúc phạm hoặc phân biệt đối xử với các thành viên khác.</p>
+                        <p class="font-bold text-gray-800 mt-2">2. Không Spam:</p><p>Không đăng tải các nội dung quảng cáo, tin rác hoặc bình luận trùng lặp nhiều lần.</p>
+                        <p class="font-bold text-gray-800 mt-2">3. Bản quyền nội dung:</p><p>Chỉ chia sẻ những nội dung bạn có quyền sở hữu hoặc trích dẫn nguồn rõ ràng. Không đăng tải sách lậu.</p>
+                        <p class="font-bold text-gray-800 mt-2">4. Review trung thực:</p><p>Đánh giá sách dựa trên trải nghiệm thực tế, không thiên vị hoặc cố tình dìm hàng.</p>
                     </div>
-                    <!-- Footer -->
                     <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                         <button type="button" class="inline-flex w-full justify-center rounded-md bg-brand-green px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-green/90 sm:ml-3 sm:w-auto" onclick="closeModal('rulesModal')">Đã hiểu</button>
                     </div>
@@ -292,42 +285,19 @@
         </div>
     </div>
 
-    <!-- 2. Modal Trợ Giúp -->
     <div id="helpModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="fixed inset-0 modal-overlay transition-opacity" onclick="closeModal('helpModal')"></div>
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
             <div class="flex min-h-full items-center justify-center p-4 text-center">
                 <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:w-full sm:max-w-lg animate-scale-up">
                     <div class="bg-blue-600 px-4 py-3 sm:px-6 flex justify-between items-center">
-                        <h3 class="text-lg font-bold leading-6 text-white">
-                            <i class="fas fa-question-circle mr-2"></i> Trung Tâm Trợ Giúp
-                        </h3>
-                        <button onclick="closeModal('helpModal')" class="text-white/70 hover:text-white transition">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
+                        <h3 class="text-lg font-bold leading-6 text-white"><i class="fas fa-question-circle mr-2"></i> Trung Tâm Trợ Giúp</h3>
+                        <button onclick="closeModal('helpModal')" class="text-white/70 hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
                     </div>
                     <div class="px-4 py-5 sm:p-6 text-sm text-gray-600 space-y-4">
-                        <div class="flex items-start gap-3">
-                            <div class="bg-blue-100 p-2 rounded-full text-blue-600"><i class="fas fa-user-plus"></i></div>
-                            <div>
-                                <h4 class="font-bold text-gray-800">Làm sao để đăng ký?</h4>
-                                <p>Nhấn vào nút "Đăng Ký" ở góc phải màn hình và điền thông tin email của bạn.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <div class="bg-blue-100 p-2 rounded-full text-blue-600"><i class="fas fa-star"></i></div>
-                            <div>
-                                <h4 class="font-bold text-gray-800">Cách viết Review?</h4>
-                                <p>Tìm cuốn sách bạn muốn, vào trang chi tiết và kéo xuống phần "Viết đánh giá của bạn".</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <div class="bg-blue-100 p-2 rounded-full text-blue-600"><i class="fas fa-envelope"></i></div>
-                            <div>
-                                <h4 class="font-bold text-gray-800">Liên hệ hỗ trợ?</h4>
-                                <p>Email: <a href="mailto:support@gocsach.com" class="text-blue-600 hover:underline">support@gocsach.com</a><br>Hotline: 1900 1234 (8h-17h)</p>
-                            </div>
-                        </div>
+                        <div class="flex items-start gap-3"><div class="bg-blue-100 p-2 rounded-full text-blue-600"><i class="fas fa-user-plus"></i></div><div><h4 class="font-bold text-gray-800">Làm sao để đăng ký?</h4><p>Nhấn vào nút "Đăng Ký" ở góc phải màn hình và điền thông tin email của bạn.</p></div></div>
+                        <div class="flex items-start gap-3"><div class="bg-blue-100 p-2 rounded-full text-blue-600"><i class="fas fa-star"></i></div><div><h4 class="font-bold text-gray-800">Cách viết Review?</h4><p>Tìm cuốn sách bạn muốn, vào trang chi tiết và kéo xuống phần "Viết đánh giá của bạn".</p></div></div>
+                        <div class="flex items-start gap-3"><div class="bg-blue-100 p-2 rounded-full text-blue-600"><i class="fas fa-envelope"></i></div><div><h4 class="font-bold text-gray-800">Liên hệ hỗ trợ?</h4><p>Email: <a href="mailto:support@gocsach.com" class="text-blue-600 hover:underline">support@gocsach.com</a><br>Hotline: 1900 1234 (8h-17h)</p></div></div>
                     </div>
                     <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                         <button type="button" class="inline-flex w-full justify-center rounded-md bg-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-300 sm:ml-3 sm:w-auto" onclick="closeModal('helpModal')">Đóng</button>
@@ -337,7 +307,6 @@
         </div>
     </div>
 
-    <!-- Script điều khiển Modal -->
     <script>
         function openModal(modalId) {
             document.getElementById(modalId).classList.remove('hidden');
@@ -347,117 +316,6 @@
             document.getElementById(modalId).classList.add('hidden');
         }
 
-        // Đóng modal khi nhấn ESC
-        document.addEventListener('keydown', function(event) {
-            if (event.key === "Escape") {
-                document.querySelectorAll('[id$="Modal"]').forEach(el => el.classList.add('hidden'));
-            }
-        });
-    </script>
-
-    @stack('scripts')
-    
-</body>
-</html>
-        </div>
-    </header>
-
-    <!-- ===== CÁC POPUP (MODAL) ===== -->
-
-    <!-- 1. Modal Quy Tắc Cộng Đồng -->
-    <div id="rulesModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 modal-overlay transition-opacity" onclick="closeModal('rulesModal')"></div>
-        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-            <div class="flex min-h-full items-center justify-center p-4 text-center">
-                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:w-full sm:max-w-lg animate-scale-up">
-                    <!-- Header -->
-                    <div class="bg-brand-green px-4 py-3 sm:px-6 flex justify-between items-center">
-                        <h3 class="text-lg font-bold leading-6 text-white" id="modal-title">
-                            <i class="fas fa-gavel mr-2"></i> Quy Tắc Cộng Đồng
-                        </h3>
-                        <button onclick="closeModal('rulesModal')" class="text-white/70 hover:text-white transition">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
-                    <!-- Body -->
-                    <div class="px-4 py-5 sm:p-6 text-sm text-gray-600 space-y-3 max-h-[400px] overflow-y-auto">
-                        <p class="font-bold text-gray-800">1. Tôn trọng lẫn nhau:</p>
-                        <p>Không sử dụng ngôn từ đả kích, xúc phạm hoặc phân biệt đối xử với các thành viên khác.</p>
-                        
-                        <p class="font-bold text-gray-800 mt-2">2. Không Spam:</p>
-                        <p>Không đăng tải các nội dung quảng cáo, tin rác hoặc bình luận trùng lặp nhiều lần.</p>
-                        
-                        <p class="font-bold text-gray-800 mt-2">3. Bản quyền nội dung:</p>
-                        <p>Chỉ chia sẻ những nội dung bạn có quyền sở hữu hoặc trích dẫn nguồn rõ ràng. Không đăng tải sách lậu.</p>
-
-                        <p class="font-bold text-gray-800 mt-2">4. Review trung thực:</p>
-                        <p>Đánh giá sách dựa trên trải nghiệm thực tế, không thiên vị hoặc cố tình dìm hàng.</p>
-                    </div>
-                    <!-- Footer -->
-                    <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                        <button type="button" class="inline-flex w-full justify-center rounded-md bg-brand-green px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-green/90 sm:ml-3 sm:w-auto" onclick="closeModal('rulesModal')">Đã hiểu</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 2. Modal Trợ Giúp -->
-    <div id="helpModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 modal-overlay transition-opacity" onclick="closeModal('helpModal')"></div>
-        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-            <div class="flex min-h-full items-center justify-center p-4 text-center">
-                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:w-full sm:max-w-lg animate-scale-up">
-                    <div class="bg-blue-600 px-4 py-3 sm:px-6 flex justify-between items-center">
-                        <h3 class="text-lg font-bold leading-6 text-white">
-                            <i class="fas fa-question-circle mr-2"></i> Trung Tâm Trợ Giúp
-                        </h3>
-                        <button onclick="closeModal('helpModal')" class="text-white/70 hover:text-white transition">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
-                    <div class="px-4 py-5 sm:p-6 text-sm text-gray-600 space-y-4">
-                        <div class="flex items-start gap-3">
-                            <div class="bg-blue-100 p-2 rounded-full text-blue-600"><i class="fas fa-user-plus"></i></div>
-                            <div>
-                                <h4 class="font-bold text-gray-800">Làm sao để đăng ký?</h4>
-                                <p>Nhấn vào nút "Đăng Ký" ở góc phải màn hình và điền thông tin email của bạn.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <div class="bg-blue-100 p-2 rounded-full text-blue-600"><i class="fas fa-star"></i></div>
-                            <div>
-                                <h4 class="font-bold text-gray-800">Cách viết Review?</h4>
-                                <p>Tìm cuốn sách bạn muốn, vào trang chi tiết và kéo xuống phần "Viết đánh giá của bạn".</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <div class="bg-blue-100 p-2 rounded-full text-blue-600"><i class="fas fa-envelope"></i></div>
-                            <div>
-                                <h4 class="font-bold text-gray-800">Liên hệ hỗ trợ?</h4>
-                                <p>Email: <a href="mailto:support@gocsach.com" class="text-blue-600 hover:underline">support@gocsach.com</a><br>Hotline: 1900 1234 (8h-17h)</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                        <button type="button" class="inline-flex w-full justify-center rounded-md bg-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-300 sm:ml-3 sm:w-auto" onclick="closeModal('helpModal')">Đóng</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Script điều khiển Modal -->
-    <script>
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.remove('hidden');
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
-        }
-
-        // Đóng modal khi nhấn ESC
         document.addEventListener('keydown', function(event) {
             if (event.key === "Escape") {
                 document.querySelectorAll('[id$="Modal"]').forEach(el => el.classList.add('hidden'));

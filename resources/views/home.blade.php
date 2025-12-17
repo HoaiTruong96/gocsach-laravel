@@ -161,7 +161,7 @@
                 <section id="new-books" class="relative group/slider">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-gray-800 font-serif border-l-4 border-brand-green pl-3">Sách Mới Cập Nhật</h2>
-                        <a href="{{ route('list') }}" class="text-xs font-bold px-3 py-1 bg-gray-100 text-gray-500 hover:bg-brand-green hover:text-white rounded-full transition">Xem kho sách</a>
+                        <a href="{{ route('books.list') }}" class="text-xs font-bold px-3 py-1 bg-gray-100 text-gray-500 hover:bg-brand-green hover:text-white rounded-full transition">Xem kho sách</a>
                     </div>
                     <div class="relative px-2">
                         <button id="btnPrevNewBooks" class="absolute left-0 top-1/3 -translate-y-1/2 -ml-5 z-10 w-10 h-10 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-brand-green hover:scale-110 transition opacity-0 group-hover/slider:opacity-100 duration-300"><i class="fas fa-chevron-left"></i></button>
@@ -372,8 +372,12 @@
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <h4 class="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-brand-green transition" title="{{ $book->title }}">{{ $book->title }}</h4>
+                                            
                                             <div class="flex items-center gap-2 text-xs mt-1">
-                                                <span class="text-yellow-500 font-bold flex items-center">{{ number_format($book->avg_rating, 1) }} <i class="fas fa-star text-[10px] ml-0.5"></i></span>
+                                                <span class="text-yellow-500 font-bold flex items-center">
+    {{ number_format($book->posts_avg_rating ?? $book->avg_rating ?? 0, 1) }} 
+    <i class="fas fa-star text-[10px] ml-0.5"></i>
+</span>
                                                 <span class="text-gray-400">|</span>
                                                 <span class="text-gray-500 flex items-center" title="Lượt xem"><i class="far fa-eye mr-1"></i> {{ number_format($book->view_count) }}</span>
                                             </div>
@@ -392,7 +396,7 @@
                         <div class="flex flex-wrap gap-2">
                             @if(isset($categories) && $categories->count() > 0)
                                 @foreach($categories as $category)
-                                    <a href="{{ route('list', ['category' => $category->id]) }}" class="group flex items-center gap-2 bg-white text-gray-600 px-3 py-1.5 rounded-full text-xs font-bold border border-gray-100 hover:border-brand-accent hover:text-brand-accent hover:shadow-md transition-all duration-300">
+                                    <a href="{{ route('books.list', ['categories' => [$category->name]]) }}" class="group flex items-center gap-2 bg-white text-gray-600 px-3 py-1.5 rounded-full text-xs font-bold border border-gray-100 hover:border-brand-accent hover:text-brand-accent hover:shadow-md transition-all duration-300">
                                         <span>{{ $category->name }}</span>
                                         <span class="bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full text-[10px] group-hover:bg-brand-accent/10 group-hover:text-brand-accent transition">{{ $category->books_count ?? 0 }}</span>
                                     </a>

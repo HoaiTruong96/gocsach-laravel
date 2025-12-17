@@ -14,7 +14,7 @@
             <div class="flex items-center text-sm text-gray-500 font-medium">
                 <a href="{{ route('home') }}" class="hover:text-brand-green transition">Trang chủ</a>
                 <span class="mx-2 text-gray-300">/</span>
-                <a href="{{ route('list') }}" class="hover:text-brand-green transition">
+                <a href="{{ route('books.list') }}" class="hover:text-brand-green transition">
                     {{ isset($book->categories) && $book->categories->isNotEmpty() ? $book->categories->first()->name : 'Sách' }}
                 </a>
                 <span class="mx-2 text-gray-300">/</span>

@@ -41,10 +41,18 @@ class HomeController extends Controller
         // 2. Sách mới
         $books = Book::where('is_approved', true)
                     ->with('categories')
+                    ->withAvg(['posts' => function($q) {
+                        $q->where('status', 'published'); // Chỉ tính bài đã duyệt
+                    }], 'rating')
                     ->latest()
-                    ->take(10)
+                    ->take(10) // Lấy 10 cuốn (dùng chung cho cả Slider và Top thịnh hành)
                     ->get();
 
+        // [QUAN TRỌNG] Ghi đè giá trị hiển thị bằng giá trị tính toán
+        foreach($books as $book) {
+            // Lấy điểm posts_avg_rating vừa tính, làm tròn 1 số lẻ
+            $book->avg_rating = round($book->posts_avg_rating ?? 0, 1);
+        }
         // 3. Tạp chí đọc
         $featuredArticle = Article::with('user')
                             ->where('is_featured', true)
@@ -205,5 +213,21 @@ class HomeController extends Controller
 
         $link = $notification->data['link'] ?? route('home');
         return redirect($link);
+    }
+    public function readNotification($id)
+    {
+        // Tìm thông báo trong danh sách của user hiện tại
+        $notification = Auth::user()->notifications()->find($id);
+
+        if ($notification) {
+            $notification->markAsRead(); // Đánh dấu đã đọc
+            
+            // Nếu thông báo có link (đã set ở Bước 1), chuyển hướng tới đó
+            if (isset($notification->data['link'])) {
+                return redirect($notification->data['link']);
+            }
+        }
+
+        return redirect()->back();
     }
 }
