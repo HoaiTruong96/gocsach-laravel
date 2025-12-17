@@ -100,9 +100,9 @@ class User extends Authenticatable
         return $this->followings()->where('following_id', $userId)->exists();
     }
     public function isAdmin()
-{
-    // Kiểm tra xem user có phải admin không
-    // Ví dụ: nếu cột role là 'admin' hoặc cột type là 1
-    return $this->role === 'admin'; 
-}
+    {
+        // Kiểm tra xem user có phải admin không
+        // Ví dụ: nếu cột role là 'admin' hoặc cột type là 1
+        return $this->role === 'admin';
+    }
 }
