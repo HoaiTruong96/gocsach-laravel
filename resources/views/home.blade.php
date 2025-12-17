@@ -114,7 +114,7 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
                         @if(isset($featuredArticle))
-                        <article class="md:col-span-3 group cursor-pointer relative">
+                        <article class="md:col-span-3 group cursor-pointer relative" onclick="window.location.href='{{ route('articles.show', $featuredArticle->slug ?? $featuredArticle->id) }}'">
                             @if(Auth::check() && Auth::user()->isAdmin())
                                 {{-- Nút sửa (Ngăn chặn click bong bóng để không nhảy trang) --}}
                                 <a href="{{ route('admin.articles.edit', $featuredArticle->id) }}" 
@@ -143,7 +143,7 @@
                         <div class="md:col-span-2 flex flex-col gap-6">
                             @if(isset($sidebarArticles))
                                 @foreach($sidebarArticles as $article)
-                                <article class="flex flex-col group cursor-pointer relative">
+                                <article class="flex flex-col group cursor-pointer relative" onclick="window.location.href='{{ route('articles.show', $article->slug ?? $article->id) }}'">
                                     @if(Auth::check() && Auth::user()->isAdmin())
                                          <a href="{{ route('admin.articles.edit', $article->id) }}" 
                                             onclick="event.stopPropagation()"
@@ -212,40 +212,47 @@
 
                 {{-- 3. CỘNG ĐỒNG REVIEW --}}
 <section id="community-posts" class="mb-16 scroll-mt-24">
-    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <div class="flex items-center gap-3">
-            <div class="w-1 h-8 bg-brand-accent rounded-full"></div> {{-- Thanh trang trí --}}
-            <div>
-                <h2 class="text-2xl font-bold text-gray-800 font-serif leading-none">Cộng Đồng Review</h2>
-                <p class="text-xs text-gray-500 mt-1">Góc chia sẻ cảm nhận từ độc giả</p>
+    <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-1 h-8 bg-brand-accent rounded-full"></div> {{-- Thanh trang trí --}}
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 font-serif leading-none flex items-center gap-3">Cộng Đồng Review
+                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-semibold">{{ $latestComments->total() ?? 0 }} review</span>
+                    </h2>
+                    <p class="text-sm text-gray-500 mt-1">Góc chia sẻ cảm nhận từ độc giả</p>
+                </div>
+            </div>
+            
+            {{-- Bộ lọc Review --}}
+            <div class="flex items-center gap-3">
+                <div class="bg-brand-green/10 rounded-full p-1.5 flex text-xs font-bold">
+                    <button onclick="loadComments('latest')" 
+                            id="tab-latest"
+                            class="px-4 py-1.5 rounded-full transition-all duration-300 bg-white text-brand-green shadow-sm">
+                        Mới nhất
+                    </button>
+                    <button onclick="loadComments('popular')" 
+                            id="tab-popular"
+                            class="px-4 py-1.5 rounded-full transition-all duration-300 text-gray-500 hover:bg-gray-50">
+                        Nổi bật
+                    </button>
+                </div>
+                <a href="{{ route('books.search') }}" class="text-xs text-gray-400 hover:text-gray-600 ml-3">Xem tất cả</a>
             </div>
         </div>
         
-        {{-- Bộ lọc Review --}}
-        <div class="bg-white p-1 rounded-full border border-gray-200 flex text-xs font-bold shadow-sm">
-            <button onclick="loadComments('latest')" 
-                    id="tab-latest"
-                    class="px-4 py-1.5 rounded-full transition-all duration-300 bg-brand-green text-white shadow-sm">
-                Mới nhất
-            </button>
-            <button onclick="loadComments('popular')" 
-                    id="tab-popular"
-                    class="px-4 py-1.5 rounded-full transition-all duration-300 text-gray-500 hover:bg-gray-50">
-                Nổi bật
-            </button>
-        </div>
-    </div>
-    
-    {{-- Container chứa danh sách comment --}}
-    <div id="comments-container" class="relative min-h-[200px]">
-        {{-- Loading Spinner --}}
-        <div id="loading-spinner" class="hidden absolute inset-0 bg-white/90 z-20 flex items-center justify-center rounded-2xl transition-opacity duration-300">
-            <div class="animate-spin rounded-full h-8 w-8 border-2 border-brand-green border-t-transparent"></div>
-        </div>
+        {{-- Container chứa danh sách comment --}}
+        <div id="comments-container" class="relative min-h-[200px] bg-gray-50 rounded-2xl p-4 border border-gray-100">
+            {{-- Loading Spinner --}}
+            <div id="loading-spinner" class="hidden absolute inset-0 bg-white/80 z-20 flex items-center justify-center rounded-2xl transition-opacity duration-300">
+                <div class="animate-spin rounded-full h-8 w-8 border-2 border-brand-green border-t-transparent"></div>
+            </div>
 
-        {{-- NỘI DUNG AJAX SẼ ĐỔ VÀO ĐÂY --}}
-        <div id="comments-content-wrapper">
-             @include('partials.home_comments', ['latestComments' => $latestComments])
+            {{-- NỘI DUNG AJAX SẼ ĐỔ VÀO ĐÂY --}}
+            <div id="comments-content-wrapper">
+                 @include('partials.home_comments', ['latestComments' => $latestComments])
+            </div>
         </div>
     </div>
 </section>
@@ -469,6 +476,10 @@
 
         // C. GẮN SỰ KIỆN PHÂN TRANG (Cho dữ liệu load lần đầu)
         attachPaginationEvents();
+
+        // Thiết lập trạng thái Tab ban đầu dựa trên URL (nếu có ?sort_review=...)
+        const initialSort = new URLSearchParams(window.location.search).get('sort_review') || 'latest';
+        try { updateTabUI(initialSort); } catch(e) { /* ignore if function not ready */ }
     });
 
     // --- 2. CÁC HÀM XỬ LÝ AJAX (Định nghĩa global để onclick gọi được) ---
