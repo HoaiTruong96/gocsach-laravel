@@ -151,15 +151,23 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div id="reviews-container"
-            class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden transition-colors duration-300 flex flex-col min-h-[300px]">
-            <div id="reviews-content" class="transition-opacity duration-200">
+            class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden transition-colors duration-300 flex flex-col min-h-[300px] relative">
+            <div id="reviews-loading"
+                class="absolute inset-0 bg-white/80 dark:bg-slate-800/80 flex items-center justify-center z-10 hidden rounded-lg">
+                <i class="fas fa-spinner fa-spin text-2xl text-blue-500"></i>
+            </div>
+            <div id="reviews-content">
                 @include('admin.partials.dashboard-reviews', ['monthlyReviewsList' => $monthlyReviewsList, 'selectedMonth' => $selectedMonth, 'selectedYear' => $selectedYear])
             </div>
         </div>
 
         <div id="users-container"
-            class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden transition-colors duration-300 flex flex-col min-h-[300px]">
-            <div id="users-content" class="transition-opacity duration-200">
+            class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden transition-colors duration-300 flex flex-col min-h-[300px] relative">
+            <div id="users-loading"
+                class="absolute inset-0 bg-white/80 dark:bg-slate-800/80 flex items-center justify-center z-10 hidden rounded-lg">
+                <i class="fas fa-spinner fa-spin text-2xl text-green-500"></i>
+            </div>
+            <div id="users-content">
                 @include('admin.partials.dashboard-users', ['monthlyUsersList' => $monthlyUsersList, 'selectedMonth' => $selectedMonth, 'selectedYear' => $selectedYear])
             </div>
         </div>
@@ -214,6 +222,7 @@
             function loadReviews(page = 1) {
                 const month = filterMonth.value;
                 const year = filterYear.value;
+                const reviewsContent = document.getElementById('reviews-content');
 
                 showLoading(reviewsContent);
 
@@ -236,6 +245,7 @@
             function loadUsers(page = 1) {
                 const month = filterMonth.value;
                 const year = filterYear.value;
+                const usersContent = document.getElementById('users-content');
 
                 showLoading(usersContent);
 
@@ -254,26 +264,27 @@
                     });
             }
 
-            // Reload cả 2 section cùng lúc
-            function reloadBoth(reviewsPage = 1, usersPage = 1) {
-                showBothLoading();
-                return Promise.all([
-                    loadReviews(reviewsPage),
-                    loadUsers(usersPage)
-                ]).then(() => {
-                    hideBothLoading();
+            // Bind pagination click events
+            function bindReviewsPagination() {
+                const reviewsContent = document.getElementById('reviews-content');
+                if (!reviewsContent) return;
+                reviewsContent.querySelectorAll('.pagination a').forEach(link => {
+                    link.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const url = new URL(this.href);
+                        const page = url.searchParams.get('page') || 1;
+                        loadReviews(page, true);
+                    });
                 });
             }
 
-            // EVENT DELEGATION - bind 1 lần trên container, hoạt động cho tất cả pagination links
-            // Không cần rebind sau khi content thay đổi
-            reviewsContent.addEventListener('click', function (e) {
-                const link = e.target.closest('a.ajax-pagination-link, nav[role="navigation"] a');
-                if (link && link.href) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    try {
-                        const url = new URL(link.href);
+            function bindUsersPagination() {
+                const usersContent = document.getElementById('users-content');
+                if (!usersContent) return;
+                usersContent.querySelectorAll('.pagination a').forEach(link => {
+                    link.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const url = new URL(this.href);
                         const page = url.searchParams.get('page') || 1;
                         reloadBoth(page, 1);
                     } catch (err) {

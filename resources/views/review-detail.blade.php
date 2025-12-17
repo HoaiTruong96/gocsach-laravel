@@ -63,7 +63,12 @@
                             <div class="flex-1 min-w-0">
                                 <div class="flex justify-between items-start mb-3">
                                     <div>
-                                        <h4 class="font-bold text-gray-800 text-base">{{ $review->user->name }}</h4>
+                                        <h4 class="font-bold text-gray-800 text-base flex items-center">
+                                            {{ $review->user->name }}
+                                            @if($review->user)
+                                                @include('partials.user-badges', ['user' => $review->user, 'size' => 'xs'])
+                                            @endif
+                                        </h4>
                                         <div class="flex items-center gap-3 mt-1">
                                             <div class="flex text-yellow-400 text-xs">
                                                 @for($i=0; $i < round($review->rating); $i++) <i class="fas fa-star"></i> @endfor
@@ -93,14 +98,20 @@
                                 </div>
 
                                 <div class="flex items-center gap-6 pt-4 border-t border-gray-50">
-                                    <button class="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-red-500 transition group">
-                                        <i class="far fa-heart text-sm group-hover:bg-red-50 p-1.5 rounded-full"></i> 
-                                        Thích ({{ $review->likes_count ?? 0 }})
+                                    {{-- Nút Like --}}
+                                    <button 
+                                        type="button"
+                                        onclick="handleLike({{ $review->id }}, 'post')" 
+                                        id="like-btn-post-{{ $review->id }}"
+                                        class="flex items-center gap-2 text-xs font-bold transition group {{ Auth::check() && $review->likes->where('user_id', Auth::id())->count() > 0 ? 'text-red-500' : 'text-gray-500 hover:text-red-500' }}">
+                                        <i id="like-icon-post-{{ $review->id }}" class="{{ Auth::check() && $review->likes->where('user_id', Auth::id())->count() > 0 ? 'fas' : 'far' }} fa-heart text-sm group-hover:bg-red-50 p-1.5 rounded-full"></i> 
+                                        Thích (<span id="like-count-post-{{ $review->id }}">{{ $review->likes_count ?? 0 }}</span>)
                                     </button>
 
+                                    {{-- Nút Bình luận --}}
                                     <button onclick="toggleComment({{ $review->id }})" class="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-blue-500 transition group">
                                         <i class="far fa-comment-dots text-sm group-hover:bg-blue-50 p-1.5 rounded-full"></i> 
-                                        Bình luận ({{ $review->comments_count ?? 0 }})
+                                        Bình luận (<span id="comment-count-{{ $review->id }}">{{ $review->comments_count ?? 0 }}</span>)
                                     </button>
                                 </div>
 
@@ -116,7 +127,12 @@
                                                          class="w-8 h-8 rounded-full mt-1 border border-white shadow-sm object-cover">
                                                     <div class="bg-gray-50 p-3 rounded-r-xl rounded-bl-xl text-xs w-full">
                                                         <div class="flex justify-between mb-1">
-                                                            <span class="font-bold text-gray-800">{{ $comment->user->name ?? 'Ẩn danh' }}</span>
+                                                            <span class="font-bold text-gray-800 flex items-center">
+                                                                {{ $comment->user->name ?? 'Ẩn danh' }}
+                                                                @if($comment->user)
+                                                                    @include('partials.user-badges', ['user' => $comment->user, 'size' => 'xs', 'max' => 2])
+                                                                @endif
+                                                            </span>
                                                             <span class="text-gray-400 text-[10px]">{{ $comment->created_at->diffForHumans() }}</span>
                                                         </div>
                                                         <span class="text-gray-600 block leading-relaxed">{{ $comment->content }}</span>
@@ -126,9 +142,11 @@
                                         </div>
                                     @endif
 
-                                    {{-- [SỬA] Form bình luận với Action Route chính xác --}}
+                                    {{-- Form bình luận AJAX --}}
                                     @auth
-                                        <form action="{{ route('posts.comment', $review->id) }}" method="POST" class="flex gap-3 items-start mt-2">
+                                        <form data-comment-form data-review-id="{{ $review->id }}" 
+                                              onsubmit="submitComment({{ $review->id }}, event)"
+                                              class="flex gap-3 items-start mt-2">
                                             @csrf
                                             <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&background=3E5F4E&color=fff' }}" 
                                                  class="w-8 h-8 rounded-full border border-gray-200 object-cover">
@@ -174,6 +192,9 @@
 
 @push('scripts')
 <script>
+    const currentUserId = "{{ Auth::id() }}";
+
+    // --- 1. Toggle Comment Box ---
     function toggleComment(reviewId) {
         const commentBox = document.getElementById(`comment-box-${reviewId}`);
         if (commentBox.classList.contains('hidden')) {
@@ -184,5 +205,129 @@
             commentBox.classList.add('hidden');
         }
     }
+
+    // --- 2. Handle Like (AJAX) ---
+    function handleLike(id, type) {
+        if (!currentUserId) {
+            alert("Vui lòng đăng nhập để thả tim!");
+            window.location.href = "/login";
+            return;
+        }
+
+        const btnId = `like-btn-${type}-${id}`;
+        const iconId = `like-icon-${type}-${id}`;
+        const countId = `like-count-${type}-${id}`;
+
+        const btn = document.getElementById(btnId);
+        const icon = document.getElementById(iconId);
+        const countSpan = document.getElementById(countId);
+
+        if (!btn || !icon || !countSpan) return;
+
+        // Optimistic UI update
+        const isLiked = icon.classList.contains('fas'); 
+        
+        if(isLiked) {
+            icon.classList.remove('fas', 'text-red-500');
+            icon.classList.add('far');
+            btn.classList.remove('text-red-500');
+            btn.classList.add('text-gray-500');
+            let currentCount = parseInt(countSpan.innerText);
+            countSpan.innerText = Math.max(0, currentCount - 1);
+        } else {
+            icon.classList.remove('far');
+            icon.classList.add('fas', 'bounce', 'text-red-500');
+            btn.classList.remove('text-gray-500');
+            btn.classList.add('text-red-500');
+            let currentCount = parseInt(countSpan.innerText);
+            countSpan.innerText = currentCount + 1;
+        }
+
+        // Send AJAX request
+        fetch('/like', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ id: id, type: type })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                countSpan.innerText = data.count;
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // --- 3. Handle Comment Submit (AJAX) ---
+    function submitComment(reviewId, event) {
+        event.preventDefault();
+        
+        const form = event.target;
+        const textarea = form.querySelector('textarea[name="content"]');
+        const content = textarea.value.trim();
+
+        if (!content) {
+            alert("Nội dung bình luận không được để trống!");
+            return;
+        }
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        fetch(`/posts/${reviewId}/comment`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ content: content })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update comment count
+                const countSpan = document.getElementById(`comment-count-${reviewId}`);
+                if (countSpan) countSpan.innerText = data.count;
+
+                // Clear textarea
+                textarea.value = '';
+
+                // Reload to show new comment (or you can append dynamically)
+                location.reload();
+            } else {
+                alert(data.error || "Có lỗi xảy ra, vui lòng thử lại.");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("Có lỗi xảy ra, vui lòng thử lại.");
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+        });
+    }
+
+    // Attach submit handlers to all comment forms
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('form[data-comment-form]').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const reviewId = this.dataset.reviewId;
+                submitComment(reviewId, e);
+            });
+        });
+    });
 </script>
+<style>
+    /* Animation nảy cho tim */
+    @keyframes bounce {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+    }
+    .bounce { animation: bounce 0.3s; }
+</style>
 @endpush
