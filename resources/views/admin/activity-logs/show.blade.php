@@ -49,11 +49,11 @@
                             </div>
                         @endif
                         <div class="flex flex-col sm:flex-row sm:gap-4">
-                            <dt class="text-sm font-medium text-gray-500 sm:w-32">IP Address:</dt>
+                            <dt class="text-sm font-medium text-gray-500 sm:w-32">Địa chỉ IP:</dt>
                             <dd class="text-sm font-mono text-gray-800">{{ $activityLog->ip_address ?? 'N/A' }}</dd>
                         </div>
                         <div class="flex flex-col sm:flex-row sm:gap-4">
-                            <dt class="text-sm font-medium text-gray-500 sm:w-32">User Agent:</dt>
+                            <dt class="text-sm font-medium text-gray-500 sm:w-32">Trình duyệt:</dt>
                             <dd class="text-sm text-gray-600 break-all">{{ $activityLog->user_agent ?? 'N/A' }}</dd>
                         </div>
                     </dl>
@@ -85,7 +85,7 @@
                     <div class="p-4 border-b border-gray-100 bg-red-50">
                         <h3 class="font-bold text-red-700">
                             <i class="fas fa-minus-circle mr-2"></i>
-                            Giá trị cũ (Before)
+                            Giá trị cũ (Trước)
                         </h3>
                     </div>
                     <div class="p-4">
@@ -101,7 +101,7 @@
                     <div class="p-4 border-b border-gray-100 bg-green-50">
                         <h3 class="font-bold text-green-700">
                             <i class="fas fa-plus-circle mr-2"></i>
-                            Giá trị mới (After)
+                            Giá trị mới (Sau)
                         </h3>
                     </div>
                     <div class="p-4">

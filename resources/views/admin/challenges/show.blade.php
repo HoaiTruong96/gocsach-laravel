@@ -5,14 +5,15 @@
 @section('content')
     <div class="space-y-6">
         {{-- Info Card --}}
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 transition-colors duration-300">
             <div class="flex flex-wrap items-start justify-between gap-4">
                 <div>
                     <div class="flex items-center gap-3 mb-2">
                         <span class="text-3xl">{{ $challenge->badge->icon ?? '🏆' }}</span>
                         <div>
-                            <h2 class="text-xl font-bold text-gray-800">{{ $challenge->name }}</h2>
-                            <p class="text-gray-500">{{ $challenge->description }}</p>
+                            <h2 class="text-xl font-bold text-gray-800 dark:text-white">{{ $challenge->name }}</h2>
+                            <p class="text-gray-500 dark:text-slate-400">{{ $challenge->description }}</p>
                         </div>
                     </div>
                     <div class="flex flex-wrap gap-4 mt-4 text-sm">
@@ -47,14 +48,17 @@
         </div>
 
         {{-- Participants --}}
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                <span class="font-semibold text-gray-700">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden transition-colors duration-300">
+            <div
+                class="p-4 border-b border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-700 flex justify-between items-center">
+                <span class="font-semibold text-gray-700 dark:text-white">
                     <i class="fas fa-users text-blue-500 mr-2"></i>Người tham gia ({{ $userChallenges->total() }})
                 </span>
             </div>
             <table class="w-full text-left">
-                <thead class="text-xs text-gray-500 uppercase bg-white border-b">
+                <thead
+                    class="text-xs text-gray-500 dark:text-slate-400 uppercase bg-white dark:bg-slate-800 border-b dark:border-slate-700">
                     <tr>
                         <th class="px-6 py-3">Người dùng</th>
                         <th class="px-6 py-3 text-center">Tiến độ</th>
@@ -63,16 +67,16 @@
                         <th class="px-6 py-3 text-right">Hành động</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
+                <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
                     @forelse($userChallenges as $uc)
-                        <tr class="hover:bg-gray-50">
+                        <tr class="hover:bg-gray-50 dark:hover:bg-slate-700">
                             <td class="px-6 py-4">
                                 <div class="flex items-center">
                                     <img src="{{ $uc->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($uc->user->name) }}"
                                         class="w-8 h-8 rounded-full mr-3" alt="">
                                     <div>
-                                        <p class="font-medium text-gray-800">{{ $uc->user->name }}</p>
-                                        <p class="text-xs text-gray-500">{{ $uc->user->email }}</p>
+                                        <p class="font-medium text-gray-800 dark:text-white">{{ $uc->user->name }}</p>
+                                        <p class="text-xs text-gray-500 dark:text-slate-400">{{ $uc->user->email }}</p>
                                     </div>
                                 </div>
                             </td>
@@ -107,13 +111,13 @@
                                             ->where('badge_id', $challenge->badge_id)->exists();
                                     @endphp
                                     @if($hasBadge)
-                                        <span class="text-green-500 text-sm"><i class="fas fa-medal"></i> Đã cấp badge</span>
+                                        <span class="text-green-500 text-sm"><i class="fas fa-medal"></i> Đã cấp danh hiệu</span>
                                     @else
                                         <form action="{{ route('admin.challenges.award-badge', [$challenge, $uc->user_id]) }}"
                                             method="POST" class="inline">
                                             @csrf
                                             <button class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm">
-                                                <i class="fas fa-award mr-1"></i>Cấp Badge
+                                                <i class="fas fa-award mr-1"></i>Cấp Danh Hiệu
                                             </button>
                                         </form>
                                     @endif
@@ -124,8 +128,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-8 text-center text-gray-500">
-                                <i class="fas fa-users text-4xl text-gray-300 mb-2"></i>
+                            <td colspan="5" class="px-6 py-8 text-center text-gray-500 dark:text-slate-400">
+                                <i class="fas fa-users text-4xl text-gray-300 dark:text-slate-600 mb-2"></i>
                                 <p>Chưa có ai tham gia thử thách này</p>
                             </td>
                         </tr>
@@ -133,8 +137,8 @@
                 </tbody>
             </table>
             @if($userChallenges->hasPages())
-                <div class="p-4 border-t">
-                    {{ $userChallenges->links() }}
+                <div class="p-4 border-t dark:border-slate-700">
+                    {{ $userChallenges->links('vendor.pagination.admin') }}
                 </div>
             @endif
         </div>
