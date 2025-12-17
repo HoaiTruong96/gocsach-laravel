@@ -51,6 +51,12 @@ class User extends Authenticatable
         return $this->belongsToMany(Book::class, 'bookshelves', 'user_id', 'book_id')
             ->withPivot('status')->withTimestamps();
     }
+    public function isFollowing($userId) {
+        return $this->followings()->where('following_id', $userId)->exists();
+    }
+    public function isAdmin() { return $this->role === 'admin'; }
+
+    // --- [PHẦN QUAN TRỌNG ĐÃ SỬA] ---
 
     public function contributedBooks() 
     { 
@@ -76,7 +82,48 @@ class User extends Authenticatable
     // Kiểm tra tôi có đang follow người này không
     public function isFollowing($userId) 
     {
-        return $this->followings()->where('following_id', $userId)->exists();
+        // Lấy tất cả thử thách user đã tham gia
+        $joinedChallenges = $this->challenges; 
+
+        foreach ($joinedChallenges as $challenge) {
+            
+            // A. Đếm số lượng bài review HỢP LỆ
+            // - Status phải là 'published'
+            // - Ngày tạo phải nằm trong khoảng thời gian của thử thách
+            $validPostsCount = $this->posts()
+                ->where('status', 'published')
+                ->where('created_at', '>=', $challenge->start_date)
+                // Lấy đến cuối ngày kết thúc (23:59:59)
+                ->where('created_at', '<=', Carbon::parse($challenge->end_date)->endOfDay())
+                ->count();
+
+            // B. Kiểm tra đã hoàn thành chưa
+            $isCompleted = $validPostsCount >= $challenge->target_count;
+            
+            // C. Chuẩn bị dữ liệu cập nhật
+            $pivotData = [
+                'current_count' => $validPostsCount, // Cập nhật con số thực tế
+                'is_completed'  => $isCompleted
+            ];
+
+            // Nếu hoàn thành mà chưa có ngày ghi nhận thì thêm vào
+            if ($isCompleted && !$challenge->pivot->completed_at) {
+                $pivotData['completed_at'] = now();
+            }
+
+            // D. Lưu vào bảng user_challenges
+            $this->challenges()->updateExistingPivot($challenge->id, $pivotData);
+
+            // E. Trao Huy Hiệu (Badge) nếu xong
+            if ($isCompleted) {
+                // Kiểm tra để tránh trao trùng lặp
+                if (!$this->badges()->where('badge_id', $challenge->badge_id)->exists()) {
+                    $this->badges()->attach($challenge->badge_id, [
+                        'earned_at' => now()
+                    ]);
+                }
+            }
+        }
     }
 
     // =========================================================================

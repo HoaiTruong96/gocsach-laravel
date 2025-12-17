@@ -8,8 +8,8 @@ use App\Models\Category;
 use App\Models\Comment;
 use App\Models\Article;
 use App\Models\Banner;
-use App\Models\Like;         // Model cho Post Like
-use App\Models\CommentLike;  // Model cho Comment Like
+use App\Models\Like;        // Model cho Post Like
+use App\Models\CommentLike; // Model cho Comment Like
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\CommentLikedNotification;
 use App\Notifications\CommentRepliedNotification;
@@ -24,6 +24,7 @@ class HomeController extends Controller
                             ->latest()
                             ->get();
 
+        // Dữ liệu giả nếu chưa có banner
         if ($heroSlides->isEmpty()) {
             $heroSlides = collect([
                 (object)[
@@ -57,26 +58,30 @@ class HomeController extends Controller
                             ->take(2)
                             ->get();
 
-        // 4. Review Cộng Đồng
+        // 4. Review Cộng Đồng (XỬ LÝ AJAX TẠI ĐÂY)
         $sortReview = $request->get('sort_review', 'latest');
-        $commentQuery = Comment::with(['user', 'book']);
+        
+        $commentQuery = Comment::with(['user', 'book', 'likes']);
+        $commentQuery->withCount('likes'); // Đếm số like để sắp xếp
 
-        // Đếm like của comment
-        $commentQuery->withCount('likes'); 
-
+        // Logic sắp xếp
         if ($sortReview == 'popular') {
             $commentQuery->orderByDesc('likes_count');
         } else {
             $commentQuery->latest();
         }
 
-        $latestComments = $commentQuery->paginate(5)
-                                     ->withQueryString()
-                                     ->fragment('community-posts');
+        $latestComments = $commentQuery->paginate(5)->withQueryString();
+
+        // [QUAN TRỌNG] Kiểm tra nếu là request AJAX thì chỉ trả về phần view bình luận
+        if ($request->ajax() && $request->has('sort_review')) {
+            return view('partials.home_comments', compact('latestComments'))->render();
+        }
 
         // 5. Danh mục
         $categories = Category::withCount('books')->orderBy('name', 'asc')->get();
 
+        // Trả về view trang chủ đầy đủ nếu không phải AJAX
         return view('home', compact(
             'heroSlides',
             'books', 
@@ -102,50 +107,32 @@ class HomeController extends Controller
         $count = 0;
 
         if ($type === 'post') {
-            // --- LIKE BÀI VIẾT (POST) ---
             $existingLike = Like::where('user_id', $userId)->where('post_id', $id)->first();
-
             if ($existingLike) {
-                $existingLike->delete(); // Unlike
+                $existingLike->delete();
                 $liked = false;
             } else {
-                Like::create([
-                    'user_id' => $userId, 
-                    'post_id' => $id
-                ]); 
+                Like::create(['user_id' => $userId, 'post_id' => $id]); 
                 $liked = true;
             }
-            
             $count = Like::where('post_id', $id)->count();
-
         } else {
-            // --- LIKE BÌNH LUẬN (COMMENT) ---
             $existingLike = CommentLike::where('user_id', $userId)->where('comment_id', $id)->first();
-
             if ($existingLike) {
-                $existingLike->delete(); // Unlike
+                $existingLike->delete();
                 $liked = false;
             } else {
-                CommentLike::create([
-                    'user_id' => $userId, 
-                    'comment_id' => $id,
-                    'is_like' => 1 
-                ]); 
+                CommentLike::create(['user_id' => $userId, 'comment_id' => $id, 'is_like' => 1]); 
                 $liked = true;
-
-                // --- GỬI THÔNG BÁO ---
-                $comment = Comment::find($id);
                 
-                // Kiểm tra: Chỉ gửi nếu comment tồn tại VÀ người like KHÔNG PHẢI người viết
+                // Gửi thông báo
+                $comment = Comment::find($id);
                 if ($comment && $comment->user_id != $userId) {
                     try {
                         $comment->user->notify(new CommentLikedNotification(Auth::user(), $comment));
-                    } catch (\Exception $e) {
-                        // Bỏ qua lỗi nếu gửi thông báo thất bại
-                    }
+                    } catch (\Exception $e) {}
                 }
             }
-
             $count = CommentLike::where('comment_id', $id)->count();
         }
 
@@ -172,14 +159,10 @@ class HomeController extends Controller
         $reply->content = $request->input('content');
         $reply->save();
 
-        // --- GỬI THÔNG BÁO ---
-        // Chỉ gửi thông báo nếu người trả lời KHÔNG PHẢI người viết comment gốc
         if ($parentComment->user_id != $user->id) {
             try {
                 $parentComment->user->notify(new CommentRepliedNotification($user, $reply));
-            } catch (\Exception $e) {
-                // Bỏ qua lỗi
-            }
+            } catch (\Exception $e) {}
         }
 
         return response()->json([

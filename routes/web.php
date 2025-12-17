@@ -44,6 +44,7 @@ Route::get('/sach-moi', [BookController::class, 'newBooks'])->name('books.new');
 
 // Tìm kiếm Review/Sách
 Route::get('/review-search', [BookController::class, 'search'])->name('books.search');
+Route::get('/ajax-search', [BookController::class, 'ajaxSearch'])->name('ajax.search');
 
 // Xem chi tiết sách & Đánh giá
 Route::get('/chi-tiet/{slug}', [BookController::class, 'show'])->name('detail');
