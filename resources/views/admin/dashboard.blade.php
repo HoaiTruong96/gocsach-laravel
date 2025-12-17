@@ -153,19 +153,23 @@
         <div id="reviews-container"
             class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden transition-colors duration-300 flex flex-col min-h-[300px] relative">
             <div id="reviews-loading"
-                class="absolute inset-0 bg-white/80 dark:bg-slate-800/80 flex items-center justify-center z-10 hidden">
+                class="absolute inset-0 bg-white/80 dark:bg-slate-800/80 flex items-center justify-center z-10 hidden rounded-lg">
                 <i class="fas fa-spinner fa-spin text-2xl text-blue-500"></i>
             </div>
-            @include('admin.partials.dashboard-reviews', ['monthlyReviewsList' => $monthlyReviewsList, 'selectedMonth' => $selectedMonth, 'selectedYear' => $selectedYear])
+            <div id="reviews-content">
+                @include('admin.partials.dashboard-reviews', ['monthlyReviewsList' => $monthlyReviewsList, 'selectedMonth' => $selectedMonth, 'selectedYear' => $selectedYear])
+            </div>
         </div>
 
         <div id="users-container"
             class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden transition-colors duration-300 flex flex-col min-h-[300px] relative">
             <div id="users-loading"
-                class="absolute inset-0 bg-white/80 dark:bg-slate-800/80 flex items-center justify-center z-10 hidden">
+                class="absolute inset-0 bg-white/80 dark:bg-slate-800/80 flex items-center justify-center z-10 hidden rounded-lg">
                 <i class="fas fa-spinner fa-spin text-2xl text-green-500"></i>
             </div>
-            @include('admin.partials.dashboard-users', ['monthlyUsersList' => $monthlyUsersList, 'selectedMonth' => $selectedMonth, 'selectedYear' => $selectedYear])
+            <div id="users-content">
+                @include('admin.partials.dashboard-users', ['monthlyUsersList' => $monthlyUsersList, 'selectedMonth' => $selectedMonth, 'selectedYear' => $selectedYear])
+            </div>
         </div>
     </div>
 
@@ -212,6 +216,7 @@
             function loadReviews(page = 1, showLoading = true) {
                 const month = filterMonth.value;
                 const year = filterYear.value;
+                const reviewsContent = document.getElementById('reviews-content');
 
                 if (showLoading) reviewsLoading.classList.remove('hidden');
 
@@ -220,9 +225,7 @@
                 })
                     .then(response => response.text())
                     .then(html => {
-                        const tempContainer = reviewsContainer.querySelector('#reviews-loading');
-                        reviewsContainer.innerHTML = html;
-                        reviewsContainer.insertBefore(tempContainer || reviewsLoading, reviewsContainer.firstChild);
+                        reviewsContent.innerHTML = html;
                         bindReviewsPagination();
                         if (showLoading) reviewsLoading.classList.add('hidden');
                     })
@@ -236,6 +239,7 @@
             function loadUsers(page = 1, showLoading = true) {
                 const month = filterMonth.value;
                 const year = filterYear.value;
+                const usersContent = document.getElementById('users-content');
 
                 if (showLoading) usersLoading.classList.remove('hidden');
 
@@ -244,9 +248,7 @@
                 })
                     .then(response => response.text())
                     .then(html => {
-                        const tempContainer = usersContainer.querySelector('#users-loading');
-                        usersContainer.innerHTML = html;
-                        usersContainer.insertBefore(tempContainer || usersLoading, usersContainer.firstChild);
+                        usersContent.innerHTML = html;
                         bindUsersPagination();
                         if (showLoading) usersLoading.classList.add('hidden');
                     })
@@ -258,7 +260,9 @@
 
             // Bind pagination click events
             function bindReviewsPagination() {
-                reviewsContainer.querySelectorAll('.pagination a').forEach(link => {
+                const reviewsContent = document.getElementById('reviews-content');
+                if (!reviewsContent) return;
+                reviewsContent.querySelectorAll('.pagination a').forEach(link => {
                     link.addEventListener('click', function (e) {
                         e.preventDefault();
                         const url = new URL(this.href);
@@ -269,7 +273,9 @@
             }
 
             function bindUsersPagination() {
-                usersContainer.querySelectorAll('.pagination a').forEach(link => {
+                const usersContent = document.getElementById('users-content');
+                if (!usersContent) return;
+                usersContent.querySelectorAll('.pagination a').forEach(link => {
                     link.addEventListener('click', function (e) {
                         e.preventDefault();
                         const url = new URL(this.href);
