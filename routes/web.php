@@ -30,6 +30,27 @@ Route::view('/dieu-khoan-su-dung', 'pages.terms')->name('page.terms');
 Route::view('/chinh-sach-bao-mat', 'pages.privacy')->name('page.privacy');
 Route::view('/lien-he', 'pages.contact')->name('page.contact');
 
+// AJAX Live Search (cho Header)
+Route::get('/ajax-search', function (Illuminate\Http\Request $request) {
+    $keyword = $request->get('keyword');
+    
+    if (!$keyword || strlen($keyword) < 2) {
+        return response()->json([]);
+    }
+    
+    $books = App\Models\Book::where('is_approved', true)
+        ->where(function($q) use ($keyword) {
+            $q->where('title', 'like', "%{$keyword}%")
+              ->orWhere('author_name', 'like', "%{$keyword}%");
+        })
+        ->select('id', 'title', 'slug', 'author_name', 'cover_image', 'avg_rating')
+        ->orderBy('view_count', 'desc')
+        ->limit(8)
+        ->get();
+    
+    return response()->json($books);
+})->name('ajax.search');
+
 // Trang chi tiết bài viết Tạp chí
 Route::get('/tap-chi/{slug}', [ArticleController::class, 'show'])->name('articles.show');
 
@@ -118,7 +139,7 @@ Route::middleware('auth')->group(function () {
         $books = Illuminate\Support\Facades\DB::table('books')
             ->where('title', 'like', "%{$query}%")
             ->orWhere('author_name', 'like', "%{$query}%")
-            ->select('id', 'title', 'author_name', 'published_year', 'cover_image')
+            ->select('id', 'title', 'author_name', 'published_year', 'cover_image', 'slug')
             ->limit(10)
             ->get();
         return response()->json($books);
