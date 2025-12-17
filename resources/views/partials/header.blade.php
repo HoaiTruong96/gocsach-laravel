@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -56,111 +55,97 @@
 </head>
 <body class="flex flex-col min-h-screen text-gray-800">
 
+    {{-- Top Bar --}}
     <div class="bg-brand-green text-white/80 text-xs py-2 hidden md:block border-b border-white/10">
-    <div class="container mx-auto px-4 flex justify-between items-center">
-        <div class="flex gap-6">
-            <a href="tel:19001234" class="hover:text-brand-accent cursor-pointer transition flex items-center">
-                <i class="fas fa-phone-alt mr-2"></i> Hotline: 1900 1234
-            </a>
-            <a href="mailto:contact@gocsach.com" class="hover:text-brand-accent cursor-pointer transition flex items-center">
-                <i class="fas fa-envelope mr-2"></i> contact@gocsach.com
-            </a>
-        </div>
-        <div class="flex gap-4 items-center">
-            <button onclick="openModal('helpModal')" class="hover:text-white transition focus:outline-none">Trợ giúp</button>
-            <span class="text-white/20">|</span>
-            <button onclick="openModal('rulesModal')" class="hover:text-white transition focus:outline-none">Quy tắc cộng đồng</button>
-            
-            <div class="flex gap-3 ml-4">
-                <a href="#" class="hover:text-brand-accent transition"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" class="hover:text-brand-accent transition"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="hover:text-brand-accent transition"><i class="fab fa-youtube"></i></a>
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <div class="flex gap-6">
+                <a href="tel:19001234" class="hover:text-brand-accent cursor-pointer transition flex items-center">
+                    <i class="fas fa-phone-alt mr-2"></i> Hotline: 1900 1234
+                </a>
+                <a href="mailto:contact@gocsach.com" class="hover:text-brand-accent cursor-pointer transition flex items-center">
+                    <i class="fas fa-envelope mr-2"></i> contact@gocsach.com
+                </a>
+            </div>
+            <div class="flex gap-4 items-center">
+                <button onclick="openModal('helpModal')" class="hover:text-white transition focus:outline-none">Trợ giúp</button>
+                <span class="text-white/20">|</span>
+                <button onclick="openModal('rulesModal')" class="hover:text-white transition focus:outline-none">Quy tắc cộng đồng</button>
+                
+                <div class="flex gap-3 ml-4">
+                    <a href="#" class="hover:text-brand-accent transition"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="hover:text-brand-accent transition"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="hover:text-brand-accent transition"><i class="fab fa-youtube"></i></a>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<header class="bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 shadow-sm transition-all duration-300">
-    <div class="container mx-auto px-4 py-3">
-        <div class="flex flex-wrap justify-between items-center gap-4">
-            
-            <div class="flex items-center gap-4">
-                <a href="{{ route('home') }}" class="flex items-center gap-2 group">
-                    <div class="w-10 h-10 bg-brand-green text-white rounded-lg flex items-center justify-center shadow-md transform group-hover:rotate-6 transition-transform duration-300">
-                        <i class="fas fa-book-reader text-lg"></i>
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-xl font-bold font-serif text-brand-green leading-none tracking-tight">GÓC SÁCH</span>
-                        <span class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Review & Share</span>
-                    </div>
-                </a>
-            </div>
-
-            <div class="hidden md:flex flex-1 max-w-2xl px-8 relative z-40">
-                <form action="{{ route('list') }}" method="GET" class="relative w-full flex items-center">
-                    
-                    <div class="absolute left-0 pl-1 z-50 group pb-4 -mb-4"> 
-                        <div class="flex items-center cursor-pointer bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full transition relative z-20">
-                            <span class="text-gray-600 text-xs font-bold mr-1">Danh mục</span>
-                            <i class="fas fa-chevron-down text-[10px] text-gray-500 transition-transform group-hover:rotate-180"></i>
+    {{-- Header --}}
+    <header class="bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 shadow-sm transition-all duration-300">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+                
+                {{-- Logo --}}
+                <div class="flex items-center gap-4">
+                    <a href="{{ route('home') }}" class="flex items-center gap-2 group">
+                        <div class="w-10 h-10 bg-brand-green text-white rounded-lg flex items-center justify-center shadow-md transform group-hover:rotate-6 transition-transform duration-300">
+                            <i class="fas fa-book-reader text-lg"></i>
                         </div>
-                        <div class="dropdown-menu dropdown-bridge absolute top-full left-0 mt-0 bg-white rounded-xl shadow-2xl border border-gray-100 p-4 min-w-[600px] max-w-[800px] z-10">
-                            <div class="grid grid-rows-[repeat(10,minmax(0,1fr))] grid-flow-col gap-x-8 gap-y-2">
-                                <a href="{{ route('list') }}" class="text-sm text-gray-600 hover:text-brand-green hover:font-bold truncate flex items-center">
-                                    <i class="fas fa-caret-right text-gray-300 mr-2 text-xs"></i> Tất cả
-                                </a>
-                                @if(isset($menuCategories))
-                                    @foreach($menuCategories as $cat)
-                                        <a href="{{ route('list', ['category_id' => $cat->id]) }}" class="text-sm text-gray-600 hover:text-brand-green hover:font-bold truncate block py-0.5">{{ $cat->name }}</a>
-                                    @endforeach
-                                @endif
-                            </div>
+                        <div class="flex flex-col">
+                            <span class="text-xl font-bold font-serif text-brand-green leading-none tracking-tight">GÓC SÁCH</span>
+                            <span class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Review & Share</span>
                         </div>
-                    </div>
+                    </a>
+                </div>
 
+                {{-- Search Bar (Đã sửa lỗi lặp và logic) --}}
                 <div class="hidden md:flex flex-1 max-w-2xl px-8 relative z-40">
                     <form action="{{ route('books.search') }}" method="GET" class="relative w-full flex items-center">
+                        
+                        {{-- Dropdown Danh Mục --}}
                         <div class="absolute left-0 pl-1 z-50 group pb-4 -mb-4"> 
                             <div class="flex items-center cursor-pointer bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full transition relative z-20">
                                 <span class="text-gray-600 text-xs font-bold mr-1">Danh mục</span>
                                 <i class="fas fa-chevron-down text-[10px] text-gray-500 transition-transform group-hover:rotate-180"></i>
                             </div>
-                            <div class="max-h-80 overflow-y-auto">
-                                @forelse(Auth::user()->notifications as $notification)
-                                    <a href="{{ route('notification.read', $notification->id) }}" class="flex gap-3 px-4 py-3 hover:bg-gray-50 transition border-b border-gray-50 {{ $notification->read_at ? 'opacity-60' : 'bg-blue-50/30' }}">
-                                        <div class="flex-shrink-0">
-                                            <img src="{{ $notification->data['user_avatar'] ?? 'https://ui-avatars.com/api/?name=User' }}" class="w-8 h-8 rounded-full">
-                                        </div>
-                                        <div>
-                                            <p class="text-sm text-gray-700 line-clamp-2">
-                                                <span class="font-bold">{{ $notification->data['user_name'] ?? 'Ai đó' }}</span> 
-                                                {{ $notification->data['message'] ?? 'đã tương tác với bạn' }}
-                                                <span class="font-bold block text-xs text-gray-500 italic">"{{ Str::limit($notification->data['post_title'] ?? '', 50) }}"</span>
-                                            </p>
-                                            <p class="text-[10px] text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
-                                        </div>
-                                        @if(!$notification->read_at)
-                                            <div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                                        @endif
+                            <div class="dropdown-menu dropdown-bridge absolute top-full left-0 mt-0 bg-white rounded-xl shadow-2xl border border-gray-100 p-4 min-w-[600px] max-w-[800px] z-10">
+                                <div class="grid grid-rows-[repeat(10,minmax(0,1fr))] grid-flow-col gap-x-8 gap-y-2">
+                                    <a href="{{ route('books.list') }}" class="text-sm text-gray-600 hover:text-brand-green hover:font-bold truncate flex items-center">
+                                        <i class="fas fa-caret-right text-gray-300 mr-2 text-xs"></i> Tất cả
                                     </a>
-                                @empty
-                                    <div class="text-center py-8 text-gray-400">
-                                        <i class="far fa-bell-slash text-2xl mb-2"></i>
-                                        <p class="text-xs">Không có thông báo mới</p>
-                                    </div>
-                                @endforelse
+                                    @if(isset($menuCategories))
+                                        @foreach($menuCategories as $cat)
+                                            <a href="{{ route('books.list', ['category_id' => $cat->id]) }}" class="text-sm text-gray-600 hover:text-brand-green hover:font-bold truncate block py-0.5">{{ $cat->name }}</a>
+                                        @endforeach
+                                    @endif
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                        {{-- Input tìm kiếm --}}
-                        <input type="text" name="keyword" value="{{ request('keyword') }}" placeholder="Nhập tên sách, tác giả..." class="w-full bg-gray-50 border border-gray-200 hover:border-brand-green/30 focus:border-brand-green/50 rounded-full py-2.5 pl-28 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green/10 transition-all text-gray-700 placeholder-gray-400 shadow-inner">
-                        <button type="submit" class="absolute right-2 top-1.5 w-8 h-8 bg-brand-green text-white rounded-full flex items-center justify-center hover:bg-brand-accent transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5"><i class="fas fa-search text-xs"></i></button>
+                        {{-- Input tìm kiếm (Đã thêm ID) --}}
+                        <input type="text" 
+                               id="header-search-input" 
+                               name="keyword" 
+                               value="{{ request('keyword') }}" 
+                               autocomplete="off"
+                               placeholder="Nhập tên sách, tác giả..." 
+                               class="w-full bg-gray-50 border border-gray-200 hover:border-brand-green/30 focus:border-brand-green/50 rounded-full py-2.5 pl-28 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green/10 transition-all text-gray-700 placeholder-gray-400 shadow-inner">
+                        
+                        <button type="submit" class="absolute right-2 top-1.5 w-8 h-8 bg-brand-green text-white rounded-full flex items-center justify-center hover:bg-brand-accent transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                            <i class="fas fa-search text-xs"></i>
+                        </button>
+
+                        {{-- Kết quả Ajax (Đã thêm div hiển thị kết quả) --}}
+                        <div id="header-search-results" class="absolute top-full left-0 w-full bg-white shadow-xl rounded-xl mt-2 hidden z-[60] overflow-hidden border border-gray-100 max-h-[400px] overflow-y-auto">
+                            {{-- JS sẽ render kết quả vào đây --}}
+                        </div>
                     </form>
                 </div>
             
+                {{-- User & Notification Actions --}}
                 <div class="flex items-center gap-3 md:gap-5">
                     @auth
+                        {{-- Notification Bell --}}
                         <div class="relative group pb-4 -mb-4"> 
                             <button class="text-gray-500 hover:text-brand-green transition relative p-2 focus:outline-none">
                                 <i class="far fa-bell text-xl"></i>
@@ -180,49 +165,34 @@
                                 <div class="max-h-80 overflow-y-auto">
                                     @forelse(Auth::user()->notifications as $notification)
                                         @php
-                                            // Kiểm tra xem đây có phải là thông báo Duyệt bài (System) hay không
-                                            // Dựa vào việc check xem có tồn tại key 'icon' trong data không (do class PostApprovedNotification gửi lên)
                                             $isSystemNotification = isset($notification->data['icon']);
                                         @endphp
 
                                         <a href="{{ route('notification.read', $notification->id) }}" class="flex gap-3 px-4 py-3 hover:bg-gray-50 transition border-b border-gray-50 {{ $notification->read_at ? 'opacity-60 grayscale-[0.5]' : 'bg-blue-50/30' }}">
-                                            
-                                            {{-- PHẦN HÌNH ẢNH: ICON HOẶC AVATAR --}}
                                             <div class="flex-shrink-0 mt-1">
                                                 @if($isSystemNotification)
-                                                    {{-- Nếu là System (Duyệt bài) -> Hiện Icon --}}
                                                     <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
                                                         <i class="{{ $notification->data['icon'] }} {{ $notification->data['color'] ?? 'text-green-600' }} text-sm"></i>
                                                     </div>
                                                 @else
-                                                    {{-- Nếu là Like/Comment -> Hiện Avatar User (NHƯ CŨ) --}}
                                                     <img src="{{ $notification->data['user_avatar'] ?? 'https://ui-avatars.com/api/?name=User' }}" class="w-8 h-8 rounded-full border border-gray-100 object-cover">
                                                 @endif
                                             </div>
 
-                                            {{-- PHẦN NỘI DUNG --}}
                                             <div class="flex-1">
                                                 @if($isSystemNotification)
-                                                    {{-- Nội dung cho Duyệt Bài (Theo yêu cầu của bạn) --}}
                                                     <p class="text-sm font-bold text-gray-800">Bài viết của bạn đã được duyệt</p>
-                                                    <p class="text-xs text-gray-600 line-clamp-2 mt-0.5">
-                                                        {{ $notification->data['message'] ?? '' }}
-                                                    </p>
+                                                    <p class="text-xs text-gray-600 line-clamp-2 mt-0.5">{{ $notification->data['message'] ?? '' }}</p>
                                                 @else
-                                                    {{-- Nội dung cho Like/Comment (NHƯ CŨ) --}}
                                                     <p class="text-sm text-gray-700 line-clamp-2">
                                                         <span class="font-bold text-gray-900">{{ $notification->data['user_name'] ?? 'Ai đó' }}</span> 
                                                         {{ $notification->data['message'] ?? 'đã tương tác với bạn' }}
                                                         <span class="font-bold block text-xs text-gray-500 italic mt-0.5">"{{ Str::limit($notification->data['post_title'] ?? '', 50) }}"</span>
                                                     </p>
                                                 @endif
-
-                                                <p class="text-[10px] text-gray-400 mt-1 flex items-center">
-                                                    <i class="far fa-clock mr-1"></i> {{ $notification->created_at->diffForHumans() }}
-                                                </p>
+                                                <p class="text-[10px] text-gray-400 mt-1 flex items-center"><i class="far fa-clock mr-1"></i> {{ $notification->created_at->diffForHumans() }}</p>
                                             </div>
 
-                                            {{-- CHẤM XANH CHƯA ĐỌC --}}
                                             @if(!$notification->read_at)
                                                 <div class="w-2 h-2 bg-brand-green rounded-full mt-2 shrink-0"></div>
                                             @endif
@@ -237,6 +207,7 @@
                             </div>
                         </div>
 
+                        {{-- User Dropdown --}}
                         <div class="relative group pb-2 -mb-2 z-50">
                              <a href="{{ route('profile') }}" class="flex items-center gap-2 focus:outline-none py-1 group-hover:opacity-80 transition cursor-pointer relative z-20">
                                 <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name).'&background=3E5F4E&color=fff&size=40' }}" 
@@ -279,33 +250,18 @@
                             </div>
                         </div>
                     @else
+                        {{-- Guest --}}
                         <div class="flex items-center gap-3">
                             <a href="{{ route('login') }}" class="text-gray-600 hover:text-brand-green font-bold text-sm px-3 py-2 rounded-lg hover:bg-gray-100 transition hidden sm:block">Đăng Nhập</a>
                             <a href="{{ route('register') }}" class="bg-brand-green text-white px-5 py-2.5 rounded-full hover:bg-[#16271f] transition font-bold shadow-md text-sm flex items-center gap-2">
                                 <i class="fas fa-user-plus text-xs"></i> <span>Đăng Ký</span>
                             </a>
-                            
-                            <div class="border-t border-gray-100 my-1 pt-1"></div>
-                            
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="w-full text-left flex items-center px-4 py-2.5 text-gray-500 hover:bg-red-50 hover:text-red-600 transition font-medium mx-2 rounded-md">
-                                    <i class="fas fa-sign-out-alt w-5 mr-2"></i> Đăng Xuất
-                                </button>
-                            </form>
                         </div>
-                    </div>
-                @else
-                    <div class="flex items-center gap-3">
-                        <a href="{{ route('login') }}" class="text-gray-600 hover:text-brand-green font-bold text-sm px-3 py-2 rounded-lg hover:bg-gray-100 transition hidden sm:block">Đăng Nhập</a>
-                        <a href="{{ route('register') }}" class="bg-brand-green text-white px-5 py-2.5 rounded-full hover:bg-[#16271f] transition font-bold shadow-md text-sm flex items-center gap-2">
-                            <i class="fas fa-user-plus text-xs"></i> <span>Đăng Ký</span>
-                        </a>
-                    </div>
-                @endauth
+                    @endauth
+                </div>
             </div>
-        </div>
 
+            {{-- Navigation --}}
             <div class="hidden md:flex justify-center mt-2 border-t border-gray-100 pt-3">
                 <nav class="flex items-center gap-8 text-sm font-semibold text-gray-500">
                     <a href="{{ route('home') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('home') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Trang Chủ</a>
@@ -315,9 +271,14 @@
                 </nav>
             </div>
         </div>
-    </div>
-</header>
+    </header>
 
+    {{-- Main Content Placeholder (Vì đây là Layout) --}}
+    <main>
+        @yield('content')
+    </main>
+
+    {{-- Modals --}}
     <div id="rulesModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="fixed inset-0 modal-overlay transition-opacity" onclick="closeModal('rulesModal')"></div>
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
@@ -340,7 +301,6 @@
             </div>
         </div>
     </div>
-</div>
 
     <div id="helpModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="fixed inset-0 modal-overlay transition-opacity" onclick="closeModal('helpModal')"></div>
@@ -356,130 +316,118 @@
                         <div class="flex items-start gap-3"><div class="bg-blue-100 p-2 rounded-full text-blue-600"><i class="fas fa-star"></i></div><div><h4 class="font-bold text-gray-800">Cách viết Review?</h4><p>Tìm cuốn sách bạn muốn, vào trang chi tiết và kéo xuống phần "Viết đánh giá của bạn".</p></div></div>
                         <div class="flex items-start gap-3"><div class="bg-blue-100 p-2 rounded-full text-blue-600"><i class="fas fa-envelope"></i></div><div><h4 class="font-bold text-gray-800">Liên hệ hỗ trợ?</h4><p>Email: <a href="mailto:support@gocsach.com" class="text-blue-600 hover:underline">support@gocsach.com</a><br>Hotline: 1900 1234 (8h-17h)</p></div></div>
                     </div>
-                    <div class="flex items-start gap-3">
-                        <div class="bg-blue-100 p-2 rounded-full text-blue-600"><i class="fas fa-envelope"></i></div>
-                        <div>
-                            <h4 class="font-bold text-gray-800">Liên hệ hỗ trợ?</h4>
-                            <p>Email: <a href="mailto:support@gocsach.com" class="text-blue-600 hover:underline">support@gocsach.com</a><br>Hotline: 1900 1234 (8h-17h)</p>
-                        </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                        <button type="button" class="inline-flex w-full justify-center rounded-md bg-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-300 sm:ml-3 sm:w-auto" onclick="closeModal('helpModal')">Đóng</button>
                     </div>
-                </div>
-                <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                    <button type="button" class="inline-flex w-full justify-center rounded-md bg-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-300 sm:ml-3 sm:w-auto" onclick="closeModal('helpModal')">Đóng</button>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    function openModal(modalId) {
-        document.getElementById(modalId).classList.remove('hidden');
-    }
-
-    function closeModal(modalId) {
-        document.getElementById(modalId).classList.add('hidden');
-    }
-
-    document.addEventListener('keydown', function(event) {
-        if (event.key === "Escape") {
-            document.querySelectorAll('[id$="Modal"]').forEach(el => el.classList.add('hidden'));
+    <script>
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
         }
-    });
-</script>
 
-{{-- SCRIPT AJAX SEARCH --}}
-@push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const searchInput = document.getElementById('header-search-input');
-        const resultsBox = document.getElementById('header-search-results');
-        let timeout = null;
-
-        if (searchInput && resultsBox) {
-            // 1. Sự kiện gõ phím
-            searchInput.addEventListener('input', function() {
-                const keyword = this.value.trim();
-                clearTimeout(timeout);
-
-                if (keyword.length < 2) { 
-                    resultsBox.classList.add('hidden');
-                    resultsBox.innerHTML = '';
-                    return;
-                }
-
-                timeout = setTimeout(() => {
-                    fetchResults(keyword);
-                }, 300);
-            });
-
-            // 2. Fetch API
-            function fetchResults(keyword) {
-                // Đảm bảo route này tồn tại trong web.php
-                fetch(`/ajax-search?keyword=${encodeURIComponent(keyword)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        renderResults(data);
-                    })
-                    .catch(error => console.error('Error:', error));
-            }
-
-            // 3. Render HTML
-            function renderResults(books) {
-                if (books.length > 0) {
-                    let html = '<ul class="divide-y divide-gray-100">';
-                    
-                    books.forEach(book => {
-                        let imgUrl = book.cover_image 
-                            ? (book.cover_image.startsWith('http') ? book.cover_image : '/storage/' + book.cover_image)
-                            : 'https://via.placeholder.com/50';
-                        
-                        let detailUrl = `/sach/${book.slug}`; 
-
-                        html += `
-                            <li>
-                                <a href="${detailUrl}" class="flex items-center gap-3 p-3 hover:bg-gray-50 transition cursor-pointer">
-                                    <img src="${imgUrl}" class="w-10 h-14 object-cover rounded shadow-sm border border-gray-200">
-                                    <div>
-                                        <h4 class="text-sm font-bold text-gray-800 line-clamp-1">${book.title}</h4>
-                                        <p class="text-xs text-gray-500">${book.author_name || 'Đang cập nhật'}</p>
-                                    </div>
-                                </a>
-                            </li>
-                        `;
-                    });
-                    
-                    // Nút xem tất cả
-                    let keyword = searchInput.value;
-                    html += `
-                        <li class="bg-gray-50 text-center p-2">
-                             <a href="{{ route('list') }}?keyword=${encodeURIComponent(keyword)}" class="text-xs font-bold text-brand-green hover:underline block w-full">
-                                Xem tất cả kết quả
-                            </a>
-                        </li>
-                    `;
-
-                    html += '</ul>';
-                    resultsBox.innerHTML = html;
-                    resultsBox.classList.remove('hidden');
-                } else {
-                    resultsBox.innerHTML = '<div class="p-4 text-center text-sm text-gray-400">Không tìm thấy sách nào.</div>';
-                    resultsBox.classList.remove('hidden');
-                }
-            }
-
-            // 4. Click out
-            document.addEventListener('click', function(e) {
-                if (!searchInput.contains(e.target) && !resultsBox.contains(e.target)) {
-                    resultsBox.classList.add('hidden');
-                }
-            });
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
         }
-    });
-</script>
-@endpush
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") {
+                document.querySelectorAll('[id$="Modal"]').forEach(el => el.classList.add('hidden'));
+            }
+        });
+    </script>
 
     @stack('scripts')
     
+    {{-- SCRIPT AJAX SEARCH --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('header-search-input');
+            const resultsBox = document.getElementById('header-search-results');
+            let timeout = null;
+
+            if (searchInput && resultsBox) {
+                // 1. Sự kiện gõ phím
+                searchInput.addEventListener('input', function() {
+                    const keyword = this.value.trim();
+                    clearTimeout(timeout);
+
+                    if (keyword.length < 2) { 
+                        resultsBox.classList.add('hidden');
+                        resultsBox.innerHTML = '';
+                        return;
+                    }
+
+                    timeout = setTimeout(() => {
+                        fetchResults(keyword);
+                    }, 300);
+                });
+
+                // 2. Fetch API
+                function fetchResults(keyword) {
+                    fetch(`/ajax-search?keyword=${encodeURIComponent(keyword)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            renderResults(data);
+                        })
+                        .catch(error => console.error('Error:', error));
+                }
+
+                // 3. Render HTML
+                function renderResults(books) {
+                    if (books.length > 0) {
+                        let html = '<ul class="divide-y divide-gray-100">';
+                        
+                        books.forEach(book => {
+                            let imgUrl = book.cover_image 
+                                ? (book.cover_image.startsWith('http') ? book.cover_image : '/storage/' + book.cover_image)
+                                : 'https://via.placeholder.com/50';
+                            
+                            let detailUrl = `/sach/${book.slug}`; 
+
+                            html += `
+                                <li>
+                                    <a href="${detailUrl}" class="flex items-center gap-3 p-3 hover:bg-gray-50 transition cursor-pointer">
+                                        <img src="${imgUrl}" class="w-10 h-14 object-cover rounded shadow-sm border border-gray-200">
+                                        <div>
+                                            <h4 class="text-sm font-bold text-gray-800 line-clamp-1">${book.title}</h4>
+                                            <p class="text-xs text-gray-500">${book.author_name || 'Đang cập nhật'}</p>
+                                        </div>
+                                    </a>
+                                </li>
+                            `;
+                        });
+                        
+                        // Nút xem tất cả
+                        let keyword = searchInput.value;
+                        html += `
+                            <li class="bg-gray-50 text-center p-2">
+                                 <a href="{{ route('books.list') }}?keyword=${encodeURIComponent(keyword)}" class="text-xs font-bold text-brand-green hover:underline block w-full">
+                                    Xem tất cả kết quả
+                                </a>
+                            </li>
+                        `;
+
+                        html += '</ul>';
+                        resultsBox.innerHTML = html;
+                        resultsBox.classList.remove('hidden');
+                    } else {
+                        resultsBox.innerHTML = '<div class="p-4 text-center text-sm text-gray-400">Không tìm thấy sách nào.</div>';
+                        resultsBox.classList.remove('hidden');
+                    }
+                }
+
+                // 4. Click out
+                document.addEventListener('click', function(e) {
+                    if (!searchInput.contains(e.target) && !resultsBox.contains(e.target)) {
+                        resultsBox.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
