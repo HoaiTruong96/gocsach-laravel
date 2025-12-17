@@ -16,7 +16,7 @@ use App\Http\Controllers\Admin\BookController as AdminBookController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\BannerController;
-
+use App\Http\Controllers\ChallengeController;
 // ====================================================
 // 1. NHÓM PUBLIC (Ai cũng xem được)
 // ====================================================
@@ -74,7 +74,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/check-secret', [AuthController::class, 'checkSecret'])->name('check.secret');
     Route::post('/update-password', [AuthController::class, 'updatePassword'])->name('update.password');
 });
-
+// Route cho trang Thử Thách
+// Code này chạy qua Controller để lấy dữ liệu rồi mới trả về View
+Route::get('/thu-thach', [ChallengeController::class, 'index'])->name('challenges.index');
 
 // ====================================================
 // 3. NHÓM THÀNH VIÊN (AUTH REQUIRED)
@@ -127,6 +129,8 @@ Route::middleware('auth')->group(function () {
             ->get();
         return response()->json($books);
     });
+    // chalenges
+    Route::post('/challenge/join/{id}', [ChallengeController::class, 'join'])->name('challenge.join');
 });
 
 

@@ -18,8 +18,10 @@ class BookController extends Controller
 
         $filter = $request->get('filter', 'latest');
         
+        // Chỉ lấy những bài đã được duyệt (published)
         $query = Post::with(['user', 'book'])
-            ->withCount(['likes', 'comments']); 
+            ->where('status', 'published') // [QUAN TRỌNG]
+            ->withCount(['likes', 'comments']);
 
         if ($filter == 'viewed') {
             $query->orderBy('view_count', 'desc');
@@ -38,7 +40,7 @@ class BookController extends Controller
         ]);
     }
 
-    public function home(Request $request) 
+    public function home(Request $request)
     {
         return $this->index($request);
     }
@@ -48,22 +50,34 @@ class BookController extends Controller
     // =========================================================================
     public function show($id)
     {
+        // Tìm sách theo ID hoặc Slug
+        $query = Book::withCount(['posts' => function ($q) {
+            $q->where('status', 'published'); // Chỉ đếm bài đã duyệt
+        }]);
+
         if (is_numeric($id)) {
-            $book = Book::with(['posts.user', 'posts.likes', 'posts.comments.user'])
-                ->withCount('posts')
-                ->find($id);
+            $book = $query->find($id);
         } else {
-            $book = Book::with(['posts.user', 'posts.likes', 'posts.comments.user'])
-                ->withCount('posts')
-                ->where('slug', $id)
-                ->firstOrFail();
+            $book = $query->where('slug', $id)->firstOrFail();
         }
 
         if (!$book) {
             return redirect()->route('home')->with('error', 'Không tìm thấy sách!');
         }
 
-        return view('book-detail', compact('book'));
+        // Tăng lượt xem (nếu cần)
+        $book->increment('view_count');
+
+        // Lấy 3 review mới nhất để hiện ở trang chi tiết (Eager loading tối ưu)
+        // Dùng quan hệ 'reviews' đã định nghĩa trong Model
+        $reviews = $book->reviews()
+            ->where('status', 'published')
+            ->with(['user', 'likes', 'comments'])
+            ->orderBy('created_at', 'desc')
+            ->take(3)
+            ->get();
+
+        return view('book-detail', compact('book', 'reviews'));
     }
 
     // =========================================================================
