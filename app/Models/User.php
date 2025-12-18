@@ -41,6 +41,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Post::class);
     }
 
+    // Bài viết đã lưu (Bookmark)
+    public function savedPosts()
+    {
+        return $this->belongsToMany(Post::class, 'saved_posts')
+            ->withTimestamps()
+            ->orderByPivot('created_at', 'desc');
+    }
+
     public function comments()
     {
         return $this->hasMany(Comment::class);

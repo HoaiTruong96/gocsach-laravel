@@ -112,10 +112,6 @@
                                 class="{{ Auth::user()->unreadNotifications->count() > 0 ? '' : 'hidden' }} absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white animate-bounce">
                                 <span id="notification-count">{{ Auth::user()->unreadNotifications->count() }}</span>
                             </span>
-                            <span id="notification-badge"
-                                class="{{ Auth::user()->unreadNotifications->count() > 0 ? '' : 'hidden' }} absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white animate-bounce">
-                                <span id="notification-count">{{ Auth::user()->unreadNotifications->count() }}</span>
-                            </span>
                         </button>
                         <div
                             class="dropdown-menu dropdown-bridge absolute right-0 top-full mt-0 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in z-50 origin-top-right">
@@ -142,9 +138,6 @@
                                                 @endphp
                                                 <div class="w-8 h-8 rounded-full {{ $bgColor }} flex items-center justify-center">
                                                     <i class="{{ $notification->data['icon'] }} {{ $iconColor }} text-sm"></i>
-                                                <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                                                    <i
-                                                        class="{{ $notification->data['icon'] }} {{ $notification->data['color'] ?? 'text-green-600' }} text-sm"></i>
                                                 </div>
                                             @else
                                                 <img src="{{ $notification->data['user_avatar'] ?? 'https://ui-avatars.com/api/?name=User' }}"
@@ -189,12 +182,15 @@
                     <div class="relative group pb-2 -mb-2 z-50">
                         <a href="{{ route('profile') }}"
                             class="flex items-center gap-2 focus:outline-none py-1 group-hover:opacity-80 transition cursor-pointer relative z-20">
-                            <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&background=3E5F4E&color=fff&size=40' }}"
-                                class="w-9 h-9 rounded-full border-2 border-brand-beige shadow-sm group-hover:border-brand-green transition object-cover">
+                            @include('partials.user-avatar-with-frame', [
+                                'user' => Auth::user(),
+                                'size' => 'w-10 h-10',
+                                'avatarSize' => 'w-9 h-9'
+                            ])
                             <div class="hidden lg:flex flex-col items-start">
                                 <span
                                     class="text-xs font-bold text-gray-700 truncate max-w-[80px]">{{ Auth::user()->name }}</span>
-                                <span class="text-[10px] text-gray-400">Thành viên</span>
+                                <span class="text-[10px] text-gray-400">{{ Auth::user()->role == 'admin' ? 'Quản trị viên' : 'Thành viên' }}</span>
                             </div>
                             <i class="fas fa-chevron-down text-xs text-gray-400 ml-1"></i>
                         </a>
@@ -341,8 +337,11 @@
         <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 bg-gray-50">
                 @auth
                 <div class="flex items-center gap-3 mb-3">
-                    <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}"
-                        class="w-10 h-10 rounded-full border-2 border-brand-green">
+                    @include('partials.user-avatar-with-frame', [
+                        'user' => Auth::user(),
+                        'size' => 'w-12 h-12',
+                        'avatarSize' => 'w-10 h-10'
+                    ])
                     <div>
                         <p class="font-bold text-gray-800 text-sm">{{ Auth::user()->name }}</p>
                         <p class="text-xs text-gray-500">{{ Auth::user()->email }}</p>

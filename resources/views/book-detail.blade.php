@@ -164,7 +164,15 @@
                             
                             <div class="flex items-center gap-3 text-sm text-gray-500 mb-6 bg-gray-50 p-3 rounded-lg w-fit">
                                 <a href="{{ route('public.profile', $mainPost->user->id ?? 0) }}">
-                                    <img src="{{ $mainPost->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($mainPost->user->name ?? 'Admin') . '&background=random&size=32' }}" class="w-8 h-8 rounded-full object-cover hover:ring-2 hover:ring-brand-green transition">
+                                    @if($mainPost->user)
+                                        @include('partials.user-avatar-with-frame', [
+                                            'user' => $mainPost->user,
+                                            'size' => 'w-10 h-10',
+                                            'avatarSize' => 'w-8 h-8'
+                                        ])
+                                    @else
+                                        <img src="https://ui-avatars.com/api/?name=Admin&background=random&size=32" class="w-8 h-8 rounded-full object-cover">
+                                    @endif
                                 </a>
                                 <div class="flex flex-col">
                                     <a href="{{ route('public.profile', $mainPost->user->id ?? 0) }}" class="hover:text-brand-green transition">
@@ -220,8 +228,11 @@
                                     {{-- Ô nhập bình luận --}}
                                     @auth
                                         <div class="flex gap-3 items-start mb-4 pb-4 border-b border-gray-100">
-                                            <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name).'&background=random' }}" 
-                                                 class="w-9 h-9 rounded-full flex-shrink-0 border border-gray-200">
+                                            @include('partials.user-avatar-with-frame', [
+                                                'user' => Auth::user(),
+                                                'size' => 'w-11 h-11',
+                                                'avatarSize' => 'w-9 h-9'
+                                            ])
                                             <div class="flex-1 relative">
                                                 <textarea id="post-comment-input-{{ $mainPost->id }}" rows="2" 
                                                           class="w-full text-sm p-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green/10 resize-none pr-20 shadow-sm" 
@@ -250,8 +261,15 @@
                                         @forelse($postComments as $comment)
                                             <div id="pr-comment-{{ $comment->id }}" class="flex gap-3 scroll-mt-24 transition-all duration-500">
                                                 <a href="{{ route('public.profile', $comment->user->id ?? 0) }}" class="flex-shrink-0">
-                                                    <img src="{{ $comment->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($comment->user->name ?? 'U').'&background=random' }}" 
-                                                         class="w-8 h-8 rounded-full hover:ring-2 hover:ring-brand-green transition">
+                                                    @if($comment->user)
+                                                        @include('partials.user-avatar-with-frame', [
+                                                            'user' => $comment->user,
+                                                            'size' => 'w-10 h-10',
+                                                            'avatarSize' => 'w-8 h-8'
+                                                        ])
+                                                    @else
+                                                        <img src="https://ui-avatars.com/api/?name=U&background=random" class="w-8 h-8 rounded-full">
+                                                    @endif
                                                 </a>
                                                 <div class="flex-1">
                                                     <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
@@ -287,8 +305,15 @@
                                                             @forelse($comment->replies as $reply)
                                                                 <div id="pr-reply-{{ $reply->id }}" class="flex gap-2 scroll-mt-24 transition-all duration-500">
                                                                     <a href="{{ route('public.profile', $reply->user->id ?? 0) }}" class="flex-shrink-0">
-                                                                        <img src="{{ $reply->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($reply->user->name ?? 'U').'&background=random' }}" 
-                                                                             class="w-6 h-6 rounded-full hover:ring-2 hover:ring-brand-green transition">
+                                                                        @if($reply->user)
+                                                                            @include('partials.user-avatar-with-frame', [
+                                                                                'user' => $reply->user,
+                                                                                'size' => 'w-8 h-8',
+                                                                                'avatarSize' => 'w-6 h-6'
+                                                                            ])
+                                                                        @else
+                                                                            <img src="https://ui-avatars.com/api/?name=U&background=random" class="w-6 h-6 rounded-full">
+                                                                        @endif
                                                                     </a>
                                                                     <div class="flex-1">
                                                                         <div class="bg-white p-2 rounded-lg border border-gray-100">
@@ -316,8 +341,11 @@
                                                         {{-- Ô nhập reply --}}
                                                         @auth
                                                             <div class="flex gap-2 items-start pt-2 border-t border-gray-200">
-                                                                <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name).'&background=random' }}" 
-                                                                     class="w-6 h-6 rounded-full flex-shrink-0">
+                                                                @include('partials.user-avatar-with-frame', [
+                                                                    'user' => Auth::user(),
+                                                                    'size' => 'w-8 h-8',
+                                                                    'avatarSize' => 'w-6 h-6'
+                                                                ])
                                                                 <div class="flex-1 relative">
                                                                     <textarea id="pr-reply-input-{{ $comment->id }}" rows="1" 
                                                                               class="w-full text-[11px] p-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green resize-none pr-14 shadow-sm" 
@@ -411,8 +439,15 @@
                                     <div class="flex items-start gap-4">
                                         <div class="flex-shrink-0">
                                             <a href="{{ route('public.profile', $comment->user->id ?? 0) }}">
-                                                <img src="{{ $comment->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($comment->user->name ?? 'U') . '&background=random&size=48' }}" 
-                                                     class="w-10 h-10 rounded-full border border-gray-100 hover:ring-2 hover:ring-brand-green transition">
+                                                @if($comment->user)
+                                                    @include('partials.user-avatar-with-frame', [
+                                                        'user' => $comment->user,
+                                                        'size' => 'w-12 h-12',
+                                                        'avatarSize' => 'w-10 h-10'
+                                                    ])
+                                                @else
+                                                    <img src="https://ui-avatars.com/api/?name=U&background=random" class="w-10 h-10 rounded-full">
+                                                @endif
                                             </a>
                                         </div>
                                         <div class="flex-1">
@@ -464,8 +499,15 @@
                                                     @forelse($replies as $reply)
                                                         <div id="comment-{{ $reply->id }}" class="flex gap-2 scroll-mt-24 transition-all duration-500">
                                                             <a href="{{ route('public.profile', $reply->user->id ?? 0) }}" class="flex-shrink-0">
-                                                                <img src="{{ $reply->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($reply->user->name ?? 'U').'&background=random' }}" 
-                                                                     class="w-7 h-7 rounded-full hover:ring-2 hover:ring-brand-green transition">
+                                                                @if($reply->user)
+                                                                    @include('partials.user-avatar-with-frame', [
+                                                                        'user' => $reply->user,
+                                                                        'size' => 'w-9 h-9',
+                                                                        'avatarSize' => 'w-7 h-7'
+                                                                    ])
+                                                                @else
+                                                                    <img src="https://ui-avatars.com/api/?name=U&background=random" class="w-7 h-7 rounded-full">
+                                                                @endif
                                                             </a>
                                                             <div class="flex-1">
                                                                 <div class="bg-white p-2 rounded-xl rounded-tl-none border border-gray-100 shadow-sm">
@@ -500,29 +542,32 @@
                                                 </div>
                                                 @endguest
 
-                                                {{-- FORM REPLY (ẨN MẶC ĐỊNH - HIỆN KHI BẤM NÚT TRẢ LỜI) --}}
+                                                {{-- FORM REPLY --}}
                                                 @auth
-                                                <div id="reply-form-{{ $comment->id }}" class="hidden transition-all duration-300">
+                                                <div class="mt-3 pt-3 border-t border-gray-100 transition-all duration-300">
                                                     <div class="flex gap-2 items-start">
-                                                        <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name).'&background=random' }}" 
-                                                             class="w-8 h-8 rounded-full border border-gray-200 mt-1">
+                                                        @include('partials.user-avatar-with-frame', [
+                                                            'user' => Auth::user(),
+                                                            'size' => 'w-8 h-8',
+                                                            'avatarSize' => 'w-6 h-6'
+                                                        ])
                                                         
-                                                        <div class="flex-1">
+                                                        <div class="flex-1 relative">
                                                             <textarea id="reply-input-{{ $comment->id }}" 
                                                                       rows="1" 
-                                                                      class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-brand-green focus:bg-white transition resize-none overflow-hidden" 
-                                                                      placeholder="Viết bình luận... (Enter để gửi)"
-                                                                      oninput="autoResize(this)"
-                                                                      onkeydown="handleEnter(event, {{ $comment->id }})"></textarea>
+                                                                      class="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-brand-green focus:bg-white transition resize-none pr-10 shadow-sm" 
+                                                                      placeholder="Viết phản hồi..."
+                                                                      oninput="autoResize(this)"></textarea>
                                                             
-                                                            <div class="flex justify-end mt-2 gap-2">
-                                                                <button onclick="toggleReplyForm({{ $comment->id }})" class="text-xs text-gray-500 hover:text-gray-700 font-bold px-3 py-1.5">Hủy</button>
-                                                                <button onclick="submitInlineReply({{ $comment->id }})" class="text-xs bg-brand-green text-white font-bold px-4 py-1.5 rounded-md hover:bg-[#1e3a2f] transition shadow-sm">Gửi</button>
-                                                            </div>
+                                                            <button type="button" onclick="submitReply({{ $comment->id }}, event)" 
+                                                                    class="absolute right-1 top-1 text-brand-green p-1.5 hover:bg-brand-green/10 rounded transition">
+                                                                <i class="fas fa-paper-plane text-xs"></i>
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 @endauth
+                                                {{-- KẾT THÚC FORM REPLY --}}
                                                 {{-- KẾT THÚC FORM REPLY --}}
                                             </div>
                                         </div>
@@ -816,10 +861,27 @@
                 input.value = '';
                 input.style.height = 'auto';
                 
-                // Tạo HTML reply mới (có nút Like với ID)
+                // Logic render avatar frame
+                let avatarHtml = '';
+                if (data.user_frame) {
+                    avatarHtml = `
+                        <div class="relative w-9 h-9 inline-block flex-shrink-0">
+                            <img src="${data.user_frame}" alt="Frame" class="absolute inset-0 w-full h-full object-contain pointer-events-none z-10">
+                            <div class="absolute inset-0 flex items-center justify-center z-0">
+                                <img src="${data.user_avatar}" class="w-7 h-7 rounded-full object-cover">
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    avatarHtml = `<img src="${data.user_avatar}" class="w-7 h-7 rounded-full flex-shrink-0 hover:ring-2 hover:ring-brand-green transition">`;
+                }
+
+                // Tạo HTML reply mới
                 const replyHtml = `
                     <div id="comment-${data.reply_id}" class="flex gap-2 animate-fade-in scroll-mt-24 transition-all duration-500">
-                        <img src="${data.user_avatar}" class="w-7 h-7 rounded-full flex-shrink-0">
+                        <a href="/thanh-vien/${currentUserId}" class="flex-shrink-0">
+                            ${avatarHtml}
+                        </a>
                         <div class="flex-1">
                             <div class="bg-white p-2 rounded-xl rounded-tl-none border border-gray-100 shadow-sm">
                                 <div class="flex justify-between items-center mb-1">
