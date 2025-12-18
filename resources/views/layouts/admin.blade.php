@@ -479,6 +479,10 @@
                 document.querySelectorAll('.ajax-pagination-link').forEach(link => {
                     // Skip if already bound
                     if (link.dataset.ajaxBound) return;
+
+                    // Skip if inside dashboard containers (they have their own handlers)
+                    if (link.closest('#reviews-content') || link.closest('#users-content')) return;
+
                     link.dataset.ajaxBound = 'true';
 
                     link.addEventListener('click', function (e) {
