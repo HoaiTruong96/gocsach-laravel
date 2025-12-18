@@ -161,11 +161,21 @@ Route::middleware('auth')->group(function () {
 
     // Đọc 1 thông báo cụ thể -> Chuyển hướng
     Route::get('/notifications/{id}', [HomeController::class, 'markAsRead'])->name('notification.read');
+    
+    // API lấy thông báo realtime (cho polling)
+    Route::get('/api/notifications', [HomeController::class, 'getNotifications'])->name('api.notifications');
 
     // --- REVIEW / POST ---
-    Route::get('/reviews/viet-bai', function () {
+    Route::get('/reviews/viet-bai', function (Illuminate\Http\Request $request) {
         $user = Auth::user();
-        return view('create-review', compact('user'));
+        $preselectedBook = null;
+        
+        // Nếu có book_id, lấy thông tin sách để tự động chọn
+        if ($request->has('book_id')) {
+            $preselectedBook = Book::find($request->book_id);
+        }
+        
+        return view('create-review', compact('user', 'preselectedBook'));
     })->name('reviews.create');
 
     // Lưu bài viết mới

@@ -95,20 +95,16 @@
                     <div class="relative group pb-4 -mb-4"> 
                         <button class="text-gray-500 hover:text-brand-green transition relative p-2 focus:outline-none">
                             <i class="far fa-bell text-xl"></i>
-                            @if(Auth::user()->unreadNotifications->count() > 0)
-                                <span class="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white animate-bounce">
-                                    {{ Auth::user()->unreadNotifications->count() }}
-                                </span>
-                            @endif
+                            <span id="notification-badge" class="{{ Auth::user()->unreadNotifications->count() > 0 ? '' : 'hidden' }} absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white animate-bounce">
+                                <span id="notification-count">{{ Auth::user()->unreadNotifications->count() }}</span>
+                            </span>
                         </button>
                         <div class="dropdown-menu dropdown-bridge absolute right-0 top-full mt-0 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in z-50 origin-top-right">
                             <div class="px-4 py-3 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
                                 <span class="text-sm font-bold text-gray-700">Thông báo</span>
-                                @if(Auth::user()->unreadNotifications->count() > 0)
-                                    <a href="{{ route('notification.readAll') }}" class="text-[10px] text-blue-500 hover:underline cursor-pointer">Đánh dấu đã đọc</a>
-                                @endif
+                                <a href="{{ route('notification.readAll') }}" id="mark-all-read-btn" class="{{ Auth::user()->unreadNotifications->count() > 0 ? '' : 'hidden' }} text-[10px] text-blue-500 hover:underline cursor-pointer">Đánh dấu đã đọc</a>
                             </div>
-                            <div class="max-h-80 overflow-y-auto">
+                            <div id="notification-list" class="max-h-80 overflow-y-auto">
                                 @forelse(Auth::user()->notifications as $notification)
                                     @php
                                         $isSystemNotification = isset($notification->data['icon']);
@@ -144,7 +140,7 @@
                                         @endif
                                     </a>
                                 @empty
-                                    <div class="text-center py-8 text-gray-400">
+                                    <div class="text-center py-8 text-gray-400" id="empty-notification">
                                         <i class="far fa-bell-slash text-2xl mb-2 text-gray-300"></i>
                                         <p class="text-xs">Không có thông báo mới</p>
                                     </div>
@@ -372,6 +368,10 @@
     .dropdown-menu { display: none; }
     .group:hover .dropdown-menu { display: block; }
     
+    /* Fix: Disable hover khi trang mới load để tránh dropdown tự hiện */
+    .page-loading .dropdown-menu { display: none !important; pointer-events: none; }
+    .page-loading .group:hover .dropdown-menu { display: none !important; }
+    
     .dropdown-bridge::before {
         content: "";
         position: absolute;
@@ -422,6 +422,19 @@
         padding-top: 0.5rem !important;
     }
 </style>
+
+{{-- Fix dropdown tự hiện khi chuyển trang --}}
+<script>
+    // Thêm class page-loading ngay khi script chạy
+    document.body.classList.add('page-loading');
+    
+    // Xóa class sau 500ms để cho phép hover hoạt động
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            document.body.classList.remove('page-loading');
+        }, 500);
+    });
+</script>
 
 {{-- Live Search Script --}}
 <script>
@@ -553,79 +566,99 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-{{-- Mobile Menu & Header Shrink Script --}}
+{{-- Notification Polling Script --}}
+@auth
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Mobile Menu
-    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-    const mobileMenu = document.getElementById('mobile-menu');
-    const mobileMenuPanel = document.getElementById('mobile-menu-panel');
-    const mobileMenuBackdrop = document.getElementById('mobile-menu-backdrop');
-    const closeMobileMenu = document.getElementById('close-mobile-menu');
-    const mobileMenuIcon = document.getElementById('mobile-menu-icon');
-
-    function openMobileMenu() {
-        mobileMenu.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-        setTimeout(() => {
-            mobileMenuPanel.classList.remove('translate-x-full');
-        }, 10);
-        mobileMenuIcon.classList.remove('fa-bars');
-        mobileMenuIcon.classList.add('fa-times');
-    }
-
-    function closeMobileMenuFn() {
-        mobileMenuPanel.classList.add('translate-x-full');
-        mobileMenuIcon.classList.remove('fa-times');
-        mobileMenuIcon.classList.add('fa-bars');
-        setTimeout(() => {
-            mobileMenu.classList.add('hidden');
-            document.body.style.overflow = '';
-        }, 300);
-    }
-
-    if (mobileMenuBtn) {
-        mobileMenuBtn.addEventListener('click', openMobileMenu);
-    }
-    if (closeMobileMenu) {
-        closeMobileMenu.addEventListener('click', closeMobileMenuFn);
-    }
-    if (mobileMenuBackdrop) {
-        mobileMenuBackdrop.addEventListener('click', closeMobileMenuFn);
-    }
-
-    // ESC to close mobile menu
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && mobileMenu && !mobileMenu.classList.contains('hidden')) {
-            closeMobileMenuFn();
-        }
-    });
-
-    // Header Shrink on Scroll
-    const header = document.getElementById('main-header');
-    const headerContainer = header ? header.querySelector('.container') : null;
-    const navSection = header ? header.querySelector('.hidden.md\\:flex') : null;
+    let lastUnreadCount = {{ Auth::user()->unreadNotifications->count() }};
     
-    if (header && headerContainer) {
-        window.addEventListener('scroll', function() {
-            const currentScroll = window.pageYOffset;
-            
-            if (currentScroll > 50) {
-                headerContainer.classList.add('py-2');
-                headerContainer.classList.remove('py-3');
-                if (navSection) {
-                    navSection.classList.add('mt-1', 'pt-2');
-                    navSection.classList.remove('mt-2', 'pt-3');
-                }
-            } else {
-                headerContainer.classList.remove('py-2');
-                headerContainer.classList.add('py-3');
-                if (navSection) {
-                    navSection.classList.remove('mt-1', 'pt-2');
-                    navSection.classList.add('mt-2', 'pt-3');
-                }
+    // Hàm fetch thông báo mới
+    function fetchNotifications() {
+        fetch('/api/notifications', {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             }
-        });
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateNotificationUI(data);
+        })
+        .catch(error => console.log('Notification fetch error:', error));
     }
+    
+    // Hàm cập nhật giao diện
+    function updateNotificationUI(data) {
+        const badge = document.getElementById('notification-badge');
+        const countSpan = document.getElementById('notification-count');
+        const markAllBtn = document.getElementById('mark-all-read-btn');
+        const listContainer = document.getElementById('notification-list');
+        
+        if (!badge || !countSpan) return;
+        
+        // Cập nhật badge số lượng
+        if (data.unread_count > 0) {
+            badge.classList.remove('hidden');
+            countSpan.innerText = data.unread_count;
+            if (markAllBtn) markAllBtn.classList.remove('hidden');
+            
+            // Nếu có thông báo mới, hiệu ứng rung chuông
+            if (data.unread_count > lastUnreadCount) {
+                badge.classList.add('animate-ping');
+                setTimeout(() => badge.classList.remove('animate-ping'), 1000);
+                
+                // Phát âm thanh thông báo (optional)
+                // playNotificationSound();
+            }
+        } else {
+            badge.classList.add('hidden');
+            if (markAllBtn) markAllBtn.classList.add('hidden');
+        }
+        
+        lastUnreadCount = data.unread_count;
+        
+        // Cập nhật danh sách thông báo
+        if (listContainer && data.notifications.length > 0) {
+            let html = '';
+            data.notifications.forEach(n => {
+                const isRead = n.read_at !== null;
+                const bgClass = isRead ? 'opacity-60 grayscale-[0.5]' : 'bg-blue-50/30';
+                
+                html += `
+                    <a href="${n.link}" class="flex gap-3 px-4 py-3 hover:bg-gray-50 transition border-b border-gray-50 ${bgClass}">
+                        <div class="flex-shrink-0 mt-1">
+                            ${n.is_system 
+                                ? `<div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center"><i class="${n.icon} ${n.color} text-sm"></i></div>`
+                                : `<img src="${n.user_avatar}" class="w-8 h-8 rounded-full border border-gray-100 object-cover">`
+                            }
+                        </div>
+                        <div class="flex-1">
+                            ${n.is_system 
+                                ? `<p class="text-sm font-bold text-gray-800">Bài viết của bạn đã được duyệt</p><p class="text-xs text-gray-600 line-clamp-2 mt-0.5">${n.message}</p>`
+                                : `<p class="text-sm text-gray-700 line-clamp-2"><span class="font-bold text-gray-900">${n.user_name}</span> ${n.message}<span class="font-bold block text-xs text-gray-500 italic mt-0.5">"${n.post_title}"</span></p>`
+                            }
+                            <p class="text-[10px] text-gray-400 mt-1 flex items-center"><i class="far fa-clock mr-1"></i> ${n.time}</p>
+                        </div>
+                        ${!isRead ? '<div class="w-2 h-2 bg-brand-green rounded-full mt-2 shrink-0"></div>' : ''}
+                    </a>
+                `;
+            });
+            listContainer.innerHTML = html;
+        } else if (listContainer && data.notifications.length === 0) {
+            listContainer.innerHTML = `
+                <div class="text-center py-8 text-gray-400">
+                    <i class="far fa-bell-slash text-2xl mb-2 text-gray-300"></i>
+                    <p class="text-xs">Không có thông báo mới</p>
+                </div>
+            `;
+        }
+    }
+    
+    // Polling mỗi 30 giây
+    setInterval(fetchNotifications, 5000);
+    
+    // Fetch ngay khi trang load (sau 2 giây để tránh lag)
+    setTimeout(fetchNotifications, 2000);
 });
 </script>
+@endauth
