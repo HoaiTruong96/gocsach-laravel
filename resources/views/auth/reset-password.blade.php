@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,29 +11,32 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { 'brand-green': '#3E5F4E', 'brand-cream': '#FDFBF7', 'brand-brown': '#8C6B4B' },
-                    fontFamily: { sans: ['Segoe UI', 'Roboto', 'sans-serif'], serif: ['Merriweather', 'serif'] }
+                    colors: {
+                        'brand-green': '#3E5F4E',
+                        'brand-cream': '#FDFBF7',
+                        'brand-brown': '#8C6B4B'
+                    },
+                    fontFamily: {
+                        sans: ['Segoe UI', 'Roboto', 'sans-serif'],
+                        serif: ['Merriweather', 'serif']
+                    }
                 }
             }
         }
     </script>
 </head>
+
 <body class="bg-brand-cream font-sans min-h-screen flex items-center justify-center p-4">
-    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-        <div class="text-center mb-8">
-            <div class="text-brand-green text-4xl mb-3">
-                <i class="fas fa-lock-open"></i>
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+        <div class="bg-brand-brown p-6 text-center text-white">
+            <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i class="fas fa-lock-open text-2xl"></i>
             </div>
-            <h3 class="text-2xl font-bold text-gray-800 font-serif">Đặt Mật Khẩu Mới</h3>
-            <p class="text-sm text-gray-500 mt-2">Hãy chọn một mật khẩu mạnh để bảo vệ tài khoản.</p>
+            <h2 class="text-2xl font-serif font-bold">Đặt Lại Mật Khẩu</h2>
+            <p class="text-white/80 text-sm mt-1">Nhập mật khẩu mới cho tài khoản của bạn</p>
         </div>
 
-        <form method="POST" action="{{ route('update.password') }}">
-            @csrf
-            <!-- Giữ lại ID user để biết đang đổi pass cho ai -->
-            <input type="hidden" name="user_id" value="{{ $user_id }}">
-
-            <!-- Báo lỗi nếu có -->
+        <div class="p-8">
             @if ($errors->any())
                 <div class="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4 flex items-center gap-2">
                     <i class="fas fa-exclamation-circle"></i>
@@ -40,43 +44,71 @@
                 </div>
             @endif
 
-            <!-- Ô Mật khẩu mới -->
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-1">Mật khẩu mới</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fas fa-lock"></i></span>
-                    
-                    <input type="password" name="password" id="password" class="w-full pl-10 pr-10 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green transition" placeholder="••••••••" required>
-                    
-                    <!-- Nút mắt -->
-                    <button type="button" onclick="togglePassword('password', 'eye-icon-pass')" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-brand-green focus:outline-none cursor-pointer">
-                        <i class="fas fa-eye" id="eye-icon-pass"></i>
-                    </button>
-                </div>
-            </div>
+            <form method="POST" action="{{ route('password.update') }}">
+                @csrf
 
-            <!-- Ô Nhập lại mật khẩu -->
-            <div class="mb-6">
-                <label class="block text-gray-700 text-sm font-bold mb-1">Nhập lại mật khẩu</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fas fa-check-circle"></i></span>
-                    
-                    <input type="password" name="password_confirmation" id="password_confirmation" class="w-full pl-10 pr-10 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green transition" placeholder="••••••••" required>
-                    
-                    <!-- Nút mắt -->
-                    <button type="button" onclick="togglePassword('password_confirmation', 'eye-icon-confirm')" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-brand-green focus:outline-none cursor-pointer">
-                        <i class="fas fa-eye" id="eye-icon-confirm"></i>
-                    </button>
-                </div>
-            </div>
+                <input type="hidden" name="token" value="{{ $token }}">
 
-            <button type="submit" class="w-full bg-brand-green text-white font-bold py-3 rounded-lg hover:bg-[#2C3E36] transition transform hover:-translate-y-0.5 shadow-md">
-                Xác Nhận Đổi
-            </button>
-        </form>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                        <input type="email" name="email" 
+                            class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green transition" 
+                            value="{{ $email ?? old('email') }}" required readonly>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Mật khẩu mới</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <input type="password" name="password" id="password"
+                            class="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green transition" 
+                            placeholder="••••••••" required>
+                        <button type="button" onclick="togglePassword('password', 'eye-icon-pass')" 
+                            class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-brand-green focus:outline-none cursor-pointer">
+                            <i class="fas fa-eye" id="eye-icon-pass"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Xác nhận mật khẩu</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <input type="password" name="password_confirmation" id="password_confirmation"
+                            class="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green transition" 
+                            placeholder="••••••••" required>
+                        <button type="button" onclick="togglePassword('password_confirmation', 'eye-icon-confirm')" 
+                            class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-brand-green focus:outline-none cursor-pointer">
+                            <i class="fas fa-eye" id="eye-icon-confirm"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" 
+                    class="w-full bg-brand-brown text-white font-bold py-3 rounded-lg hover:bg-[#6d4c41] transition transform hover:-translate-y-0.5 shadow-md">
+                    <i class="fas fa-save mr-2"></i>
+                    Đặt Lại Mật Khẩu
+                </button>
+            </form>
+
+            <div class="text-center mt-6 pt-6 border-t border-gray-100">
+                <a href="{{ route('login') }}" class="text-brand-green font-medium hover:underline">
+                    <i class="fas fa-arrow-left mr-1"></i>
+                    Quay lại Đăng nhập
+                </a>
+            </div>
+        </div>
     </div>
 
-    <!-- Script xử lý ẩn/hiện mật khẩu cho cả 2 ô -->
     <script>
         function togglePassword(inputId, iconId) {
             const input = document.getElementById(inputId);
@@ -94,4 +126,5 @@
         }
     </script>
 </body>
+
 </html>
