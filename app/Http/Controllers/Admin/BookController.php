@@ -69,9 +69,13 @@ class BookController extends Controller
         $data['created_by_user_id'] = Auth::id();
         $data['is_approved'] = true;
 
-        // Xử lý upload ảnh
+        // Xử lý ảnh bìa
         if ($request->hasFile('cover_image')) {
+            // Ưu tiên file upload
             $data['cover_image'] = $request->file('cover_image')->store('books', 'public');
+        } elseif ($request->filled('cover_image_url')) {
+            // Nếu không có file, sử dụng URL
+            $data['cover_image'] = $request->cover_image_url;
         }
 
         // 1. Tạo sách
@@ -121,13 +125,20 @@ class BookController extends Controller
             $data['slug'] = Str::slug($request->title) . '-' . time();
         }
 
-        // Xử lý ảnh mới
+        // Xử lý ảnh bìa
         if ($request->hasFile('cover_image')) {
-            // Xóa ảnh cũ nếu có
-            if ($book->cover_image && Storage::disk('public')->exists($book->cover_image)) {
+            // Xóa ảnh cũ nếu có (chỉ xóa file local, không xóa URL)
+            if ($book->cover_image && !str_starts_with($book->cover_image, 'http') && Storage::disk('public')->exists($book->cover_image)) {
                 Storage::disk('public')->delete($book->cover_image);
             }
             $data['cover_image'] = $request->file('cover_image')->store('books', 'public');
+        } elseif ($request->filled('cover_image_url')) {
+            // Nếu không có file mới, sử dụng URL
+            // Xóa ảnh cũ nếu có (chỉ xóa file local)
+            if ($book->cover_image && !str_starts_with($book->cover_image, 'http') && Storage::disk('public')->exists($book->cover_image)) {
+                Storage::disk('public')->delete($book->cover_image);
+            }
+            $data['cover_image'] = $request->cover_image_url;
         }
 
         // Update thông tin cơ bản và đồng bộ
