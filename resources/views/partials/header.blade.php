@@ -330,7 +330,7 @@
 
         {{-- User Section --}}
         <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 bg-gray-50">
-            @auth
+                @auth
                 <div class="flex items-center gap-3 mb-3">
                     <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}"
                         class="w-10 h-10 rounded-full border-2 border-brand-green">

@@ -139,6 +139,8 @@ Route::middleware('auth')->group(function () {
     // --- PROFILE & FOLLOW ---
     Route::get('/profile/{id?}', [ProfileController::class, 'index'])->name('profile');
     Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/avatar-frame/equip', [ProfileController::class, 'equipAvatarFrame'])->name('profile.avatar-frame.equip');
+    Route::post('/profile/avatar-frame/unequip', [ProfileController::class, 'unequipAvatarFrame'])->name('profile.avatar-frame.unequip');
     Route::post('/follow/toggle', [FollowController::class, 'toggleFollow'])->name('follow.toggle');
 
     // --- ĐỀ XUẤT SÁCH ---
@@ -228,6 +230,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Resource Controllers
     Route::resource('books', AdminBookController::class);
+    Route::post('books/{book}/approve', [AdminBookController::class, 'approve'])->name('books.approve');
     Route::resource('articles', ArticleController::class);
     Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class);
     Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->only(['index', 'update', 'destroy']);
