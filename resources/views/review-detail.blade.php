@@ -597,6 +597,7 @@
         }
 
         const submitBtn = form.querySelector('button[type="submit"]');
+        const oldHtml = submitBtn.innerHTML;
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
@@ -609,29 +610,126 @@
             },
             body: JSON.stringify({ content: content })
         })
-        .then(response => response.json())
+        .then(async r => {
+             const d = await r.json();
+             if (!r.ok) throw new Error(d.error || d.message || "Lỗi server");
+             return d;
+        })
         .then(data => {
             if (data.success) {
-                // Update comment count
+                // Update comment count global
                 const countSpan = document.getElementById(`comment-count-${reviewId}`);
                 if (countSpan) countSpan.innerText = data.count;
 
-                // Clear textarea
                 textarea.value = '';
 
-                // Reload to show new comment
-                location.reload();
+                // 1. Tạo avatar HTML
+                let avatarHtml = '';
+                if (data.user_frame) {
+                    avatarHtml = `
+                        <div class="relative w-10 h-10 inline-block flex-shrink-0">
+                            <img src="${data.user_frame}" alt="Frame" class="absolute inset-0 w-full h-full object-contain pointer-events-none z-10">
+                            <div class="absolute inset-0 flex items-center justify-center z-0">
+                                <img src="${data.user_avatar}" class="w-8 h-8 rounded-full object-cover border-2 border-gray-200">
+                            </div>
+                        </div>
+                    `;
+                } else {
+                     avatarHtml = `<img src="${data.user_avatar}" class="w-10 h-10 rounded-full border border-gray-200 object-cover p-[1px]">`;
+                }
+
+                // Avatar nhỏ hơn cho form reply bên trong
+                let replyAvatarHtml = '';
+                 if (data.user_frame) {
+                    replyAvatarHtml = `
+                        <div class="relative w-8 h-8 inline-block flex-shrink-0">
+                            <img src="${data.user_frame}" alt="Frame" class="absolute inset-0 w-full h-full object-contain pointer-events-none z-10">
+                            <div class="absolute inset-0 flex items-center justify-center z-0">
+                                <img src="${data.user_avatar}" class="w-6 h-6 rounded-full object-cover border-2 border-gray-200">
+                            </div>
+                        </div>
+                    `;
+                 } else {
+                    replyAvatarHtml = `<img src="${data.user_avatar}" class="w-8 h-8 rounded-full border border-gray-200 object-cover p-[1px]">`;
+                 }
+
+                // 2. Tạo Comment HTML
+                const commentHtml = `
+                    <div id="comment-${data.comment_id}" class="animate-fade-in-down">
+                        <div class="flex gap-3">
+                            <a href="/thanh-vien/${currentUserId}" class="flex-shrink-0">
+                                ${avatarHtml}
+                            </a>
+                            <div class="flex-1">
+                                <div class="bg-gray-50 p-3 rounded-r-xl rounded-bl-xl text-xs w-full">
+                                    <div class="flex justify-between mb-1">
+                                        <a href="/thanh-vien/${currentUserId}" class="hover:text-brand-green transition">
+                                            <span class="font-bold text-gray-800 flex items-center">
+                                                ${data.user_name}
+                                            </span>
+                                        </a>
+                                        <span class="text-gray-400 text-[10px]">Vừa xong</span>
+                                    </div>
+                                    <span class="text-gray-600 block leading-relaxed whitespace-pre-line">${data.content}</span>
+                                </div>
+                                <div class="flex items-center gap-4 mt-2 ml-2">
+                                     <button onclick="handleLike(${data.comment_id}, 'comment')" 
+                                            id="like-btn-comment-${data.comment_id}"
+                                            class="text-[10px] font-bold text-gray-400 hover:text-red-500 flex gap-1 items-center transition">
+                                        <i id="like-icon-comment-${data.comment_id}" class="far fa-heart"></i>
+                                        <span id="like-count-comment-${data.comment_id}">0</span>
+                                    </button>
+                                    <button onclick="toggleReplySection(${data.comment_id})" 
+                                            class="text-[10px] font-bold text-gray-400 hover:text-brand-green flex gap-1 items-center transition">
+                                        <i class="far fa-comment-dots"></i>
+                                        <span>Trả lời (0)</span>
+                                    </button>
+                                </div>
+                                <div id="reply-section-${data.comment_id}" class="hidden mt-3 ml-2 pl-4 border-l border-gray-200">
+                                    <div class="space-y-3 mb-3"></div>
+                                    <div class="mt-3 pt-3 border-t border-gray-100 transition-all duration-300">
+                                        <div class="flex gap-2 items-start">
+                                            ${replyAvatarHtml}
+                                            <div class="flex-1 relative">
+                                                <textarea id="reply-input-${data.comment_id}" rows="1" 
+                                                          class="w-full text-xs p-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green resize-none pr-10 shadow-sm" 
+                                                          placeholder="Viết phản hồi..."
+                                                          oninput="autoResize(this)"></textarea>
+                                                <button type="button" onclick="submitReply(${data.comment_id}, event)" 
+                                                        class="absolute right-1 top-1 text-brand-green p-1.5 hover:bg-brand-green/10 rounded transition">
+                                                    <i class="fas fa-paper-plane text-xs"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // 3. Append to list
+                const box = document.getElementById(`comment-box-${reviewId}`);
+                let list = box.querySelector('.space-y-4');
+                if (!list) {
+                    list = document.createElement('div');
+                    list.className = 'space-y-4 mb-4 pl-4 border-l-2 border-gray-100';
+                    box.insertBefore(list, form);
+                }
+                
+                list.insertAdjacentHTML('afterbegin', commentHtml);
+
             } else {
-                alert(data.error || "Có lỗi xảy ra, vui lòng thử lại.");
+                alert(data.error || "Có lỗi xảy ra.");
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert("Có lỗi xảy ra, vui lòng thử lại.");
+            alert("Có lỗi xảy ra: " + error.message);
         })
         .finally(() => {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+            submitBtn.innerHTML = oldHtml;
         });
     }
 

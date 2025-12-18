@@ -14,13 +14,13 @@ use App\Notifications\CommentLikedNotification;
 
 class PostController extends Controller
 {
-   public function store(Request $request)
-   {
+    public function store(Request $request)
+    {
         // 1. Validate dữ liệu
         $request->validate([
             'book_id' => 'required|exists:books,id',
-            'rating'  => 'required|integer|min:1|max:5',
-            'title'   => 'required|string|max:255',
+            'rating' => 'required|integer|min:1|max:5',
+            'title' => 'required|string|max:255',
             'content' => 'required|min:10',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ], [
@@ -42,14 +42,14 @@ class PostController extends Controller
 
         // 4. Lưu vào Database với status = pending
         $post = Post::create([
-            'user_id'   => Auth::id(),
-            'book_id'   => $request->input('book_id'),
-            'title'     => $request->input('title'),
-            'slug'      => $slug,
-            'rating'    => $request->input('rating'),
-            'content'   => $request->input('content'),
+            'user_id' => Auth::id(),
+            'book_id' => $request->input('book_id'),
+            'title' => $request->input('title'),
+            'slug' => $slug,
+            'rating' => $request->input('rating'),
+            'content' => $request->input('content'),
             'thumbnail' => $thumbnailPath,
-            'status'    => 'pending', // Chờ Admin duyệt
+            'status' => 'pending', // Chờ Admin duyệt
         ]);
 
         // 5. Cập nhật tiến độ Thử Thách (Chỉ khi bài đã được duyệt)
@@ -58,19 +58,21 @@ class PostController extends Controller
         if ($post->status == 'published') {
             Auth::user()->updateChallengeProgress();
         }
-        
+
         return redirect()->route('profile', Auth::id())
-                        ->with('success', 'Đã gửi bài viết! Vui lòng chờ Admin phê duyệt.');
-   }
+            ->with('success', 'Đã gửi bài viết! Vui lòng chờ Admin phê duyệt.');
+    }
 
     // Toggle Like (Giữ nguyên)
     public function toggleLike($id)
     {
         $user = Auth::user();
-        if (!$user) return response()->json(['error' => 'Bạn cần đăng nhập!'], 401);
+        if (!$user)
+            return response()->json(['error' => 'Bạn cần đăng nhập!'], 401);
 
         $post = Post::find($id);
-        if (!$post) return response()->json(['error' => 'Bài viết không tồn tại!'], 404);
+        if (!$post)
+            return response()->json(['error' => 'Bài viết không tồn tại!'], 404);
 
         // Tìm like
         $like = Like::where('user_id', $user->id)->where('post_id', $id)->first();
@@ -93,8 +95,8 @@ class PostController extends Controller
         $count = Like::where('post_id', $id)->count();
 
         return response()->json([
-            'success' => true, 
-            'liked' => $liked, 
+            'success' => true,
+            'liked' => $liked,
             'count' => $count
         ]);
     }
@@ -103,12 +105,14 @@ class PostController extends Controller
     public function postComment(Request $request, $id)
     {
         $user = Auth::user();
-        if (!$user) return response()->json(['error' => 'Bạn cần đăng nhập!'], 401);
+        if (!$user)
+            return response()->json(['error' => 'Bạn cần đăng nhập!'], 401);
 
         $request->validate(['content' => 'required']);
 
         $post = Post::find($id);
-        if (!$post) return response()->json(['error' => 'Bài viết không tồn tại!'], 404);
+        if (!$post)
+            return response()->json(['error' => 'Bài viết không tồn tại!'], 404);
 
         // Lưu comment
         $comment = Comment::create([
@@ -119,7 +123,15 @@ class PostController extends Controller
 
         // Gửi thông báo (Trừ khi tự comment bài mình)
         if ($post->user_id != $user->id) {
-           $post->user->notify(new PostCommentedNotification($user, $post));
+            $post->user->notify(new PostCommentedNotification($user, $post));
+        }
+
+        $equippedFrame = $user->equippedFrame();
+        $frameUrl = null;
+        if ($equippedFrame) {
+            $frameUrl = \Illuminate\Support\Str::startsWith($equippedFrame->frame_image, 'http')
+                ? $equippedFrame->frame_image
+                : asset('storage/' . $equippedFrame->frame_image);
         }
 
         // Đếm lại số comment
@@ -129,7 +141,8 @@ class PostController extends Controller
             'success' => true,
             'comment_id' => $comment->id,
             'user_name' => $user->name,
-            'user_avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=random',
+            'user_avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random',
+            'user_frame' => $frameUrl,
             'content' => $comment->content,
             'count' => $commentCount,
             'created_at' => 'Vừa xong'
