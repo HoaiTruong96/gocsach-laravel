@@ -23,7 +23,8 @@
                                 class="text-red-500">*</span></label>
                         <input type="text" name="author_name" value="{{ old('author_name') }}"
                             class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white"
-                            placeholder="Nhập tên tác giả...">
+                            placeholder="Nhập tên tác giả (vd: "Nguyễn A, Trần B")">
+                        <p class="text-xs text-gray-500 mt-1">Nhập nhiều tác giả phân cách bằng dấu phẩy hoặc xuống dòng. Các tác giả mới sẽ được tạo tự động trong cơ sở dữ liệu.</p>
                         @error('author_name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
 

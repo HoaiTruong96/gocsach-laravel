@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Models\Book;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AuthController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\BookSuggestionController;
 
 // ====================================================
 // 1. NHÓM PUBLIC (Ai cũng xem được)
@@ -36,21 +38,21 @@ Route::post('/post/{post_id}/comment', [CommentController::class, 'store'])->mid
 // AJAX Live Search (cho Header)
 Route::get('/ajax-search', function (Illuminate\Http\Request $request) {
     $keyword = $request->get('keyword');
-    
+
     if (!$keyword || strlen($keyword) < 2) {
         return response()->json([]);
     }
-    
+
     $books = App\Models\Book::where('is_approved', true)
-        ->where(function($q) use ($keyword) {
+        ->where(function ($q) use ($keyword) {
             $q->where('title', 'like', "%{$keyword}%")
-              ->orWhere('author_name', 'like', "%{$keyword}%");
+                ->orWhere('author_name', 'like', "%{$keyword}%");
         })
         ->select('id', 'title', 'slug', 'author_name', 'cover_image', 'avg_rating')
         ->orderBy('view_count', 'desc')
         ->limit(8)
         ->get();
-    
+
     return response()->json($books);
 })->name('ajax.search');
 
@@ -91,10 +93,34 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 
-    Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('forgot.password');
-    Route::post('/check-secret', [AuthController::class, 'checkSecret'])->name('check.secret');
-    Route::post('/update-password', [AuthController::class, 'updatePassword'])->name('update.password');
+    // Quên mật khẩu
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 });
+
+// ====================================================
+// 2.5 NHÓM XÁC THỰC EMAIL (EMAIL VERIFICATION)
+// ====================================================
+
+// 1. Giao diện thông báo "Hãy check mail"
+Route::get('/email/verify', function () {
+    return view('auth.verify-email');
+})->middleware('auth')->name('verification.notice');
+
+// 2. Xử lý khi người dùng click vào link trong email
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+    return redirect()->route('home')->with('success', 'Email đã được xác thực thành công!');
+})->middleware(['auth', 'signed'])->name('verification.verify');
+
+// 3. Gửi lại email xác thực (nếu user không nhận được)
+Route::post('/email/verification-notification', function (Request $request) {
+    $request->user()->sendEmailVerificationNotification();
+    return back()->with('message', 'Link xác thực đã được gửi lại!');
+})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+
 // Route cho trang Thử Thách
 // Code này chạy qua Controller để lấy dữ liệu rồi mới trả về View
 Route::get('/thu-thach', [ChallengeController::class, 'index'])->name('challenges.index');
@@ -104,7 +130,7 @@ Route::get('/thu-thach', [ChallengeController::class, 'index'])->name('challenge
 // 3. NHÓM THÀNH VIÊN (AUTH REQUIRED)
 // ====================================================
 Route::middleware('auth')->group(function () {
-    
+
     // --- AUTH ---
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/change-password', [AuthController::class, 'showChangePasswordForm'])->name('change.password');
@@ -112,25 +138,30 @@ Route::middleware('auth')->group(function () {
 
     // --- PROFILE & FOLLOW ---
     Route::get('/profile/{id?}', [ProfileController::class, 'index'])->name('profile');
+    Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/follow/toggle', [FollowController::class, 'toggleFollow'])->name('follow.toggle');
+
+    // --- ĐỀ XUẤT SÁCH ---
+    Route::get('/sach/de-xuat', [BookSuggestionController::class, 'create'])->name('books.suggest');
+    Route::post('/sach/de-xuat', [BookSuggestionController::class, 'store'])->name('books.suggest.store');
 
     // --- LIKE & COMMENT (AJAX) ---
     // Route xử lý Like chung (cho cả Post và Comment)
     Route::post('/like', [HomeController::class, 'toggleLike'])->name('handle.like');
-    
+
     // Route gửi Reply (Bình luận trả lời)
     Route::post('/comment/{id}/reply', [HomeController::class, 'storeReply'])->name('comment.reply');
-    
+
     // Route comment bài viết (nếu dùng PostController riêng)
     Route::post('/posts/{id}/comment', [PostController::class, 'postComment'])->name('posts.comment');
 
     // --- THÔNG BÁO (NOTIFICATION) ---
     // Đánh dấu tất cả là đã đọc
     Route::get('/notifications/read-all', [HomeController::class, 'markAllAsRead'])->name('notification.readAll');
-    
+
     // Đọc 1 thông báo cụ thể -> Chuyển hướng
     Route::get('/notifications/{id}', [HomeController::class, 'markAsRead'])->name('notification.read');
-    
+
     // API lấy thông báo realtime (cho polling)
     Route::get('/api/notifications', [HomeController::class, 'getNotifications'])->name('api.notifications');
 
@@ -138,12 +169,31 @@ Route::middleware('auth')->group(function () {
     Route::get('/reviews/viet-bai', function (Illuminate\Http\Request $request) {
         $user = Auth::user();
         $preselectedBook = null;
-        
+
         // Nếu có book_id, lấy thông tin sách để tự động chọn
         if ($request->has('book_id')) {
             $preselectedBook = Book::find($request->book_id);
         }
-        
+
+        return view('create-review', compact('user', 'preselectedBook'));
+    })->name('reviews.create');
+
+    // Lưu bài viết mới
+    Route::post('/posts/store', [PostController::class, 'store'])->name('posts.store');
+
+    // API lấy thông báo realtime (cho polling)
+    Route::get('/api/notifications', [HomeController::class, 'getNotifications'])->name('api.notifications');
+
+    // --- REVIEW / POST ---
+    Route::get('/reviews/viet-bai', function (Illuminate\Http\Request $request) {
+        $user = Auth::user();
+        $preselectedBook = null;
+
+        // Nếu có book_id, lấy thông tin sách để tự động chọn
+        if ($request->has('book_id')) {
+            $preselectedBook = Book::find($request->book_id);
+        }
+
         return view('create-review', compact('user', 'preselectedBook'));
     })->name('reviews.create');
 
@@ -185,6 +235,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('banners', BannerController::class);
     Route::resource('badges', \App\Http\Controllers\Admin\BadgeController::class);
     Route::resource('challenges', \App\Http\Controllers\Admin\ChallengeController::class);
+    Route::resource('avatar-frames', \App\Http\Controllers\Admin\AvatarFrameController::class);
     // Authors - dùng adminIndex() thay vì index() cho trang admin
     Route::get('authors', [AuthorController::class, 'adminIndex'])->name('authors.index');
     Route::get('authors/create', [AuthorController::class, 'create'])->name('authors.create');

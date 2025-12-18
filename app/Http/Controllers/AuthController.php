@@ -6,6 +6,10 @@ use App\Models\User; // Gọi Model User để thêm dữ liệu vào DB
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash; // Thư viện mã hóa mật khẩu
+use Illuminate\Support\Facades\Password; // Thư viện reset password
+use Illuminate\Support\Str;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Auth\Events\Registered; // Sự kiện gửi mail xác thực
 
 class AuthController extends Controller
 {
@@ -36,11 +40,10 @@ class AuthController extends Controller
     }
 
     public function register(Request $request) {
-        // Validate dữ liệu (Thêm secret_code)
+        // Validate dữ liệu
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'secret_code' => 'required|string|max:255', // [CẬP NHẬT] Bắt buộc nhập mã bí mật
             'password' => 'required|string|min:6|confirmed',
         ]);
 
@@ -48,62 +51,17 @@ class AuthController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'secret_code' => $request->secret_code, // [CẬP NHẬT] Lưu mã bí mật vào DB
             'password' => Hash::make($request->password),
         ]);
+
+        // Bắn sự kiện để Laravel tự gửi mail xác thực
+        event(new Registered($user));
 
         // Đăng nhập luôn cho người dùng sau khi đăng ký
         Auth::login($user);
 
-        return redirect()->route('home');
-    }
-
-    // --- 3. QUÊN MẬT KHẨU (MỚI) ---
-    
-    // Hiển thị form nhập Email & Mã bí mật
-    public function showForgotPassword() {
-        return view('auth.forgot-password');
-    }
-
-    // Kiểm tra xem Email và Mã bí mật có khớp trong DB không
-    public function checkSecret(Request $request) {
-        $request->validate([
-            'email' => 'required|email',
-            'secret_code' => 'required'
-        ]);
-
-        $user = User::where('email', $request->email)
-                    ->where('secret_code', $request->secret_code)
-                    ->first();
-
-        if ($user) {
-            // Nếu đúng, chuyển sang trang nhập mật khẩu mới (gửi kèm ID user)
-            return view('auth.reset-password', ['user_id' => $user->id]);
-        }
-
-        // Nếu sai, báo lỗi quay lại
-        return back()->with('error', 'Email hoặc Mã bí mật không chính xác!');
-    }
-
-    // Thực hiện đổi mật khẩu mới (Quên mật khẩu)
-    public function updatePassword(Request $request) {
-        $request->validate([
-            'password' => 'required|string|min:6|confirmed',
-            'user_id' => 'required'
-        ]);
-
-        // Tìm user theo ID
-        $user = User::find($request->user_id);
-        
-        if($user) {
-            // Cập nhật mật khẩu mới (đã mã hóa)
-            $user->password = Hash::make($request->password);
-            $user->save();
-            
-            return redirect()->route('login')->with('success', 'Đổi mật khẩu thành công! Hãy đăng nhập lại.');
-        }
-        
-        return redirect()->route('login')->withErrors(['email' => 'Có lỗi xảy ra, vui lòng thử lại.']);
+        // Chuyển hướng đến trang thông báo "Vui lòng check mail"
+        return redirect()->route('verification.notice');
     }
 
     // --- 4. ĐĂNG XUẤT ---
@@ -141,5 +99,68 @@ class AuthController extends Controller
         $user->save();
 
         return back()->with('status', 'Đổi mật khẩu thành công!');
+    }
+
+    // --- 6. QUÊN MẬT KHẨU (QUA EMAIL) ---
+    
+    // Hiển thị form nhập email
+    public function showForgotPasswordForm() {
+        return view('auth.forgot-password');
+    }
+
+    // Gửi link reset password qua email
+    public function sendResetLink(Request $request) {
+        $request->validate([
+            'email' => 'required|email'
+        ], [
+            'email.required' => 'Vui lòng nhập email.',
+            'email.email' => 'Email không hợp lệ.'
+        ]);
+
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        return $status === Password::RESET_LINK_SENT
+            ? back()->with('status', 'Đã gửi link đặt lại mật khẩu vào email của bạn!')
+            : back()->withErrors(['email' => 'Không tìm thấy email này trong hệ thống.']);
+    }
+
+    // Hiển thị form đặt lại mật khẩu (khi user click link trong email)
+    public function showResetPasswordForm(Request $request, $token) {
+        return view('auth.reset-password', [
+            'token' => $token,
+            'email' => $request->email
+        ]);
+    }
+
+    // Xử lý đặt lại mật khẩu mới
+    public function resetPassword(Request $request) {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:6|confirmed',
+        ], [
+            'password.required' => 'Vui lòng nhập mật khẩu mới.',
+            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
+            'password.confirmed' => 'Mật khẩu xác nhận không khớp.'
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user, string $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ])->setRememberToken(Str::random(60));
+
+                $user->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        return $status === Password::PASSWORD_RESET
+            ? redirect()->route('login')->with('status', 'Đổi mật khẩu thành công! Vui lòng đăng nhập lại.')
+            : back()->withErrors(['email' => 'Link đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.']);
     }
 }
