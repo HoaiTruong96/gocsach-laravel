@@ -1,163 +1,161 @@
-@if(isset($latestComments) && $latestComments->count() > 0)
-    <div class="grid grid-cols-1 gap-5"> {{-- Danh sách dọc --}}
-        @foreach($latestComments as $comment)
+@if(isset($latestReviews) && $latestReviews->count() > 0)
+    <div class="grid grid-cols-1 gap-6"> 
+        @foreach($latestReviews as $comment)
             @php
-                $relatedBook = $comment->book ?? ($comment->post->book ?? null);
-                $bookTitle = $relatedBook->title ?? 'Sách ẩn';
-                $bookSlug = $relatedBook->slug ?? '#';
-                $rating = $comment->rating ?? 0;
+                $book = $comment->post->book ?? null;
             @endphp
-
-            {{-- ITEM COMMENT --}}
-            <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 group cursor-pointer animate-fade-in"
-                 onclick="window.location.href='{{ $relatedBook ? route('detail', $bookSlug) : '#' }}'">
+            {{-- ITEM BÌNH LUẬN (COMMENT) --}}
+            <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
                 
-                {{-- HEADER: User & Time --}}
+                {{-- 1. HEADER --}}
                 <div class="flex justify-between items-start mb-3">
                     <div class="flex items-center gap-3">
-                        <div class="relative">
-                            <img src="{{ $comment->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($comment->user->name ?? 'A').'&background=random&size=48' }}" 
-                                 class="w-11 h-11 rounded-full border-2 border-white shadow-sm object-cover">
-                            
-                            @if($rating >= 4.5)
-                                <span class="absolute -bottom-1 -right-1 bg-yellow-400 text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full border border-white shadow-sm">
-                                    <i class="fas fa-crown"></i>
-                                </span>
-                            @endif
-                        </div>
-                        
+                        <img src="{{ $comment->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($comment->user->name).'&background=random' }}" 
+                             class="w-10 h-10 rounded-full object-cover border border-gray-200">
                         <div>
-                            <h4 class="font-bold text-sm text-gray-800 leading-tight group-hover:text-brand-green transition">
-                                {{ $comment->user->name ?? 'Người dùng ẩn' }}
-                            </h4>
-                            <div class="flex items-center gap-2 mt-0.5">
-                                <p class="text-[11px] text-gray-400">{{ $comment->created_at->diffForHumans() }}</p>
-                                @if($rating > 0)
-                                    <span class="text-gray-300 text-[10px]">•</span>
-                                    <div class="flex text-yellow-400 text-[10px]">
-                                        @for($i=1; $i<=5; $i++)
-                                            <i class="{{ $i <= $rating ? 'fas' : 'far' }} fa-star"></i>
-                                        @endfor
-                                    </div>
+                            <h4 class="font-bold text-gray-800 text-sm">{{ $comment->user->name }}</h4>
+                            <div class="text-xs text-gray-500 flex items-center gap-1">
+                                <span>Đánh giá về:</span>
+                                @if($book)
+                                    <a href="{{ route('detail', $book->slug ?? '#') }}" class="font-bold text-brand-green hover:underline">
+                                        {{ $book->title ?? 'Sách ẩn' }}
+                                    </a>
+                                @else
+                                    <span class="text-gray-400">Sách không xác định</span>
                                 @endif
+                                <span class="text-gray-300 mx-1">•</span>
+                                <span>{{ $comment->created_at->diffForHumans() }}</span>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                {{-- BOOK NAME --}}
-                <div class="mb-3 pl-3 border-l-4 border-brand-accent">
-                    <span class="text-xs text-gray-400 uppercase font-bold block mb-0.5">Đang review:</span>
-                    <h3 class="text-base font-serif font-bold text-gray-800 line-clamp-1">
-                        <a href="{{ $relatedBook ? route('detail', $bookSlug) : '#' }}" class="hover:text-brand-green hover:underline decoration-1 underline-offset-2">
-                            {{ $bookTitle }}
-                        </a>
-                    </h3>
-                </div>
-
-                {{-- CONTENT --}}
-                <div class="bg-gray-50 rounded-xl p-3 mb-3 text-gray-700 text-sm leading-relaxed relative">
-                    <i class="fas fa-quote-left text-gray-200 absolute top-2 left-2 text-xl -z-0"></i>
-                    <p class="relative z-10 line-clamp-3 pl-1">
-                        {{ Str::limit(strip_tags($comment->content), 220) }}
-                    </p>
-                </div>
-
-                {{-- FOOTER ACTIONS --}}
-                <div class="flex items-center justify-between pt-2 border-t border-gray-50">
-                    <div class="flex gap-2">
-                        <button type="button" 
-                                onclick="event.stopPropagation(); handleLike({{ $comment->id }}, 'comment')" 
-                                id="like-btn-comment-{{ $comment->id }}" 
-                                class="group/btn flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-red-50 transition {{ Auth::check() && $comment->likes->where('user_id', Auth::id())->count() > 0 ? 'text-red-500' : 'text-gray-500 hover:text-red-500' }}">
-                            <i id="like-icon-comment-{{ $comment->id }}" class="{{ Auth::check() && $comment->likes->where('user_id', Auth::id())->count() > 0 ? 'fas' : 'far' }} fa-heart text-sm transition-transform group-active/btn:scale-125"></i>
-                            <span class="text-xs font-bold" id="like-count-comment-{{ $comment->id }}">{{ $comment->likes_count ?? 0 }}</span>
-                        </button>
-
-                        <button type="button" 
-                                onclick="event.stopPropagation(); toggleReplyForm({{ $comment->id }})" 
-                                class="group/btn flex items-center gap-1.5 px-3 py-1.5 rounded-full text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition">
-                            <i class="far fa-comment-dots text-sm"></i>
-                            <span class="text-xs font-bold">Trả lời</span>
-                        </button>
-                    </div>
-                </div>
-
-                {{-- FORM REPLY (Ẩn) --}}
-                <div id="reply-form-{{ $comment->id }}" class="hidden mt-3 pt-3 border-t border-gray-100 animate-fade-in" onclick="event.stopPropagation()">
-                    <div class="flex gap-2 items-start">
-                        <img src="{{ Auth::check() ? (Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name).'&background=random') : 'https://ui-avatars.com/api/?name=Guest' }}" 
-                             class="w-8 h-8 rounded-full border border-gray-200">
-                        <div class="flex-1 relative">
-                            <textarea id="reply-input-{{ $comment->id }}" 
-                                      rows="1" 
-                                      class="w-full bg-white border border-gray-200 rounded-2xl px-4 py-2 text-sm focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green/20 transition resize-none pr-10" 
-                                      placeholder="Viết bình luận..." 
-                                      oninput="autoResize(this)" 
-                                      onkeydown="handleEnter(event, {{ $comment->id }})"></textarea>
-                            <button onclick="submitInlineReply({{ $comment->id }})" 
-                                    class="absolute right-2 bottom-1.5 text-brand-green p-1.5 hover:bg-brand-green/10 rounded-full transition">
-                                <i class="fas fa-paper-plane text-xs"></i>
-                            </button>
+                    
+                    {{-- Rating nếu có --}}
+                    @if($comment->rating)
+                        <div class="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-full">
+                            <i class="fas fa-star text-yellow-400 text-xs"></i>
+                            <span class="text-xs font-bold text-yellow-600">{{ number_format($comment->rating, 1) }}</span>
                         </div>
+                    @endif
+                </div>
+
+                {{-- 2. NỘI DUNG BÌNH LUẬN --}}
+                <div class="mb-4 pl-1">
+                    <div class="bg-gray-50 rounded-xl p-3 text-gray-700 text-sm leading-relaxed relative">
+                        {{ $comment->content }}
                     </div>
+                </div>
+
+                {{-- 3. ACTIONS FOOTER --}}
+                <div class="flex items-center justify-between pt-2 border-t border-gray-50">
+                    <div class="flex gap-4">
+                        <button onclick="handleLike({{ $comment->id }}, 'comment')" 
+                                id="like-btn-comment-{{ $comment->id }}"
+                                class="flex items-center gap-1 text-xs font-bold {{ Auth::check() && $comment->likes->contains('user_id', Auth::id()) ? 'text-red-500' : 'text-gray-500 hover:text-red-500' }} transition">
+                             <i id="like-icon-comment-{{ $comment->id }}" class="{{ Auth::check() && $comment->likes->contains('user_id', Auth::id()) ? 'fas' : 'far' }} fa-heart"></i>
+                             <span>Thích</span>
+                             <span id="like-count-comment-{{ $comment->id }}">{{ $comment->likes_count ?? 0 }}</span>
+                        </button>
+
+                        <button onclick="toggleReplySection({{ $comment->id }})" 
+                                class="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-brand-green transition group">
+                            <i class="far fa-comment-dots group-hover:scale-110 transition-transform"></i>
+                            <span>Trả lời ({{ $comment->replies->count() }})</span>
+                            <i id="chevron-reply-{{ $comment->id }}" class="fas fa-chevron-down text-[10px] ml-1 transition-transform duration-300"></i>
+                        </button>
+                    </div>
+                    
+                    {{-- Link xem chi tiết sách --}}
+                    @if($book)
+                        <a href="{{ route('detail', $book->slug ?? '#') }}" class="text-xs text-brand-green font-bold hover:underline">
+                            Xem sách →
+                        </a>
+                    @endif
+                </div>
+
+                {{-- 4. KHUNG TRẢ LỜI (ẨN/HIỆN) --}}
+                <div id="reply-section-{{ $comment->id }}" class="hidden mt-4 pt-4 border-t border-dashed border-gray-100 bg-gray-50/50 rounded-xl p-4 animate-fade-in">
+                    
+                    {{-- DANH SÁCH CÁC REPLY --}}
+                    <div class="space-y-4 mb-4">
+                        @forelse($comment->replies as $reply)
+                            <div class="flex gap-2">
+                                <img src="{{ $reply->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($reply->user->name).'&background=random' }}" 
+                                     class="w-7 h-7 rounded-full flex-shrink-0">
+                                <div class="flex-1">
+                                    <div class="bg-white p-2 rounded-xl rounded-tl-none border border-gray-100 shadow-sm">
+                                        <div class="flex justify-between items-center mb-1">
+                                            <h6 class="font-bold text-[10px] text-gray-700">{{ $reply->user->name }}</h6>
+                                            <span class="text-[9px] text-gray-400">{{ $reply->created_at->diffForHumans() }}</span>
+                                        </div>
+                                        <p class="text-[11px] text-gray-600">{{ $reply->content }}</p>
+                                    </div>
+                                    {{-- Like cho reply --}}
+                                    <button onclick="handleLike({{ $reply->id }}, 'comment')" 
+                                            id="like-btn-comment-{{ $reply->id }}"
+                                            class="text-[9px] font-bold ml-2 mt-1 flex items-center gap-1 {{ Auth::check() && $reply->likes->contains('user_id', Auth::id()) ? 'text-red-500' : 'text-gray-400' }}">
+                                        <i id="like-icon-comment-{{ $reply->id }}" class="{{ Auth::check() && $reply->likes->contains('user_id', Auth::id()) ? 'fas' : 'far' }} fa-heart"></i>
+                                        <span id="like-count-comment-{{ $reply->id }}">{{ $reply->likes->count() }}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-center text-xs text-gray-400 italic py-2">Chưa có phản hồi nào.</p>
+                        @endforelse
+                    </div>
+
+                    {{-- Ô NHẬP REPLY --}}
+                    @auth
+                        <div class="flex gap-2 items-start">
+                            <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name).'&background=random' }}" 
+                                 class="w-7 h-7 rounded-full flex-shrink-0">
+                            <div class="flex-1 relative">
+                                <textarea id="reply-input-{{ $comment->id }}" rows="1" 
+                                          class="w-full text-xs p-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green resize-none pr-16 shadow-sm" 
+                                          placeholder="Nhập phản hồi..."
+                                          oninput="autoResize(this)"></textarea>
+                                <button type="button" onclick="submitReply({{ $comment->id }}, event)" 
+                                        class="absolute right-1.5 top-1 text-brand-green px-2 py-1 bg-brand-green/10 rounded-lg text-xs font-bold hover:bg-brand-green hover:text-white transition">
+                                    Gửi
+                                </button>
+                            </div>
+                        </div>
+                    @else
+                        <p class="text-center text-xs text-gray-400 italic">
+                            <a href="{{ route('login') }}" class="text-brand-green font-bold hover:underline">Đăng nhập</a> để trả lời bình luận này.
+                        </p>
+                    @endauth
                 </div>
             </div>
         @endforeach
     </div>
 
     {{-- PHÂN TRANG --}}
-    @if ($latestComments->hasPages())
+    @if ($latestReviews->hasPages())
         <div class="mt-8 flex justify-center">
-            <nav class="inline-flex items-center bg-white rounded-full shadow-sm border border-gray-200 px-2 py-1" aria-label="Pagination">
-                @if (!$latestComments->onFirstPage())
-                    <a href="{{ $latestComments->previousPageUrl() }}" class="ajax-pagination-link p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-brand-green transition mr-2" aria-label="Previous page">
+            <nav class="inline-flex items-center bg-white rounded-full shadow-sm border border-gray-200 px-2 py-1">
+                @if (!$latestReviews->onFirstPage())
+                    <a href="{{ $latestReviews->previousPageUrl() }}" class="ajax-pagination-link p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-brand-green transition mr-2">
                         <i class="fas fa-chevron-left text-sm"></i>
                     </a>
                 @endif
-
-                @php
-                    $start = max(1, $latestComments->currentPage() - 2);
-                    $end = min($latestComments->lastPage(), $latestComments->currentPage() + 2);
-                @endphp
-
-                @if($start > 1)
-                    <a href="{{ $latestComments->url(1) }}" class="ajax-pagination-link px-3 py-1 rounded-full text-gray-500 hover:bg-gray-100 transition">1</a>
-                    @if($start > 2)
-                        <span class="px-2 text-gray-400">…</span>
-                    @endif
-                @endif
-
-                @for($i = $start; $i <= $end; $i++)
-                    @if($i == $latestComments->currentPage())
-                        <span class="px-3 py-1 rounded-full bg-brand-green text-white font-bold mx-1">{{ $i }}</span>
+                @for($i = max(1, $latestReviews->currentPage() - 2); $i <= min($latestReviews->lastPage(), $latestReviews->currentPage() + 2); $i++)
+                    @if($i == $latestReviews->currentPage())
+                        <span class="px-3 py-1 rounded-full bg-brand-green text-white font-bold mx-1 text-xs">{{ $i }}</span>
                     @else
-                        <a href="{{ $latestComments->url($i) }}" class="ajax-pagination-link px-3 py-1 rounded-full text-gray-600 hover:bg-gray-100 transition mx-1">{{ $i }}</a>
+                        <a href="{{ $latestReviews->url($i) }}" class="ajax-pagination-link px-3 py-1 rounded-full text-gray-600 hover:bg-gray-100 transition mx-1 text-xs">{{ $i }}</a>
                     @endif
                 @endfor
-
-                @if($end < $latestComments->lastPage())
-                    @if($end < $latestComments->lastPage() - 1)
-                        <span class="px-2 text-gray-400">…</span>
-                    @endif
-                    <a href="{{ $latestComments->url($latestComments->lastPage()) }}" class="ajax-pagination-link px-3 py-1 rounded-full text-gray-600 hover:bg-gray-100 transition ml-2">{{ $latestComments->lastPage() }}</a>
-                @endif
-
-                @if ($latestComments->hasMorePages())
-                    <a href="{{ $latestComments->nextPageUrl() }}" class="ajax-pagination-link p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-brand-green transition ml-2" aria-label="Next page">
+                @if ($latestReviews->hasMorePages())
+                    <a href="{{ $latestReviews->nextPageUrl() }}" class="ajax-pagination-link p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-brand-green transition ml-2">
                         <i class="fas fa-chevron-right text-sm"></i>
                     </a>
                 @endif
             </nav>
         </div>
     @endif
-
 @else
-    <div class="flex flex-col items-center justify-center py-10 bg-white rounded-2xl border border-dashed border-gray-300 text-center">
-        <div class="bg-gray-50 p-4 rounded-full mb-3 text-gray-400">
-            <i class="far fa-comments text-3xl"></i>
-        </div>
-        <h3 class="text-gray-800 font-bold text-sm">Chưa có bình luận nào</h3>
-        <p class="text-gray-500 text-xs mt-1">Hãy là người đầu tiên chia sẻ cảm nhận!</p>
+    <div class="text-center py-10 bg-white rounded-2xl border border-dashed border-gray-200">
+        <i class="far fa-comments text-4xl text-gray-300 mb-3"></i>
+        <p class="text-gray-500 text-sm">Chưa có bình luận nào từ cộng đồng.</p>
     </div>
 @endif

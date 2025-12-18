@@ -77,6 +77,7 @@ class BookController extends Controller
 
         $book->load([
             'categories',
+            'author', // eager-load author từ bảng `authors` (nếu có)
             'posts' => function($q) {
                 $q->where('status', 'published')->latest();
             },
