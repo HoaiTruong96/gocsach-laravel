@@ -181,7 +181,7 @@
             <div class="lg:col-span-3">
 
                 {{-- ================================================================= --}}
-                {{-- PHẦN 1: SÁCH TÔI ĐỀ XUẤT (ĐÃ SỬA GIAO DIỆN MOCKUP)                --}}
+                {{-- PHẦN 1: SÁCH TÔI ĐỀ XUẤT                                          --}}
                 {{-- ================================================================= --}}
                 @if(Auth::check() && Auth::id() == $user->id)
                     <div class="bg-white rounded-xl shadow-soft p-4 mb-8 border border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -190,62 +190,61 @@
                         </h3>
                         
                         {{-- Nút bấm Đề xuất --}}
-                        <a href="#" class="text-xs font-bold text-white bg-brand-accent hover:bg-[#c29263] px-4 py-2 rounded-full shadow-sm transition flex items-center gap-2 transform hover:-translate-y-0.5">
+                        <a href="{{ route('books.suggest') }}" class="text-xs font-bold text-white bg-brand-accent hover:bg-[#c29263] px-4 py-2 rounded-full shadow-sm transition flex items-center gap-2 transform hover:-translate-y-0.5">
                             <i class="fas fa-plus-circle"></i> Đề xuất sách mới
                         </a>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                        {{-- Tạm thời dùng $myBooks để hiển thị giao diện test --}}
-                        @if(isset($myBooks) && count($myBooks) > 0)
-                            @foreach($myBooks as $book)
-                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-card hover:-translate-y-1 transition-all duration-300 flex flex-row h-40 relative group">
+                        @if(isset($suggestedBooks) && count($suggestedBooks) > 0)
+                            @foreach($suggestedBooks as $book)
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-card hover:-translate-y-1 transition-all duration-300 flex flex-row h-44 relative group">
                                 
-                                {{-- [MOCKUP] BADGE TRẠNG THÁI --}}
-                                <div class="absolute top-2 right-2 z-10">
-                                    @if($loop->index % 2 == 0) 
-                                        {{-- Giả lập: ĐÃ DUYỆT --}}
-                                        <span class="bg-green-100 text-green-700 border border-green-200 text-[10px] font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1">
-                                            <i class="fas fa-check-circle"></i> ĐÃ DUYỆT
-                                        </span>
-                                    @else
-                                        {{-- Giả lập: CHỜ DUYỆT --}}
-                                        <span class="bg-yellow-50 text-yellow-700 border border-yellow-100 text-[10px] font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1">
-                                            <i class="fas fa-clock"></i> CHỜ DUYỆT
-                                        </span>
-                                    @endif
-                                </div>
-
                                 <div class="w-28 relative flex-shrink-0 bg-gray-200">
-                                    <a href="#">
+                                    @if($book->is_approved)
+                                        <a href="{{ route('book.show', $book->slug) }}">
+                                    @endif
                                         @php
                                             $cover = $book->cover_image ?? null;
                                             $coverUrl = $cover 
                                                 ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover))
-                                                : 'https://via.placeholder.com/150x225?text=No+Image';
+                                                : 'https://via.placeholder.com/150x225?text=' . urlencode(Str::limit($book->title, 10));
                                         @endphp
                                         <img src="{{ $coverUrl }}" class="w-full h-full object-cover transition group-hover:opacity-90">
-                                    </a>
+                                    @if($book->is_approved)
+                                        </a>
+                                    @endif
                                 </div>
-                                <div class="p-4 flex flex-col justify-between flex-grow min-w-0">
+                                <div class="p-3 flex flex-col justify-between flex-grow min-w-0">
                                     <div>
                                         <h4 class="font-bold font-serif text-gray-800 text-sm mb-1 leading-tight line-clamp-2">
-                                            <a href="#" class="hover:text-brand-green transition">
+                                            @if($book->is_approved)
+                                                <a href="{{ route('book.show', $book->slug) }}" class="hover:text-brand-green transition">
+                                                    {{ $book->title }}
+                                                </a>
+                                            @else
                                                 {{ $book->title }}
-                                            </a>
+                                            @endif
                                         </h4>
                                         <p class="text-xs text-gray-500 truncate">
-                                            {{ $book->author_name ?? ($book->author->name ?? 'Tác giả') }}
+                                            {{ $book->author_name ?? 'Tác giả' }}
                                         </p>
                                         <p class="text-[10px] text-gray-400 mt-1">
-                                            <i class="far fa-calendar-alt mr-1"></i> Gửi: {{ now()->format('d/m/Y') }}
+                                            <i class="far fa-calendar-alt mr-1"></i> Gửi: {{ $book->created_at->format('d/m/Y') }}
                                         </p>
                                     </div>
                                     
-                                    <div class="flex justify-end mt-2">
-                                        <a href="#" class="text-brand-green border border-brand-green/30 bg-brand-green/5 px-3 py-1 rounded-md text-xs font-bold hover:bg-brand-green hover:text-white transition">
-                                            Xem chi tiết
-                                        </a>
+                                    {{-- BADGE TRẠNG THÁI Ở CUỐI CARD --}}
+                                    <div class="mt-auto pt-2">
+                                        @if($book->is_approved)
+                                            <a href="{{ route('book.show', $book->slug) }}" class="inline-flex items-center gap-1 text-brand-green border border-brand-green/30 bg-brand-green/5 px-2.5 py-1 rounded text-[10px] font-bold hover:bg-brand-green hover:text-white transition">
+                                                <i class="fas fa-check-circle"></i> ĐÃ DUYỆT
+                                            </a>
+                                        @else
+                                            <span class="inline-flex items-center gap-1 bg-yellow-50 text-yellow-700 border border-yellow-200 text-[10px] font-bold px-2.5 py-1 rounded">
+                                                <i class="fas fa-clock"></i> CHỜ DUYỆT
+                                            </span>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -257,7 +256,7 @@
                                 </div>
                                 <p class="text-gray-500 text-sm font-medium">Bạn chưa đề xuất cuốn sách nào.</p>
                                 <p class="text-gray-400 text-xs mt-1 mb-3">Hãy đóng góp sách mới cho cộng đồng nhé!</p>
-                                <a href="#" class="text-brand-accent text-sm font-bold hover:underline">
+                                <a href="{{ route('books.suggest') }}" class="text-brand-accent text-sm font-bold hover:underline">
                                     + Đề xuất sách ngay
                                 </a>
                             </div>

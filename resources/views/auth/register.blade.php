@@ -73,15 +73,6 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-1">Mã bí mật <span class="text-xs font-normal text-gray-500">(Dùng để lấy lại mật khẩu)</span></label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fas fa-key"></i></span>
-                        <input type="text" name="secret_code" class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green transition" placeholder="Ví dụ: 123456, tên cún cưng..." required value="{{ old('secret_code') }}">
-                    </div>
-                    @error('secret_code') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                </div>
-
-                <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-1">Mật khẩu</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fas fa-lock"></i></span>

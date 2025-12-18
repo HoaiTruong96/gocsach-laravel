@@ -31,7 +31,7 @@ class QuoteController extends Controller
             'order' => 'integer',
         ]);
 
-        $data = $request->all();
+        $data = $request->only(['content', 'author', 'source', 'order']);
         $data['is_active'] = $request->has('is_active');
 
         Quote::create($data);
@@ -58,7 +58,7 @@ class QuoteController extends Controller
             'order' => 'integer',
         ]);
 
-        $data = $request->all();
+        $data = $request->only(['content', 'author', 'source', 'order']);
         $data['is_active'] = $request->has('is_active');
 
         $quote->update($data);

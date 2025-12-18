@@ -282,6 +282,7 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
             body: JSON.stringify({ content: content })
@@ -296,7 +297,7 @@
                 // Clear textarea
                 textarea.value = '';
 
-                // Reload to show new comment (or you can append dynamically)
+                // Reload to show new comment
                 location.reload();
             } else {
                 alert(data.error || "Có lỗi xảy ra, vui lòng thử lại.");
@@ -311,16 +312,6 @@
             submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
         });
     }
-
-    // Attach submit handlers to all comment forms
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('form[data-comment-form]').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                const reviewId = this.dataset.reviewId;
-                submitComment(reviewId, e);
-            });
-        });
-    });
 </script>
 <style>
     /* Animation nảy cho tim */
