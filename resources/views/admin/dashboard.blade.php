@@ -173,27 +173,28 @@
         </div>
     </div>
 
+
     <script>
-        // Chart initialization
-        const ctx = document.getElementById('reviewChart').getContext('2d');
-        const labels = @json($labels);
-        const dataReviews = @json($dataReviews);
-        const dataUsers = @json($dataViews);
-
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [
-                    { label: 'Bài viết', data: dataReviews, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 2, tension: 0.4, fill: true },
-                    { label: 'Thành viên', data: dataUsers, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.05)', borderWidth: 2, borderDash: [5, 5], tension: 0.4, fill: false }
-                ]
-            },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } }
-        });
-
         // AJAX functionality for filter and pagination
         document.addEventListener('DOMContentLoaded', function () {
+            // Chart initialization
+            const ctx = document.getElementById('reviewChart').getContext('2d');
+            const labels = @json($labels);
+            const dataReviews = @json($dataReviews);
+            const dataUsers = @json($dataViews);
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Bài viết', data: dataReviews, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 2, tension: 0.4, fill: true },
+                        { label: 'Thành viên', data: dataUsers, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.05)', borderWidth: 2, borderDash: [5, 5], tension: 0.4, fill: false }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } }
+            });
+
             const filterMonth = document.getElementById('filter-month');
             const filterYear = document.getElementById('filter-year');
             const reviewsContent = document.getElementById('reviews-content');
@@ -232,7 +233,6 @@
                     .then(response => response.text())
                     .then(html => {
                         reviewsContent.innerHTML = html;
-                        bindReviewsPagination();
                         hideLoading(reviewsContent);
                     })
                     .catch(error => {
@@ -255,7 +255,6 @@
                     .then(response => response.text())
                     .then(html => {
                         usersContent.innerHTML = html;
-                        bindUsersPagination();
                         hideLoading(usersContent);
                     })
                     .catch(error => {
@@ -264,49 +263,49 @@
                     });
             }
 
-            // Bind pagination click events
-            function bindReviewsPagination() {
-                const reviewsContent = document.getElementById('reviews-content');
-                if (!reviewsContent) return;
-                reviewsContent.querySelectorAll('.pagination a').forEach(link => {
-                    link.addEventListener('click', function (e) {
-                        e.preventDefault();
-                        const url = new URL(this.href);
-                        const page = url.searchParams.get('page') || 1;
-                        loadReviews(page, true);
-                    });
-                });
-            }
 
-            function bindUsersPagination() {
-                const usersContent = document.getElementById('users-content');
-                if (!usersContent) return;
-                usersContent.querySelectorAll('.pagination a').forEach(link => {
-                    link.addEventListener('click', function (e) {
-                        e.preventDefault();
-                        const url = new URL(this.href);
-                        const page = url.searchParams.get('page') || 1;
-                        reloadBoth(page, 1);
-                    } catch (err) {
-                        console.error('Pagination error:', err);
-                    }
-                }
-            });
+            // AJAX Pagination - attach to PARENT containers with CAPTURE phase
+            const usersWrapper = document.getElementById('users-container');
+            const reviewsWrapper = document.getElementById('reviews-container');
 
-            usersContent.addEventListener('click', function (e) {
-                const link = e.target.closest('a.ajax-pagination-link, nav[role="navigation"] a');
-                if (link && link.href) {
+            function handlePaginationClick(container, contentId) {
+                return function (e) {
+                    const link = e.target.closest('.dashboard-pg-link');
+                    if (!link) return;
+
                     e.preventDefault();
                     e.stopPropagation();
-                    try {
-                        const url = new URL(link.href);
-                        const page = url.searchParams.get('page') || 1;
-                        reloadBoth(1, page);
-                    } catch (err) {
-                        console.error('Pagination error:', err);
-                    }
-                }
-            });
+                    e.stopImmediatePropagation();
+
+                    const url = link.getAttribute('href');
+                    const contentEl = document.getElementById(contentId);
+
+                    if (contentEl) contentEl.classList.add('opacity-50', 'pointer-events-none');
+
+                    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                        .then(r => r.text())
+                        .then(html => {
+                            const contentEl = document.getElementById(contentId);
+                            if (contentEl) {
+                                contentEl.innerHTML = html;
+                                contentEl.classList.remove('opacity-50', 'pointer-events-none');
+                            }
+                        })
+                        .catch(err => {
+                            console.error('[Pagination] Error:', err);
+                            const contentEl = document.getElementById(contentId);
+                            if (contentEl) contentEl.classList.remove('opacity-50', 'pointer-events-none');
+                        });
+                };
+            }
+
+            if (usersWrapper) {
+                usersWrapper.addEventListener('click', handlePaginationClick(usersWrapper, 'users-content'), true);
+            }
+
+            if (reviewsWrapper) {
+                reviewsWrapper.addEventListener('click', handlePaginationClick(reviewsWrapper, 'reviews-content'), true);
+            }
 
             // Custom Dropdown Functionality
             const monthDropdown = document.getElementById('month-dropdown');
