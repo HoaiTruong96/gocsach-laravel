@@ -328,5 +328,18 @@
         document.addEventListener('click', (e) => {
             if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) dropdown.classList.add('hidden');
         });
+
+        // --- 3. TỰ ĐỘNG CHỌN SÁCH NẾU CÓ preselectedBook TỪ URL ---
+        @if(isset($preselectedBook) && $preselectedBook)
+        document.addEventListener('DOMContentLoaded', function() {
+            selectBook({
+                id: {{ $preselectedBook->id }},
+                title: @json($preselectedBook->title),
+                author_name: @json($preselectedBook->author_name ?? 'Không rõ'),
+                published_year: @json($preselectedBook->published_year ?? ''),
+                cover_image: @json($preselectedBook->cover_image ? (Str::startsWith($preselectedBook->cover_image, 'http') ? $preselectedBook->cover_image : asset('storage/' . $preselectedBook->cover_image)) : 'https://via.placeholder.com/150x200')
+            });
+        });
+        @endif
     </script>
 @endsection

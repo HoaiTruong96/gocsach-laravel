@@ -9,7 +9,7 @@ use App\Models\Comment;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Notifications\NewLikeNotification;
-use App\Notifications\NewCommentNotification;
+use App\Notifications\PostCommentedNotification;
 use App\Notifications\CommentLikedNotification;
 
 class PostController extends Controller
@@ -119,7 +119,7 @@ class PostController extends Controller
 
         // Gửi thông báo (Trừ khi tự comment bài mình)
         if ($post->user_id != $user->id) {
-           $post->user->notify(new NewCommentNotification($user, $post));
+           $post->user->notify(new PostCommentedNotification($user, $post));
         }
 
         // Đếm lại số comment
@@ -127,8 +127,9 @@ class PostController extends Controller
 
         return response()->json([
             'success' => true,
+            'comment_id' => $comment->id,
             'user_name' => $user->name,
-            'avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=random',
+            'user_avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=random',
             'content' => $comment->content,
             'count' => $commentCount,
             'created_at' => 'Vừa xong'

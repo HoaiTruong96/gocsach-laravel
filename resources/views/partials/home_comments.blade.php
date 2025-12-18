@@ -13,14 +13,6 @@
                         <img src="{{ $comment->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($comment->user->name).'&background=random' }}" 
                              class="w-10 h-10 rounded-full object-cover border border-gray-200">
                         <div>
-                            <h4 class="font-bold text-gray-800 text-sm">{{ $post->user->name }}</h4>
-                            <div class="text-xs text-gray-500 flex items-center gap-1">
-                                <span>Đang review:</span>
-                                <a href="{{ route('detail', $post->book->slug ?? '#') }}" class="font-bold text-brand-green hover:underline">
-                                    {{ $post->book->title ?? 'Sách ẩn' }}
-                                </a>
-                                <span class="text-gray-300 mx-1">•</span>
-                                <span>{{ $post->created_at->diffForHumans() }}</span>
                             <h4 class="font-bold text-gray-800 text-sm">{{ $comment->user->name }}</h4>
                             <div class="text-xs text-gray-500 flex items-center gap-1">
                                 <span>Đánh giá về:</span>
@@ -46,15 +38,6 @@
                     @endif
                 </div>
 
-                {{-- 2. NỘI DUNG POST --}}
-                <div class="mb-4 pl-1">
-                    <h3 class="font-serif font-bold text-lg text-gray-800 mb-2 cursor-pointer hover:text-brand-green"
-                        onclick="window.location.href='{{ route('detail', $post->book->slug ?? '#') }}'">
-                        {{ $post->title }}
-                    </h3>
-                    <div class="bg-gray-50 rounded-xl p-3 text-gray-700 text-sm leading-relaxed relative mb-3">
-                         {{ Str::limit(strip_tags($post->content), 200) }}
-                    </div>
                 {{-- 2. NỘI DUNG BÌNH LUẬN --}}
                 <div class="mb-4 pl-1">
                     <div class="bg-gray-50 rounded-xl p-3 text-gray-700 text-sm leading-relaxed relative">
@@ -62,16 +45,8 @@
                     </div>
                 </div>
 
-                {{-- 3. ACTIONS FOOTER bài Post --}}
                 {{-- 3. ACTIONS FOOTER --}}
                 <div class="flex items-center justify-between pt-2 border-t border-gray-50">
-                    <div class="flex gap-4">
-                        <button onclick="handleLike({{ $post->id }}, 'post')" 
-                                id="like-btn-post-{{ $post->id }}"
-                                class="flex items-center gap-1 text-xs font-bold {{ Auth::check() && $post->likes->contains('user_id', Auth::id()) ? 'text-red-500' : 'text-gray-500 hover:text-red-500' }} transition">
-                             <i id="like-icon-post-{{ $post->id }}" class="{{ Auth::check() && $post->likes->contains('user_id', Auth::id()) ? 'fas' : 'far' }} fa-heart"></i>
-                             <span>Thích</span>
-                             <span id="like-count-post-{{ $post->id }}">{{ $post->likes_count ?? 0 }}</span>
                     <div class="flex gap-4">
                         <button onclick="handleLike({{ $comment->id }}, 'comment')" 
                                 id="like-btn-comment-{{ $comment->id }}"
@@ -81,11 +56,6 @@
                              <span id="like-count-comment-{{ $comment->id }}">{{ $comment->likes_count ?? 0 }}</span>
                         </button>
 
-                        <button onclick="togglePostComments({{ $post->id }})" 
-                                class="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-brand-green transition group">
-                            <i class="far fa-comment-dots group-hover:scale-110 transition-transform"></i>
-                            <span class="comment-count-{{ $post->id }}">Bình luận ({{ $post->comments_count ?? 0 }})</span>
-                            <i id="chevron-{{ $post->id }}" class="fas fa-chevron-down text-[10px] ml-1 transition-transform duration-300"></i>
                         <button onclick="toggleReplySection({{ $comment->id }})" 
                                 class="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-brand-green transition group">
                             <i class="far fa-comment-dots group-hover:scale-110 transition-transform"></i>
@@ -108,7 +78,7 @@
                     {{-- DANH SÁCH CÁC REPLY --}}
                     <div class="space-y-4 mb-4">
                         @forelse($comment->replies as $reply)
-                            <div class="flex gap-2">
+                            <div id="comment-{{ $reply->id }}" class="flex gap-2 scroll-mt-24 transition-all duration-500">
                                 <img src="{{ $reply->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($reply->user->name).'&background=random' }}" 
                                      class="w-7 h-7 rounded-full flex-shrink-0">
                                 <div class="flex-1">
