@@ -5,11 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Badge;
 use App\Models\Challenge;
+use App\Models\AvatarFrame;
 
 class GameController extends Controller
 {
     /**
-     * Trang tích hợp quản lý Badges và Challenges
+     * Trang tích hợp quản lý Badges, Challenges và Avatar Frames
      */
     public function index()
     {
@@ -17,7 +18,7 @@ class GameController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'badges_page');
 
-        $challenges = Challenge::with('badge')
+        $challenges = Challenge::with(['badge', 'avatarFrame'])
             ->withCount([
                 'userChallenges',
                 'userChallenges as completed_count' => function ($query) {
@@ -27,6 +28,11 @@ class GameController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'challenges_page');
 
-        return view('admin.game.index', compact('badges', 'challenges'));
+        $frames = AvatarFrame::withCount('userAvatarFrames')
+            ->orderBy('order', 'asc')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10, ['*'], 'frames_page');
+
+        return view('admin.game.index', compact('badges', 'challenges', 'frames'));
     }
 }
