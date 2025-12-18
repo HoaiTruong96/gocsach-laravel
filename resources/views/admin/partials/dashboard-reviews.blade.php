@@ -1,8 +1,10 @@
-<div class="p-4 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-700">
+<div
+    class="p-4 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-700">
     <h4 class="font-bold text-gray-800 dark:text-slate-200">
         <i class="fas fa-file-alt text-blue-500 mr-2"></i>Bài Viết Tháng {{ $selectedMonth }}/{{ $selectedYear }}
     </h4>
-    <span class="text-xs bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 px-2 py-1 rounded-full font-bold">{{ $monthlyReviewsList->total() }}
+    <span
+        class="text-xs bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 px-2 py-1 rounded-full font-bold">{{ $monthlyReviewsList->total() }}
         bài</span>
 </div>
 @if($monthlyReviewsList->count() > 0)
@@ -11,9 +13,11 @@
             @foreach($monthlyReviewsList as $review)
                 <tr class="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
                     <td class="px-4 py-3">
-                        <p class="font-medium text-gray-800 dark:text-slate-200 line-clamp-1">{{ $review->book->title ?? 'Sách đã xóa' }}</p>
+                        <p class="font-medium text-gray-800 dark:text-slate-200 line-clamp-1">
+                            {{ $review->book->title ?? 'Sách đã xóa' }}</p>
                         <p class="text-xs text-gray-500 dark:text-slate-400">Bởi: {{ $review->user->name }} •
-                            {{ $review->created_at->format('d/m') }}</p>
+                            {{ $review->created_at->format('d/m') }}
+                        </p>
                     </td>
                     <td class="px-4 py-3 text-right">
                         <span
@@ -27,7 +31,7 @@
     </table>
     @if($monthlyReviewsList->hasPages())
         <div class="p-3 border-t border-gray-100 dark:border-slate-700 text-xs">
-            {{ $monthlyReviewsList->links('vendor.pagination.admin') }}
+            {{ $monthlyReviewsList->links('vendor.pagination.dashboard') }}
         </div>
     @endif
 @else

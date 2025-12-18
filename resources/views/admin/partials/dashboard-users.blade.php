@@ -31,7 +31,7 @@
     </table>
     @if($monthlyUsersList->hasPages())
         <div class="p-3 border-t border-gray-100 dark:border-slate-700 text-xs">
-            {{ $monthlyUsersList->links('vendor.pagination.admin') }}
+            {{ $monthlyUsersList->links('vendor.pagination.dashboard') }}
         </div>
     @endif
 @else
