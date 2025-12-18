@@ -100,7 +100,8 @@ class ChallengeController extends Controller
     public function edit(Challenge $challenge)
     {
         $badges = Badge::where('is_active', true)->get();
-        return view('admin.challenges.edit', compact('challenge', 'badges'));
+        $frames = \App\Models\AvatarFrame::where('is_active', true)->orderBy('order')->get();
+        return view('admin.challenges.edit', compact('challenge', 'badges', 'frames'));
     }
 
     /**
