@@ -690,3 +690,100 @@
         }
     });
 </script>
+
+{{-- Notification Polling Script --}}
+@auth
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let lastUnreadCount = {{ Auth::user()->unreadNotifications->count() }};
+    
+    // Hàm fetch thông báo mới
+    function fetchNotifications() {
+        fetch('/api/notifications', {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateNotificationUI(data);
+        })
+        .catch(error => console.log('Notification fetch error:', error));
+    }
+    
+    // Hàm cập nhật giao diện
+    function updateNotificationUI(data) {
+        const badge = document.getElementById('notification-badge');
+        const countSpan = document.getElementById('notification-count');
+        const markAllBtn = document.getElementById('mark-all-read-btn');
+        const listContainer = document.getElementById('notification-list');
+        
+        if (!badge || !countSpan) return;
+        
+        // Cập nhật badge số lượng
+        if (data.unread_count > 0) {
+            badge.classList.remove('hidden');
+            countSpan.innerText = data.unread_count;
+            if (markAllBtn) markAllBtn.classList.remove('hidden');
+            
+            // Nếu có thông báo mới, hiệu ứng rung chuông
+            if (data.unread_count > lastUnreadCount) {
+                badge.classList.add('animate-ping');
+                setTimeout(() => badge.classList.remove('animate-ping'), 1000);
+                
+                // Phát âm thanh thông báo (optional)
+                // playNotificationSound();
+            }
+        } else {
+            badge.classList.add('hidden');
+            if (markAllBtn) markAllBtn.classList.add('hidden');
+        }
+        
+        lastUnreadCount = data.unread_count;
+        
+        // Cập nhật danh sách thông báo
+        if (listContainer && data.notifications.length > 0) {
+            let html = '';
+            data.notifications.forEach(n => {
+                const isRead = n.read_at !== null;
+                const bgClass = isRead ? 'opacity-60 grayscale-[0.5]' : 'bg-blue-50/30';
+                
+                html += `
+                    <a href="${n.link}" class="flex gap-3 px-4 py-3 hover:bg-gray-50 transition border-b border-gray-50 ${bgClass}">
+                        <div class="flex-shrink-0 mt-1">
+                            ${n.is_system 
+                                ? `<div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center"><i class="${n.icon} ${n.color} text-sm"></i></div>`
+                                : `<img src="${n.user_avatar}" class="w-8 h-8 rounded-full border border-gray-100 object-cover">`
+                            }
+                        </div>
+                        <div class="flex-1">
+                            ${n.is_system 
+                                ? `<p class="text-sm font-bold text-gray-800">Bài viết của bạn đã được duyệt</p><p class="text-xs text-gray-600 line-clamp-2 mt-0.5">${n.message}</p>`
+                                : `<p class="text-sm text-gray-700 line-clamp-2"><span class="font-bold text-gray-900">${n.user_name}</span> ${n.message}<span class="font-bold block text-xs text-gray-500 italic mt-0.5">"${n.post_title}"</span></p>`
+                            }
+                            <p class="text-[10px] text-gray-400 mt-1 flex items-center"><i class="far fa-clock mr-1"></i> ${n.time}</p>
+                        </div>
+                        ${!isRead ? '<div class="w-2 h-2 bg-brand-green rounded-full mt-2 shrink-0"></div>' : ''}
+                    </a>
+                `;
+            });
+            listContainer.innerHTML = html;
+        } else if (listContainer && data.notifications.length === 0) {
+            listContainer.innerHTML = `
+                <div class="text-center py-8 text-gray-400">
+                    <i class="far fa-bell-slash text-2xl mb-2 text-gray-300"></i>
+                    <p class="text-xs">Không có thông báo mới</p>
+                </div>
+            `;
+        }
+    }
+    
+    // Polling mỗi 30 giây
+    setInterval(fetchNotifications, 5000);
+    
+    // Fetch ngay khi trang load (sau 2 giây để tránh lag)
+    setTimeout(fetchNotifications, 2000);
+});
+</script>
+@endauth
