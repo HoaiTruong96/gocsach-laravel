@@ -16,7 +16,7 @@
                 <div class="space-y-4">
                     <div class="flex flex-col items-start">
                         <div class="mb-2"><i class="fas fa-book-open text-4xl text-[#E9EDC9]"></i></div>
-                        <h3 class="font-bold text-lg leading-tight">Mọt Sách Review</h3>
+                        <h3 class="font-bold text-lg leading-tight">Góc Sách Review</h3>
                     </div>
                     <p class="text-gray-300 text-sm leading-relaxed">
                         Nơi kết nối những tâm hồn yêu sách. Chia sẻ cảm nhận, lan tỏa tri thức và tìm kiếm cuốn sách thay đổi cuộc đời bạn.

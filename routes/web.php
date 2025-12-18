@@ -14,9 +14,11 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\RankingController;
 use App\Http\Controllers\Admin\BookController as AdminBookController;
 use App\Http\Controllers\FollowController;
+use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\ChallengeController;
+use App\Http\Controllers\CommentController;
 
 // ====================================================
 // 1. NHÓM PUBLIC (Ai cũng xem được)
@@ -30,7 +32,7 @@ Route::view('/ve-chung-toi', 'pages.about')->name('page.about');
 Route::view('/dieu-khoan-su-dung', 'pages.terms')->name('page.terms');
 Route::view('/chinh-sach-bao-mat', 'pages.privacy')->name('page.privacy');
 Route::view('/lien-he', 'pages.contact')->name('page.contact');
-
+Route::post('/post/{post_id}/comment', [CommentController::class, 'store'])->middleware('auth');
 // AJAX Live Search (cho Header)
 Route::get('/ajax-search', function (Illuminate\Http\Request $request) {
     $keyword = $request->get('keyword');
@@ -60,6 +62,10 @@ Route::get('/danh-sach', [BookController::class, 'list'])->name('books.list');
 
 // Tìm kiếm Review/Sách
 Route::get('/review-search', [BookController::class, 'search'])->name('books.search');
+
+// Tác giả
+Route::get('/tac-gia', [AuthorController::class, 'index'])->name('authors.index');
+Route::get('/tac-gia/{slug}', [AuthorController::class, 'show'])->name('authors.show');
 
 // Xem chi tiết sách & Đánh giá
 Route::get('/chi-tiet/{slug}', [BookController::class, 'show'])->name('detail');
@@ -169,6 +175,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('banners', BannerController::class);
     Route::resource('badges', \App\Http\Controllers\Admin\BadgeController::class);
     Route::resource('challenges', \App\Http\Controllers\Admin\ChallengeController::class);
+    Route::resource('authors', AuthorController::class)->except(['show']);
+    Route::resource('quotes', \App\Http\Controllers\Admin\QuoteController::class);
 
     // Activity Logs
     Route::get('/activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
