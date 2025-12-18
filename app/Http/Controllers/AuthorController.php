@@ -12,68 +12,118 @@ class AuthorController extends Controller
 {
     /**
      * Display a paginated list of authors (aggregated from books table)
+     * Tách các tên tác giả phân cách bằng dấu phẩy thành các entry riêng
      */
     public function index(Request $request)
     {
         $q = $request->get('q');
         $sort = $request->get('sort', 'popular');
 
-        $query = DB::table('books as b')
-            ->leftJoin('authors as a', 'b.author_name', '=', 'a.name')
-            ->selectRaw('b.author_name as name, COUNT(*) as books_count, MAX(a.photo) as photo, MAX(a.birth_year) as birth_year, MAX(a.death_year) as death_year, MAX(a.slug) as author_slug, MAX(a.bio) as bio, MAX(a.nationality) as nationality')
-            ->whereNotNull('b.author_name')
-            ->where('b.author_name', '<>', '')
-            ->where('b.is_approved', true);
+        // Lấy tất cả author_name từ books (không bao gồm soft-deleted)
+        $booksAuthors = DB::table('books')
+            ->whereNotNull('author_name')
+            ->where('author_name', '<>', '')
+            ->where('is_approved', true)
+            ->whereNull('deleted_at') // Loại bỏ soft-deleted
+            ->select('author_name')
+            ->get();
 
+        // Tách các tên tác giả và đếm số sách
+        $authorCounts = [];
+        foreach ($booksAuthors as $book) {
+            // Tách bằng dấu phẩy, dấu chấm phẩy, hoặc " và "
+            $names = preg_split('/[,;]|\s+và\s+|\s+and\s+/iu', $book->author_name);
+            foreach ($names as $name) {
+                $name = trim($name);
+                if (empty($name)) continue;
+                
+                if (!isset($authorCounts[$name])) {
+                    $authorCounts[$name] = 0;
+                }
+                $authorCounts[$name]++;
+            }
+        }
+
+        // Lọc theo từ khóa tìm kiếm
         if ($q) {
-            $query->where('author_name', 'like', "%{$q}%");
+            $authorCounts = array_filter($authorCounts, function($count, $name) use ($q) {
+                return stripos($name, $q) !== false;
+            }, ARRAY_FILTER_USE_BOTH);
         }
 
-        $query->groupBy('author_name');
+        // Lấy thông tin từ bảng authors
+        $authorNames = array_keys($authorCounts);
+        $authorsInfo = Author::whereIn('name', $authorNames)->get()->keyBy('name');
 
-        if ($sort === 'name') {
-            $query->orderBy('author_name', 'asc');
-        } else {
-            $query->orderByDesc('books_count');
-        }
-
-        $authors = $query->paginate(24)->withQueryString();
-
-        // Convert stdClass results to objects with properties for blade convenience
-        $authors->getCollection()->transform(function($a) {
+        // Tạo collection các tác giả
+        $authorsData = collect($authorCounts)->map(function($count, $name) use ($authorsInfo) {
+            $info = $authorsInfo->get($name);
             return (object) [
-                'name' => $a->name,
-                'books_count' => $a->books_count,
-                'photo' => $a->photo,
-                'birth_year' => $a->birth_year,
-                'death_year' => $a->death_year,
-                'author_slug' => $a->author_slug,
-                'bio' => $a->bio,
-                'nationality' => $a->nationality,
+                'name' => $name,
+                'books_count' => $count,
+                'photo' => $info->photo ?? null,
+                'birth_year' => $info->birth_year ?? null,
+                'death_year' => $info->death_year ?? null,
+                'author_slug' => $info->slug ?? Str::slug($name),
+                'bio' => $info->bio ?? null,
+                'nationality' => $info->nationality ?? null,
             ];
         });
+
+        // Sắp xếp
+        if ($sort === 'name') {
+            $authorsData = $authorsData->sortBy('name');
+        } else {
+            $authorsData = $authorsData->sortByDesc('books_count');
+        }
+
+        // Phân trang thủ công
+        $page = $request->get('page', 1);
+        $perPage = 24;
+        $total = $authorsData->count();
+        $authors = new \Illuminate\Pagination\LengthAwarePaginator(
+            $authorsData->forPage($page, $perPage)->values(),
+            $total,
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         return view('authors.index', compact('authors', 'q', 'sort'));
     }
 
     /**
      * Hiển thị chi tiết tác giả (public)
+     * Hỗ trợ tìm sách có tên tác giả nằm trong chuỗi phân cách bằng dấu phẩy
      */
     public function show($slug)
     {
         // Tìm trong bảng authors trước
         $author = Author::where('slug', $slug)->first();
+        
+        $authorName = $author ? $author->name : str_replace('-', ' ', $slug);
 
-        if ($author) {
-            $books = Book::where('is_approved', true)->where('author_name', $author->name)->paginate(12);
-        } else {
-            // Nếu không tìm thấy trong authors, tìm theo tên trong books
-            $authorName = str_replace('-', ' ', $slug);
-            $books = Book::where('is_approved', true)->where('author_name', 'like', "%{$authorName}%")->paginate(12);
-            
-            // Tạo object giả để hiển thị
+        // Tìm sách có chứa tên tác giả (hỗ trợ nhiều dạng phân cách)
+        // Đồng thời bao gồm các sách đã được gắn qua bảng pivot `author_book`.
+        $books = Book::where('is_approved', true)
+            ->where(function($query) use ($authorName, $author) {
+                // Tìm bằng LIKE với % ở cả 2 đầu để bắt mọi trường hợp
+                $query->where('author_name', $authorName) // Exact match
+                    ->orWhere('author_name', 'like', '%' . $authorName . '%'); // Substring match
+
+                // Nếu tác giả tồn tại trong bảng authors, thêm các sách được liên kết qua pivot
+                if ($author && isset($author->id)) {
+                    $query->orWhereHas('authors', function($q) use ($author) {
+                        $q->where('authors.id', $author->id);
+                    });
+                }
+            })
+            ->paginate(12);
+        
+        // Nếu không tìm thấy author trong bảng authors, tạo object giả
+        if (!$author) {
             $author = (object) [
-                'name' => $books->first()->author_name ?? $authorName,
+                'name' => $authorName,
                 'slug' => $slug,
                 'photo' => null,
                 'bio' => null,
@@ -102,28 +152,49 @@ class AuthorController extends Controller
         }])->orderBy('name')->get();
         
         // Lấy tất cả author_name từ books mà CHƯA có trong bảng authors
-        $authorsFromBooks = DB::table('books')
-            ->select('author_name', DB::raw('COUNT(*) as books_count'))
+        // Cần tách nhiều tên tác giả trong một trường (phân cách bằng dấu phẩy, chấm phẩy, "và", "and")
+        $registeredNames = Author::pluck('name')->map(fn($n) => mb_strtolower(trim($n)))->toArray();
+        
+        $booksWithAuthors = DB::table('books')
+            ->select('author_name')
             ->whereNotNull('author_name')
             ->where('author_name', '<>', '')
-            ->whereNotIn('author_name', Author::pluck('name'))
-            ->groupBy('author_name')
-            ->orderBy('author_name')
-            ->get()
-            ->map(function($item) {
-                return (object) [
-                    'id' => null,
-                    'name' => $item->author_name,
-                    'slug' => Str::slug($item->author_name),
-                    'photo' => null,
-                    'bio' => null,
-                    'birth_year' => null,
-                    'death_year' => null,
-                    'nationality' => null,
-                    'books_count' => $item->books_count,
-                    'is_from_books' => true, // Đánh dấu chưa có trong bảng authors
-                ];
-            });
+            ->get();
+        
+        // Tách từng tên tác giả và đếm số sách
+        $unregisteredCounts = [];
+        foreach ($booksWithAuthors as $book) {
+            // Tách bằng dấu phẩy, chấm phẩy, " và ", " and "
+            $names = preg_split('/[,;]|\s+và\s+|\s+and\s+/iu', $book->author_name);
+            foreach ($names as $name) {
+                $name = trim($name);
+                if (empty($name)) continue;
+                
+                // Kiểm tra tên này đã đăng ký hay chưa
+                if (!in_array(mb_strtolower($name), $registeredNames)) {
+                    if (!isset($unregisteredCounts[$name])) {
+                        $unregisteredCounts[$name] = 0;
+                    }
+                    $unregisteredCounts[$name]++;
+                }
+            }
+        }
+        
+        // Chuyển thành collection
+        $authorsFromBooks = collect($unregisteredCounts)->map(function($count, $name) {
+            return (object) [
+                'id' => null,
+                'name' => $name,
+                'slug' => Str::slug($name),
+                'photo' => null,
+                'bio' => null,
+                'birth_year' => null,
+                'death_year' => null,
+                'nationality' => null,
+                'books_count' => $count,
+                'is_from_books' => true, // Đánh dấu chưa có trong bảng authors
+            ];
+        })->sortBy('name')->values();
         
         // Đánh dấu các tác giả đã có trong bảng authors
         $authorsFromTable->each(function($author) {
@@ -190,7 +261,7 @@ class AuthorController extends Controller
 
         Author::create($validated);
 
-        return redirect()->route('admin.authors.index')
+        return redirect()->route('admin.authors.index', ['tab' => 'unregistered'])
             ->with('success', 'Đã thêm tác giả thành công!');
     }
 

@@ -69,11 +69,26 @@
                         </p>
                     </div>
 
-                    <div class="flex-shrink-0 relative z-10 flex flex-col items-center">
-                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 mb-2 shadow-sm border border-yellow-200">
-                            <i class="fas fa-medal text-3xl"></i>
+                    <div class="flex-shrink-0 relative z-10 flex flex-col md:flex-row items-center gap-3">
+                        <!-- Badge -->
+                        <div class="flex flex-col items-center">
+                            <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 mb-1 shadow-sm border border-yellow-200">
+                                <i class="fas fa-medal text-3xl"></i>
+                            </div>
+                            <span class="text-xs font-bold text-yellow-700 uppercase tracking-wide">Danh hiệu</span>
                         </div>
-                        <span class="text-xs font-bold text-yellow-700 uppercase tracking-wide">Đã nhận huy hiệu</span>
+                        
+                        <!-- Avatar Frame (if exists) -->
+                        @if($challenge->avatarFrame)
+                            <div class="flex flex-col items-center">
+                                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-1 shadow-sm border border-purple-200 overflow-hidden p-1">
+                                    <img src="{{ Str::startsWith($challenge->avatarFrame->frame_image, 'http') ? $challenge->avatarFrame->frame_image : asset('storage/' . $challenge->avatarFrame->frame_image) }}" 
+                                         alt="{{ $challenge->avatarFrame->name }}" 
+                                         class="w-full h-full object-contain">
+                                </div>
+                                <span class="text-xs font-bold text-purple-700 uppercase tracking-wide">Khung Avatar</span>
+                            </div>
+                        @endif
                     </div>
                 </div>
 
@@ -134,6 +149,10 @@
                         <div class="mt-4 flex flex-wrap justify-center md:justify-start gap-4 text-xs text-white/50 font-medium">
                             <span class="flex items-center gap-1.5"><i class="fas fa-bullseye"></i> Mục tiêu: {{ $challenge->target_count }} bài review</span>
                             <span class="flex items-center gap-1.5"><i class="far fa-calendar-alt"></i> Hạn: {{ \Carbon\Carbon::parse($challenge->end_date)->format('d/m/Y') }}</span>
+                            <span class="flex items-center gap-1.5">
+                                <i class="fas fa-gift"></i> 
+                                Phần thưởng: Danh hiệu{{ $challenge->avatarFrame ? ' + Khung Avatar' : '' }}
+                            </span>
                         </div>
                     </div>
 

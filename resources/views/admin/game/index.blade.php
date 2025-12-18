@@ -1,19 +1,23 @@
 @extends('layouts.admin')
-@section('title', 'Thử Thách & Danh Hiệu')
-@section('header', 'Quản lý Thử Thách & Danh Hiệu')
+@section('title', 'Thử Thách, Danh Hiệu & Khung Avatar')
+@section('header', 'Quản lý Game & Phần Thưởng')
 
 @section('content')
     <div class="space-y-6">
         {{-- Tab Navigation --}}
         <div
             class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-1 inline-flex transition-colors duration-300">
-            <button onclick="showTab('badges')" id="tab-badges"
+                    <button onclick="showTab('badges')" id="tab-badges"
                 class="tab-btn px-6 py-2 rounded-lg font-medium transition-all bg-blue-600 text-white">
                 <i class="fas fa-medal mr-2"></i>Danh Hiệu
             </button>
             <button onclick="showTab('challenges')" id="tab-challenges"
                 class="tab-btn px-6 py-2 rounded-lg font-medium transition-all text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700">
                 <i class="fas fa-trophy mr-2"></i>Thử Thách
+            </button>
+            <button onclick="showTab('frames')" id="tab-frames"
+                class="tab-btn px-6 py-2 rounded-lg font-medium transition-all text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700">
+                <i class="fas fa-image mr-2"></i>Khung Avatar
             </button>
         </div>
 
@@ -250,6 +254,17 @@
                                     @enderror
                                 </div>
                                 <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Khung
+                                        avatar (tùy chọn)</label>
+                                    <select name="avatar_frame_id"
+                                        class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white">
+                                        <option value="">-- Không tặng khung --</option>
+                                        @foreach($frames as $frame)
+                                            <option value="{{ $frame->id }}">🖼️ {{ $frame->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
                                     <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Số bài
                                         review cần viết <span class="text-red-500">*</span></label>
                                     <input type="number" name="target_count" min="1"
@@ -401,6 +416,126 @@
                 </div>
             </div>
         </div>
+
+        {{-- AVATAR FRAMES SECTION --}}
+        <div id="section-frames" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {{-- Form thêm frame --}}
+                <div class="lg:col-span-1">
+                    <div
+                        class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 sticky top-6 transition-colors duration-300">
+                        <h3 class="font-bold text-gray-800 dark:text-white mb-4 text-lg">
+                            <i class="fas fa-plus-circle text-purple-500 mr-2"></i>Thêm Khung Avatar
+                        </h3>
+                        <form action="{{ route('admin.avatar-frames.store') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Tên khung
+                                        <span class="text-red-500">*</span></label>
+                                    <input type="text" name="name"
+                                        class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white"
+                                        placeholder="VD: Khung Mùa Đông 2025">
+                                    @error('name') <p class="error-message text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Mô tả</label>
+                                    <textarea name="description" rows="2"
+                                        class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white resize-y min-h-[60px]"
+                                        placeholder="Mô tả khung avatar..."></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Hình ảnh (GIF/PNG) <span class="text-red-500">*</span></label>
+                                    <input type="file" name="frame_image" accept=".gif,.png,.jpg,.jpeg,.webp"
+                                        class="w-full text-sm text-gray-500 dark:text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 dark:file:bg-purple-900/50 file:text-purple-700 dark:file:text-purple-300 hover:file:bg-purple-100">
+                                    <p class="text-xs text-gray-400 mt-1">Hoặc dán URL bên dưới</p>
+                                </div>
+                                <div>
+                                    <input type="url" name="frame_image_url"
+                                        class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white text-sm"
+                                        placeholder="https://example.com/frame.gif">
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Thứ tự</label>
+                                        <input type="number" name="order" value="0" min="0"
+                                            class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white">
+                                    </div>
+                                    <div class="flex items-end">
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="checkbox" name="is_active" checked class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 mr-2">
+                                            <span class="text-sm text-gray-700 dark:text-slate-300">Kích hoạt</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <button type="submit"
+                                    class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 font-medium transition-colors">
+                                    <i class="fas fa-plus mr-1"></i> Tạo khung avatar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                {{-- Danh sách frames --}}
+                <div class="lg:col-span-2">
+                    <div
+                        class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden transition-colors duration-300">
+                        <div
+                            class="p-4 border-b border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-700 flex justify-between items-center">
+                            <span class="font-semibold text-gray-700 dark:text-white">
+                                <i class="fas fa-image text-purple-500 mr-2"></i>Tất cả khung avatar ({{ $frames->total() }})
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 p-4">
+                            @forelse($frames as $frame)
+                                <div class="bg-gray-50 dark:bg-slate-700 rounded-lg p-3 border border-gray-200 dark:border-slate-600 hover:shadow-md transition-shadow group relative">
+                                    {{-- Preview Image --}}
+                                    <div class="h-24 w-24 mx-auto mb-2 flex items-center justify-center">
+                                        <img src="{{ Str::startsWith($frame->frame_image, 'http') ? $frame->frame_image : asset('storage/' . $frame->frame_image) }}"
+                                            alt="{{ $frame->name }}" class="max-h-full max-w-full object-contain rounded">
+                                    </div>
+                                    {{-- Info --}}
+                                    <div class="text-center">
+                                        <p class="font-medium text-gray-800 dark:text-white text-sm truncate">{{ $frame->name }}</p>
+                                        <p class="text-xs text-gray-500 dark:text-slate-400">{{ $frame->user_avatar_frames_count }} người sở hữu</p>
+                                        @if($frame->is_active)
+                                            <span class="inline-block mt-1 bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-300 px-2 py-0.5 rounded text-xs">Hoạt động</span>
+                                        @else
+                                            <span class="inline-block mt-1 bg-gray-200 dark:bg-slate-600 text-gray-500 dark:text-slate-400 px-2 py-0.5 rounded text-xs">Tắt</span>
+                                        @endif
+                                    </div>
+                                    {{-- Actions --}}
+                                    <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <a href="{{ route('admin.avatar-frames.edit', $frame) }}"
+                                            class="w-7 h-7 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded flex items-center justify-center hover:bg-blue-200">
+                                            <i class="fas fa-edit text-xs"></i>
+                                        </a>
+                                        <form action="{{ route('admin.avatar-frames.destroy', $frame) }}" method="POST"
+                                            class="inline" onsubmit="return confirm('Xóa khung avatar này?');">
+                                            @csrf @method('DELETE')
+                                            <button class="w-7 h-7 bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 rounded flex items-center justify-center hover:bg-red-200">
+                                                <i class="fas fa-trash text-xs"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="col-span-full px-6 py-8 text-center text-gray-500 dark:text-slate-400">
+                                    <i class="fas fa-image text-4xl text-gray-300 dark:text-slate-600 mb-2"></i>
+                                    <p>Chưa có khung avatar nào</p>
+                                </div>
+                            @endforelse
+                        </div>
+                        @if($frames->hasPages())
+                            <div class="p-4 border-t dark:border-slate-700">
+                                {{ $frames->appends(['tab' => 'frames'])->links('vendor.pagination.admin') }}
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     @push('scripts')
@@ -527,6 +662,8 @@
                 const activeTab = urlParams.get('tab');
                 if (activeTab === 'challenges') {
                     showTab('challenges');
+                } else if (activeTab === 'frames') {
+                    showTab('frames');
                 }
 
                 // Tự động ẩn thông báo lỗi sau 5 giây

@@ -36,6 +36,7 @@ class ChallengeController extends Controller
     {
         $validated = $request->validate([
             'badge_id' => 'required|exists:badges,id',
+            'avatar_frame_id' => 'nullable|exists:avatar_frames,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'target_count' => 'required|integer|min:1',
@@ -54,6 +55,10 @@ class ChallengeController extends Controller
 
         $validated['slug'] = Str::slug($validated['name']) . '-' . Str::random(4);
         $validated['is_active'] = $request->has('is_active');
+        // Xử lý avatar_frame_id nếu rỗng
+        if (empty($validated['avatar_frame_id'])) {
+            $validated['avatar_frame_id'] = null;
+        }
 
         $challenge = Challenge::create($validated);
 
@@ -95,7 +100,8 @@ class ChallengeController extends Controller
     public function edit(Challenge $challenge)
     {
         $badges = Badge::where('is_active', true)->get();
-        return view('admin.challenges.edit', compact('challenge', 'badges'));
+        $frames = \App\Models\AvatarFrame::where('is_active', true)->orderBy('order')->get();
+        return view('admin.challenges.edit', compact('challenge', 'badges', 'frames'));
     }
 
     /**
@@ -105,6 +111,7 @@ class ChallengeController extends Controller
     {
         $validated = $request->validate([
             'badge_id' => 'required|exists:badges,id',
+            'avatar_frame_id' => 'nullable|exists:avatar_frames,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'target_count' => 'required|integer|min:1',
@@ -119,6 +126,10 @@ class ChallengeController extends Controller
 
         $oldValues = $challenge->toArray();
         $validated['is_active'] = $request->has('is_active');
+        // Xử lý avatar_frame_id nếu rỗng
+        if (empty($validated['avatar_frame_id'])) {
+            $validated['avatar_frame_id'] = null;
+        }
 
         $challenge->update($validated);
 

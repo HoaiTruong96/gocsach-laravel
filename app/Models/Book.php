@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Author;
 
 class Book extends Model
 {
@@ -86,5 +87,14 @@ class Book extends Model
     public function author()
     {
         return $this->belongsTo(Author::class, 'author_name', 'name');
+    }
+
+    /**
+     * Nhiều tác giả (nếu sách có nhiều tác giả)
+     * Sử dụng bảng pivot `author_book` để liên kết nhiều-nhiều giữa `books` và `authors`.
+     */
+    public function authors()
+    {
+        return $this->belongsToMany(Author::class, 'author_book', 'book_id', 'author_id');
     }
 }

@@ -61,7 +61,7 @@ class HomeController extends Controller
             ]]);
         }
 
-        $bookQuery = Book::where('is_approved', true)->with('categories')->withAvg(['posts'], 'rating')->latest()->take(10);
+        $bookQuery = Book::where('is_approved', true)->with('categories')->withAvg(['posts'], 'rating')->orderBy('view_count', 'desc')->take(10);
         $books = $bookQuery->get();
         foreach($books as $book) {
             $book->avg_rating = round($book->posts_avg_rating ?? 0, 1);
@@ -186,6 +186,7 @@ class HomeController extends Controller
          }
         return response()->json([
             'success' => true,
+            'reply_id' => $reply->id,
             'user_name' => $user->name,
             'user_avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=random',
             'content' => $reply->content,
@@ -212,5 +213,36 @@ class HomeController extends Controller
     }
     
     return redirect()->back(); 
+    }
+
+    // API lấy thông báo realtime
+    public function getNotifications()
+    {
+        $user = Auth::user();
+        $notifications = $user->notifications()->take(20)->get();
+        $unreadCount = $user->unreadNotifications->count();
+        
+        $formattedNotifications = $notifications->map(function($notification) {
+            $isSystemNotification = isset($notification->data['icon']);
+            
+            return [
+                'id' => $notification->id,
+                'is_system' => $isSystemNotification,
+                'icon' => $notification->data['icon'] ?? null,
+                'color' => $notification->data['color'] ?? 'text-green-600',
+                'user_avatar' => $notification->data['user_avatar'] ?? 'https://ui-avatars.com/api/?name=User',
+                'user_name' => $notification->data['user_name'] ?? 'Ai đó',
+                'message' => $notification->data['message'] ?? 'đã tương tác với bạn',
+                'post_title' => \Str::limit($notification->data['post_title'] ?? '', 50),
+                'time' => $notification->created_at->diffForHumans(),
+                'read_at' => $notification->read_at,
+                'link' => route('notification.read', $notification->id)
+            ];
+        });
+        
+        return response()->json([
+            'unread_count' => $unreadCount,
+            'notifications' => $formattedNotifications
+        ]);
     }
 }

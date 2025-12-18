@@ -11,6 +11,7 @@ class Challenge extends Model
 
     protected $fillable = [
         'badge_id',
+        'avatar_frame_id',
         'name',
         'slug',
         'description',
@@ -33,6 +34,14 @@ class Challenge extends Model
     public function badge()
     {
         return $this->belongsTo(Badge::class);
+    }
+
+    /**
+     * Avatar Frame nhận được khi hoàn thành (optional)
+     */
+    public function avatarFrame()
+    {
+        return $this->belongsTo(AvatarFrame::class);
     }
 
     /**
