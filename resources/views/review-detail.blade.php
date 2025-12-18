@@ -118,6 +118,15 @@
                                     </button>
                                 </div>
 
+                                {{-- THÔNG BÁO ĐĂNG NHẬP CHUNG (GUEST) - Hiển thị khi click Like hoặc Bình luận --}}
+                                @guest
+                                <div id="guest-login-box-{{ $review->id }}" class="hidden mt-4 pt-4 border-t border-dashed border-gray-100">
+                                    <div class="text-center py-3 bg-gray-50 rounded-lg text-xs text-gray-500 border border-dashed border-gray-200">
+                                        <a href="{{ route('login') }}" class="text-brand-green font-bold hover:underline">Đăng nhập</a> để tham gia thảo luận cùng mọi người.
+                                    </div>
+                                </div>
+                                @endguest
+
                                 {{-- KHUNG BÌNH LUẬN --}}
                                 <div id="comment-box-{{ $review->id }}" class="hidden mt-4 pt-4 border-t border-dashed border-gray-100 animate-fade-in-down">
                                     
@@ -205,6 +214,13 @@
 
     // --- 1. Toggle Comment Box ---
     function toggleComment(reviewId) {
+        // Nếu chưa đăng nhập, hiển thị thông báo và dừng
+        if (!currentUserId) {
+            const guestBox = document.getElementById(`guest-login-box-${reviewId}`);
+            if (guestBox) guestBox.classList.remove('hidden');
+            return;
+        }
+
         const commentBox = document.getElementById(`comment-box-${reviewId}`);
         if (commentBox.classList.contains('hidden')) {
             commentBox.classList.remove('hidden');
@@ -218,8 +234,9 @@
     // --- 2. Handle Like (AJAX) ---
     function handleLike(id, type) {
         if (!currentUserId) {
-            alert("Vui lòng đăng nhập để thả tim!");
-            window.location.href = "/login";
+            // Hiển thị thông báo (chỉ show, không ẩn)
+            const guestBox = document.getElementById(`guest-login-box-${id}`);
+            if (guestBox) guestBox.classList.remove('hidden');
             return;
         }
 
@@ -321,6 +338,36 @@
             submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
         });
     }
+
+    // --- THÔNG BÁO ĐĂNG NHẬP CHO GUEST ---
+    function showLoginToast(action) {
+        const existingMsg = document.getElementById('login-inline-msg');
+        if (existingMsg) existingMsg.remove();
+
+        const msg = document.createElement('div');
+        msg.id = 'login-inline-msg';
+        msg.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] w-[90%] max-w-lg animate-slide-up';
+        msg.innerHTML = `
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 py-3 px-5 text-center text-sm text-gray-500">
+                <a href="/login" class="text-brand-green font-bold hover:underline">Đăng nhập</a> để tham gia thảo luận cùng mọi người.
+            </div>
+        `;
+        document.body.appendChild(msg);
+        setTimeout(() => {
+            if (msg) {
+                msg.classList.add('animate-slide-down');
+                setTimeout(() => msg.remove(), 300);
+            }
+        }, 5000);
+    }
+
+    function closeLoginToast() {
+        const msg = document.getElementById('login-inline-msg');
+        if (msg) {
+            msg.classList.add('animate-slide-down');
+            setTimeout(() => msg.remove(), 300);
+        }
+    }
 </script>
 <style>
     /* Animation nảy cho tim */
@@ -329,5 +376,17 @@
         50% { transform: scale(1.2); }
     }
     .bounce { animation: bounce 0.3s; }
+
+    /* Toast animations */
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+        to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    @keyframes slideDown {
+        from { opacity: 1; transform: translateX(-50%) translateY(0); }
+        to { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    }
+    .animate-slide-up { animation: slideUp 0.3s ease-out; }
+    .animate-slide-down { animation: slideDown 0.3s ease-out; }
 </style>
 @endpush

@@ -51,32 +51,25 @@
 
             {{-- Search Bar - Ẩn trên trang Tìm kiếm vì đã có form riêng --}}
             @if(!request()->routeIs('books.search'))
-                <div class="hidden md:flex flex-1 max-w-2xl px-8 relative z-40">
-                    <form action="{{ route('books.search') }}" method="GET" class="relative w-full flex items-center"
-                        id="header-search-form">
-
-                        {{-- Dropdown Danh Mục --}}
-                        <div class="absolute left-0 pl-1 z-50 group pb-4 -mb-4">
-                            <div
-                                class="flex items-center cursor-pointer bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full transition relative z-20">
-                                <span class="text-gray-600 text-xs font-bold mr-1">Danh mục</span>
-                                <i
-                                    class="fas fa-chevron-down text-[10px] text-gray-500 transition-transform group-hover:rotate-180"></i>
-                            </div>
-                            <div
-                                class="dropdown-menu dropdown-bridge absolute top-full left-0 mt-0 bg-white rounded-xl shadow-2xl border border-gray-100 p-4 min-w-[600px] max-w-[800px] z-10">
-                                <div class="grid grid-rows-[repeat(10,minmax(0,1fr))] grid-flow-col gap-x-8 gap-y-2">
-                                    <a href="{{ route('books.list') }}"
-                                        class="text-sm text-gray-600 hover:text-brand-green hover:font-bold truncate flex items-center">
-                                        <i class="fas fa-caret-right text-gray-300 mr-2 text-xs"></i> Tất cả
-                                    </a>
-                                    @if(isset($menuCategories))
-                                        @foreach($menuCategories as $cat)
-                                            <a href="{{ route('books.list', ['category_id' => $cat->id]) }}"
-                                                class="text-sm text-gray-600 hover:text-brand-green hover:font-bold truncate block py-0.5">{{ $cat->name }}</a>
-                                        @endforeach
-                                    @endif
-                                </div>
+            <div class="hidden md:flex flex-1 max-w-2xl px-8 relative z-40">
+                <form action="{{ route('books.search') }}" method="GET" class="relative w-full flex items-center" id="header-search-form">
+                    
+                    {{-- Dropdown Danh Mục --}}
+                    <div class="absolute left-0 pl-1 z-50 group pb-4 -mb-4"> 
+                        <div class="flex items-center cursor-pointer bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full transition relative z-20">
+                            <span class="text-gray-600 text-xs font-bold mr-1">Danh mục</span>
+                            <i class="fas fa-chevron-down text-[10px] text-gray-500 transition-transform group-hover:rotate-180"></i>
+                        </div>
+                        <div class="dropdown-menu dropdown-bridge absolute top-full left-0 mt-0 bg-white rounded-xl shadow-2xl border border-gray-100 p-4 min-w-[600px] max-w-[800px] z-10">
+                            <div class="grid grid-rows-[repeat(10,minmax(0,1fr))] grid-flow-col gap-x-8 gap-y-2">
+                                <a href="{{ route('books.list') }}" class="text-sm text-gray-600 hover:text-brand-green hover:font-bold truncate flex items-center">
+                                    <i class="fas fa-caret-right text-gray-300 mr-2 text-xs"></i> Tất cả
+                                </a>
+                                @if(isset($menuCategories))
+                                    @foreach($menuCategories as $cat)
+                                        <a href="{{ route('books.list', ['category_id' => $cat->id]) }}" class="text-sm text-gray-600 hover:text-brand-green hover:font-bold truncate block py-0.5">{{ $cat->name }}</a>
+                                    @endforeach
+                                @endif
                             </div>
                         </div>
 
@@ -97,8 +90,9 @@
                         {{-- JS sẽ render kết quả vào đây --}}
                     </div>
                 </div>
+            </div>
             @endif
-
+        
             {{-- User & Notification Actions --}}
             <div class="flex items-center gap-3 md:gap-5">
                 @auth

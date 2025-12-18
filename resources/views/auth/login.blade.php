@@ -49,7 +49,7 @@
                     <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fas fa-envelope"></i></span>
-                        <input type="email" name="email" class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green transition" placeholder="name@example.com" required value="{{ old('email') }}">
+                        <input type="email" name="email" class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green transition" placeholder="yourname@gmail.com" required value="{{ old('email') }}">
                     </div>
                 </div>
 
