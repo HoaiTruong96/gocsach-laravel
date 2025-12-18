@@ -218,6 +218,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Resource Controllers
     Route::resource('books', AdminBookController::class);
+    Route::post('books/{book}/approve', [AdminBookController::class, 'approve'])->name('books.approve');
     Route::resource('articles', ArticleController::class);
     Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class);
     Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->only(['index', 'update', 'destroy']);

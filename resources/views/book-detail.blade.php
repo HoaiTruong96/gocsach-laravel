@@ -57,9 +57,20 @@
                 {{-- Thông Tin Chi Tiết --}}
                 <div class="md:col-span-8 lg:col-span-9 flex flex-col justify-center">
                     <div class="mb-6">
-                        <span class="inline-block py-1 px-3 rounded-full bg-brand-accent/10 text-brand-accent text-xs font-bold uppercase tracking-wider mb-3 border border-brand-accent/20">
-                            {{ $book->categories->isNotEmpty() ? $book->categories->first()->name : 'Văn Học' }}
-                        </span>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            @if($book->categories->isNotEmpty())
+                                @foreach($book->categories as $category)
+                                    <a href="{{ route('books.list', ['category' => $category->id]) }}" 
+                                       class="inline-block py-1 px-3 rounded-full bg-brand-accent/10 text-brand-accent text-xs font-bold uppercase tracking-wider border border-brand-accent/20 hover:bg-brand-accent hover:text-white transition">
+                                        {{ $category->name }}
+                                    </a>
+                                @endforeach
+                            @else
+                                <span class="inline-block py-1 px-3 rounded-full bg-brand-accent/10 text-brand-accent text-xs font-bold uppercase tracking-wider border border-brand-accent/20">
+                                    Văn Học
+                                </span>
+                            @endif
+                        </div>
                         <h1 class="text-3xl md:text-5xl font-bold text-brand-green font-serif mt-1 mb-3 leading-tight">
                             {{ $book->title ?? 'Tiêu đề sách' }}
                         </h1>
