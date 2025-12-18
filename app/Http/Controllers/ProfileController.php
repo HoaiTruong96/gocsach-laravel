@@ -132,6 +132,54 @@ class ProfileController extends Controller
             'totalReviews' => $totalReviews,
             'totalFollowing' => $totalFollowing,
             'totalFollowers' => $totalFollowers,
+            'isOwnProfile' => Auth::id() == $user->id,
         ]);
+    }
+
+    /**
+     * Trang bị khung avatar
+     */
+    public function equipAvatarFrame(Request $request)
+    {
+        $validated = $request->validate([
+            'avatar_frame_id' => 'required|exists:avatar_frames,id'
+        ]);
+        
+        $user = Auth::user();
+        
+        // Kiểm tra user có sở hữu frame này không
+        if (!$user->avatarFrames()->where('avatar_frame_id', $validated['avatar_frame_id'])->exists()) {
+            return response()->json(['error' => 'Bạn chưa sở hữu khung avatar này!'], 403);
+        }
+        
+        // Gỡ tất cả khung cũ
+        $user->avatarFrames()->updateExistingPivot(
+            $user->avatarFrames->pluck('id')->toArray(),
+            ['is_equipped' => false]
+        );
+        
+        // Trang bị khung mới
+        $user->avatarFrames()->updateExistingPivot(
+            $validated['avatar_frame_id'],
+            ['is_equipped' => true]
+        );
+        
+        return response()->json(['success' => true, 'message' => 'Đã trang bị khung avatar!']);
+    }
+
+    /**
+     * Gỡ khung avatar
+     */
+    public function unequipAvatarFrame()
+    {
+        $user = Auth::user();
+        
+        // Gỡ tất cả khung
+        $user->avatarFrames()->updateExistingPivot(
+            $user->avatarFrames->pluck('id')->toArray(),
+            ['is_equipped' => false]
+        );
+        
+        return response()->json(['success' => true, 'message' => 'Đã gỡ khung avatar!']);
     }
 }

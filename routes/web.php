@@ -139,6 +139,8 @@ Route::middleware('auth')->group(function () {
     // --- PROFILE & FOLLOW ---
     Route::get('/profile/{id?}', [ProfileController::class, 'index'])->name('profile');
     Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/avatar-frame/equip', [ProfileController::class, 'equipAvatarFrame'])->name('profile.avatar-frame.equip');
+    Route::post('/profile/avatar-frame/unequip', [ProfileController::class, 'unequipAvatarFrame'])->name('profile.avatar-frame.unequip');
     Route::post('/follow/toggle', [FollowController::class, 'toggleFollow'])->name('follow.toggle');
 
     // --- ĐỀ XUẤT SÁCH ---
@@ -161,7 +163,7 @@ Route::middleware('auth')->group(function () {
 
     // Đọc 1 thông báo cụ thể -> Chuyển hướng
     Route::get('/notifications/{id}', [HomeController::class, 'markAsRead'])->name('notification.read');
-    
+
     // API lấy thông báo realtime (cho polling)
     Route::get('/api/notifications', [HomeController::class, 'getNotifications'])->name('api.notifications');
 
@@ -169,12 +171,31 @@ Route::middleware('auth')->group(function () {
     Route::get('/reviews/viet-bai', function (Illuminate\Http\Request $request) {
         $user = Auth::user();
         $preselectedBook = null;
-        
+
         // Nếu có book_id, lấy thông tin sách để tự động chọn
         if ($request->has('book_id')) {
             $preselectedBook = Book::find($request->book_id);
         }
-        
+
+        return view('create-review', compact('user', 'preselectedBook'));
+    })->name('reviews.create');
+
+    // Lưu bài viết mới
+    Route::post('/posts/store', [PostController::class, 'store'])->name('posts.store');
+
+    // API lấy thông báo realtime (cho polling)
+    Route::get('/api/notifications', [HomeController::class, 'getNotifications'])->name('api.notifications');
+
+    // --- REVIEW / POST ---
+    Route::get('/reviews/viet-bai', function (Illuminate\Http\Request $request) {
+        $user = Auth::user();
+        $preselectedBook = null;
+
+        // Nếu có book_id, lấy thông tin sách để tự động chọn
+        if ($request->has('book_id')) {
+            $preselectedBook = Book::find($request->book_id);
+        }
+
         return view('create-review', compact('user', 'preselectedBook'));
     })->name('reviews.create');
 
