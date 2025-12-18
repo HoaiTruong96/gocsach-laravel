@@ -2,6 +2,8 @@
 @section('title', 'Cập nhật Sách')
 @section('header', 'Cập nhật: ' . $book->title)
 
+@php use Illuminate\Support\Facades\Storage; @endphp
+
 @section('content')
 <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 transition-colors duration-300">
     <form action="{{ route('admin.books.update', $book) }}" method="POST" enctype="multipart/form-data">

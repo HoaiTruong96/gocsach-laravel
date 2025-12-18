@@ -138,6 +138,7 @@ Route::middleware('auth')->group(function () {
 
     // --- PROFILE & FOLLOW ---
     Route::get('/profile/{id?}', [ProfileController::class, 'index'])->name('profile');
+    Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/follow/toggle', [FollowController::class, 'toggleFollow'])->name('follow.toggle');
 
     // --- ĐỀ XUẤT SÁCH ---
@@ -172,33 +173,7 @@ Route::middleware('auth')->group(function () {
             ->get();
         return response()->json($books);
     });
-});
-
-// ====================================================
-// 3.5 NHÓM THÀNH VIÊN ĐÃ XÁC THỰC (AUTH + VERIFIED REQUIRED)
-// ====================================================
-Route::middleware(['auth', 'verified'])->group(function () {
-    
-    // --- LIKE & COMMENT (AJAX) ---
-    // Route xử lý Like chung (cho cả Post và Comment)
-    Route::post('/like', [HomeController::class, 'toggleLike'])->name('handle.like');
-    
-    // Route gửi Reply (Bình luận trả lời)
-    Route::post('/comment/{id}/reply', [HomeController::class, 'storeReply'])->name('comment.reply');
-    
-    // Route comment bài viết (nếu dùng PostController riêng)
-    Route::post('/posts/{id}/comment', [PostController::class, 'postComment'])->name('posts.comment');
-
-    // --- REVIEW / POST ---
-    Route::get('/reviews/viet-bai', function () {
-        $user = Auth::user();
-        return view('create-review', compact('user'));
-    })->name('reviews.create');
-
-    // Lưu bài viết mới
-    Route::post('/posts/store', [PostController::class, 'store'])->name('posts.store');
-
-    // Tham gia thử thách
+    // chalenges
     Route::post('/challenge/join/{id}', [ChallengeController::class, 'join'])->name('challenge.join');
 });
 
