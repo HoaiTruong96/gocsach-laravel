@@ -152,8 +152,11 @@
                     {{-- User Dropdown --}}
                     <div class="relative group pb-2 -mb-2 z-50">
                          <a href="{{ route('profile') }}" class="flex items-center gap-2 focus:outline-none py-1 group-hover:opacity-80 transition cursor-pointer relative z-20">
-                            <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name).'&background=3E5F4E&color=fff&size=40' }}" 
-                                 class="w-9 h-9 rounded-full border-2 border-brand-beige shadow-sm group-hover:border-brand-green transition object-cover">
+                            @include('partials.user-avatar-with-frame', [
+                                'user' => Auth::user(),
+                                'size' => 'w-14 h-14',
+                                'avatarSize' => 'w-9 h-9'
+                            ])
                             <div class="hidden lg:flex flex-col items-start">
                                 <span class="text-xs font-bold text-gray-700 truncate max-w-[80px]">{{ Auth::user()->name }}</span>
                                 <span class="text-[10px] text-gray-400">Thành viên</span>
@@ -277,9 +280,13 @@
         
         {{-- User Section --}}
         <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 bg-gray-50">
-            @auth
+                @auth
                 <div class="flex items-center gap-3 mb-3">
-                    <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name) }}" class="w-10 h-10 rounded-full border-2 border-brand-green">
+                    @include('partials.user-avatar-with-frame', [
+                        'user' => Auth::user(),
+                        'size' => 'w-12 h-12',
+                        'avatarSize' => 'w-10 h-10'
+                    ])
                     <div>
                         <p class="font-bold text-gray-800 text-sm">{{ Auth::user()->name }}</p>
                         <p class="text-xs text-gray-500">{{ Auth::user()->email }}</p>
