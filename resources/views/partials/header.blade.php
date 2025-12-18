@@ -42,7 +42,8 @@
                 </a>
             </div>
 
-            {{-- Search Bar --}}
+            {{-- Search Bar - Ẩn trên trang Tìm kiếm vì đã có form riêng --}}
+            @if(!request()->routeIs('books.search'))
             <div class="hidden md:flex flex-1 max-w-2xl px-8 relative z-40">
                 <form action="{{ route('books.search') }}" method="GET" class="relative w-full flex items-center" id="header-search-form">
                     
@@ -85,6 +86,7 @@
                     {{-- JS sẽ render kết quả vào đây --}}
                 </div>
             </div>
+            @endif
         
             {{-- User & Notification Actions --}}
             <div class="flex items-center gap-3 md:gap-5">

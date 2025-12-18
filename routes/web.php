@@ -162,15 +162,6 @@ Route::middleware('auth')->group(function () {
     // Đọc 1 thông báo cụ thể -> Chuyển hướng
     Route::get('/notifications/{id}', [HomeController::class, 'markAsRead'])->name('notification.read');
 
-    // --- REVIEW / POST ---
-    Route::get('/reviews/viet-bai', function () {
-        $user = Auth::user();
-        return view('create-review', compact('user'));
-    })->name('reviews.create');
-
-    // Lưu bài viết mới
-    Route::post('/posts/store', [PostController::class, 'store'])->name('posts.store');
-
     // --- API NỘI BỘ (Cho JS tìm sách khi viết review) ---
     Route::get('/api/books/search', function (Illuminate\Http\Request $request) {
         $query = $request->get('q');
@@ -181,19 +172,6 @@ Route::middleware('auth')->group(function () {
             ->limit(10)
             ->get();
         return response()->json($books);
-    });
-
-    // API lấy sách phổ biến (random 6 từ top 20 sách có lượt xem cao nhất)
-    Route::get('/api/books/popular', function () {
-        $books = Illuminate\Support\Facades\DB::table('books')
-            ->where('is_approved', true)
-            ->orderBy('view_count', 'desc')
-            ->select('id', 'title', 'author_name', 'published_year', 'cover_image', 'slug', 'avg_rating')
-            ->limit(20)  // Lấy top 20
-            ->get()
-            ->shuffle()  // Random thứ tự
-            ->take(6);   // Chỉ lấy 6 cuốn
-        return response()->json($books->values());
     });
     // chalenges
     Route::post('/challenge/join/{id}', [ChallengeController::class, 'join'])->name('challenge.join');
