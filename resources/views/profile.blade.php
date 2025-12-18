@@ -33,12 +33,26 @@
             <div class="lg:col-span-1">
                 <div class="bg-white rounded-2xl shadow-soft p-6 text-center border border-gray-100">
                     
-                    <div class="relative w-32 h-32 mx-auto mb-4 group">
-                        <img src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=3E5F4E&color=fff&size=128' }}" 
-                             class="rounded-full border-4 border-brand-beige shadow-md object-cover w-full h-full group-hover:border-brand-green transition duration-300">
+                    <div class="relative w-52 h-52 mx-auto mb-4 group">
+                        <!-- Avatar Frame Overlay (rendered first but z-index higher) -->
+                        @php
+                            $equippedFrame = $user->equippedFrame();
+                        @endphp
+                        
+                        @if($equippedFrame)
+                            <img src="{{ Str::startsWith($equippedFrame->frame_image, 'http') ? $equippedFrame->frame_image : asset('storage/' . $equippedFrame->frame_image) }}"
+                                 alt="Frame"
+                                 class="absolute inset-0 w-full h-full object-contain pointer-events-none z-10">
+                        @endif
+                        
+                        <!-- User Avatar (fixed size, centered, behind frame) -->
+                        <div class="absolute inset-0 flex items-center justify-center z-0">
+                            <img src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=3E5F4E&color=fff&size=128' }}" 
+                                 class="w-32 h-32 rounded-full border-2 border-brand-beige shadow-md object-cover group-hover:border-brand-green transition duration-300">
+                        </div>
                         
                         @if(Auth::id() == $user->id)
-                            <button class="absolute bottom-0 right-0 bg-white border border-gray-200 p-1.5 rounded-full text-gray-500 hover:text-brand-green hover:border-brand-green shadow-sm transition" title="Đổi ảnh đại diện">
+                            <button class="absolute bottom-0 right-0 bg-white border border-gray-200 p-1.5 rounded-full text-gray-500 hover:text-brand-green hover:border-brand-green shadow-sm transition z-20" title="Đổi ảnh đại diện">
                                 <i class="fas fa-camera text-xs"></i>
                             </button>
                         @endif
@@ -145,6 +159,53 @@
                         </div>
                     @endif
                     {{-- KẾT THÚC KHUNG DANH HIỆU --}}
+
+                    {{-- [MỚI] KHUNG AVATAR --}}
+                    @if(isset($isOwnProfile) && $isOwnProfile &&$user->avatarFrames && $user->avatarFrames->count() > 0)
+                        <div class="mb-6 border-t border-b border-gray-100 py-4">
+                            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">
+                                <i class="fas fa-image mr-1"></i> Khung Avatar
+                            </h4>
+                            
+                            <div class="grid grid-cols-3 gap-2">
+                                @foreach($user->avatarFrames as $frame)
+                                    <div class="relative group cursor-pointer border-2 rounded-lg p-1 transition-all
+                                        {{ $frame->pivot->is_equipped ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300' }}"
+                                        onclick="equipFrame({{ $frame->id }})">
+                                        
+                                        <!-- Frame Preview -->
+                                        <div class="aspect-square bg-gray-50 rounded overflow-hidden flex items-center justify-center">
+                                            <img src="{{ Str::startsWith($frame->frame_image, 'http') ? $frame->frame_image : asset('storage/' . $frame->frame_image) }}" 
+                                                 alt="{{ $frame->name }}"
+                                                 class="w-full h-full object-contain">
+                                        </div>
+                                        
+                                        <!-- Equipped Badge -->
+                                        @if($frame->pivot->is_equipped)
+                                            <div class="absolute -top-1 -right-1 bg-purple-500 text-white text-[8px] px-1 py-0.5 rounded-full font-bold shadow">
+                                                Đang dùng
+                                            </div>
+                                        @endif
+
+                                        <!-- Tooltip -->
+                                        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-max">
+                                            <div class="bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-lg text-center">
+                                                <div class="font-bold">{{ $frame->name }}</div>
+                                            </div>
+                                            <div class="w-2 h-2 bg-gray-800 transform rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2"></div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            @if($user->equippedFrame())
+                                <button onclick="unequipFrame()" class="mt-3 w-full text-[10px] text-gray-500 hover:text-red-500 transition py-1 rounded hover:bg-red-50 border border-transparent hover:border-red-200">
+                                    <i class="fas fa-times-circle"></i> Gỡ khung avatar
+                                </button>
+                            @endif
+                        </div>
+                    @endif
+                    {{-- KẾT THÚC KHUNG AVATAR --}}
                     
                     <div class="text-xs text-gray-400 space-y-1.5 mb-6 text-left pl-2">
                         <p><i class="far fa-calendar-alt mr-2 w-4 text-center"></i> Tham gia: <span class="text-gray-600">{{ $user->created_at ? $user->created_at->format('d/m/Y') : 'N/A' }}</span></p>
@@ -590,6 +651,48 @@
             .finally(() => {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-save mr-2"></i> Lưu thay đổi';
+            });
+        }
+
+        // --- 4. Xử lý trang bị khung avatar ---
+        function equipFrame(frameId) {
+            fetch('{{ route("profile.avatar-frame.equip") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ avatar_frame_id: frameId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.error || 'Có lỗi xảy ra!');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi trang bị khung!');
+            });
+        }
+
+        function unequipFrame() {
+            fetch('{{ route("profile.avatar-frame.unequip") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
             });
         }
     </script>
