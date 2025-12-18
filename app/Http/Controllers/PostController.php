@@ -127,8 +127,9 @@ class PostController extends Controller
 
         return response()->json([
             'success' => true,
+            'comment_id' => $comment->id,
             'user_name' => $user->name,
-            'avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=random',
+            'user_avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=random',
             'content' => $comment->content,
             'count' => $commentCount,
             'created_at' => 'Vừa xong'

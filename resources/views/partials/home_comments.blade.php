@@ -78,7 +78,7 @@
                     {{-- DANH SÁCH CÁC REPLY --}}
                     <div class="space-y-4 mb-4">
                         @forelse($comment->replies as $reply)
-                            <div class="flex gap-2">
+                            <div id="comment-{{ $reply->id }}" class="flex gap-2 scroll-mt-24 transition-all duration-500">
                                 <img src="{{ $reply->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($reply->user->name).'&background=random' }}" 
                                      class="w-7 h-7 rounded-full flex-shrink-0">
                                 <div class="flex-1">
