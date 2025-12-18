@@ -93,10 +93,13 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 
-    // Quên mật khẩu
+    // Quên mật khẩu (OTP)
     Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
-    Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
-    Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetCode'])->name('password.email');
+    Route::get('/verify-code', [AuthController::class, 'showVerifyCodeForm'])->name('password.verify.form');
+    Route::post('/verify-code', [AuthController::class, 'verifyCode'])->name('password.verify');
+    Route::post('/resend-code', [AuthController::class, 'resendCode'])->name('password.resend');
+    Route::get('/reset-password', [AuthController::class, 'showResetPasswordForm'])->name('password.reset.form');
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 });
 
