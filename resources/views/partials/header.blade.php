@@ -211,10 +211,13 @@
                 <a href="{{ route('home') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('home') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Trang Chủ</a>
                 <a href="{{ route('books.list') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('books.list') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Danh Sách</a>
                 <a href="{{ route('books.search') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('books.search') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Review Hay</a>
-                <a href="#" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all">Tác Giả</a>
+                <a href="{{ route('authors.index') }}" class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('authors.*') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">Tác Giả</a>
                 <a href="{{ route('challenges.index') }}" 
-                class="hover:text-brand-green hover:border-b-2 hover:border-brand-green pb-3 -mb-3.5 transition-all {{ request()->routeIs('challenges.index') ? 'text-brand-green border-b-2 border-brand-green' : '' }}">
-                Thử Thách
+                   class="relative flex items-center gap-1.5 px-3 py-1.5 -my-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 group {{ request()->routeIs('challenges.index') ? 'ring-2 ring-yellow-400 ring-offset-2' : '' }}">
+                    <i class="fas fa-fire text-yellow-300 group-hover:animate-pulse"></i>
+                    <span>Thử Thách</span>
+                    <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-yellow-400 rounded-full animate-ping"></span>
+                    <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-yellow-400 rounded-full"></span>
                 </a>
             </nav>
         </div>
