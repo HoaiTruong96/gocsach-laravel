@@ -178,10 +178,12 @@
 
                     {{-- User Dropdown --}}
                     <div class="relative group pb-2 -mb-2 z-50">
-                        <a href="{{ route('profile') }}"
-                            class="flex items-center gap-2 focus:outline-none py-1 group-hover:opacity-80 transition cursor-pointer relative z-20">
-                            <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&background=3E5F4E&color=fff&size=40' }}"
-                                class="w-9 h-9 rounded-full border-2 border-brand-beige shadow-sm group-hover:border-brand-green transition object-cover">
+                        <a href="{{ route('profile') }}" class="flex items-center gap-2 focus:outline-none py-1 group-hover:opacity-80 transition cursor-pointer relative z-20">
+                            @include('partials.user-avatar-with-frame', [
+                                'user' => Auth::user(),
+                                'size' => 'w-14 h-14',
+                                'avatarSize' => 'w-9 h-9'
+                            ])
                             <div class="hidden lg:flex flex-col items-start">
                                 <span
                                     class="text-xs font-bold text-gray-700 truncate max-w-[80px]">{{ Auth::user()->name }}</span>
