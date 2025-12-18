@@ -144,9 +144,14 @@
                             <h1 class="text-3xl font-bold text-gray-900 mb-4 font-serif leading-tight">{{ $mainPost->title }}</h1>
                             
                             <div class="flex items-center gap-3 text-sm text-gray-500 mb-6 bg-gray-50 p-3 rounded-lg w-fit">
-                                <img src="https://ui-avatars.com/api/?name={{ urlencode($mainPost->user->name ?? 'Admin') }}&background=random&size=32" class="w-8 h-8 rounded-full">
+                                <img src="{{ $mainPost->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($mainPost->user->name ?? 'Admin') . '&background=random&size=32' }}" class="w-8 h-8 rounded-full object-cover">
                                 <div class="flex flex-col">
-                                    <span class="font-bold text-gray-800">{{ $mainPost->user->name ?? 'Quản trị viên' }}</span>
+                                    <span class="font-bold text-gray-800 flex items-center">
+                                        {{ $mainPost->user->name ?? 'Quản trị viên' }}
+                                        @if($mainPost->user)
+                                            @include('partials.user-badges', ['user' => $mainPost->user, 'size' => 'xs'])
+                                        @endif
+                                    </span>
                                     <span class="text-xs">{{ $mainPost->created_at->format('d/m/Y') }}</span>
                                 </div>
                             </div>
@@ -229,7 +234,12 @@
                                         <div class="flex-1">
                                             <div class="flex justify-between items-start mb-1">
                                                 <div>
-                                                    <h4 class="font-bold text-gray-900 text-sm">{{ $comment->user->name ?? 'Người dùng' }}</h4>
+                                                    <h4 class="font-bold text-gray-900 text-sm flex items-center">
+                                                        {{ $comment->user->name ?? 'Người dùng' }}
+                                                        @if($comment->user)
+                                                            @include('partials.user-badges', ['user' => $comment->user, 'size' => 'xs'])
+                                                        @endif
+                                                    </h4>
                                                     <span class="text-xs text-gray-400">{{ $comment->created_at->diffForHumans() }}</span>
                                                 </div>
                                             </div>
