@@ -187,6 +187,15 @@
 
                         <td class="px-6 py-4 text-right">
                             <div class="flex justify-end items-center gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                                {{-- Nút Duyệt (chỉ hiện khi chưa được duyệt) --}}
+                                @if(!$book->is_approved)
+                                <form action="{{ route('admin.books.approve', $book) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button class="h-8 px-3 flex items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400 hover:bg-green-500 hover:text-white transition text-xs font-bold gap-1" title="Duyệt sách này">
+                                        <i class="fas fa-check"></i> Duyệt
+                                    </button>
+                                </form>
+                                @endif
                                 <a href="{{ route('admin.books.edit', $book) }}" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-slate-600 text-gray-500 dark:text-slate-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 hover:text-blue-600 dark:hover:text-blue-400 transition" title="Chỉnh sửa">
                                     <i class="fas fa-edit text-xs"></i>
                                 </a>

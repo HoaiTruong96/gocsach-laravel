@@ -181,6 +181,15 @@ Route::middleware('auth')->group(function () {
     // Lưu bài viết mới
     Route::post('/posts/store', [PostController::class, 'store'])->name('posts.store');
 
+    // --- REVIEW / POST ---
+    Route::get('/reviews/viet-bai', function () {
+        $user = Auth::user();
+        return view('create-review', compact('user'));
+    })->name('reviews.create');
+
+    // Lưu bài viết mới
+    Route::post('/posts/store', [PostController::class, 'store'])->name('posts.store');
+
     // --- API NỘI BỘ (Cho JS tìm sách khi viết review) ---
     Route::get('/api/books/search', function (Illuminate\Http\Request $request) {
         $query = $request->get('q');
@@ -209,6 +218,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Resource Controllers
     Route::resource('books', AdminBookController::class);
+    Route::post('books/{book}/approve', [AdminBookController::class, 'approve'])->name('books.approve');
     Route::resource('articles', ArticleController::class);
     Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class);
     Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->only(['index', 'update', 'destroy']);

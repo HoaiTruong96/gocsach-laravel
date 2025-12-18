@@ -216,4 +216,27 @@ class BookController extends Controller
 
         return redirect()->route('admin.books.index')->with('success', 'Đã xóa sách thành công!');
     }
+
+    /**
+     * Duyệt sách do người dùng đề xuất
+     */
+    public function approve(Book $book)
+    {
+        $oldValues = $book->toArray();
+        
+        $book->is_approved = true;
+        $book->save();
+
+        // Ghi log
+        AdminActivityLog::log(
+            'approve',
+            "Duyệt sách: {$book->title}",
+            Book::class,
+            $book->id,
+            $oldValues,
+            $book->fresh()->toArray()
+        );
+
+        return redirect()->route('admin.books.index')->with('success', "Đã duyệt sách \"{$book->title}\" thành công!");
+    }
 }
