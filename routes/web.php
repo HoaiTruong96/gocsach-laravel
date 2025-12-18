@@ -138,6 +138,7 @@ Route::middleware('auth')->group(function () {
 
     // --- PROFILE & FOLLOW ---
     Route::get('/profile/{id?}', [ProfileController::class, 'index'])->name('profile');
+    Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/follow/toggle', [FollowController::class, 'toggleFollow'])->name('follow.toggle');
 
     // --- ĐỀ XUẤT SÁCH ---
@@ -172,33 +173,20 @@ Route::middleware('auth')->group(function () {
             ->get();
         return response()->json($books);
     });
-});
 
-// ====================================================
-// 3.5 NHÓM THÀNH VIÊN ĐÃ XÁC THỰC (AUTH + VERIFIED REQUIRED)
-// ====================================================
-Route::middleware(['auth', 'verified'])->group(function () {
-    
-    // --- LIKE & COMMENT (AJAX) ---
-    // Route xử lý Like chung (cho cả Post và Comment)
-    Route::post('/like', [HomeController::class, 'toggleLike'])->name('handle.like');
-    
-    // Route gửi Reply (Bình luận trả lời)
-    Route::post('/comment/{id}/reply', [HomeController::class, 'storeReply'])->name('comment.reply');
-    
-    // Route comment bài viết (nếu dùng PostController riêng)
-    Route::post('/posts/{id}/comment', [PostController::class, 'postComment'])->name('posts.comment');
-
-    // --- REVIEW / POST ---
-    Route::get('/reviews/viet-bai', function () {
-        $user = Auth::user();
-        return view('create-review', compact('user'));
-    })->name('reviews.create');
-
-    // Lưu bài viết mới
-    Route::post('/posts/store', [PostController::class, 'store'])->name('posts.store');
-
-    // Tham gia thử thách
+    // API lấy sách phổ biến (random 6 từ top 20 sách có lượt xem cao nhất)
+    Route::get('/api/books/popular', function () {
+        $books = Illuminate\Support\Facades\DB::table('books')
+            ->where('is_approved', true)
+            ->orderBy('view_count', 'desc')
+            ->select('id', 'title', 'author_name', 'published_year', 'cover_image', 'slug', 'avg_rating')
+            ->limit(20)  // Lấy top 20
+            ->get()
+            ->shuffle()  // Random thứ tự
+            ->take(6);   // Chỉ lấy 6 cuốn
+        return response()->json($books->values());
+    });
+    // chalenges
     Route::post('/challenge/join/{id}', [ChallengeController::class, 'join'])->name('challenge.join');
 });
 

@@ -164,9 +164,9 @@
                         @endif
 
                         @if(Auth::id() == $user->id)
-                            <a href="#" class="block w-full border border-brand-green text-brand-green py-2 rounded-lg font-bold text-sm hover:bg-brand-green hover:text-white transition">
+                            <button onclick="openEditProfileModal()" class="block w-full border border-brand-green text-brand-green py-2 rounded-lg font-bold text-sm hover:bg-brand-green hover:text-white transition">
                                 <i class="fas fa-edit mr-1"></i> Chỉnh sửa hồ sơ
-                            </a>
+                            </button>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button class="block w-full border border-red-200 text-red-500 py-2 rounded-lg font-bold text-sm hover:bg-red-50 transition mt-2">
@@ -512,7 +512,186 @@
         document.addEventListener('keydown', function(event) {
             if (event.key === "Escape") {
                 closeFollowModal();
+                closeEditProfileModal();
             }
         });
+
+        // --- 3. Xử lý Modal Chỉnh sửa Hồ sơ ---
+        function openEditProfileModal() {
+            document.getElementById('editProfileModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent scroll
+        }
+
+        function closeEditProfileModal() {
+            document.getElementById('editProfileModal').classList.add('hidden');
+            document.body.style.overflow = ''; // Restore scroll
+        }
+
+        // Xem trước ảnh khi chọn file
+        function previewAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('avatarPreview').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Submit form chỉnh sửa hồ sơ
+        function submitEditProfile(event) {
+            event.preventDefault();
+            
+            const form = document.getElementById('editProfileForm');
+            const formData = new FormData(form);
+            const submitBtn = document.getElementById('editProfileSubmitBtn');
+            const errorDiv = document.getElementById('editProfileError');
+            
+            // Disable button và hiện loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang lưu...';
+            errorDiv.classList.add('hidden');
+
+            fetch('{{ route("profile.update") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Cập nhật giao diện với dữ liệu mới
+                    document.querySelectorAll('[data-user-name]').forEach(el => {
+                        el.textContent = data.user.name;
+                    });
+                    document.querySelectorAll('[data-user-bio]').forEach(el => {
+                        el.textContent = data.user.bio || 'Thành viên tích cực của Góc Sách.';
+                    });
+                    document.querySelectorAll('[data-user-avatar]').forEach(el => {
+                        el.src = data.user.avatar;
+                    });
+
+                    // Đóng modal và reload trang để hiển thị đúng
+                    closeEditProfileModal();
+                    window.location.reload();
+                } else {
+                    errorDiv.textContent = data.message || 'Có lỗi xảy ra!';
+                    errorDiv.classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                errorDiv.textContent = 'Có lỗi xảy ra, vui lòng thử lại!';
+                errorDiv.classList.remove('hidden');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-save mr-2"></i> Lưu thay đổi';
+            });
+        }
     </script>
+
+    {{-- ============================================================== --}}
+    {{-- MODAL CHỈNH SỬA HỒ SƠ                                          --}}
+    {{-- ============================================================== --}}
+    @if(Auth::check() && Auth::id() == $user->id)
+    <div id="editProfileModal" class="fixed inset-0 z-[70] hidden" aria-labelledby="edit-profile-title" role="dialog" aria-modal="true">
+        {{-- Backdrop --}}
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeEditProfileModal()"></div>
+
+        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all w-full max-w-md">
+                    
+                    {{-- Header --}}
+                    <div class="bg-gradient-to-r from-brand-green to-emerald-600 px-6 py-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-bold text-white flex items-center gap-2" id="edit-profile-title">
+                                <i class="fas fa-user-edit"></i> Chỉnh sửa hồ sơ
+                            </h3>
+                            <button onclick="closeEditProfileModal()" class="text-white/80 hover:text-white transition p-1">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {{-- Body --}}
+                    <form id="editProfileForm" onsubmit="submitEditProfile(event)" enctype="multipart/form-data" class="p-6">
+                        
+                        {{-- Error message --}}
+                        <div id="editProfileError" class="hidden mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm"></div>
+
+                        {{-- Avatar Upload --}}
+                        <div class="flex flex-col items-center mb-6">
+                            <div class="relative group">
+                                <img id="avatarPreview" 
+                                     src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=3E5F4E&color=fff&size=128' }}" 
+                                     class="w-28 h-28 rounded-full border-4 border-brand-beige shadow-lg object-cover">
+                                
+                                <label for="avatarInput" class="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition cursor-pointer">
+                                    <span class="text-white text-sm font-medium"><i class="fas fa-camera mr-1"></i> Đổi ảnh</span>
+                                </label>
+                                <input type="file" id="avatarInput" name="avatar" accept="image/*" class="hidden" onchange="previewAvatar(this)">
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2">Click vào ảnh để thay đổi (Tối đa 2MB)</p>
+                        </div>
+
+                        {{-- Name Input --}}
+                        <div class="mb-4">
+                            <label for="editName" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                <i class="fas fa-user mr-1 text-brand-green"></i> Tên hiển thị <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" 
+                                   id="editName" 
+                                   name="name" 
+                                   value="{{ $user->name }}"
+                                   required
+                                   maxlength="100"
+                                   class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition text-gray-800"
+                                   placeholder="Nhập tên hiển thị...">
+                        </div>
+
+                        {{-- Bio Input --}}
+                        <div class="mb-6">
+                            <label for="editBio" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                <i class="fas fa-quote-left mr-1 text-brand-accent"></i> Giới thiệu bản thân
+                            </label>
+                            <textarea id="editBio" 
+                                      name="bio" 
+                                      rows="3"
+                                      maxlength="500"
+                                      class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition text-gray-800 resize-none"
+                                      placeholder="Viết vài dòng về bản thân...">{{ $user->bio }}</textarea>
+                            <p class="text-xs text-gray-400 mt-1 text-right"><span id="bioCharCount">{{ strlen($user->bio ?? '') }}</span>/500 ký tự</p>
+                        </div>
+
+                        {{-- Actions --}}
+                        <div class="flex gap-3">
+                            <button type="button" 
+                                    onclick="closeEditProfileModal()" 
+                                    class="flex-1 py-2.5 border border-gray-200 text-gray-600 rounded-lg font-semibold hover:bg-gray-50 transition">
+                                Hủy bỏ
+                            </button>
+                            <button type="submit" 
+                                    id="editProfileSubmitBtn"
+                                    class="flex-1 py-2.5 bg-brand-green text-white rounded-lg font-semibold hover:bg-brand-green/90 transition flex items-center justify-center gap-2 shadow-md">
+                                <i class="fas fa-save"></i> Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Đếm ký tự bio
+        document.getElementById('editBio').addEventListener('input', function() {
+            document.getElementById('bioCharCount').textContent = this.value.length;
+        });
+    </script>
+    @endif
 @endsection
