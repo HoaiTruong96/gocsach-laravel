@@ -61,7 +61,7 @@ class HomeController extends Controller
             ]]);
         }
 
-        $bookQuery = Book::with('categories')->withAvg(['posts'], 'rating')->latest()->take(10);
+        $bookQuery = Book::where('is_approved', true)->with('categories')->withAvg(['posts'], 'rating')->latest()->take(10);
         $books = $bookQuery->get();
         foreach($books as $book) {
             $book->avg_rating = round($book->posts_avg_rating ?? 0, 1);
