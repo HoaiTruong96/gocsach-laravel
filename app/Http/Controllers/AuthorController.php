@@ -90,12 +90,78 @@ class AuthorController extends Controller
 
     /**
      * Danh sách tác giả cho Admin quản lý
+     * Kết hợp dữ liệu từ bảng authors và books.author_name
      */
-    public function adminIndex()
+    public function adminIndex(Request $request)
     {
-        $authors = Author::orderBy('name')->paginate(20);
+        $tab = $request->get('tab', 'all');
+        
+        // Lấy tất cả tác giả từ bảng authors với số sách
+        $authorsFromTable = Author::withCount(['books' => function($q) {
+            $q->where('is_approved', true);
+        }])->orderBy('name')->get();
+        
+        // Lấy tất cả author_name từ books mà CHƯA có trong bảng authors
+        $authorsFromBooks = DB::table('books')
+            ->select('author_name', DB::raw('COUNT(*) as books_count'))
+            ->whereNotNull('author_name')
+            ->where('author_name', '<>', '')
+            ->whereNotIn('author_name', Author::pluck('name'))
+            ->groupBy('author_name')
+            ->orderBy('author_name')
+            ->get()
+            ->map(function($item) {
+                return (object) [
+                    'id' => null,
+                    'name' => $item->author_name,
+                    'slug' => Str::slug($item->author_name),
+                    'photo' => null,
+                    'bio' => null,
+                    'birth_year' => null,
+                    'death_year' => null,
+                    'nationality' => null,
+                    'books_count' => $item->books_count,
+                    'is_from_books' => true, // Đánh dấu chưa có trong bảng authors
+                ];
+            });
+        
+        // Đánh dấu các tác giả đã có trong bảng authors
+        $authorsFromTable->each(function($author) {
+            $author->is_from_books = false;
+        });
+        
+        // Kết hợp và phân loại theo tab
+        if ($tab === 'registered') {
+            // Chỉ hiển thị tác giả đã có trong bảng authors
+            $allAuthors = $authorsFromTable;
+        } elseif ($tab === 'unregistered') {
+            // Chỉ hiển thị tác giả từ books chưa có trong authors
+            $allAuthors = $authorsFromBooks;
+        } else {
+            // Hiển thị tất cả
+            $allAuthors = $authorsFromTable->concat($authorsFromBooks)->sortBy('name');
+        }
+        
+        // Phân trang thủ công
+        $page = $request->get('page', 1);
+        $perPage = 20;
+        $total = $allAuthors->count();
+        $authors = new \Illuminate\Pagination\LengthAwarePaginator(
+            $allAuthors->forPage($page, $perPage)->values(),
+            $total,
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+        
+        // Thống kê
+        $stats = [
+            'total' => $authorsFromTable->count() + $authorsFromBooks->count(),
+            'registered' => $authorsFromTable->count(),
+            'unregistered' => $authorsFromBooks->count(),
+        ];
 
-        return view('admin.authors.index', compact('authors'));
+        return view('admin.authors.index', compact('authors', 'tab', 'stats'));
     }
 
     /**

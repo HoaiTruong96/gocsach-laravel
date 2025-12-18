@@ -314,11 +314,27 @@
                         <span class="font-medium text-sm">Tạp Chí Đọc</span>
                     </a>
 
+                    {{-- Quản lý Châm Ngôn --}}
+                    <a href="{{ route('admin.quotes.index') }}"
+                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.quotes.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
+                        <i
+                            class="fas fa-quote-left w-5 text-center {{ request()->routeIs('admin.quotes.*') ? 'text-white' : 'text-slate-400 group-hover:text-amber-400' }}"></i>
+                        <span class="font-medium text-sm">Châm Ngôn</span>
+                    </a>
+
                     <a href="{{ route('admin.books.index') }}"
                         class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.books.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                         <i
                             class="fas fa-book w-5 text-center {{ request()->routeIs('admin.books.*') ? 'text-white' : 'text-slate-400 group-hover:text-emerald-400' }}"></i>
                         <span class="font-medium text-sm">Quản lý Sách</span>
+                    </a>
+
+                    {{-- Quản lý Tác giả --}}
+                    <a href="{{ route('admin.authors.index') }}"
+                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.authors.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
+                        <i
+                            class="fas fa-user-pen w-5 text-center {{ request()->routeIs('admin.authors.*') ? 'text-white' : 'text-slate-400 group-hover:text-cyan-400' }}"></i>
+                        <span class="font-medium text-sm">Tác Giả</span>
                     </a>
 
                     <a href="{{ route('admin.categories.index') }}"
@@ -479,6 +495,10 @@
                 document.querySelectorAll('.ajax-pagination-link').forEach(link => {
                     // Skip if already bound
                     if (link.dataset.ajaxBound) return;
+
+                    // Skip if inside dashboard containers (they have their own handlers)
+                    if (link.closest('#reviews-content') || link.closest('#users-content')) return;
+
                     link.dataset.ajaxBound = 'true';
 
                     link.addEventListener('click', function (e) {

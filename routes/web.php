@@ -180,7 +180,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('banners', BannerController::class);
     Route::resource('badges', \App\Http\Controllers\Admin\BadgeController::class);
     Route::resource('challenges', \App\Http\Controllers\Admin\ChallengeController::class);
-    Route::resource('authors', AuthorController::class)->except(['show']);
+    // Authors - dùng adminIndex() thay vì index() cho trang admin
+    Route::get('authors', [AuthorController::class, 'adminIndex'])->name('authors.index');
+    Route::get('authors/create', [AuthorController::class, 'create'])->name('authors.create');
+    Route::post('authors', [AuthorController::class, 'store'])->name('authors.store');
+    Route::get('authors/{author}/edit', [AuthorController::class, 'edit'])->name('authors.edit');
+    Route::put('authors/{author}', [AuthorController::class, 'update'])->name('authors.update');
+    Route::delete('authors/{author}', [AuthorController::class, 'destroy'])->name('authors.destroy');
+    Route::resource('quotes', \App\Http\Controllers\Admin\QuoteController::class);
 
     // Activity Logs
     Route::get('/activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
