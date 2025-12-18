@@ -140,6 +140,9 @@
                                                 @endphp
                                                 <div class="w-8 h-8 rounded-full {{ $bgColor }} flex items-center justify-center">
                                                     <i class="{{ $notification->data['icon'] }} {{ $iconColor }} text-sm"></i>
+                                                <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                                                    <i
+                                                        class="{{ $notification->data['icon'] }} {{ $notification->data['color'] ?? 'text-green-600' }} text-sm"></i>
                                                 </div>
                                             @else
                                                 <img src="{{ $notification->data['user_avatar'] ?? 'https://ui-avatars.com/api/?name=User' }}"

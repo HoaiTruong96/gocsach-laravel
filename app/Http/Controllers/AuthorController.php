@@ -152,28 +152,49 @@ class AuthorController extends Controller
         }])->orderBy('name')->get();
         
         // Lấy tất cả author_name từ books mà CHƯA có trong bảng authors
-        $authorsFromBooks = DB::table('books')
-            ->select('author_name', DB::raw('COUNT(*) as books_count'))
+        // Cần tách nhiều tên tác giả trong một trường (phân cách bằng dấu phẩy, chấm phẩy, "và", "and")
+        $registeredNames = Author::pluck('name')->map(fn($n) => mb_strtolower(trim($n)))->toArray();
+        
+        $booksWithAuthors = DB::table('books')
+            ->select('author_name')
             ->whereNotNull('author_name')
             ->where('author_name', '<>', '')
-            ->whereNotIn('author_name', Author::pluck('name'))
-            ->groupBy('author_name')
-            ->orderBy('author_name')
-            ->get()
-            ->map(function($item) {
-                return (object) [
-                    'id' => null,
-                    'name' => $item->author_name,
-                    'slug' => Str::slug($item->author_name),
-                    'photo' => null,
-                    'bio' => null,
-                    'birth_year' => null,
-                    'death_year' => null,
-                    'nationality' => null,
-                    'books_count' => $item->books_count,
-                    'is_from_books' => true, // Đánh dấu chưa có trong bảng authors
-                ];
-            });
+            ->get();
+        
+        // Tách từng tên tác giả và đếm số sách
+        $unregisteredCounts = [];
+        foreach ($booksWithAuthors as $book) {
+            // Tách bằng dấu phẩy, chấm phẩy, " và ", " and "
+            $names = preg_split('/[,;]|\s+và\s+|\s+and\s+/iu', $book->author_name);
+            foreach ($names as $name) {
+                $name = trim($name);
+                if (empty($name)) continue;
+                
+                // Kiểm tra tên này đã đăng ký hay chưa
+                if (!in_array(mb_strtolower($name), $registeredNames)) {
+                    if (!isset($unregisteredCounts[$name])) {
+                        $unregisteredCounts[$name] = 0;
+                    }
+                    $unregisteredCounts[$name]++;
+                }
+            }
+        }
+        
+        // Chuyển thành collection
+        $authorsFromBooks = collect($unregisteredCounts)->map(function($count, $name) {
+            return (object) [
+                'id' => null,
+                'name' => $name,
+                'slug' => Str::slug($name),
+                'photo' => null,
+                'bio' => null,
+                'birth_year' => null,
+                'death_year' => null,
+                'nationality' => null,
+                'books_count' => $count,
+                'is_from_books' => true, // Đánh dấu chưa có trong bảng authors
+            ];
+        })->sortBy('name')->values();
         
         // Đánh dấu các tác giả đã có trong bảng authors
         $authorsFromTable->each(function($author) {
@@ -240,7 +261,7 @@ class AuthorController extends Controller
 
         Author::create($validated);
 
-        return redirect()->route('admin.authors.index')
+        return redirect()->route('admin.authors.index', ['tab' => 'unregistered'])
             ->with('success', 'Đã thêm tác giả thành công!');
     }
 
