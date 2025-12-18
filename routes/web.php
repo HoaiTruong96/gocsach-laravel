@@ -82,6 +82,9 @@ Route::get('/api/user/{id}/following', [FollowController::class, 'getFollowing']
 // Ranking
 Route::get('/ranking/top-liked', [RankingController::class, 'topLikedPosts']);
 
+// Public Profile - Xem profile thành viên (không cần đăng nhập)
+Route::get('/thanh-vien/{id}', [ProfileController::class, 'index'])->name('public.profile');
+
 
 // ====================================================
 // 2. NHÓM KHÁCH (GUEST ONLY)

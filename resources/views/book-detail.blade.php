@@ -163,14 +163,18 @@
                             <h1 class="text-3xl font-bold text-gray-900 mb-4 font-serif leading-tight">{{ $mainPost->title }}</h1>
                             
                             <div class="flex items-center gap-3 text-sm text-gray-500 mb-6 bg-gray-50 p-3 rounded-lg w-fit">
-                                <img src="{{ $mainPost->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($mainPost->user->name ?? 'Admin') . '&background=random&size=32' }}" class="w-8 h-8 rounded-full object-cover">
+                                <a href="{{ route('public.profile', $mainPost->user->id ?? 0) }}">
+                                    <img src="{{ $mainPost->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($mainPost->user->name ?? 'Admin') . '&background=random&size=32' }}" class="w-8 h-8 rounded-full object-cover hover:ring-2 hover:ring-brand-green transition">
+                                </a>
                                 <div class="flex flex-col">
-                                    <span class="font-bold text-gray-800 flex items-center">
-                                        {{ $mainPost->user->name ?? 'Quản trị viên' }}
-                                        @if($mainPost->user)
-                                            @include('partials.user-badges', ['user' => $mainPost->user, 'size' => 'xs'])
-                                        @endif
-                                    </span>
+                                    <a href="{{ route('public.profile', $mainPost->user->id ?? 0) }}" class="hover:text-brand-green transition">
+                                        <span class="font-bold text-gray-800 flex items-center">
+                                            {{ $mainPost->user->name ?? 'Quản trị viên' }}
+                                            @if($mainPost->user)
+                                                @include('partials.user-badges', ['user' => $mainPost->user, 'size' => 'xs'])
+                                            @endif
+                                        </span>
+                                    </a>
                                     <span class="text-xs">{{ $mainPost->created_at->format('d/m/Y') }}</span>
                                 </div>
                             </div>
@@ -245,12 +249,16 @@
                                         
                                         @forelse($postComments as $comment)
                                             <div id="pr-comment-{{ $comment->id }}" class="flex gap-3 scroll-mt-24 transition-all duration-500">
-                                                <img src="{{ $comment->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($comment->user->name ?? 'U').'&background=random' }}" 
-                                                     class="w-8 h-8 rounded-full flex-shrink-0">
+                                                <a href="{{ route('public.profile', $comment->user->id ?? 0) }}" class="flex-shrink-0">
+                                                    <img src="{{ $comment->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($comment->user->name ?? 'U').'&background=random' }}" 
+                                                         class="w-8 h-8 rounded-full hover:ring-2 hover:ring-brand-green transition">
+                                                </a>
                                                 <div class="flex-1">
                                                     <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
                                                         <div class="flex justify-between items-center mb-1">
-                                                            <span class="font-bold text-xs text-gray-800">{{ $comment->user->name ?? 'Người dùng' }}</span>
+                                                            <a href="{{ route('public.profile', $comment->user->id ?? 0) }}" class="hover:text-brand-green transition">
+                                                                <span class="font-bold text-xs text-gray-800">{{ $comment->user->name ?? 'Người dùng' }}</span>
+                                                            </a>
                                                             <span class="text-[10px] text-gray-400">{{ $comment->created_at->diffForHumans() }}</span>
                                                         </div>
                                                         <p class="text-sm text-gray-600">{{ $comment->content }}</p>
@@ -278,12 +286,16 @@
                                                         <div class="space-y-3 mb-3 pr-reply-list">
                                                             @forelse($comment->replies as $reply)
                                                                 <div id="pr-reply-{{ $reply->id }}" class="flex gap-2 scroll-mt-24 transition-all duration-500">
-                                                                    <img src="{{ $reply->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($reply->user->name ?? 'U').'&background=random' }}" 
-                                                                         class="w-6 h-6 rounded-full flex-shrink-0">
+                                                                    <a href="{{ route('public.profile', $reply->user->id ?? 0) }}" class="flex-shrink-0">
+                                                                        <img src="{{ $reply->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($reply->user->name ?? 'U').'&background=random' }}" 
+                                                                             class="w-6 h-6 rounded-full hover:ring-2 hover:ring-brand-green transition">
+                                                                    </a>
                                                                     <div class="flex-1">
                                                                         <div class="bg-white p-2 rounded-lg border border-gray-100">
                                                                             <div class="flex justify-between items-center mb-1">
-                                                                                <span class="font-bold text-[10px] text-gray-700">{{ $reply->user->name ?? 'Người dùng' }}</span>
+                                                                                <a href="{{ route('public.profile', $reply->user->id ?? 0) }}" class="hover:text-brand-green transition">
+                                                                                    <span class="font-bold text-[10px] text-gray-700">{{ $reply->user->name ?? 'Người dùng' }}</span>
+                                                                                </a>
                                                                                 <span class="text-[9px] text-gray-400">{{ $reply->created_at->diffForHumans() }}</span>
                                                                             </div>
                                                                             <p class="text-[11px] text-gray-600">{{ $reply->content }}</p>
@@ -398,18 +410,22 @@
                                 <div id="comment-{{ $comment->id }}" class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition duration-300">
                                     <div class="flex items-start gap-4">
                                         <div class="flex-shrink-0">
-                                            <img src="{{ $comment->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($comment->user->name ?? 'U') . '&background=random&size=48' }}" 
-                                                 class="w-10 h-10 rounded-full border border-gray-100">
+                                            <a href="{{ route('public.profile', $comment->user->id ?? 0) }}">
+                                                <img src="{{ $comment->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($comment->user->name ?? 'U') . '&background=random&size=48' }}" 
+                                                     class="w-10 h-10 rounded-full border border-gray-100 hover:ring-2 hover:ring-brand-green transition">
+                                            </a>
                                         </div>
                                         <div class="flex-1">
                                             <div class="flex justify-between items-start mb-1">
                                                 <div>
-                                                    <h4 class="font-bold text-gray-900 text-sm flex items-center">
-                                                        {{ $comment->user->name ?? 'Người dùng' }}
-                                                        @if($comment->user)
-                                                            @include('partials.user-badges', ['user' => $comment->user, 'size' => 'xs'])
-                                                        @endif
-                                                    </h4>
+                                                    <a href="{{ route('public.profile', $comment->user->id ?? 0) }}" class="hover:text-brand-green transition">
+                                                        <h4 class="font-bold text-gray-900 text-sm flex items-center">
+                                                            {{ $comment->user->name ?? 'Người dùng' }}
+                                                            @if($comment->user)
+                                                                @include('partials.user-badges', ['user' => $comment->user, 'size' => 'xs'])
+                                                            @endif
+                                                        </h4>
+                                                    </a>
                                                     <span class="text-xs text-gray-400">{{ $comment->created_at->diffForHumans() }}</span>
                                                 </div>
                                             </div>
@@ -447,12 +463,16 @@
                                                 <div class="space-y-4 mb-4">
                                                     @forelse($replies as $reply)
                                                         <div id="comment-{{ $reply->id }}" class="flex gap-2 scroll-mt-24 transition-all duration-500">
-                                                            <img src="{{ $reply->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($reply->user->name ?? 'U').'&background=random' }}" 
-                                                                 class="w-7 h-7 rounded-full flex-shrink-0">
+                                                            <a href="{{ route('public.profile', $reply->user->id ?? 0) }}" class="flex-shrink-0">
+                                                                <img src="{{ $reply->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($reply->user->name ?? 'U').'&background=random' }}" 
+                                                                     class="w-7 h-7 rounded-full hover:ring-2 hover:ring-brand-green transition">
+                                                            </a>
                                                             <div class="flex-1">
                                                                 <div class="bg-white p-2 rounded-xl rounded-tl-none border border-gray-100 shadow-sm">
                                                                     <div class="flex justify-between items-center mb-1">
-                                                                        <h6 class="font-bold text-[10px] text-gray-700">{{ $reply->user->name ?? 'Người dùng' }}</h6>
+                                                                        <a href="{{ route('public.profile', $reply->user->id ?? 0) }}" class="hover:text-brand-green transition">
+                                                                            <h6 class="font-bold text-[10px] text-gray-700">{{ $reply->user->name ?? 'Người dùng' }}</h6>
+                                                                        </a>
                                                                         <span class="text-[9px] text-gray-400">{{ $reply->created_at->diffForHumans() }}</span>
                                                                     </div>
                                                                     <p class="text-[11px] text-gray-600">{{ $reply->content }}</p>

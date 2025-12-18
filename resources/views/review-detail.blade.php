@@ -56,22 +56,23 @@
                     <div id="post-{{ $review->id }}" class="bg-white p-6 md:p-8 rounded-2xl shadow-soft border border-gray-100 hover:shadow-card transition duration-300 scroll-mt-24">
                         <div class="flex items-start gap-5">
                             <div class="flex-shrink-0">
-                                @include('partials.user-avatar-with-frame', [
-                                    'user' => $review->user,
-                                    'size' => 'w-14 h-14',
-                                    'avatarSize' => 'w-12 h-12'
-                                ])
+                                <a href="{{ route('public.profile', $review->user->id) }}">
+                                    <img src="{{ $review->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($review->user->name) . '&background=random&size=64&color=fff' }}" 
+                                         class="w-12 h-12 rounded-full border-2 border-brand-beige shadow-sm object-cover hover:ring-2 hover:ring-brand-green transition">
+                                </a>
                             </div>
 
                             <div class="flex-1 min-w-0">
                                 <div class="flex justify-between items-start mb-3">
                                     <div>
-                                        <h4 class="font-bold text-gray-800 text-base flex items-center">
-                                            {{ $review->user->name }}
-                                            @if($review->user)
-                                                @include('partials.user-badges', ['user' => $review->user, 'size' => 'xs'])
-                                            @endif
-                                        </h4>
+                                        <a href="{{ route('public.profile', $review->user->id) }}" class="hover:text-brand-green transition">
+                                            <h4 class="font-bold text-gray-800 text-base flex items-center">
+                                                {{ $review->user->name }}
+                                                @if($review->user)
+                                                    @include('partials.user-badges', ['user' => $review->user, 'size' => 'xs'])
+                                                @endif
+                                            </h4>
+                                        </a>
                                         <div class="flex items-center gap-3 mt-1">
                                             <div class="flex text-yellow-400 text-xs">
                                                 @for($i=0; $i < round($review->rating); $i++) <i class="fas fa-star"></i> @endfor
@@ -126,23 +127,23 @@
                                         <div class="space-y-3 mb-4 pl-4 border-l-2 border-gray-100">
                                             @foreach($review->comments as $comment)
                                                 <div class="flex gap-3">
-                                                    @include('partials.user-avatar-with-frame', [
-                                                        'user' => $comment->user,
-                                                        'size' => 'w-10 h-10',
-                                                        'avatarSize' => 'w-8 h-8'
-                                                    ])
+                                                    <a href="{{ route('public.profile', $comment->user->id ?? 0) }}" class="flex-shrink-0">
+                                                        <img src="{{ $comment->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($comment->user->name) . '&size=32' }}" 
+                                                             class="w-8 h-8 rounded-full mt-1 border border-white shadow-sm object-cover hover:ring-2 hover:ring-brand-green transition">
+                                                    </a>
                                                     <div class="bg-gray-50 p-3 rounded-r-xl rounded-bl-xl text-xs w-full">
                                                         <div class="flex justify-between mb-1">
-                                                            <span class="font-bold text-gray-800 flex items-center">
-                                                                {{ $comment->user->name ?? 'Ẩn danh' }}
-                                                                @if($comment->user)
-                                                                    @include('partials.user-badges', ['user' => $comment->user, 'size' => 'xs', 'max' => 2])
-                                                                @endif
-                                                            </span>
+                                                            <a href="{{ route('public.profile', $comment->user->id ?? 0) }}" class="hover:text-brand-green transition">
+                                                                <span class="font-bold text-gray-800 flex items-center">
+                                                                    {{ $comment->user->name ?? 'Ẩn danh' }}
+                                                                    @if($comment->user)
+                                                                        @include('partials.user-badges', ['user' => $comment->user, 'size' => 'xs', 'max' => 2])
+                                                                    @endif
+                                                                </span>
+                                                            </a>
                                                             <span class="text-gray-400 text-[10px]">{{ $comment->created_at->diffForHumans() }}</span>
                                                         </div>
                                                         <span class="text-gray-600 block leading-relaxed">{{ $comment->content }}</span>
-                                                    </div>
                                                 </div>
                                             @endforeach
                                         </div>
