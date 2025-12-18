@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\BookSuggestionController;
 
 // ====================================================
 // 1. NHÓM PUBLIC (Ai cũng xem được)
@@ -139,6 +140,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/{id?}', [ProfileController::class, 'index'])->name('profile');
     Route::post('/follow/toggle', [FollowController::class, 'toggleFollow'])->name('follow.toggle');
 
+    // --- ĐỀ XUẤT SÁCH ---
+    Route::get('/sach/de-xuat', [BookSuggestionController::class, 'create'])->name('books.suggest');
+    Route::post('/sach/de-xuat', [BookSuggestionController::class, 'store'])->name('books.suggest.store');
+
+    // --- LIKE & COMMENT (AJAX) ---
+    // Route xử lý Like chung (cho cả Post và Comment)
+    Route::post('/like', [HomeController::class, 'toggleLike'])->name('handle.like');
+    
+    // Route gửi Reply (Bình luận trả lời)
+    Route::post('/comment/{id}/reply', [HomeController::class, 'storeReply'])->name('comment.reply');
+    
+    // Route comment bài viết (nếu dùng PostController riêng)
+    Route::post('/posts/{id}/comment', [PostController::class, 'postComment'])->name('posts.comment');
+
     // --- THÔNG BÁO (NOTIFICATION) ---
     // Đánh dấu tất cả là đã đọc
     Route::get('/notifications/read-all', [HomeController::class, 'markAllAsRead'])->name('notification.readAll');
@@ -207,7 +222,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('banners', BannerController::class);
     Route::resource('badges', \App\Http\Controllers\Admin\BadgeController::class);
     Route::resource('challenges', \App\Http\Controllers\Admin\ChallengeController::class);
-    Route::resource('authors', AuthorController::class)->except(['show']);
+    // Authors - dùng adminIndex() thay vì index() cho trang admin
+    Route::get('authors', [AuthorController::class, 'adminIndex'])->name('authors.index');
+    Route::get('authors/create', [AuthorController::class, 'create'])->name('authors.create');
+    Route::post('authors', [AuthorController::class, 'store'])->name('authors.store');
+    Route::get('authors/{author}/edit', [AuthorController::class, 'edit'])->name('authors.edit');
+    Route::put('authors/{author}', [AuthorController::class, 'update'])->name('authors.update');
+    Route::delete('authors/{author}', [AuthorController::class, 'destroy'])->name('authors.destroy');
+    Route::resource('quotes', \App\Http\Controllers\Admin\QuoteController::class);
 
     // Activity Logs
     Route::get('/activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');

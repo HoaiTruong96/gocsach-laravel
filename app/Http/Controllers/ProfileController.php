@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\Book;
 
 class ProfileController extends Controller
 {
@@ -57,10 +58,21 @@ class ProfileController extends Controller
 
         $myBooks = $query->take(12)->get();
 
+        // 5. Lấy danh sách sách đề xuất (do user tạo)
+        // Chỉ hiển thị cho chính chủ profile
+        $suggestedBooks = collect();
+        if (Auth::id() == $user->id) {
+            $suggestedBooks = Book::where('created_by_user_id', $user->id)
+                                ->orderBy('created_at', 'desc')
+                                ->take(12)
+                                ->get();
+        }
+
         return view('profile', [
             'user' => $user,
             'reviews' => $reviews,
             'myBooks' => $myBooks,
+            'suggestedBooks' => $suggestedBooks,
             'totalBooks' => $totalBooks,
             'totalReviews' => $totalReviews,
             'totalFollowing' => $totalFollowing,

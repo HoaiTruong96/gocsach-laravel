@@ -9,6 +9,7 @@ use App\Models\Comment;
 use App\Models\Article;
 use App\Models\Post;     // <--- Đã thêm Post
 use App\Models\Banner;
+use App\Models\Quote;
 use App\Models\Like;        
 use App\Models\CommentLike; 
 use Illuminate\Support\Facades\Auth;
@@ -60,7 +61,7 @@ class HomeController extends Controller
             ]]);
         }
 
-        $bookQuery = Book::with('categories')->withAvg(['posts'], 'rating')->latest()->take(10);
+        $bookQuery = Book::where('is_approved', true)->with('categories')->withAvg(['posts'], 'rating')->latest()->take(10);
         $books = $bookQuery->get();
         foreach($books as $book) {
             $book->avg_rating = round($book->posts_avg_rating ?? 0, 1);
@@ -70,10 +71,37 @@ class HomeController extends Controller
         $sidebarArticles = Article::with('user')->where('is_featured', false)->latest()->take(2)->get();
         $categories = Category::withCount('books')->orderBy('name', 'asc')->get();
 
+        // --- LẤY QUOTE NGẪU NHIÊN THEO NGÀY ---
+        $quotes = Quote::where('is_active', true)->get();
+        $dailyQuote = null;
+        if ($quotes->count() > 0) {
+            // Dùng ngày hiện tại làm seed để cùng ngày luôn hiển thị cùng quote
+            $dayOfYear = now()->dayOfYear + now()->year;
+            $dailyQuote = $quotes[$dayOfYear % $quotes->count()];
+        }
+
+        // --- THỐNG KÊ CỘNG ĐỒNG ---
+        $communityStats = [
+            'books' => Book::where('is_approved', true)->count(),
+            'members' => \App\Models\User::count(),
+            'reviews' => Post::where('status', 'published')->count(),
+            'comments' => Comment::count(),
+        ];
+
+        // --- SÁCH NGẪU NHIÊN "HÔM NAY ĐỌC GÌ?" ---
+        $allApprovedBooks = Book::where('is_approved', true)->get();
+        $randomBook = null;
+        if ($allApprovedBooks->count() > 0) {
+            // Dùng ngày làm seed để cùng ngày hiển thị cùng sách
+            $dayOfYear = now()->dayOfYear + now()->year;
+            $randomBook = $allApprovedBooks[$dayOfYear % $allApprovedBooks->count()];
+        }
+
         // Truyền biến $latestReviews vào view
         return view('home', compact(
             'heroSlides', 'books', 'latestReviews', 'categories', 
-            'featuredArticle', 'sidebarArticles'
+            'featuredArticle', 'sidebarArticles', 'dailyQuote',
+            'communityStats', 'randomBook'
         ));
     }
 
