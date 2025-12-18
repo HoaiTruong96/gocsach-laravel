@@ -33,7 +33,7 @@
                 <i class="fas fa-key text-2xl"></i>
             </div>
             <h2 class="text-2xl font-serif font-bold">Quên Mật Khẩu?</h2>
-            <p class="text-white/80 text-sm mt-1">Nhập email để nhận link đặt lại mật khẩu</p>
+            <p class="text-white/80 text-sm mt-1">Nhập email để nhận mã xác thực</p>
         </div>
 
         <div class="p-8">
@@ -62,14 +62,14 @@
                         </span>
                         <input type="email" name="email" 
                             class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green transition" 
-                            placeholder="email@example.com" required value="{{ old('email') }}">
+                            placeholder="yourname@gmail.com" required value="{{ old('email') }}">
                     </div>
                 </div>
 
                 <button type="submit" 
                     class="w-full bg-brand-green text-white font-bold py-3 rounded-lg hover:bg-[#2d4a3a] transition transform hover:-translate-y-0.5 shadow-md">
                     <i class="fas fa-paper-plane mr-2"></i>
-                    Gửi Link Đặt Lại Mật Khẩu
+                    Gửi Mã Xác Thực
                 </button>
             </form>
 

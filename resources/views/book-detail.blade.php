@@ -491,27 +491,39 @@
                                                     @endforelse
                                                 </div>
 
-                                                {{-- Ô NHẬP REPLY --}}
+                                                {{-- THÔNG BÁO ĐĂNG NHẬP CHO GUEST --}}
+                                                @guest
+                                                <div id="login-box-comment-{{ $comment->id }}" class="hidden">
+                                                    <div class="text-center py-3 bg-gray-50 rounded-lg text-xs text-gray-500 border border-dashed border-gray-200">
+                                                        <a href="{{ route('login') }}" class="text-brand-green font-bold hover:underline">Đăng nhập</a> để tham gia thảo luận cùng mọi người.
+                                                    </div>
+                                                </div>
+                                                @endguest
+
+                                                {{-- FORM REPLY (ẨN MẶC ĐỊNH - HIỆN KHI BẤM NÚT TRẢ LỜI) --}}
                                                 @auth
+                                                <div id="reply-form-{{ $comment->id }}" class="hidden transition-all duration-300">
                                                     <div class="flex gap-2 items-start">
                                                         <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name).'&background=random' }}" 
-                                                             class="w-7 h-7 rounded-full flex-shrink-0">
-                                                        <div class="flex-1 relative">
-                                                            <textarea id="reply-input-{{ $comment->id }}" rows="1" 
-                                                                      class="w-full text-xs p-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green resize-none pr-16 shadow-sm" 
-                                                                      placeholder="Nhập phản hồi..."
-                                                                      oninput="autoResize(this)"></textarea>
-                                                            <button type="button" onclick="submitReply({{ $comment->id }}, event)" 
-                                                                    class="absolute right-1.5 top-1 text-brand-green px-2 py-1 bg-brand-green/10 rounded-lg text-xs font-bold hover:bg-brand-green hover:text-white transition">
-                                                                Gửi
-                                                            </button>
+                                                             class="w-8 h-8 rounded-full border border-gray-200 mt-1">
+                                                        
+                                                        <div class="flex-1">
+                                                            <textarea id="reply-input-{{ $comment->id }}" 
+                                                                      rows="1" 
+                                                                      class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-brand-green focus:bg-white transition resize-none overflow-hidden" 
+                                                                      placeholder="Viết bình luận... (Enter để gửi)"
+                                                                      oninput="autoResize(this)"
+                                                                      onkeydown="handleEnter(event, {{ $comment->id }})"></textarea>
+                                                            
+                                                            <div class="flex justify-end mt-2 gap-2">
+                                                                <button onclick="toggleReplyForm({{ $comment->id }})" class="text-xs text-gray-500 hover:text-gray-700 font-bold px-3 py-1.5">Hủy</button>
+                                                                <button onclick="submitInlineReply({{ $comment->id }})" class="text-xs bg-brand-green text-white font-bold px-4 py-1.5 rounded-md hover:bg-[#1e3a2f] transition shadow-sm">Gửi</button>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                @else
-                                                    <p class="text-center text-xs text-gray-400 italic">
-                                                        <a href="{{ route('login') }}" class="text-brand-green font-bold hover:underline">Đăng nhập</a> để trả lời bình luận này.
-                                                    </p>
+                                                </div>
                                                 @endauth
+                                                {{-- KẾT THÚC FORM REPLY --}}
                                             </div>
                                         </div>
                                     </div>
@@ -665,8 +677,9 @@
     // --- LOGIC LIKE ---
     function handleLike(id, type) {
         if (!currentUserId) {
-            alert("Vui lòng đăng nhập để thả tim!");
-            window.location.href = "/login";
+            // Hiển thị thông báo (chỉ show, không ẩn)
+            const loginBox = document.getElementById(`login-box-${type}-${id}`);
+            if (loginBox) loginBox.classList.remove('hidden');
             return;
         }
 
@@ -762,8 +775,9 @@
         if (event) event.preventDefault();
         
         if (!currentUserId) {
-            alert("Vui lòng đăng nhập để bình luận!");
-            window.location.href = "/login";
+            // Hiển thị thông báo (chỉ show, không ẩn)
+            const loginBox = document.getElementById(`login-box-comment-${commentId}`);
+            if (loginBox) loginBox.classList.remove('hidden');
             return;
         }
         
@@ -1106,6 +1120,40 @@
             }
         });
     }
+
+    // --- THÔNG BÁO ĐĂNG NHẬP CHO GUEST ---
+    function showLoginToast(action) {
+        // Xóa thông báo cũ nếu có
+        const existingMsg = document.getElementById('login-inline-msg');
+        if (existingMsg) existingMsg.remove();
+
+        // Tạo thông báo inline
+        const msg = document.createElement('div');
+        msg.id = 'login-inline-msg';
+        msg.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] w-[90%] max-w-lg animate-slide-up';
+        msg.innerHTML = `
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 py-3 px-5 text-center text-sm text-gray-500">
+                <a href="/login" class="text-brand-green font-bold hover:underline">Đăng nhập</a> để tham gia thảo luận cùng mọi người.
+            </div>
+        `;
+        document.body.appendChild(msg);
+
+        // Tự động ẩn sau 5 giây
+        setTimeout(() => {
+            if (msg) {
+                msg.classList.add('animate-slide-down');
+                setTimeout(() => msg.remove(), 300);
+            }
+        }, 5000);
+    }
+
+    function closeLoginToast() {
+        const msg = document.getElementById('login-inline-msg');
+        if (msg) {
+            msg.classList.add('animate-slide-down');
+            setTimeout(() => msg.remove(), 300);
+        }
+    }
 </script>
 <style>
     /* Animation nảy cho tim */
@@ -1114,5 +1162,17 @@
         50% { transform: scale(1.2); }
     }
     .bounce { animation: bounce 0.3s; }
+
+    /* Toast animations */
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+        to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    @keyframes slideDown {
+        from { opacity: 1; transform: translateX(-50%) translateY(0); }
+        to { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    }
+    .animate-slide-up { animation: slideUp 0.3s ease-out; }
+    .animate-slide-down { animation: slideDown 0.3s ease-out; }
 </style>
 @endpush

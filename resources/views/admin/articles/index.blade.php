@@ -9,7 +9,10 @@
                 <h2 class="font-bold text-gray-800 dark:text-white text-lg">Quản lý Tạp Chí Đọc</h2>
                 <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">Các bài viết trong mục Tạp Chí Đọc trên trang chủ</p>
             </div>
-            {{-- Có thể thêm nút tạo mới sau --}}
+            <a href="{{ route('admin.articles.create') }}" 
+               class="h-10 bg-blue-600 text-white px-4 rounded-lg text-sm hover:bg-blue-700 flex items-center justify-center shadow-md hover:shadow-lg transition transform hover:scale-105 whitespace-nowrap">
+                <i class="fas fa-plus mr-2"></i> Thêm mới
+            </a>
         </div>
 
         <div class="overflow-x-auto">
