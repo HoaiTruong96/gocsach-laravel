@@ -23,8 +23,8 @@ class Author extends Model
     ];
 
     /**
-     * Lấy tất cả sách của tác giả này
-     * Liên kết qua trường author_name trong bảng books
+     * Lấy tất cả sách của tác giả này dựa trên cột `author_name` (cũ)
+     * Giữ để tương thích các nơi cũ còn dùng kiểu lưu tên tác giả trong `books.author_name`.
      */
     public function books()
     {
@@ -32,11 +32,20 @@ class Author extends Model
     }
 
     /**
-     * Đếm số lượng sách của tác giả
+     * Liên kết nhiều-nhiều (sử dụng bảng pivot `author_book`) nếu sách được gắn nhiều tác giả
+     */
+    public function booksPivot()
+    {
+        return $this->belongsToMany(Book::class, 'author_book', 'author_id', 'book_id');
+    }
+
+    /**
+     * Đếm số lượng sách của tác giả (ưu tiên pivot nếu có)
      */
     public function getBooksCountAttribute()
     {
-        return $this->books()->count();
+        // Nếu có bản ghi pivot thì dùng pivot, nếu không quay về lượt đếm cũ
+        return $this->booksPivot()->count() ?: $this->books()->count();
     }
 
     /**

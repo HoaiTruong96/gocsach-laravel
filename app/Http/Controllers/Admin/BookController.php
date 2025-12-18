@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Book;
 use App\Models\Category;
+use App\Models\Author;
 use App\Models\AdminActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -84,6 +85,23 @@ class BookController extends Controller
         // 2. Gắn thể loại (Quan hệ nhiều-nhiều)
         $book->categories()->attach($request->category_ids);
 
+        // 3. Xử lý tác giả: cho phép nhập nhiều tên (phân cách bằng dấu phẩy)
+        $authorInput = $request->input('author_name', '');
+        $names = array_filter(array_map('trim', preg_split('/[\r\n,;]+/', $authorInput)));
+        $authorIds = [];
+        foreach ($names as $name) {
+            if (empty($name)) continue;
+            $slug = Author::generateSlug($name);
+            $author = Author::firstOrCreate(['name' => $name], ['slug' => $slug]);
+            $authorIds[] = $author->id;
+        }
+        if (!empty($authorIds)) {
+            $book->authors()->sync($authorIds);
+            // Đồng bộ field author_name (giữ tương thích với chỗ khác)
+            $book->author_name = implode(', ', $names);
+            $book->save();
+        }
+
         // Ghi log
         AdminActivityLog::log(
             'create',
@@ -144,6 +162,22 @@ class BookController extends Controller
         // Update thông tin cơ bản và đồng bộ
         $book->update($data);
         $book->categories()->sync($request->category_ids);
+
+        // Xử lý tác giả (tương tự store)
+        $authorInput = $request->input('author_name', '');
+        $names = array_filter(array_map('trim', preg_split('/[\r\n,;]+/', $authorInput)));
+        $authorIds = [];
+        foreach ($names as $name) {
+            if (empty($name)) continue;
+            $slug = Author::generateSlug($name);
+            $author = Author::firstOrCreate(['name' => $name], ['slug' => $slug]);
+            $authorIds[] = $author->id;
+        }
+        if (!empty($authorIds)) {
+            $book->authors()->sync($authorIds);
+            $book->author_name = implode(', ', $names);
+            $book->save();
+        }
 
         // Ghi log
         AdminActivityLog::log(
