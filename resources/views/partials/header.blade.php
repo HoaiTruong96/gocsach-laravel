@@ -49,7 +49,8 @@
                 </a>
             </div>
 
-            {{-- Search Bar --}}
+            {{-- Search Bar - Ẩn trên trang Tìm kiếm vì đã có form riêng --}}
+            @if(!request()->routeIs('books.search'))
             <div class="hidden md:flex flex-1 max-w-2xl px-8 relative z-40">
                 <form action="{{ route('books.search') }}" method="GET" class="relative w-full flex items-center" id="header-search-form">
                     
@@ -71,7 +72,6 @@
                                 @endif
                             </div>
                         </div>
-                    </div>
 
                         {{-- Input tìm kiếm --}}
                         <input type="text" id="header-search-input" name="keyword" value="{{ request('keyword') }}"
@@ -84,11 +84,14 @@
                         </button>
                     </form>
 
-                {{-- Kết quả Ajax (Đặt NGOÀI form để tránh form submit) --}}
-                <div id="header-search-results" class="absolute top-full left-0 w-full bg-white shadow-xl rounded-xl mt-2 hidden z-[60] overflow-hidden border border-gray-100 max-h-[400px] overflow-y-auto">
-                    {{-- JS sẽ render kết quả vào đây --}}
+                    {{-- Kết quả Ajax (Đặt NGOÀI form để tránh form submit) --}}
+                    <div id="header-search-results"
+                        class="absolute top-full left-0 w-full bg-white shadow-xl rounded-xl mt-2 hidden z-[60] overflow-hidden border border-gray-100 max-h-[400px] overflow-y-auto">
+                        {{-- JS sẽ render kết quả vào đây --}}
+                    </div>
                 </div>
             </div>
+            @endif
         
             {{-- User & Notification Actions --}}
             <div class="flex items-center gap-3 md:gap-5">

@@ -429,16 +429,14 @@
                                                     <span id="like-count-comment-{{ $comment->id }}">{{ $comment->likes->count() }}</span> Thích
                                                 </button>
 
-                                                {{-- Nút Toggle Reply (GIỐNG TRANG HOME) --}}
-                                                <button 
-                                                    type="button"
-                                                    onclick="toggleReplySection({{ $comment->id }})" 
-                                                    class="flex items-center gap-1.5 text-xs font-bold text-gray-400 hover:text-brand-green transition group">
-                                                    <i class="far fa-comment-dots group-hover:scale-110 transition-transform"></i>
-                                                    <span>Trả lời ({{ $replies->count() }})</span>
-                                                    <i id="chevron-reply-{{ $comment->id }}" class="fas fa-chevron-down text-[10px] ml-1 transition-transform duration-300"></i>
-                                                </button>
-                                            </div>
+                                                    {{-- Nút Reply --}}
+                                                    <button 
+                                                        type="button"
+                                                        onclick="toggleReplyForm({{ $comment->id }})" 
+                                                        class="flex items-center gap-1.5 text-xs font-bold text-gray-400 hover:text-blue-500 transition">
+                                                        <i class="far fa-comment-dots"></i> Trả lời
+                                                    </button>
+                                                </div>
 
 <<<<<<< HEAD
                                                 {{-- THÔNG BÁO ĐĂNG NHẬP CHO GUEST --}}
@@ -468,40 +466,10 @@
                                                             <div class="flex justify-end mt-2 gap-2">
                                                                 <button onclick="toggleReplyForm({{ $comment->id }})" class="text-xs text-gray-500 hover:text-gray-700 font-bold px-3 py-1.5">Hủy</button>
                                                                 <button onclick="submitInlineReply({{ $comment->id }})" class="text-xs bg-brand-green text-white font-bold px-4 py-1.5 rounded-md hover:bg-[#1e3a2f] transition shadow-sm">Gửi</button>
-=======
-                                            {{-- KHUNG TRẢ LỜI (ẨN/HIỆN KHI CLICK) --}}
-                                            <div id="reply-section-{{ $comment->id }}" class="hidden mt-4 pt-4 border-t border-dashed border-gray-100 bg-gray-50/50 rounded-xl p-4 animate-fade-in">
-                                                
-                                                {{-- DANH SÁCH CÁC REPLY --}}
-                                                <div class="space-y-4 mb-4">
-                                                    @forelse($replies as $reply)
-                                                        <div id="comment-{{ $reply->id }}" class="flex gap-2 scroll-mt-24 transition-all duration-500">
-                                                            <img src="{{ $reply->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($reply->user->name ?? 'U').'&background=random' }}" 
-                                                                 class="w-7 h-7 rounded-full flex-shrink-0">
-                                                            <div class="flex-1">
-                                                                <div class="bg-white p-2 rounded-xl rounded-tl-none border border-gray-100 shadow-sm">
-                                                                    <div class="flex justify-between items-center mb-1">
-                                                                        <h6 class="font-bold text-[10px] text-gray-700">{{ $reply->user->name ?? 'Người dùng' }}</h6>
-                                                                        <span class="text-[9px] text-gray-400">{{ $reply->created_at->diffForHumans() }}</span>
-                                                                    </div>
-                                                                    <p class="text-[11px] text-gray-600">{{ $reply->content }}</p>
-                                                                </div>
-                                                                {{-- Like cho reply --}}
-                                                                <button onclick="handleLike({{ $reply->id }}, 'comment')" 
-                                                                        id="like-btn-comment-{{ $reply->id }}"
-                                                                        class="text-[9px] font-bold ml-2 mt-1 flex items-center gap-1 {{ Auth::check() && $reply->likes->where('user_id', Auth::id())->count() > 0 ? 'text-red-500' : 'text-gray-400 hover:text-red-500' }} transition">
-                                                                    <i id="like-icon-comment-{{ $reply->id }}" class="{{ Auth::check() && $reply->likes->where('user_id', Auth::id())->count() > 0 ? 'fas' : 'far' }} fa-heart"></i>
-                                                                    <span id="like-count-comment-{{ $reply->id }}">{{ $reply->likes->count() }}</span>
-                                                                </button>
->>>>>>> 2a704b2952c20800bec8c7c6558567bf20fb4d16
                                                             </div>
                                                         </div>
-                                                    @empty
-                                                        <p class="text-center text-xs text-gray-400 italic py-2">Chưa có phản hồi nào.</p>
-                                                    @endforelse
+                                                    </div>
                                                 </div>
-<<<<<<< HEAD
-                                                @endauth
                                                 {{-- KẾT THÚC FORM REPLY --}}
 =======
 
@@ -746,23 +714,15 @@
 
     // --- LOGIC REPLY (GIỐNG TRANG HOME) ---
     
-<<<<<<< HEAD
     // 1. Ẩn/Hiện form nhập liệu
     function toggleReplyForm(commentId) {
         if (!currentUserId) {
-            // Hiển thị thông báo (chỉ show, không ẩn)
-            const loginBox = document.getElementById(`login-box-comment-${commentId}`);
-            if (loginBox) loginBox.classList.remove('hidden');
+            alert("Vui lòng đăng nhập để bình luận!");
+            window.location.href = "/login";
             return;
         }
         
         const form = document.getElementById(`reply-form-${commentId}`);
-=======
-    // 1. Toggle mở/đóng khung reply (hiển thị danh sách reply + form nhập)
-    function toggleReplySection(commentId) {
-        const section = document.getElementById(`reply-section-${commentId}`);
-        const chevron = document.getElementById(`chevron-reply-${commentId}`);
->>>>>>> 2a704b2952c20800bec8c7c6558567bf20fb4d16
         const input = document.getElementById(`reply-input-${commentId}`);
         
         if (section) {
@@ -786,16 +746,16 @@
         textarea.style.height = textarea.scrollHeight + 'px';
     }
 
-    // 3. Gửi reply qua AJAX (KHÔNG cần reload trang)
-    function submitReply(commentId, event) {
-        if (event) event.preventDefault();
-        
-        if (!currentUserId) {
-            alert("Vui lòng đăng nhập để bình luận!");
-            window.location.href = "/login";
-            return;
+    // 3. Xử lý bấm Enter để gửi
+    function handleEnter(event, commentId) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault(); // Ngăn xuống dòng
+            submitInlineReply(commentId);
         }
-        
+    }
+
+    // 4. Gửi Reply qua AJAX -> Reload
+    function submitInlineReply(commentId) {
         const input = document.getElementById(`reply-input-${commentId}`);
         if (!input) return;
 
