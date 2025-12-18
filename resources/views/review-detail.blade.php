@@ -53,7 +53,7 @@
 
             <div class="space-y-6">
                 @forelse($reviews as $review)
-                    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-soft border border-gray-100 hover:shadow-card transition duration-300">
+                    <div id="post-{{ $review->id }}" class="bg-white p-6 md:p-8 rounded-2xl shadow-soft border border-gray-100 hover:shadow-card transition duration-300 scroll-mt-24">
                         <div class="flex items-start gap-5">
                             <div class="flex-shrink-0">
                                 <img src="{{ $review->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($review->user->name) . '&background=random&size=64&color=fff' }}" 
