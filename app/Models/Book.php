@@ -78,4 +78,13 @@ class Book extends Model
         // Tham số thứ 3 ('id'): Tên cột khóa chính trong bảng books
         return $this->hasMany(Comment::class, 'post_id', 'id');
     }
+
+    /**
+     * Liên kết với bảng `authors` theo `author_name` -> `name`
+     * Sử dụng belongsTo vì sách *tham chiếu* tên tác giả trong trường `author_name`.
+     */
+    public function author()
+    {
+        return $this->belongsTo(Author::class, 'author_name', 'name');
+    }
 }

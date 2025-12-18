@@ -47,12 +47,57 @@
                                         placeholder="Mô tả danh hiệu..."></textarea>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Icon
-                                        (emoji hoặc
-                                        URL)</label>
-                                    <input type="text" name="icon"
-                                        class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white"
-                                        placeholder="🏆 hoặc URL hình ảnh">
+                                    <label
+                                        class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Icon</label>
+
+                                    {{-- Icon Type Selector --}}
+                                    <div class="flex gap-2 mb-2">
+                                        <button type="button" onclick="setIconType('emoji')" id="btn-emoji-type"
+                                            class="icon-type-btn flex-1 px-3 py-1.5 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm font-medium transition-all">
+                                            😀 Emoji
+                                        </button>
+                                        <button type="button" onclick="setIconType('image')" id="btn-image-type"
+                                            class="icon-type-btn flex-1 px-3 py-1.5 rounded-lg border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-slate-400 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-700 transition-all">
+                                            🖼️ Hình ảnh
+                                        </button>
+                                    </div>
+
+                                    {{-- Emoji Picker Section --}}
+                                    <div id="emoji-picker-section">
+                                        <div
+                                            class="grid grid-cols-8 gap-1 p-2 bg-gray-50 dark:bg-slate-700 rounded-lg mb-2 max-h-32 overflow-y-auto">
+                                            @php
+                                                $emojis = ['🏆', '🥇', '🥈', '🥉', '🏅', '🎖️', '⭐', '🌟', '✨', '💎', '👑', '🔥', '💪', '🎯', '🎪', '🎭', '📚', '📖', '📕', '📗', '📘', '📙', '✍️', '🖊️', '📝', '💡', '🧠', '🌸', '🌺', '🌻', '🌈', '☀️', '🌙', '❄️', '🍂', '🌊', '🦋', '🐝', '🦄', '🐉', '🎨', '🎬', '🎵', '🎸', '🎮', '🚀', '✈️', '🏠', '💝', '💖', '❤️', '🧡', '💛', '💚', '💙', '💜', '🤍', '🖤', '🤎', '💔', '❣️', '💗', '💓', '💕'];
+                                            @endphp
+                                            @foreach($emojis as $emoji)
+                                                <button type="button" onclick="selectEmoji('{{ $emoji }}')"
+                                                    class="emoji-btn w-8 h-8 flex items-center justify-center text-xl hover:bg-white dark:hover:bg-slate-600 rounded transition-colors">
+                                                    {{ $emoji }}
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                        <input type="text" id="icon-input" name="icon"
+                                            class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white text-center text-2xl"
+                                            placeholder="Chọn hoặc nhập emoji" oninput="updateIconPreview()">
+                                    </div>
+
+                                    {{-- Image URL Section --}}
+                                    <div id="image-url-section" class="hidden">
+                                        <input type="text" id="icon-url-input"
+                                            class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white text-sm"
+                                            placeholder="https://example.com/icon.png hoặc .gif"
+                                            oninput="updateImageUrlInput()">
+                                        <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                                            Hỗ trợ: .png, .jpg, .gif, .webp, .svg
+                                        </p>
+                                    </div>
+
+                                    {{-- Preview --}}
+                                    <div id="icon-preview"
+                                        class="mt-2 p-3 bg-gray-50 dark:bg-slate-700 rounded-lg text-center hidden">
+                                        <span class="text-xs text-gray-500 dark:text-slate-400 block mb-1">Xem trước:</span>
+                                        <div id="preview-content" class="text-4xl"></div>
+                                    </div>
                                 </div>
                                 <div class="flex items-center">
                                     <input type="checkbox" name="is_active" id="badge_active" checked
@@ -95,7 +140,12 @@
                                     <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 group">
                                         <td class="px-6 py-4">
                                             <div class="flex items-center">
-                                                <span class="text-2xl mr-3">{{ $badge->icon ?? '🏅' }}</span>
+                                                @if($badge->icon && Str::startsWith($badge->icon, 'http'))
+                                                    <img src="{{ $badge->icon }}" alt="{{ $badge->name }}"
+                                                        class="w-8 h-8 object-contain mr-3 rounded">
+                                                @else
+                                                    <span class="text-2xl mr-3">{{ $badge->icon ?? '🏅' }}</span>
+                                                @endif
                                                 <div>
                                                     <p class="font-medium text-gray-800 dark:text-white">{{ $badge->name }}</p>
                                                     <p class="text-xs text-gray-500 dark:text-slate-400">
@@ -284,11 +334,17 @@
                                                 @endif
                                             </div>
                                             <p class="text-sm text-gray-500 dark:text-slate-400 mb-2">
-                                                {{ $challenge->description }}</p>
+                                                {{ $challenge->description }}
+                                            </p>
                                             <div class="flex items-center gap-4 text-sm">
                                                 <span class="text-gray-600 dark:text-slate-300">
                                                     <i class="fas fa-medal text-yellow-500 mr-1"></i>
-                                                    {{ $challenge->badge->icon ?? '🏅' }} {{ $challenge->badge->name }}
+                                                    @if($challenge->badge->icon && Str::startsWith($challenge->badge->icon, 'http'))
+                                                        <img src="{{ $challenge->badge->icon }}" alt="{{ $challenge->badge->name }}" class="w-5 h-5 object-contain inline-block rounded">
+                                                    @else
+                                                                {{ $challenge->badge->icon ?? '🏅' }}
+                                                            @endif
+                                 {{ $challenge->badge->name }}
                                                 </span>
                                                 <span class="text-gray-600 dark:text-slate-300">
                                                     <i class="fas fa-pen mr-1"></i>{{ $challenge->target_count }} reviews
@@ -349,6 +405,7 @@
 
     @push('scripts')
         <script>
+            // ========== TAB FUNCTIONS ==========
             function showTab(tab) {
                 // Hide all sections
                 document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -369,7 +426,101 @@
                 document.querySelectorAll('.error-message').forEach(el => el.remove());
             }
 
-            // Tự động ẩn thông báo lỗi sau 5 giây
+            // ========== ICON TYPE FUNCTIONS ==========
+            let currentIconType = 'emoji';
+
+            function setIconType(type) {
+                currentIconType = type;
+                const btnEmoji = document.getElementById('btn-emoji-type');
+                const btnImage = document.getElementById('btn-image-type');
+                const emojiSection = document.getElementById('emoji-picker-section');
+                const imageSection = document.getElementById('image-url-section');
+                const iconInput = document.getElementById('icon-input');
+                const iconUrlInput = document.getElementById('icon-url-input');
+
+                if (type === 'emoji') {
+                    // Activate emoji button
+                    btnEmoji.classList.add('border-2', 'border-blue-500', 'bg-blue-50', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
+                    btnEmoji.classList.remove('border', 'border-gray-300', 'dark:border-slate-600', 'text-gray-600', 'dark:text-slate-400');
+                    // Deactivate image button
+                    btnImage.classList.remove('border-2', 'border-blue-500', 'bg-blue-50', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
+                    btnImage.classList.add('border', 'border-gray-300', 'dark:border-slate-600', 'text-gray-600', 'dark:text-slate-400');
+                    // Show/hide sections
+                    emojiSection.classList.remove('hidden');
+                    imageSection.classList.add('hidden');
+                    // Clear URL value when switching to emoji - only keep if not a URL
+                    if (isImageUrl(iconInput.value)) {
+                        iconInput.value = '';
+                    }
+                    iconUrlInput.value = '';
+                    updateIconPreview();
+                } else {
+                    // Activate image button
+                    btnImage.classList.add('border-2', 'border-blue-500', 'bg-blue-50', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
+                    btnImage.classList.remove('border', 'border-gray-300', 'dark:border-slate-600', 'text-gray-600', 'dark:text-slate-400');
+                    // Deactivate emoji button
+                    btnEmoji.classList.remove('border-2', 'border-blue-500', 'bg-blue-50', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400');
+                    btnEmoji.classList.add('border', 'border-gray-300', 'dark:border-slate-600', 'text-gray-600', 'dark:text-slate-400');
+                    // Show/hide sections
+                    emojiSection.classList.add('hidden');
+                    imageSection.classList.remove('hidden');
+                    // Clear emoji input and update
+                    iconInput.value = '';
+                    updateImageUrlInput();
+                }
+            }
+
+            function isImageUrl(str) {
+                if (!str) return false;
+                const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'];
+                const lowerStr = str.toLowerCase();
+                return lowerStr.startsWith('http') && imageExtensions.some(ext => lowerStr.includes(ext));
+            }
+
+            function updateIconPreview() {
+                const iconInput = document.getElementById('icon-input');
+                const preview = document.getElementById('icon-preview');
+                const previewContent = document.getElementById('preview-content');
+                const value = iconInput.value.trim();
+
+                if (value) {
+                    preview.classList.remove('hidden');
+                    previewContent.innerHTML = value;
+                } else {
+                    preview.classList.add('hidden');
+                    previewContent.innerHTML = '';
+                }
+            }
+
+            function selectEmoji(emoji) {
+                const iconInput = document.getElementById('icon-input');
+                iconInput.value = emoji;
+                updateIconPreview();
+            }
+
+            function updateImageUrlInput() {
+                const iconUrlInput = document.getElementById('icon-url-input');
+                const iconInput = document.getElementById('icon-input');
+                const preview = document.getElementById('icon-preview');
+                const previewContent = document.getElementById('preview-content');
+                const url = iconUrlInput.value.trim();
+
+                // Sync to hidden icon input (so form submits correctly)
+                iconInput.value = url;
+
+                if (url && isImageUrl(url)) {
+                    preview.classList.remove('hidden');
+                    previewContent.innerHTML = `<img src="${url}" alt="Preview" class="w-16 h-16 object-contain mx-auto rounded-lg" onerror="this.parentElement.innerHTML='<span class=\'text-red-500 text-sm\'>Không thể tải ảnh</span>'">`;
+                } else if (url) {
+                    preview.classList.remove('hidden');
+                    previewContent.innerHTML = '<span class="text-yellow-500 text-sm">Vui lòng nhập URL hình ảnh hợp lệ</span>';
+                } else {
+                    preview.classList.add('hidden');
+                    previewContent.innerHTML = '';
+                }
+            }
+
+            // ========== DOM READY ==========
             document.addEventListener('DOMContentLoaded', function () {
                 // Đọc tab parameter từ URL và chuyển đến đúng tab
                 const urlParams = new URLSearchParams(window.location.search);
@@ -378,6 +529,7 @@
                     showTab('challenges');
                 }
 
+                // Tự động ẩn thông báo lỗi sau 5 giây
                 setTimeout(function () {
                     document.querySelectorAll('.error-message').forEach(el => {
                         el.style.transition = 'opacity 0.5s';

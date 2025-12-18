@@ -41,7 +41,13 @@
                 {{-- Ảnh Bìa --}}
                 <div class="md:col-span-4 lg:col-span-3">
                     <div class="relative w-full aspect-[2/3] rounded-r-lg rounded-l-sm shadow-book transform hover:scale-[1.02] transition duration-500 cursor-pointer group">
-                        <img src="{{ !empty($book->cover_image) ? $book->cover_image : 'https://via.placeholder.com/300x450?text=No+Image' }}" 
+                        @php
+                            $cover = $book->cover_image ?? null;
+                            $coverUrl = $cover 
+                                ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover))
+                                : 'https://via.placeholder.com/300x450?text=No+Image';
+                        @endphp
+                        <img src="{{ $coverUrl }}" 
                              alt="{{ $book->title }}" 
                              class="w-full h-full object-cover rounded-r-lg rounded-l-sm border-l-4 border-gray-200"
                              onerror="this.onerror=null; this.src='https://via.placeholder.com/300x450?text=No+Image'">
@@ -58,8 +64,12 @@
                             {{ $book->title ?? 'Tiêu đề sách' }}
                         </h1>
                         <div class="flex items-center gap-4 text-sm font-medium">
-                            <span class="text-gray-500">Tác giả: 
-                                <span class="text-brand-green font-bold">{{ $book->author_name ?? 'Đang cập nhật' }}</span>
+                            <span class="text-gray-500">Tác giả:
+                                @if($book->author)
+                                    <a href="{{ route('authors.show', $book->author->slug ?? \Str::slug($book->author->name)) }}" class="text-brand-green font-bold hover:underline">{{ $book->author->name }}</a>
+                                @else
+                                    <span class="text-brand-green font-bold">{{ $book->author_name ?? 'Đang cập nhật' }}</span>
+                                @endif
                             </span>
                             <span class="text-gray-300">|</span>
                             <div class="flex items-center text-yellow-400">
@@ -138,9 +148,14 @@
                             <h1 class="text-3xl font-bold text-gray-900 mb-4 font-serif leading-tight">{{ $mainPost->title }}</h1>
                             
                             <div class="flex items-center gap-3 text-sm text-gray-500 mb-6 bg-gray-50 p-3 rounded-lg w-fit">
-                                <img src="https://ui-avatars.com/api/?name={{ urlencode($mainPost->user->name ?? 'Admin') }}&background=random&size=32" class="w-8 h-8 rounded-full">
+                                <img src="{{ $mainPost->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($mainPost->user->name ?? 'Admin') . '&background=random&size=32' }}" class="w-8 h-8 rounded-full object-cover">
                                 <div class="flex flex-col">
-                                    <span class="font-bold text-gray-800">{{ $mainPost->user->name ?? 'Quản trị viên' }}</span>
+                                    <span class="font-bold text-gray-800 flex items-center">
+                                        {{ $mainPost->user->name ?? 'Quản trị viên' }}
+                                        @if($mainPost->user)
+                                            @include('partials.user-badges', ['user' => $mainPost->user, 'size' => 'xs'])
+                                        @endif
+                                    </span>
                                     <span class="text-xs">{{ $mainPost->created_at->format('d/m/Y') }}</span>
                                 </div>
                             </div>
@@ -223,7 +238,12 @@
                                         <div class="flex-1">
                                             <div class="flex justify-between items-start mb-1">
                                                 <div>
-                                                    <h4 class="font-bold text-gray-900 text-sm">{{ $comment->user->name ?? 'Người dùng' }}</h4>
+                                                    <h4 class="font-bold text-gray-900 text-sm flex items-center">
+                                                        {{ $comment->user->name ?? 'Người dùng' }}
+                                                        @if($comment->user)
+                                                            @include('partials.user-badges', ['user' => $comment->user, 'size' => 'xs'])
+                                                        @endif
+                                                    </h4>
                                                     <span class="text-xs text-gray-400">{{ $comment->created_at->diffForHumans() }}</span>
                                                 </div>
                                             </div>
@@ -298,22 +318,36 @@
                     <h3 class="font-bold text-gray-500 text-xs uppercase tracking-widest mb-6">Thông Tin Tác Giả</h3>
                     
                     <div class="relative w-24 h-24 mx-auto mb-4">
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode($book->author_name ?? 'TG') }}&background=random&size=128" 
-                             class="w-full h-full rounded-full object-cover border-4 border-stone-100 shadow-md">
-                        <div class="absolute bottom-0 right-0 bg-brand-green text-white text-[10px] font-bold px-2 py-0.5 rounded-full border-2 border-white">TG</div>
+                        @php
+                            $author = $book->author ?? null;
+                            $photo = $author->photo ?? null;
+                            $photoUrl = $photo ? (Str::startsWith($photo, 'http') ? $photo : asset('storage/' . $photo)) : ('https://ui-avatars.com/api/?name=' . urlencode($author->name ?? $book->author_name ?? 'TG') . '&background=random&size=128');
+                            $initials = strtoupper(substr($author->name ?? $book->author_name ?? 'TG', 0, 2));
+                        @endphp
+                        <img src="{{ $photoUrl }}" 
+                             class="w-full h-full rounded-full object-cover border-4 border-stone-100 shadow-md" alt="{{ $author->name ?? $book->author_name ?? 'Tác giả' }}">
+                        <div class="absolute bottom-0 right-0 bg-brand-green text-white text-[10px] font-bold px-2 py-0.5 rounded-full border-2 border-white">{{ $initials }}</div>
                     </div>
                     
                     <h2 class="text-xl font-bold text-gray-900 font-serif mb-2">
-                        {{ $book->author_name ?? 'Tác giả' }}
+                        @if($author)
+                            <a href="{{ route('authors.show', $author->slug ?? \Str::slug($author->name)) }}" class="hover:underline">{{ $author->name }}</a>
+                        @else
+                            {{ $book->author_name ?? 'Tác giả' }}
+                        @endif
                     </h2>
                     
                     <p class="text-gray-500 text-sm mb-6 leading-relaxed px-2">
-                        Theo dõi tác giả để nhận thông báo về những tác phẩm mới nhất và các sự kiện ra mắt sách.
+                        @if($author && !empty($author->bio))
+                            {{ \Illuminate\Support\Str::limit($author->bio, 140, '...') }}
+                        @else
+                            Theo dõi tác giả để nhận thông báo về những tác phẩm mới nhất và các sự kiện ra mắt sách.
+                        @endif
                     </p>
                     
-                    <button class="w-full py-3 bg-stone-100 hover:bg-brand-green hover:text-white text-gray-700 font-bold rounded-xl transition duration-300 flex items-center justify-center gap-2">
+                    <a href="{{ $author ? route('authors.show', $author->slug ?? \Str::slug($author->name)) : route('authors.index', ['q' => $book->author_name]) }}" class="w-full py-3 bg-stone-100 hover:bg-brand-green hover:text-white text-gray-700 font-bold rounded-xl transition duration-300 flex items-center justify-center gap-2">
                         Xem Tác Phẩm Khác <i class="fas fa-arrow-right text-xs"></i>
-                    </button>
+                    </a>
                 </div>
 
                 {{-- Widget Gợi Ý --}}

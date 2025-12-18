@@ -100,17 +100,33 @@
                             <div class="flex justify-center flex-wrap gap-3">
                                 @foreach($user->activeBadges as $badge)
                                     @php
-                                        // Kiểm tra icon là link online hay file trong storage
-                                        $iconUrl = \Illuminate\Support\Str::startsWith($badge->icon, 'http') 
-                                            ? $badge->icon 
-                                            : asset('storage/' . $badge->icon);
+                                        $icon = $badge->icon;
+                                        // Kiểm tra xem icon có phải là URL hay không
+                                        $isUrl = $icon && (Str::startsWith($icon, 'http') || Str::startsWith($icon, '/'));
+                                        // Nếu là URL thì xử lý đường dẫn
+                                        $iconUrl = $isUrl 
+                                            ? (Str::startsWith($icon, 'http') ? $icon : asset('storage/' . $icon))
+                                            : null;
                                     @endphp
                                     
                                     <div class="group relative cursor-help">
-                                        {{-- Icon Huy Hiệu --}}
-                                        <img src="{{ $iconUrl }}" 
-                                             alt="{{ $badge->name }}" 
-                                             class="w-12 h-12 object-contain drop-shadow-sm transform group-hover:scale-110 transition duration-300">
+                                        @if($iconUrl)
+                                            {{-- Hiển thị ảnh nếu là URL hợp lệ --}}
+                                            <img src="{{ $iconUrl }}" 
+                                                 alt="{{ $badge->name }}" 
+                                                 class="w-12 h-12 object-contain drop-shadow-sm transform group-hover:scale-110 transition duration-300"
+                                                 onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md\'>🏆</div>';">
+                                        @elseif($icon && mb_strlen($icon) <= 4)
+                                            {{-- Hiển thị emoji nếu icon là emoji (ký tự ngắn) --}}
+                                            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-2xl shadow-md transform group-hover:scale-110 transition duration-300">
+                                                {{ $icon }}
+                                            </div>
+                                        @else
+                                            {{-- Fallback: Hiển thị icon mặc định nếu không có --}}
+                                            <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white shadow-md transform group-hover:scale-110 transition duration-300">
+                                                <i class="fas fa-medal text-xl"></i>
+                                            </div>
+                                        @endif
                                         
                                         {{-- Tooltip hiển thị tên khi di chuột vào --}}
                                         <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-max">
@@ -202,7 +218,13 @@
 
                                 <div class="w-28 relative flex-shrink-0 bg-gray-200">
                                     <a href="#">
-                                        <img src="{{ $book->cover_image ?? 'https://via.placeholder.com/150x225?text=No+Image' }}" class="w-full h-full object-cover transition group-hover:opacity-90">
+                                        @php
+                                            $cover = $book->cover_image ?? null;
+                                            $coverUrl = $cover 
+                                                ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover))
+                                                : 'https://via.placeholder.com/150x225?text=No+Image';
+                                        @endphp
+                                        <img src="{{ $coverUrl }}" class="w-full h-full object-cover transition group-hover:opacity-90">
                                     </a>
                                 </div>
                                 <div class="p-4 flex flex-col justify-between flex-grow min-w-0">

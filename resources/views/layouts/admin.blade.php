@@ -418,11 +418,9 @@
                         {{-- Theme Toggle Button (Desktop) --}}
                         <button id="theme-toggle"
                             class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 shadow-sm transition-all duration-300"
-                            title="Chuyển đổi chế độ sáng/tối">
+                            title="Chế độ sáng/tối">
                             <i class="fas fa-moon text-indigo-500 dark:hidden"></i>
                             <i class="fas fa-sun text-yellow-400 hidden dark:inline"></i>
-                            <span class="text-sm font-medium dark:hidden">Tối</span>
-                            <span class="text-sm font-medium hidden dark:inline">Sáng</span>
                         </button>
                         <div
                             class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-full border border-gray-200 dark:border-slate-600 shadow-sm transition-colors duration-300">
