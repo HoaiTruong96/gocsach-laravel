@@ -413,64 +413,64 @@
 
                     {{-- Widget: Hôm nay đọc gì? --}}
                     @if(isset($randomBook) && $randomBook)
-                    <div class="bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 rounded-2xl p-6 border border-purple-100 shadow-lg relative overflow-hidden group hover:shadow-xl transition-all duration-300">
+                    <div class="bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 rounded-2xl p-7 border border-purple-100 shadow-lg relative overflow-hidden group hover:shadow-xl transition-all duration-300">
                         {{-- Decorative --}}
-                        <div class="absolute -top-6 -right-6 w-20 h-20 bg-purple-200/30 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-500"></div>
-                        <div class="absolute -bottom-4 -left-4 w-16 h-16 bg-pink-200/30 rounded-full blur-xl pointer-events-none"></div>
+                        <div class="absolute -top-8 -right-8 w-28 h-28 bg-purple-200/30 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-500"></div>
+                        <div class="absolute -bottom-6 -left-6 w-20 h-20 bg-pink-200/30 rounded-full blur-xl pointer-events-none"></div>
                         
                         {{-- Header --}}
-                        <div class="flex items-center justify-between mb-4 relative">
-                            <div class="flex items-center gap-2">
-                                <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-md">
-                                    <i class="fas fa-dice text-white text-sm"></i>
+                        <div class="flex items-center justify-between mb-5 relative">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-md">
+                                    <i class="fas fa-dice text-white text-lg"></i>
                                 </div>
                                 <div>
-                                    <h3 class="font-serif font-bold text-gray-800 text-sm leading-none">Hôm nay đọc gì?</h3>
-                                    <span class="text-[10px] text-gray-400">Gợi ý cho bạn</span>
+                                    <h3 class="font-serif font-bold text-gray-800 text-base leading-none">Hôm nay đọc gì?</h3>
+                                    <span class="text-xs text-gray-400">Gợi ý cho bạn</span>
                                 </div>
                             </div>
-                            <a href="{{ route('home') }}" class="text-[10px] text-purple-500 hover:text-purple-700 font-bold" title="Đổi sách khác vào ngày mai">
+                            <a href="{{ route('home') }}" class="text-xs text-purple-500 hover:text-purple-700 font-bold flex items-center gap-1" title="Đổi sách khác vào ngày mai">
                                 <i class="fas fa-sync-alt"></i>
                             </a>
                         </div>
                         
                         {{-- Book Card --}}
                         <a href="{{ route('detail', $randomBook->slug) }}" class="block group/book">
-                            <div class="flex gap-4">
+                            <div class="flex gap-5">
                                 {{-- Book Cover --}}
-                                <div class="w-20 h-28 rounded-lg overflow-hidden shadow-lg flex-shrink-0 transform group-hover/book:scale-105 transition-transform duration-300">
+                                <div class="w-28 h-40 rounded-xl overflow-hidden shadow-lg flex-shrink-0 transform group-hover/book:scale-105 transition-transform duration-300 border-2 border-white">
                                     @php
                                         $coverUrl = !empty($randomBook->cover_image) 
                                             ? (str_starts_with($randomBook->cover_image, 'http') ? $randomBook->cover_image : asset('storage/' . $randomBook->cover_image))
-                                            : 'https://via.placeholder.com/80x112?text=No+Image';
+                                            : 'https://via.placeholder.com/112x160?text=No+Image';
                                     @endphp
                                     <img src="{{ $coverUrl }}" alt="{{ $randomBook->title }}" class="w-full h-full object-cover">
                                 </div>
                                 
                                 {{-- Book Info --}}
-                                <div class="flex-1 min-w-0">
-                                    <h4 class="font-bold text-gray-800 text-sm leading-tight line-clamp-2 group-hover/book:text-purple-600 transition-colors">
+                                <div class="flex-1 min-w-0 py-1">
+                                    <h4 class="font-bold text-gray-800 text-base leading-snug line-clamp-2 group-hover/book:text-purple-600 transition-colors">
                                         {{ $randomBook->title }}
                                     </h4>
-                                    <p class="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                                        <i class="fas fa-user-edit text-[10px]"></i>
+                                    <p class="text-sm text-gray-500 mt-2 flex items-center gap-1.5">
+                                        <i class="fas fa-user-edit text-xs text-gray-400"></i>
                                         {{ $randomBook->author_name ?? 'Ẩn danh' }}
                                     </p>
                                     
                                     {{-- Rating --}}
-                                    <div class="flex items-center gap-1 mt-2">
-                                        <div class="flex text-yellow-400 text-[10px]">
+                                    <div class="flex items-center gap-2 mt-3">
+                                        <div class="flex text-yellow-400 text-sm">
                                             @for($i = 1; $i <= 5; $i++)
                                                 <i class="fas fa-star {{ $i <= round($randomBook->avg_rating ?? 0) ? '' : 'opacity-30' }}"></i>
                                             @endfor
                                         </div>
-                                        <span class="text-[10px] text-gray-400">({{ number_format($randomBook->view_count ?? 0) }} lượt xem)</span>
+                                        <span class="text-xs text-gray-400">({{ number_format($randomBook->view_count ?? 0) }} lượt xem)</span>
                                     </div>
                                     
                                     {{-- CTA Button --}}
-                                    <div class="mt-3">
-                                        <span class="inline-flex items-center gap-1 text-xs font-bold text-purple-600 group-hover/book:text-purple-700">
-                                            Khám phá ngay <i class="fas fa-arrow-right text-[10px] group-hover/book:translate-x-1 transition-transform"></i>
+                                    <div class="mt-4">
+                                        <span class="inline-flex items-center gap-1.5 px-4 py-2 bg-purple-600 text-white text-sm font-bold rounded-full group-hover/book:bg-purple-700 transition shadow-md">
+                                            Khám phá ngay <i class="fas fa-arrow-right text-xs group-hover/book:translate-x-1 transition-transform"></i>
                                         </span>
                                     </div>
                                 </div>
