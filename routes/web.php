@@ -176,6 +176,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('badges', \App\Http\Controllers\Admin\BadgeController::class);
     Route::resource('challenges', \App\Http\Controllers\Admin\ChallengeController::class);
     Route::resource('authors', AuthorController::class)->except(['show']);
+    Route::resource('quotes', \App\Http\Controllers\Admin\QuoteController::class);
 
     // Activity Logs
     Route::get('/activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');

@@ -314,6 +314,14 @@
                         <span class="font-medium text-sm">Tạp Chí Đọc</span>
                     </a>
 
+                    {{-- Quản lý Châm Ngôn --}}
+                    <a href="{{ route('admin.quotes.index') }}"
+                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.quotes.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
+                        <i
+                            class="fas fa-quote-left w-5 text-center {{ request()->routeIs('admin.quotes.*') ? 'text-white' : 'text-slate-400 group-hover:text-amber-400' }}"></i>
+                        <span class="font-medium text-sm">Châm Ngôn</span>
+                    </a>
+
                     <a href="{{ route('admin.books.index') }}"
                         class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.books.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                         <i

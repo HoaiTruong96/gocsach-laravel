@@ -371,6 +371,46 @@
             {{-- [CỘT PHẢI - 4 PHẦN] --}}
             <div class="lg:col-span-4">
                 <div class="space-y-8">
+                    {{-- Widget 0: Châm Ngôn Hôm Nay --}}
+                    @if(isset($dailyQuote) && $dailyQuote)
+                    <div class="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 rounded-2xl p-6 border border-amber-100 shadow-lg relative overflow-hidden group hover:shadow-xl transition-shadow duration-300">
+                        {{-- Decorative Elements --}}
+                        <div class="absolute -top-6 -right-6 w-24 h-24 bg-amber-200/30 rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform duration-500"></div>
+                        <div class="absolute -bottom-4 -left-4 w-16 h-16 bg-orange-200/30 rounded-full blur-xl pointer-events-none"></div>
+                        
+                        {{-- Quote Icon --}}
+                        <div class="flex items-start gap-3 mb-4 relative">
+                            <div class="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+                                <i class="fas fa-quote-left text-white text-sm"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-serif font-bold text-gray-800 text-lg leading-none">Châm Ngôn Hôm Nay</h3>
+                                <span class="text-[10px] text-gray-400 font-medium">{{ now()->format('d/m/Y') }}</span>
+                            </div>
+                        </div>
+                        
+                        {{-- Quote Content --}}
+                        <blockquote class="relative pl-4 border-l-3 border-amber-300">
+                            <p class="text-gray-700 text-sm leading-relaxed italic font-serif">
+                                "{{ $dailyQuote->content }}"
+                            </p>
+                        </blockquote>
+                        
+                        {{-- Author --}}
+                        <div class="mt-4 flex items-center justify-end gap-2">
+                            <div class="w-6 h-6 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center">
+                                <i class="fas fa-feather-alt text-gray-500 text-[10px]"></i>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-bold text-gray-800">{{ $dailyQuote->author }}</p>
+                                @if($dailyQuote->source)
+                                    <p class="text-[10px] text-gray-500 italic">{{ $dailyQuote->source }}</p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
                     {{-- Widget 1: Top Thịnh Hành --}}
                     <div class="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 border border-gray-100 shadow-lg relative overflow-hidden">
                         {{-- Decorative --}}
