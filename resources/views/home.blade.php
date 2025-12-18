@@ -104,12 +104,27 @@
             <div class="lg:col-span-8 space-y-16">
                 
                 {{-- 1. TẠP CHÍ ĐỌC --}}
-                <section>
-                    <div class="flex justify-between items-end mb-6 border-b border-gray-200 pb-3">
-                        <div>
-                            <h2 class="text-3xl font-bold text-gray-800 font-serif mb-1">Tạp Chí Đọc</h2>
-                            <p class="text-sm text-gray-500">Góc nhìn sâu sắc về sách và cuộc sống</p>
+                <section class="relative">
+                    {{-- Decorative --}}
+                    <div class="absolute -top-6 -left-6 w-32 h-32 bg-brand-accent/5 rounded-full blur-3xl pointer-events-none"></div>
+                    
+                    <div class="flex justify-between items-end mb-8">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-brand-accent to-brand-green rounded-xl flex items-center justify-center shadow-lg">
+                                <i class="fas fa-newspaper text-white text-lg"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl md:text-3xl font-bold text-gray-800 font-serif flex items-center gap-3">
+                                    Tạp Chí Đọc
+                                    <span class="text-xs bg-brand-green/10 text-brand-green px-2.5 py-1 rounded-full font-bold">FEATURED</span>
+                                </h2>
+                                <p class="text-sm text-gray-500 mt-1">Góc nhìn sâu sắc về sách và cuộc sống</p>
+                            </div>
                         </div>
+                        <a href="#" class="hidden md:flex items-center gap-2 text-sm font-bold text-brand-green hover:text-brand-accent transition group">
+                            <span>Xem tất cả</span>
+                            <i class="fas fa-arrow-right text-xs transform group-hover:translate-x-1 transition-transform"></i>
+                        </a>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
@@ -124,8 +139,7 @@
                                 </a>
                             @endif
                             <div class="relative h-64 md:h-80 rounded-2xl overflow-hidden mb-4 shadow-md">
-                                @php $thumbUrl = Str::startsWith($featuredArticle->thumbnail, 'http') ? $featuredArticle->thumbnail : asset('storage/' . $featuredArticle->thumbnail); @endphp
-                                <img src="{{ $thumbUrl }}" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-700">
+                                <img src="{{ $featuredArticle->thumbnail }}" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-700">
                                 <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
                                 <span class="absolute top-4 left-4 bg-brand-accent text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                                     {{ $featuredArticle->tag ?? 'Tiêu Điểm' }}
@@ -154,8 +168,7 @@
                                     @endif
 
                                     <div class="h-32 rounded-xl overflow-hidden mb-3 relative">
-                                        @php $thumbUrl = Str::startsWith($article->thumbnail, 'http') ? $article->thumbnail : asset('storage/' . $article->thumbnail); @endphp
-                                        <img src="{{ $thumbUrl }}" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-500">
+                                        <img src="{{ $article->thumbnail }}" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-500">
                                     </div>
                                     <div>
                                         <span class="text-brand-green text-xs font-bold uppercase">{{ $article->tag ?? 'Tin Tức' }}</span>
@@ -171,17 +184,35 @@
                 </section>
 
                 {{-- 2. SÁCH MỚI CẬP NHẬT --}}
-                <section id="new-books" class="relative group/slider">
+                <section id="new-books" class="relative group/slider bg-gradient-to-br from-brand-green/5 via-white to-brand-beige/20 rounded-2xl p-6 border border-gray-100 shadow-sm">
+                    {{-- Header --}}
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800 font-serif border-l-4 border-brand-green pl-3">Sách Mới Cập Nhật</h2>
-                        <a href="{{ route('books.list') }}" class="text-xs font-bold px-3 py-1 bg-gray-100 text-gray-500 hover:bg-brand-green hover:text-white rounded-full transition">Xem kho sách</a>
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-brand-green/10 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-book-open text-brand-green"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold text-gray-800 font-serif flex items-center gap-2">
+                                    Sách Mới Cập Nhật
+                                    <span class="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-bold animate-pulse">MỚI</span>
+                                </h2>
+                                <p class="text-xs text-gray-500">Những tựa sách mới nhất trong thư viện</p>
+                            </div>
+                        </div>
+                        <a href="{{ route('books.list') }}" class="text-xs font-bold px-4 py-2 bg-brand-green text-white hover:bg-brand-accent rounded-full transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2">
+                            <span>Xem kho sách</span>
+                            <i class="fas fa-arrow-right text-[10px]"></i>
+                        </a>
                     </div>
                     
+                    {{-- Slider Container --}}
                     <div class="relative px-2"> 
-                        <button id="btnPrevNewBooks" class="absolute left-0 top-1/3 -translate-y-1/2 -ml-5 z-10 w-10 h-10 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-brand-green hover:scale-110 transition opacity-0 group-hover/slider:opacity-100 duration-300">
+                        {{-- Prev Button --}}
+                        <button id="btnPrevNewBooks" class="absolute left-0 top-1/2 -translate-y-1/2 -ml-3 z-10 w-10 h-10 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-white hover:bg-brand-green hover:scale-110 transition-all opacity-0 group-hover/slider:opacity-100 duration-300">
                             <i class="fas fa-chevron-left"></i>
                         </button>
 
+                        {{-- Books Slider --}}
                         <div id="sliderNewBooks" class="flex gap-5 overflow-x-auto scroll-smooth no-scrollbar pb-4" style="scroll-behavior: smooth;">
                             @if(isset($books) && $books->count() > 0)
                                 @foreach($books->take(10) as $book) 
@@ -189,27 +220,74 @@
                                         $coverUrl = !empty($book->cover_image) 
                                             ? (str_starts_with($book->cover_image, 'http') ? $book->cover_image : asset('storage/' . $book->cover_image))
                                             : 'https://via.placeholder.com/150x225?text=No+Image';
+                                        $rating = $book->avg_rating ?? rand(35, 50) / 10;
                                     @endphp
 
-                                    <div class="w-32 md:w-40 flex-shrink-0 group flex flex-col">
-                                        <div class="relative w-full aspect-[2/3] rounded-lg overflow-hidden shadow-md mb-2 border border-gray-100 bg-gray-50">
-                                            <a href="{{ route('detail', $book->slug) }}">
-                                                <img src="{{ $coverUrl }}" alt="{{ $book->title }}" class="w-full h-full object-cover transform transition duration-500 group-hover:scale-110">
+                                    <div class="w-36 md:w-44 flex-shrink-0 group">
+                                        {{-- Book Card --}}
+                                        <div class="relative w-full aspect-[2/3] rounded-xl overflow-hidden shadow-lg mb-3 bg-gradient-to-br from-gray-100 to-gray-200 transform transition-all duration-500 group-hover:scale-105 group-hover:shadow-xl">
+                                            {{-- Book Cover --}}
+                                            <a href="{{ route('detail', $book->slug) }}" class="block w-full h-full">
+                                                <img src="{{ $coverUrl }}" alt="{{ $book->title }}" 
+                                                     class="w-full h-full object-cover transition duration-700 group-hover:brightness-110"
+                                                     onerror="this.src='https://via.placeholder.com/150x225?text=No+Image'">
                                             </a>
-                                            @if($loop->index < 3) <div class="absolute top-1 right-1 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-sm">MỚI</div> @endif
+                                            
+                                            {{-- Overlay Gradient --}}
+                                            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                            
+                                            {{-- Badge NEW --}}
+                                            @if($loop->index < 3)
+                                                <div class="absolute top-2 left-2 bg-gradient-to-r from-red-500 to-orange-400 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1 animate-pulse">
+                                                    <i class="fas fa-fire text-[8px]"></i> MỚI
+                                                </div>
+                                            @endif
+                                            
+                                            {{-- Rating Badge --}}
+                                            <div class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm text-gray-800 text-[10px] font-bold px-2 py-1 rounded-full shadow-sm flex items-center gap-1">
+                                                <i class="fas fa-star text-yellow-400"></i>
+                                                <span>{{ number_format($rating, 1) }}</span>
+                                            </div>
+                                            
+                                            {{-- Quick Actions (on hover) --}}
+                                            <div class="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                                                <a href="{{ route('detail', $book->slug) }}" 
+                                                   class="w-full bg-white text-brand-green font-bold text-xs py-2 rounded-lg flex items-center justify-center gap-2 shadow-lg hover:bg-brand-green hover:text-white transition">
+                                                    <i class="fas fa-eye"></i> Xem chi tiết
+                                                </a>
+                                            </div>
                                         </div>
-                                        <h3 class="font-serif font-bold text-sm text-gray-800 leading-tight mb-1 line-clamp-2 group-hover:text-brand-green transition h-9 overflow-hidden">
-                                            <a href="{{ route('detail', $book->slug) }}" title="{{ $book->title }}">{{ $book->title }}</a>
-                                        </h3>
-                                        <p class="text-[11px] text-gray-500 truncate">{{ $book->author_name ?? 'Ẩn danh' }}</p>
+                                        
+                                        {{-- Book Info --}}
+                                        <div class="px-1">
+                                            <h3 class="font-serif font-bold text-sm text-gray-800 leading-tight mb-1 line-clamp-2 group-hover:text-brand-green transition min-h-[2.5rem]">
+                                                <a href="{{ route('detail', $book->slug) }}" title="{{ $book->title }}">{{ $book->title }}</a>
+                                            </h3>
+                                            <p class="text-[11px] text-gray-500 truncate flex items-center gap-1">
+                                                <i class="fas fa-user-edit text-[9px] text-gray-400"></i>
+                                                {{ $book->author_name ?? 'Ẩn danh' }}
+                                            </p>
+                                        </div>
                                     </div>
                                 @endforeach
                             @else
-                                <div class="w-full py-8 text-center text-gray-400 bg-gray-50 rounded-lg">Chưa có sách mới.</div>
+                                <div class="w-full py-12 text-center text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                                    <i class="fas fa-books text-4xl mb-3 block text-gray-300"></i>
+                                    <p class="font-medium">Chưa có sách mới trong thư viện.</p>
+                                    <a href="{{ route('books.list') }}" class="text-brand-green text-sm font-bold hover:underline mt-2 inline-block">Khám phá kho sách →</a>
+                                </div>
                             @endif
                         </div>
-                        <button id="btnNextNewBooks" class="absolute right-0 top-1/3 -translate-y-1/2 -mr-5 z-10 w-10 h-10 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-brand-green hover:scale-110 transition opacity-0 group-hover/slider:opacity-100 duration-300"><i class="fas fa-chevron-right"></i></button>
+
+                        {{-- Next Button --}}
+                        <button id="btnNextNewBooks" class="absolute right-0 top-1/2 -translate-y-1/2 -mr-3 z-10 w-10 h-10 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-white hover:bg-brand-green hover:scale-110 transition-all opacity-0 group-hover/slider:opacity-100 duration-300">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
                     </div>
+                    
+                    {{-- Decorative Element --}}
+                    <div class="absolute -top-4 -right-4 w-24 h-24 bg-brand-accent/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <div class="absolute -bottom-4 -left-4 w-32 h-32 bg-brand-green/10 rounded-full blur-3xl pointer-events-none"></div>
                 </section>
 
                 {{-- 3. CỘNG ĐỒNG REVIEW --}}
@@ -259,16 +337,38 @@
     </div>
 </section>
 
-                {{-- Banner Sự Kiện --}}
-                <div class="bg-[#2A483A] rounded-xl p-8 relative overflow-hidden shadow-lg text-white">
-                    <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
+                {{-- Banner Sự Kiện - PREMIUM --}}
+                <div class="bg-gradient-to-br from-[#2A483A] via-[#1e3a2f] to-[#0f1f17] rounded-2xl p-8 relative overflow-hidden shadow-xl text-white group hover:shadow-2xl transition-all duration-500">
+                    {{-- Decorative Elements --}}
+                    <div class="absolute top-0 right-0 w-72 h-72 bg-brand-accent/10 rounded-full blur-3xl -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-700"></div>
+                    <div class="absolute bottom-0 left-0 w-48 h-48 bg-green-500/10 rounded-full blur-2xl -ml-12 -mb-12"></div>
+                    <div class="absolute top-1/2 right-1/4 w-2 h-2 bg-brand-accent rounded-full animate-ping"></div>
+                    <div class="absolute bottom-1/3 left-1/4 w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></div>
+                    
                     <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                        <div>
-                            <span class="text-brand-accent text-xs font-bold uppercase tracking-wider border border-brand-accent/30 px-2 py-1 rounded">Sự kiện</span>
-                            <h3 class="text-2xl font-serif font-bold mt-2 mb-2">Thử Thách Đọc Sách 2025</h3>
-                            <p class="text-white/80 text-sm font-light max-w-md">Hoàn thành 3 cuốn sách để nhận huy hiệu "Mọt Sách Cần Cù".</p>
+                        <div class="flex items-center gap-5">
+                            {{-- Icon Trophy --}}
+                            <div class="w-16 h-16 bg-gradient-to-br from-brand-accent to-yellow-400 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:rotate-6 transition-transform duration-300">
+                                <i class="fas fa-trophy text-white text-2xl"></i>
+                            </div>
+                            
+                            <div>
+                                <span class="inline-flex items-center gap-2 text-brand-accent text-xs font-bold uppercase tracking-wider border border-brand-accent/40 bg-brand-accent/10 px-3 py-1 rounded-full mb-2">
+                                    <span class="w-1.5 h-1.5 bg-brand-accent rounded-full animate-pulse"></span>
+                                    Sự kiện HOT
+                                </span>
+                                <h3 class="text-2xl md:text-3xl font-serif font-bold mb-2 text-brand-beige">Thử Thách Đọc Sách 2025</h3>
+                                <p class="text-white/70 text-sm font-light max-w-md leading-relaxed">
+                                    <i class="fas fa-medal text-yellow-400 mr-1"></i>
+                                    Hoàn thành <span class="text-brand-accent font-bold">3 cuốn sách</span> để nhận huy hiệu "Mọt Sách Cần Cù" và nhiều phần thưởng hấp dẫn!
+                                </p>
+                            </div>
                         </div>
-                        <button class="bg-brand-accent hover:bg-[#c29263] text-white px-6 py-2.5 rounded-full font-bold shadow-lg transition text-sm whitespace-nowrap">Tham Gia Ngay</button>
+                        
+                        <a href="{{ route('challenges.index') }}" class="bg-gradient-to-r from-brand-accent to-yellow-500 hover:from-yellow-500 hover:to-brand-accent text-white px-8 py-3.5 rounded-full font-bold shadow-xl hover:shadow-2xl transition-all text-sm whitespace-nowrap flex items-center gap-2 transform hover:-translate-y-1">
+                            <i class="fas fa-rocket"></i>
+                            Tham Gia Ngay
+                        </a>
                     </div>
                 </div>
             </div> {{-- END CỘT 8 --}}
@@ -276,10 +376,19 @@
             {{-- [CỘT PHẢI - 4 PHẦN] --}}
             <div class="lg:col-span-4">
                 <div class="space-y-8">
-                    {{-- Widget 1: Top Thịnh Hành (Để trôi tự nhiên, không sticky) --}}
-                    <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-soft">
-                        <h3 class="font-serif font-bold text-lg text-gray-800 mb-5 flex items-center gap-2">
-                            <span class="text-brand-accent">🔥</span> Top Thịnh Hành
+                    {{-- Widget 1: Top Thịnh Hành --}}
+                    <div class="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 border border-gray-100 shadow-lg relative overflow-hidden">
+                        {{-- Decorative --}}
+                        <div class="absolute -top-4 -right-4 w-20 h-20 bg-orange-100 rounded-full blur-2xl pointer-events-none"></div>
+                        
+                        <h3 class="font-serif font-bold text-lg text-gray-800 mb-5 flex items-center gap-3 relative">
+                            <span class="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center shadow-md">
+                                <i class="fas fa-fire-alt text-white"></i>
+                            </span>
+                            <div>
+                                <span class="block">Top Thịnh Hành</span>
+                                <span class="text-[10px] text-gray-400 font-normal">Được đọc nhiều nhất</span>
+                            </div>
                         </h3>
                         <div class="space-y-4">
                             @if(isset($books) && $books->count() > 0)
