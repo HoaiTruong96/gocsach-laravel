@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\BookSuggestionController;
 
 // ====================================================
 // 1. NHÓM PUBLIC (Ai cũng xem được)
@@ -113,6 +114,10 @@ Route::middleware('auth')->group(function () {
     // --- PROFILE & FOLLOW ---
     Route::get('/profile/{id?}', [ProfileController::class, 'index'])->name('profile');
     Route::post('/follow/toggle', [FollowController::class, 'toggleFollow'])->name('follow.toggle');
+
+    // --- ĐỀ XUẤT SÁCH ---
+    Route::get('/sach/de-xuat', [BookSuggestionController::class, 'create'])->name('books.suggest');
+    Route::post('/sach/de-xuat', [BookSuggestionController::class, 'store'])->name('books.suggest.store');
 
     // --- LIKE & COMMENT (AJAX) ---
     // Route xử lý Like chung (cho cả Post và Comment)

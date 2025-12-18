@@ -22,7 +22,8 @@ class AuthorController extends Controller
             ->leftJoin('authors as a', 'b.author_name', '=', 'a.name')
             ->selectRaw('b.author_name as name, COUNT(*) as books_count, MAX(a.photo) as photo, MAX(a.birth_year) as birth_year, MAX(a.death_year) as death_year, MAX(a.slug) as author_slug, MAX(a.bio) as bio, MAX(a.nationality) as nationality')
             ->whereNotNull('b.author_name')
-            ->where('b.author_name', '<>', '');
+            ->where('b.author_name', '<>', '')
+            ->where('b.is_approved', true);
 
         if ($q) {
             $query->where('author_name', 'like', "%{$q}%");
@@ -64,11 +65,11 @@ class AuthorController extends Controller
         $author = Author::where('slug', $slug)->first();
 
         if ($author) {
-            $books = Book::where('author_name', $author->name)->paginate(12);
+            $books = Book::where('is_approved', true)->where('author_name', $author->name)->paginate(12);
         } else {
             // Nếu không tìm thấy trong authors, tìm theo tên trong books
             $authorName = str_replace('-', ' ', $slug);
-            $books = Book::where('author_name', 'like', "%{$authorName}%")->paginate(12);
+            $books = Book::where('is_approved', true)->where('author_name', 'like', "%{$authorName}%")->paginate(12);
             
             // Tạo object giả để hiển thị
             $author = (object) [
