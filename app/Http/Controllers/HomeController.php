@@ -9,6 +9,7 @@ use App\Models\Comment;
 use App\Models\Article;
 use App\Models\Post;     // <--- Đã thêm Post
 use App\Models\Banner;
+use App\Models\Quote;
 use App\Models\Like;        
 use App\Models\CommentLike; 
 use Illuminate\Support\Facades\Auth;
@@ -70,10 +71,19 @@ class HomeController extends Controller
         $sidebarArticles = Article::with('user')->where('is_featured', false)->latest()->take(2)->get();
         $categories = Category::withCount('books')->orderBy('name', 'asc')->get();
 
+        // --- LẤY QUOTE NGẪU NHIÊN THEO NGÀY ---
+        $quotes = Quote::where('is_active', true)->get();
+        $dailyQuote = null;
+        if ($quotes->count() > 0) {
+            // Dùng ngày hiện tại làm seed để cùng ngày luôn hiển thị cùng quote
+            $dayOfYear = now()->dayOfYear + now()->year;
+            $dailyQuote = $quotes[$dayOfYear % $quotes->count()];
+        }
+
         // Truyền biến $latestReviews vào view
         return view('home', compact(
             'heroSlides', 'books', 'latestReviews', 'categories', 
-            'featuredArticle', 'sidebarArticles'
+            'featuredArticle', 'sidebarArticles', 'dailyQuote'
         ));
     }
 
