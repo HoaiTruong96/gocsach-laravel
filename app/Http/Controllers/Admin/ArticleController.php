@@ -25,6 +25,43 @@ class ArticleController extends Controller
         return view('articles.show', compact('article'));
     }
 
+    // Hiển thị form tạo bài viết mới
+    public function create()
+    {
+        return view('admin.articles.create');
+    }
+
+    // Xử lý lưu bài viết mới
+    public function store(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|max:255',
+            'tag' => 'nullable|max:50',
+            'excerpt' => 'nullable|max:500',
+            'content' => 'required',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'thumbnail_url' => 'nullable|url|max:500',
+        ]);
+
+        $data = $request->except(['thumbnail', 'thumbnail_url']);
+        $data['slug'] = Str::slug($request->title) . '-' . time();
+        $data['is_featured'] = $request->has('is_featured');
+        $data['user_id'] = auth()->id();
+        $data['view_count'] = 0;
+
+        // Xử lý upload ảnh hoặc URL
+        if ($request->hasFile('thumbnail')) {
+            $path = $request->file('thumbnail')->store('articles', 'public');
+            $data['thumbnail'] = $path;
+        } elseif ($request->filled('thumbnail_url')) {
+            $data['thumbnail'] = $request->thumbnail_url;
+        }
+
+        Article::create($data);
+
+        return redirect()->route('admin.articles.index')->with('success', 'Tạo bài viết thành công!');
+    }
+
     // Hiển thị form chỉnh sửa
     public function edit($id)
     {

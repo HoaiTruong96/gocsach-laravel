@@ -82,11 +82,17 @@ class BookController extends Controller
                 $q->where('status', 'published')->latest();
             },
             'posts.user.activeBadges',
+            'posts.likes', // Load likes của bài review
             'posts.comments' => function($q) {
-                $q->latest(); 
+                $q->whereNull('parent_id')->latest(); // Chỉ load comment cha
             },
             'posts.comments.user.activeBadges',
-            'posts.comments.likes'
+            'posts.comments.likes',
+            'posts.comments.replies' => function($q) {
+                $q->latest(); // Load replies của comment
+            },
+            'posts.comments.replies.user',
+            'posts.comments.replies.likes'
         ]);
 
         // Lấy sách liên quan (cùng thể loại, loại trừ sách hiện tại)

@@ -17,11 +17,13 @@ use Carbon\Carbon;
 class AuthController extends Controller
 {
     // --- 1. ĐĂNG NHẬP ---
-    public function showLoginForm() {
+    public function showLoginForm()
+    {
         return view('auth.login');
     }
 
-    public function login(Request $request) {
+    public function login(Request $request)
+    {
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
@@ -38,11 +40,13 @@ class AuthController extends Controller
     }
 
     // --- 2. ĐĂNG KÝ ---
-    public function showRegisterForm() {
+    public function showRegisterForm()
+    {
         return view('auth.register');
     }
 
-    public function register(Request $request) {
+    public function register(Request $request)
+    {
         // Validate dữ liệu
         $request->validate([
             'name' => 'required|string|max:255',
@@ -70,7 +74,8 @@ class AuthController extends Controller
     }
 
     // --- 4. ĐĂNG XUẤT ---
-    public function logout(Request $request) {
+    public function logout(Request $request)
+    {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
@@ -78,22 +83,46 @@ class AuthController extends Controller
     }
 
     // --- 5. ĐỔI MẬT KHẨU (Dành cho người đã đăng nhập) ---
-    public function showChangePasswordForm() {
+    public function showChangePasswordForm()
+    {
         return view('auth.change-password');
     }
 
-    public function changePassword(Request $request) {
+    public function changePassword(Request $request)
+    {
+        // Check if AJAX request
+        $isAjax = $request->ajax() || $request->wantsJson();
+
         // 1. Validate dữ liệu đầu vào
-        $request->validate([
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'current_password' => 'required',
             'new_password' => 'required|string|min:6|confirmed|different:current_password',
         ], [
+            'current_password.required' => 'Vui lòng nhập mật khẩu hiện tại.',
+            'new_password.required' => 'Vui lòng nhập mật khẩu mới.',
+            'new_password.min' => 'Mật khẩu mới phải có ít nhất 6 ký tự.',
             'new_password.confirmed' => 'Mật khẩu xác nhận không khớp.',
             'new_password.different' => 'Mật khẩu mới không được trùng với mật khẩu cũ.'
         ]);
 
+        if ($validator->fails()) {
+            if ($isAjax) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+            return back()->withErrors($validator)->withInput();
+        }
+
         // 2. Kiểm tra mật khẩu hiện tại có đúng không
         if (!Hash::check($request->current_password, Auth::user()->password)) {
+            if ($isAjax) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => ['current_password' => ['Mật khẩu hiện tại không chính xác.']]
+                ], 422);
+            }
             return back()->withErrors(['current_password' => 'Mật khẩu hiện tại không chính xác.']);
         }
 
@@ -103,18 +132,27 @@ class AuthController extends Controller
         $user->password = Hash::make($request->new_password);
         $user->save();
 
+        if ($isAjax) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đổi mật khẩu thành công!'
+            ]);
+        }
+
         return back()->with('status', 'Đổi mật khẩu thành công!');
     }
 
-    // --- 6. QUÊN MẬT KHẨU (QUA MÃ OTP) ---
+
+    // --- 6. QUÊN MẬT KHẨU (QUA EMAIL) ---
     
     // Hiển thị form nhập email
-    public function showForgotPasswordForm() {
+    public function showForgotPasswordForm()
+    {
         return view('auth.forgot-password');
     }
 
-    // Gửi mã OTP qua email
-    public function sendResetCode(Request $request) {
+    // Gửi link reset password qua email
+    public function sendResetLink(Request $request) {
         $request->validate([
             'email' => ['required', 'email', 'regex:/^[a-zA-Z0-9._%+-]+@gmail\.com$/i']
         ], [
@@ -166,58 +204,17 @@ class AuthController extends Controller
             ->with('status', 'Đã gửi mã xác thực vào email của bạn!');
     }
 
-    // Hiển thị form nhập mã OTP
-    public function showVerifyCodeForm(Request $request) {
-        $email = session('reset_email') ?? $request->email;
-        if (!$email) {
-            return redirect()->route('password.request');
-        }
-        return view('auth.verify-code', ['email' => $email]);
-    }
-
-    // Xác thực mã OTP
-    public function verifyCode(Request $request) {
-        $request->validate([
-            'email' => 'required|email',
-            'code' => 'required|string|size:6',
+    // Hiển thị form đặt lại mật khẩu (khi user click link trong email)
+    public function showResetPasswordForm(Request $request, $token) {
+        return view('auth.reset-password', [
+            'token' => $token,
+            'email' => $request->email
         ]);
-
-        $record = DB::table('password_reset_codes')
-            ->where('email', $request->email)
-            ->where('code', $request->code)
-            ->where('expires_at', '>', Carbon::now())
-            ->first();
-
-        if (!$record) {
-            return back()
-                ->with('reset_email', $request->email)
-                ->withErrors(['code' => 'Mã xác thực không đúng hoặc đã hết hạn.']);
-        }
-
-        // Mã đúng - lưu vào session và chuyển đến form đổi mật khẩu
-        session(['verified_email' => $request->email, 'verified_code' => $request->code]);
-        return redirect()->route('password.reset.form');
-    }
-
-    // Gửi lại mã OTP
-    public function resendCode(Request $request) {
-        $request->validate(['email' => 'required|email']);
-        
-        // Gọi lại hàm sendResetCode
-        return $this->sendResetCode($request);
-    }
-
-    // Hiển thị form đặt lại mật khẩu mới (sau khi xác thực mã)
-    public function showResetPasswordForm(Request $request) {
-        $email = session('verified_email');
-        if (!$email) {
-            return redirect()->route('password.request');
-        }
-        return view('auth.reset-password', ['email' => $email]);
     }
 
     // Xử lý đặt lại mật khẩu mới
-    public function resetPassword(Request $request) {
+    public function resetPassword(Request $request)
+    {
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|min:6|confirmed',

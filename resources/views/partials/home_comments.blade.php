@@ -10,8 +10,11 @@
                 {{-- 1. HEADER --}}
                 <div class="flex justify-between items-start mb-3">
                     <div class="flex items-center gap-3">
-                        <img src="{{ $comment->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($comment->user->name).'&background=random' }}" 
-                             class="w-10 h-10 rounded-full object-cover border border-gray-200">
+                        @include('partials.user-avatar-with-frame', [
+                            'user' => $comment->user,
+                            'size' => 'w-14 h-14',
+                            'avatarSize' => 'w-10 h-10'
+                        ])
                         <div>
                             <h4 class="font-bold text-gray-800 text-sm">{{ $comment->user->name }}</h4>
                             <div class="text-xs text-gray-500 flex items-center gap-1">
@@ -78,9 +81,12 @@
                     {{-- DANH SÁCH CÁC REPLY --}}
                     <div class="space-y-4 mb-4">
                         @forelse($comment->replies as $reply)
-                            <div class="flex gap-2">
-                                <img src="{{ $reply->user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($reply->user->name).'&background=random' }}" 
-                                     class="w-7 h-7 rounded-full flex-shrink-0">
+                            <div id="comment-{{ $reply->id }}" class="flex gap-2 scroll-mt-24 transition-all duration-500">
+                                @include('partials.user-avatar-with-frame', [
+                                    'user' => $reply->user,
+                                    'size' => 'w-9 h-9',
+                                    'avatarSize' => 'w-7 h-7'
+                                ])
                                 <div class="flex-1">
                                     <div class="bg-white p-2 rounded-xl rounded-tl-none border border-gray-100 shadow-sm">
                                         <div class="flex justify-between items-center mb-1">
@@ -106,8 +112,11 @@
                     {{-- Ô NHẬP REPLY --}}
                     @auth
                         <div class="flex gap-2 items-start">
-                            <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name).'&background=random' }}" 
-                                 class="w-7 h-7 rounded-full flex-shrink-0">
+                            @include('partials.user-avatar-with-frame', [
+                                'user' => Auth::user(),
+                                'size' => 'w-9 h-9',
+                                'avatarSize' => 'w-7 h-7'
+                            ])
                             <div class="flex-1 relative">
                                 <textarea id="reply-input-{{ $comment->id }}" rows="1" 
                                           class="w-full text-xs p-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green resize-none pr-16 shadow-sm" 

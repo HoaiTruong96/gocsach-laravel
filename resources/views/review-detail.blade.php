@@ -56,8 +56,11 @@
                     <div id="post-{{ $review->id }}" class="bg-white p-6 md:p-8 rounded-2xl shadow-soft border border-gray-100 hover:shadow-card transition duration-300 scroll-mt-24">
                         <div class="flex items-start gap-5">
                             <div class="flex-shrink-0">
-                                <img src="{{ $review->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($review->user->name) . '&background=random&size=64&color=fff' }}" 
-                                     class="w-12 h-12 rounded-full border-2 border-brand-beige shadow-sm object-cover">
+                                @include('partials.user-avatar-with-frame', [
+                                    'user' => $review->user,
+                                    'size' => 'w-14 h-14',
+                                    'avatarSize' => 'w-12 h-12'
+                                ])
                             </div>
 
                             <div class="flex-1 min-w-0">
@@ -132,8 +135,11 @@
                                         <div class="space-y-3 mb-4 pl-4 border-l-2 border-gray-100">
                                             @foreach($review->comments as $comment)
                                                 <div class="flex gap-3">
-                                                    <img src="{{ $comment->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($comment->user->name) . '&size=32' }}" 
-                                                         class="w-8 h-8 rounded-full mt-1 border border-white shadow-sm object-cover">
+                                                    @include('partials.user-avatar-with-frame', [
+                                                        'user' => $comment->user,
+                                                        'size' => 'w-10 h-10',
+                                                        'avatarSize' => 'w-8 h-8'
+                                                    ])
                                                     <div class="bg-gray-50 p-3 rounded-r-xl rounded-bl-xl text-xs w-full">
                                                         <div class="flex justify-between mb-1">
                                                             <span class="font-bold text-gray-800 flex items-center">
@@ -157,8 +163,11 @@
                                               onsubmit="submitComment({{ $review->id }}, event)"
                                               class="flex gap-3 items-start mt-2">
                                             @csrf
-                                            <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&background=3E5F4E&color=fff' }}" 
-                                                 class="w-8 h-8 rounded-full border border-gray-200 object-cover">
+                                            @include('partials.user-avatar-with-frame', [
+                                                'user' => Auth::user(),
+                                                'size' => 'w-10 h-10',
+                                                'avatarSize' => 'w-8 h-8'
+                                            ])
                                             
                                             <div class="flex-1 relative group">
                                                 <textarea name="content" rows="1" required
