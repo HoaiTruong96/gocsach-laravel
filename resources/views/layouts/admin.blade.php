@@ -303,7 +303,7 @@
                         class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.banners.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                         <i
                             class="fas fa-images w-5 text-center {{ request()->routeIs('admin.banners.*') ? 'text-white' : 'text-slate-400 group-hover:text-pink-400' }}"></i>
-                        <span class="font-medium text-sm">Quản lý Banner</span>
+                        <span class="font-medium text-sm">Quản Lý Banner</span>
                     </a>
 
                     {{-- [MỚI] Quản lý Tạp chí (Article) - Thêm luôn để tiện --}}
@@ -326,7 +326,7 @@
                         class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.books.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                         <i
                             class="fas fa-book w-5 text-center {{ request()->routeIs('admin.books.*') ? 'text-white' : 'text-slate-400 group-hover:text-emerald-400' }}"></i>
-                        <span class="font-medium text-sm">Quản lý Sách</span>
+                        <span class="font-medium text-sm">Quản Lý Sách</span>
                     </a>
 
                     {{-- Quản lý Tác giả --}}
@@ -447,12 +447,55 @@
                 </div>
 
                 @if(session('success'))
-                    <div
-                        class="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 px-4 py-3 rounded-lg mb-6 flex items-center gap-3 shadow-sm animate-fade-in-down transition-colors duration-300">
-                        <i class="fas fa-check-circle text-xl"></i>
-                        <span class="font-medium">{{ session('success') }}</span>
+                    <div id="success-alert"
+                        class="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 px-4 py-3 rounded-lg mb-6 flex items-center justify-between gap-3 shadow-sm transition-all duration-500"
+                        style="opacity: 1;">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle text-xl"></i>
+                            <span class="font-medium">{{ session('success') }}</span>
+                        </div>
+                        <button onclick="dismissAlert('success-alert')"
+                            class="text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300 transition">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                 @endif
+
+                @if(session('error'))
+                    <div id="error-alert"
+                        class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-6 flex items-center justify-between gap-3 shadow-sm transition-all duration-500"
+                        style="opacity: 1;">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-exclamation-circle text-xl"></i>
+                            <span class="font-medium">{{ session('error') }}</span>
+                        </div>
+                        <button onclick="dismissAlert('error-alert')"
+                            class="text-red-500 hover:text-red-700 dark:hover:text-red-300 transition">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                @endif
+
+                <script>
+                    function dismissAlert(id) {
+                        const alert = document.getElementById(id);
+                        if (alert) {
+                            alert.style.opacity = '0';
+                            alert.style.transform = 'translateY(-10px)';
+                            setTimeout(() => alert.remove(), 500);
+                        }
+                    }
+
+                    // Auto dismiss after 5 seconds
+                    document.addEventListener('DOMContentLoaded', function () {
+                        ['success-alert', 'error-alert'].forEach(id => {
+                            const alert = document.getElementById(id);
+                            if (alert) {
+                                setTimeout(() => dismissAlert(id), 5000);
+                            }
+                        });
+                    });
+                </script>
 
                 <div class="animate-fade-in">
                     @yield('content')
