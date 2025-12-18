@@ -349,9 +349,15 @@
                         <i
                             class="fas fa-star w-5 text-center {{ request()->routeIs('admin.posts.*') ? 'text-white' : 'text-slate-400 group-hover:text-yellow-400' }}"></i>
                         <span class="font-medium text-sm">Kiểm Duyệt Bài</span>
-                        {{-- Badge thông báo (Demo) --}}
-                        <span
-                            class="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">Mới</span>
+                        {{-- Badge số lượng bài chờ duyệt --}}
+                        @php
+                            $pendingPostsCount = \App\Models\Post::where('status', 'pending')->count();
+                        @endphp
+                        @if($pendingPostsCount > 0)
+                            <span class="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md animate-pulse">
+                                {{ $pendingPostsCount }}
+                            </span>
+                        @endif
                     </a>
                 </div>
 
