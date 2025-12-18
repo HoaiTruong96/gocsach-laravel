@@ -133,6 +133,13 @@
                                         class="flex gap-3 px-4 py-3 hover:bg-gray-50 transition border-b border-gray-50 {{ $notification->read_at ? 'opacity-60 grayscale-[0.5]' : 'bg-blue-50/30' }}">
                                         <div class="flex-shrink-0 mt-1">
                                             @if($isSystemNotification)
+                                                @php
+                                                    // Xác định màu nền icon dựa vào loại thông báo
+                                                    $iconColor = $notification->data['color'] ?? 'text-green-600';
+                                                    $bgColor = str_contains($iconColor, 'red') ? 'bg-red-100' : 'bg-green-100';
+                                                @endphp
+                                                <div class="w-8 h-8 rounded-full {{ $bgColor }} flex items-center justify-center">
+                                                    <i class="{{ $notification->data['icon'] }} {{ $iconColor }} text-sm"></i>
                                                 <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
                                                     <i
                                                         class="{{ $notification->data['icon'] }} {{ $notification->data['color'] ?? 'text-green-600' }} text-sm"></i>
@@ -145,7 +152,7 @@
 
                                         <div class="flex-1">
                                             @if($isSystemNotification)
-                                                <p class="text-sm font-bold text-gray-800">Bài viết của bạn đã được duyệt</p>
+                                                <p class="text-sm font-bold text-gray-800">{{ $notification->data['title'] ?? 'Thông báo hệ thống' }}</p>
                                                 <p class="text-xs text-gray-600 line-clamp-2 mt-0.5">
                                                     {{ $notification->data['message'] ?? '' }}</p>
                                             @else
@@ -748,18 +755,20 @@ document.addEventListener('DOMContentLoaded', function() {
             data.notifications.forEach(n => {
                 const isRead = n.read_at !== null;
                 const bgClass = isRead ? 'opacity-60 grayscale-[0.5]' : 'bg-blue-50/30';
+                // Xác định màu nền icon động (đỏ cho từ chối, xanh cho duyệt)
+                const iconBgColor = n.color && n.color.includes('red') ? 'bg-red-100' : 'bg-green-100';
                 
                 html += `
                     <a href="${n.link}" class="flex gap-3 px-4 py-3 hover:bg-gray-50 transition border-b border-gray-50 ${bgClass}">
                         <div class="flex-shrink-0 mt-1">
                             ${n.is_system 
-                                ? `<div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center"><i class="${n.icon} ${n.color} text-sm"></i></div>`
+                                ? `<div class="w-8 h-8 rounded-full ${iconBgColor} flex items-center justify-center"><i class="${n.icon} ${n.color} text-sm"></i></div>`
                                 : `<img src="${n.user_avatar}" class="w-8 h-8 rounded-full border border-gray-100 object-cover">`
                             }
                         </div>
                         <div class="flex-1">
                             ${n.is_system 
-                                ? `<p class="text-sm font-bold text-gray-800">Bài viết của bạn đã được duyệt</p><p class="text-xs text-gray-600 line-clamp-2 mt-0.5">${n.message}</p>`
+                                ? `<p class="text-sm font-bold text-gray-800">${n.title || 'Thông báo hệ thống'}</p><p class="text-xs text-gray-600 line-clamp-2 mt-0.5">${n.message}</p>`
                                 : `<p class="text-sm text-gray-700 line-clamp-2"><span class="font-bold text-gray-900">${n.user_name}</span> ${n.message}<span class="font-bold block text-xs text-gray-500 italic mt-0.5">"${n.post_title}"</span></p>`
                             }
                             <p class="text-[10px] text-gray-400 mt-1 flex items-center"><i class="far fa-clock mr-1"></i> ${n.time}</p>

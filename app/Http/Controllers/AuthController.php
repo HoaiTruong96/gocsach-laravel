@@ -142,14 +142,18 @@ class AuthController extends Controller
         return back()->with('status', 'Đổi mật khẩu thành công!');
     }
 
-    // --- 6. QUÊN MẬT KHẨU (QUA MÃ OTP) ---
-    
+
+    // --- 6. QUÊN MẬT KHẨU (QUA EMAIL) ---
+
     // Hiển thị form nhập email
     public function showForgotPasswordForm()
     {
         return view('auth.forgot-password');
     }
 
+    // Gửi link reset password qua email
+    public function sendResetLink(Request $request)
+    {
     // Gửi mã OTP qua email
     public function sendResetCode(Request $request) {
         $request->validate([
