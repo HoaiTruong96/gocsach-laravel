@@ -20,30 +20,24 @@ class HomeController extends Controller
 {
     public function index(Request $request)
     {
-        // --- 1. XỬ LÝ PHẦN REVIEW CỘNG ĐỒNG (HIỂN THỊ POST) ---
+        // --- 1. XỬ LÝ PHẦN CỘNG ĐỒNG REVIEW (HIỂN THỊ COMMENTS) ---
         $sortReview = $request->get('sort_review', 'latest');
         
-        // Query từ bảng POSTS
-        $reviewQuery = Post::with([
-            'user', 
-            'book', 
-            'comments' => function($q) {
-                $q->whereNull('parent_id') // Chỉ lấy bình luận gốc
-                ->with([
-                    'user', 
-                    'likes', 
-                    'replies' => function($query) {
-                        $query->with(['user', 'likes'])->latest(); // Lấy bình luận con kèm like
-                    }
-                ])
-                ->latest(); 
+        // Query từ bảng COMMENTS - chỉ lấy comment cha (không phải reply)
+        $reviewQuery = Comment::with([
+            'user',
+            'post.book', // Lấy thông tin sách qua bài post
+            'likes',
+            'replies' => function($query) {
+                $query->with(['user', 'likes'])->latest();
             }
-        ])->withCount(['likes', 'comments']); // Đếm số comment
+        ])
+        ->whereNull('parent_id') // Chỉ lấy comment gốc, không phải reply
+        ->whereHas('post.book') // Chỉ lấy comment có liên kết với sách
+        ->withCount('likes');
 
         if ($sortReview == 'popular') {
-            // Sắp xếp theo nhiều like hoặc view (tùy cột trong bảng posts của bạn)
-            // Nếu chưa có cột view_count, có thể tạm dùng latest() hoặc sắp theo count comments
-            $reviewQuery->withCount('likes')->orderByDesc('likes_count'); 
+            $reviewQuery->orderByDesc('likes_count');
         } else {
             $reviewQuery->latest();
         }

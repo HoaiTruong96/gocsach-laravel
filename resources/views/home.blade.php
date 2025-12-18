@@ -295,8 +295,8 @@
                 <div class="w-1 h-8 bg-brand-accent rounded-full"></div> 
                 <div>
                     <h2 class="text-2xl font-bold text-gray-800 font-serif leading-none flex items-center gap-3">Cộng Đồng Review
-                        {{-- [ĐÃ SỬA]: Dùng $latestReviews --}}
-                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-semibold">{{ $latestReviews->total() ?? 0 }} bài</span>
+                        {{-- Dữ liệu từ bảng comments --}}
+                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-semibold">{{ $latestReviews->total() ?? 0 }} bình luận</span>
                     </h2>
                     <p class="text-sm text-gray-500 mt-1">Góc chia sẻ cảm nhận từ độc giả</p>
                 </div>
@@ -766,6 +766,80 @@
                 icon.classList.toggle('text-red-500', data.liked);
                 btn.classList.toggle('text-red-500', data.liked);
                 countSpan.innerText = data.count;
+            }
+        });
+    }
+
+    // Hàm gửi reply cho comment trong phần Cộng đồng Review
+    function submitReply(commentId, event) {
+        if (event) event.preventDefault();
+        
+        const input = document.getElementById(`reply-input-${commentId}`);
+        if (!input) return;
+
+        const content = input.value.trim();
+        if (!content) {
+            alert("Vui lòng nhập nội dung!");
+            return;
+        }
+
+        const btn = event.currentTarget || event.target.closest('button');
+        const oldHtml = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        }
+
+        fetch(`/comment/${commentId}/reply`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ content: content })
+        })
+        .then(async r => {
+            const d = await r.json();
+            if (!r.ok) throw new Error(d.message || "Lỗi server");
+            return d;
+        })
+        .then(data => {
+            if (data.success) {
+                input.value = '';
+                input.style.height = 'auto';
+                
+                // Tạo HTML reply mới
+                const replyHtml = `
+                    <div class="flex gap-2 animate-fade-in">
+                        <img src="${data.user_avatar}" class="w-7 h-7 rounded-full flex-shrink-0">
+                        <div class="flex-1">
+                            <div class="bg-white p-2 rounded-xl rounded-tl-none border border-gray-100 shadow-sm">
+                                <div class="flex justify-between items-center mb-1">
+                                    <h6 class="font-bold text-[10px] text-gray-700">${data.user_name}</h6>
+                                    <span class="text-[9px] text-gray-400">${data.time}</span>
+                                </div>
+                                <p class="text-[11px] text-gray-600">${data.content}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Chèn reply mới vào danh sách
+                const replySection = document.getElementById(`reply-section-${commentId}`);
+                const replyList = replySection.querySelector('.space-y-4');
+                const emptyMsg = replyList.querySelector('p.italic');
+                if (emptyMsg) emptyMsg.remove();
+                replyList.insertAdjacentHTML('beforeend', replyHtml);
+            }
+        })
+        .catch(e => {
+            alert("Lỗi: " + e.message);
+        })
+        .finally(() => {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = oldHtml;
             }
         });
     }
