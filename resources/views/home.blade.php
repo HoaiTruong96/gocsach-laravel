@@ -721,6 +721,46 @@
         attachPaginationEvents();
         const initialSort = new URLSearchParams(window.location.search).get('sort_review') || 'latest';
         updateTabUI(initialSort);
+        
+        // --- LOGIC CUỘN XUỐNG VÀ HIGHLIGHT COMMENT/REPLY TỪ THÔNG BÁO ---
+        if(window.location.hash) {
+            const targetId = window.location.hash.substring(1); // Ví dụ: "comment-123"
+            const targetElement = document.getElementById(targetId);
+
+            if(targetElement) {
+                // Kiểm tra xem element này có nằm trong một reply-section ẩn không
+                const parentReplySection = targetElement.closest('[id^="reply-section-"]');
+                
+                if(parentReplySection && parentReplySection.classList.contains('hidden')) {
+                    // Đây là một reply → Mở khung reply của comment cha
+                    const parentCommentId = parentReplySection.id.replace('reply-section-', '');
+                    
+                    // Mở khung reply
+                    parentReplySection.classList.remove('hidden');
+                    
+                    // Xoay mũi tên chevron
+                    const chevron = document.getElementById(`chevron-reply-${parentCommentId}`);
+                    if (chevron) chevron.style.transform = 'rotate(180deg)';
+                    
+                    // Đợi animation mở xong rồi mới scroll
+                    setTimeout(() => {
+                        targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
+                        // Highlight reply
+                        targetElement.classList.add('bg-yellow-100', 'rounded-lg', 'ring-2', 'ring-yellow-400');
+                        setTimeout(() => {
+                            targetElement.classList.remove('bg-yellow-100', 'ring-2', 'ring-yellow-400');
+                        }, 3000);
+                    }, 300);
+                } else if(targetElement) {
+                    // Đây là comment cha hoặc reply section đã mở
+                    targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
+                    targetElement.classList.add('bg-yellow-50', 'border-yellow-200');
+                    setTimeout(() => {
+                        targetElement.classList.remove('bg-yellow-50', 'border-yellow-200');
+                    }, 3000);
+                }
+            }
+        }
     });
 
     // --- 2. HÀM ĐIỀU KHIỂN GIAO DIỆN (TOGGLE) ---
@@ -982,7 +1022,7 @@
                 input.value = '';
                 input.style.height = 'auto';
                 
-                // Tạo HTML reply mới
+                // Tạo HTML reply mới (có nút Like giống home_comments.blade.php)
                 const replyHtml = `
                     <div class="flex gap-2 animate-fade-in">
                         <img src="${data.user_avatar}" class="w-7 h-7 rounded-full flex-shrink-0">
@@ -994,6 +1034,13 @@
                                 </div>
                                 <p class="text-[11px] text-gray-600">${data.content}</p>
                             </div>
+                            <!-- Nút Like cho reply mới -->
+                            <button onclick="handleLike(${data.reply_id}, 'comment')" 
+                                    id="like-btn-comment-${data.reply_id}"
+                                    class="text-[9px] font-bold ml-2 mt-1 flex items-center gap-1 text-gray-400 hover:text-red-500 transition">
+                                <i id="like-icon-comment-${data.reply_id}" class="far fa-heart"></i>
+                                <span id="like-count-comment-${data.reply_id}">0</span>
+                            </button>
                         </div>
                     </div>
                 `;
@@ -1004,6 +1051,13 @@
                 const emptyMsg = replyList.querySelector('p.italic');
                 if (emptyMsg) emptyMsg.remove();
                 replyList.insertAdjacentHTML('beforeend', replyHtml);
+                
+                // Cập nhật số lượng reply trên nút "Trả lời"
+                const replyBtn = document.querySelector(`button[onclick="toggleReplySection(${commentId})"] span`);
+                if (replyBtn) {
+                    const currentCount = parseInt(replyBtn.innerText.match(/\d+/) || 0);
+                    replyBtn.innerText = `Trả lời (${currentCount + 1})`;
+                }
             }
         })
         .catch(e => {
