@@ -144,46 +144,84 @@ class AuthController extends Controller
 
 
 
-    // --- 6. QUÊN MẬT KHẨU (QUA EMAIL) ---
-
+    // --- 6. QUÊN MẬT KHẨU (QUA MÃ OTP) ---
+    
     // Hiển thị form nhập email
     public function showForgotPasswordForm()
     {
         return view('auth.forgot-password');
     }
 
-    // Gửi link reset password qua email
-    public function sendResetLink(Request $request)
-    {
     // Gửi mã OTP qua email
-    public function sendResetCode(Request $request) {
+    public function sendResetCode(Request $request)
+    {
         $request->validate([
             'email' => ['required', 'email', 'regex:/^[a-zA-Z0-9._%+-]+@gmail\.com$/i']
         ], [
             'email.required' => 'Vui lòng nhập email.',
-            'email.email' => 'Email không hợp lệ.'
+            'email.email' => 'Email không hợp lệ.',
+            'email.regex' => 'Chỉ hỗ trợ email @gmail.com.'
         ]);
 
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+        // Kiểm tra email có tồn tại trong hệ thống không
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return back()->withErrors(['email' => 'Không tìm thấy email này trong hệ thống.']);
+        }
 
-        return $status === Password::RESET_LINK_SENT
-            ? back()->with('status', 'Đã gửi link đặt lại mật khẩu vào email của bạn!')
-            : back()->withErrors(['email' => 'Không tìm thấy email này trong hệ thống.']);
+        // Tạo mã 6 số ngẫu nhiên
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        // Xóa mã cũ (nếu có) và lưu mã mới
+        DB::table('password_reset_codes')->where('email', $request->email)->delete();
+        DB::table('password_reset_codes')->insert([
+            'email' => $request->email,
+            'code' => $code,
+            'expires_at' => Carbon::now()->addMinutes(10),
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ]);
+
+        // Gửi email chứa mã OTP
+        Mail::send([], [], function ($message) use ($request, $code, $user) {
+            $message->to($request->email)
+                    ->subject('Mã xác thực đặt lại mật khẩu - Góc Sách')
+                    ->html("
+                        <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;'>
+                            <h2 style='color: #3E5F4E; text-align: center;'>📚 Góc Sách</h2>
+                            <p>Xin chào <strong>{$user->name}</strong>,</p>
+                            <p>Bạn đã yêu cầu đặt lại mật khẩu. Đây là mã xác thực của bạn:</p>
+                            <div style='background: #f5f5f5; padding: 20px; text-align: center; border-radius: 10px; margin: 20px 0;'>
+                                <span style='font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #3E5F4E;'>{$code}</span>
+                            </div>
+                            <p style='color: #888; font-size: 14px;'>Mã này sẽ hết hạn sau 10 phút.</p>
+                            <p style='color: #888; font-size: 14px;'>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>
+                        </div>
+                    ");
+        });
+
+        // Lưu email vào session và chuyển đến trang nhập mã
+        return redirect()->route('password.verify.form')
+            ->with('reset_email', $request->email)
+            ->with('status', 'Đã gửi mã xác thực vào email của bạn!');
+    }
+
+    // Hiển thị form nhập mã OTP
+    public function showVerifyCodeForm(Request $request)
+    {
+        $email = session('reset_email') ?? $request->email;
+        if (!$email) {
+            return redirect()->route('password.request');
+        }
+        return view('auth.verify-code', ['email' => $email]);
     }
 
     // Xác thực mã OTP
-    public function verifyCode(Request $request) {
+    public function verifyCode(Request $request)
+    {
         $request->validate([
             'email' => 'required|email',
             'code' => 'required|string|size:6',
-    // Hiển thị form đặt lại mật khẩu (khi user click link trong email)
-    public function showResetPasswordForm(Request $request, $token)
-    {
-        return view('auth.reset-password', [
-            'token' => $token,
-            'email' => $request->email
         ]);
 
         $record = DB::table('password_reset_codes')
@@ -204,7 +242,8 @@ class AuthController extends Controller
     }
 
     // Gửi lại mã OTP
-    public function resendCode(Request $request) {
+    public function resendCode(Request $request)
+    {
         $request->validate(['email' => 'required|email']);
         
         // Gọi lại hàm sendResetCode
@@ -212,7 +251,8 @@ class AuthController extends Controller
     }
 
     // Hiển thị form đặt lại mật khẩu mới (sau khi xác thực mã)
-    public function showResetPasswordForm(Request $request) {
+    public function showResetPasswordForm(Request $request)
+    {
         $email = session('verified_email');
         if (!$email) {
             return redirect()->route('password.request');
