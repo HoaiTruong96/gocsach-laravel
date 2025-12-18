@@ -13,16 +13,38 @@ class ArticleController extends Controller
     public function show($slug)
     {
         // 1. Tìm bài viết dựa trên slug
-        // Sử dụng firstOrFail để nếu không thấy sẽ tự báo lỗi 404
-        $article = Article::with('user') // Load kèm thông tin tác giả
+        $article = Article::with('user')
                         ->where('slug', $slug)
                         ->firstOrFail();
-
-        // 2. Trả về view chi tiết
-        // Lưu ý: Tên view phải khớp với nơi bạn lưu file show.blade.php
-        // Nếu bạn để file ở: resources/views/show.blade.php thì dùng: 'show'
-        // Nếu bạn để ở: resources/views/articles/show.blade.php thì dùng: 'articles.show'
         
-        return view('show', compact('article')); 
+        // 2. Tăng lượt xem
+        $article->increment('view_count');
+
+        // 3. Lấy bài viết liên quan (cùng tag hoặc mới nhất, loại trừ bài hiện tại)
+        $relatedArticles = Article::where('id', '!=', $article->id)
+            ->where(function($query) use ($article) {
+                // Ưu tiên cùng tag nếu có
+                if (!empty($article->tag)) {
+                    $tags = array_filter(array_map('trim', preg_split('/[,;]+/', $article->tag)));
+                    foreach ($tags as $tag) {
+                        $query->orWhere('tag', 'like', '%' . $tag . '%');
+                    }
+                }
+            })
+            ->orderByDesc('created_at')
+            ->take(4)
+            ->get();
+        
+        // Nếu không đủ bài liên quan, lấy thêm bài mới nhất
+        if ($relatedArticles->count() < 4) {
+            $moreArticles = Article::where('id', '!=', $article->id)
+                ->whereNotIn('id', $relatedArticles->pluck('id'))
+                ->orderByDesc('created_at')
+                ->take(4 - $relatedArticles->count())
+                ->get();
+            $relatedArticles = $relatedArticles->merge($moreArticles);
+        }
+
+        return view('articles.show', compact('article', 'relatedArticles')); 
     }
 }

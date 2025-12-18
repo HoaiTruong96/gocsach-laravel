@@ -51,11 +51,25 @@
                             </h1>
                             
                             <div class="flex items-center justify-center md:justify-start gap-4">
+                                @php
+                                    $slideRating = floatval(is_object($slide) ? ($slide->rating ?? 5.0) : ($slide['rating'] ?? 5.0));
+                                    $fullStars = floor($slideRating);
+                                    $hasHalfStar = ($slideRating - $fullStars) >= 0.5;
+                                    $emptyStars = 5 - $fullStars - ($hasHalfStar ? 1 : 0);
+                                @endphp
                                 <div class="flex text-yellow-400 text-lg">
-                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                                    @for($i = 0; $i < $fullStars; $i++)
+                                        <i class="fas fa-star"></i>
+                                    @endfor
+                                    @if($hasHalfStar)
+                                        <i class="fas fa-star-half-alt"></i>
+                                    @endif
+                                    @for($i = 0; $i < $emptyStars; $i++)
+                                        <i class="far fa-star opacity-50"></i>
+                                    @endfor
                                 </div>
                                 <span class="text-white/80 text-sm font-medium px-2 py-0.5 bg-white/10 rounded">
-                                    {{ is_object($slide) ? ($slide->rating ?? '5.0') : $slide['rating'] }}
+                                    {{ number_format($slideRating, 1) }}
                                 </span>
                             </div>
                             
@@ -479,49 +493,98 @@
                     </div>
                     @endif
 
-                    {{-- Widget 1: Top Thịnh Hành --}}
-                    <div class="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-7 border border-gray-100 shadow-lg relative overflow-hidden">
-                        {{-- Decorative --}}
-                        <div class="absolute -top-4 -right-4 w-20 h-20 bg-orange-100 rounded-full blur-2xl pointer-events-none"></div>
+                    {{-- Widget 1: Top Thịnh Hành - Redesigned --}}
+                    <div class="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 rounded-2xl p-7 border border-orange-100 shadow-lg relative overflow-hidden group/widget hover:shadow-xl transition-shadow duration-300">
+                        {{-- Decorative Elements --}}
+                        <div class="absolute -top-8 -right-8 w-32 h-32 bg-gradient-to-br from-orange-200/40 to-red-200/30 rounded-full blur-2xl pointer-events-none group-hover/widget:scale-110 transition-transform duration-500"></div>
+                        <div class="absolute -bottom-6 -left-6 w-24 h-24 bg-gradient-to-tr from-amber-200/30 to-yellow-200/40 rounded-full blur-xl pointer-events-none"></div>
+                        <div class="absolute top-1/2 right-4 w-16 h-16 bg-red-100/20 rounded-full blur-xl pointer-events-none"></div>
                         
-                        <h3 class="font-serif font-bold text-lg text-gray-800 mb-5 flex items-center gap-3 relative">
-                            <span class="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center shadow-md">
-                                <i class="fas fa-fire-alt text-white"></i>
-                            </span>
-                            <div>
-                                <span class="block">Top Thịnh Hành</span>
-                                <span class="text-[10px] text-gray-400 font-normal">Được đọc nhiều nhất</span>
+                        {{-- Header --}}
+                        <div class="flex items-center justify-between mb-6 relative">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg animate-pulse">
+                                    <i class="fas fa-fire-alt text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-serif font-bold text-lg text-gray-800 leading-none">Top Thịnh Hành</h3>
+                                    <span class="text-xs text-orange-600 font-medium">🔥 Được đọc nhiều nhất</span>
+                                </div>
                             </div>
-                        </h3>
-                        <div class="space-y-4">
+                            <a href="{{ route('books.list', ['sort' => 'views']) }}" class="text-xs text-orange-500 hover:text-orange-700 font-bold flex items-center gap-1 transition">
+                                Xem tất cả <i class="fas fa-chevron-right text-[10px]"></i>
+                            </a>
+                        </div>
+                        
+                        {{-- Book List --}}
+                        <div class="space-y-3 relative">
                             @if(isset($books) && $books->count() > 0)
                                 @foreach($books->sortByDesc('view_count')->take(5)->values() as $index => $book)
                                     @php
                                         $coverUrl = !empty($book->cover_image) 
                                             ? (str_starts_with($book->cover_image, 'http') ? $book->cover_image : asset('storage/' . $book->cover_image))
                                             : 'https://via.placeholder.com/150x225?text=No+Image';
+                                        
+                                        // Medal colors for top 3
+                                        $medalColors = [
+                                            0 => 'from-yellow-400 to-amber-500 text-yellow-900', // Gold
+                                            1 => 'from-gray-300 to-slate-400 text-gray-700',     // Silver
+                                            2 => 'from-orange-400 to-orange-600 text-orange-900' // Bronze
+                                        ];
+                                        $rankBg = $medalColors[$index] ?? 'from-gray-100 to-gray-200 text-gray-500';
+                                        $isTop3 = $index < 3;
                                     @endphp
-                                    <a href="{{ route('detail', $book->slug) }}" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition cursor-pointer group">
-                                        <span class="font-bold text-gray-300 w-6 text-center text-xl italic group-hover:text-brand-accent transition font-serif">{{ $index + 1 }}</span>
-                                        <div class="w-12 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0 shadow-sm border border-gray-100">
-                                            <img src="{{ $coverUrl }}" alt="{{ $book->title }}" class="w-full h-full object-cover">
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <h4 class="text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-brand-green transition" title="{{ $book->title }}">{{ $book->title }}</h4>
-                                            
-                                            <div class="flex items-center gap-2 text-xs mt-1">
-                                                <span class="text-yellow-500 font-bold flex items-center">
-                                                    {{ number_format($book->posts_avg_rating ?? $book->avg_rating ?? 0, 1) }} 
-                                                    <i class="fas fa-star text-[10px] ml-0.5"></i>
-                                                </span>
-                                                <span class="text-gray-400">|</span>
-                                                <span class="text-gray-500 flex items-center" title="Lượt xem"><i class="far fa-eye mr-1"></i> {{ number_format($book->view_count) }}</span>
+                                    
+                                    <a href="{{ route('detail', $book->slug) }}" 
+                                       class="flex items-center gap-4 p-3 rounded-xl {{ $isTop3 ? 'bg-white/70 border border-orange-100' : 'bg-white/50 hover:bg-white/80' }} hover:shadow-md transition-all duration-300 cursor-pointer group/item transform hover:-translate-x-1">
+                                        
+                                        {{-- Rank Badge --}}
+                                        <div class="relative flex-shrink-0">
+                                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br {{ $rankBg }} flex items-center justify-center shadow-md font-bold text-sm {{ $isTop3 ? 'ring-2 ring-white' : '' }}">
+                                                @if($index == 0)
+                                                    <i class="fas fa-crown text-xs"></i>
+                                                @else
+                                                    {{ $index + 1 }}
+                                                @endif
                                             </div>
                                         </div>
+                                        
+                                        {{-- Book Cover --}}
+                                        <div class="w-14 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0 shadow-md border-2 border-white transform group-hover/item:scale-105 transition-transform duration-300">
+                                            <img src="{{ $coverUrl }}" alt="{{ $book->title }}" class="w-full h-full object-cover">
+                                        </div>
+                                        
+                                        {{-- Book Info --}}
+                                        <div class="flex-1 min-w-0">
+                                            <h4 class="text-sm font-bold text-gray-800 line-clamp-2 group-hover/item:text-orange-600 transition leading-snug" title="{{ $book->title }}">
+                                                {{ $book->title }}
+                                            </h4>
+                                            <p class="text-xs text-gray-500 mt-1 line-clamp-1">{{ $book->author_name ?? 'Ẩn danh' }}</p>
+                                            
+                                            <div class="flex items-center gap-3 text-xs mt-2">
+                                                {{-- Rating --}}
+                                                <span class="flex items-center gap-1 text-yellow-500 font-bold bg-yellow-50 px-2 py-0.5 rounded-full">
+                                                    <i class="fas fa-star text-[10px]"></i>
+                                                    {{ number_format($book->posts_avg_rating ?? $book->avg_rating ?? 0, 1) }}
+                                                </span>
+                                                
+                                                {{-- Views --}}
+                                                <span class="flex items-center gap-1 text-orange-600 font-bold bg-orange-50 px-2 py-0.5 rounded-full" title="Lượt đọc">
+                                                    <i class="far fa-eye text-[10px]"></i>
+                                                    {{ number_format($book->view_count) }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        
+                                        {{-- Arrow --}}
+                                        <i class="fas fa-chevron-right text-gray-300 group-hover/item:text-orange-500 group-hover/item:translate-x-1 transition-all"></i>
                                     </a>
                                 @endforeach
                             @else
-                                <div class="text-center text-sm text-gray-400 py-4 italic">Dữ liệu đang cập nhật...</div>
+                                <div class="text-center text-sm text-gray-400 py-8 italic">
+                                    <i class="fas fa-book-open text-2xl text-gray-300 mb-2 block"></i>
+                                    Dữ liệu đang cập nhật...
+                                </div>
                             @endif
                         </div>
                     </div>
