@@ -26,7 +26,7 @@ class PostApprovedNotification extends Notification
             'post_id' => $this->post->id,
             'title'   => 'Bài viết đã được duyệt',
             'message' => 'Bài review "' . $this->post->title . '" của bạn đã được công khai.',
-            'link'    => route('detail', $this->post->book->slug ?? '#'), // Link tới sách
+            'link' => route('book.reviews', $this->post->book->slug) . '#post-' . $this->post->id,
             'icon'    => 'fas fa-check-circle',
             'color'   => 'text-green-500'
         ];

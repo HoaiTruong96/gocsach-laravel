@@ -3,9 +3,6 @@
 @section('title', 'Trang Chủ - Góc Sách')
 
 @section('content')
-    {{-- ========================================================================= --}}
-    {{-- SECTION: HERO SLIDER (BANNER CHÍNH) --}}
-    {{-- ========================================================================= --}}
     <section id="hero-carousel" class="relative text-white py-12 lg:py-16 overflow-hidden bg-[#2A483A] group">
         {{-- Background Pattern --}}
         <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: url('https://www.transparenttextures.com/patterns/cubes.png');"></div>
@@ -295,10 +292,11 @@
     <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
         <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
             <div class="flex items-center gap-3">
-                <div class="w-1 h-8 bg-brand-accent rounded-full"></div> {{-- Thanh trang trí --}}
+                <div class="w-1 h-8 bg-brand-accent rounded-full"></div> 
                 <div>
                     <h2 class="text-2xl font-bold text-gray-800 font-serif leading-none flex items-center gap-3">Cộng Đồng Review
-                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-semibold">{{ $latestComments->total() ?? 0 }} review</span>
+                        {{-- [ĐÃ SỬA]: Dùng $latestReviews --}}
+                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-semibold">{{ $latestReviews->total() ?? 0 }} bài</span>
                     </h2>
                     <p class="text-sm text-gray-500 mt-1">Góc chia sẻ cảm nhận từ độc giả</p>
                 </div>
@@ -307,14 +305,10 @@
             {{-- Bộ lọc Review --}}
             <div class="flex items-center gap-3">
                 <div class="bg-brand-green/10 rounded-full p-1.5 flex text-xs font-bold">
-                    <button onclick="loadComments('latest')" 
-                            id="tab-latest"
-                            class="px-4 py-1.5 rounded-full transition-all duration-300 bg-white text-brand-green shadow-sm">
+                    <button onclick="loadComments('latest')" id="tab-latest" class="px-4 py-1.5 rounded-full transition-all duration-300 bg-white text-brand-green shadow-sm">
                         Mới nhất
                     </button>
-                    <button onclick="loadComments('popular')" 
-                            id="tab-popular"
-                            class="px-4 py-1.5 rounded-full transition-all duration-300 text-gray-500 hover:bg-gray-50">
+                    <button onclick="loadComments('popular')" id="tab-popular" class="px-4 py-1.5 rounded-full transition-all duration-300 text-gray-500 hover:bg-gray-50">
                         Nổi bật
                     </button>
                 </div>
@@ -322,7 +316,7 @@
             </div>
         </div>
         
-        {{-- Container chứa danh sách comment --}}
+        {{-- Container chứa danh sách --}}
         <div id="comments-container" class="relative min-h-[200px] bg-gray-50 rounded-2xl p-4 border border-gray-100">
             {{-- Loading Spinner --}}
             <div id="loading-spinner" class="hidden absolute inset-0 bg-white/80 z-20 flex items-center justify-center rounded-2xl transition-opacity duration-300">
@@ -331,9 +325,10 @@
 
             {{-- NỘI DUNG AJAX SẼ ĐỔ VÀO ĐÂY --}}
             <div id="comments-content-wrapper">
-                 @include('partials.home_comments', ['latestComments' => $latestComments])
+                 {{-- [ĐÃ SỬA]: Truyền biến latestReviews --}}
+                 @include('partials.home_comments', ['latestReviews' => $latestReviews])
             </div>
-        </div>
+        </div>  
     </div>
 </section>
 
@@ -502,13 +497,12 @@
 
 @push('scripts')
 <script>
-    // --- KHAI BÁO BIẾN TOÀN CỤC ---
+    // --- BIẾN TOÀN CỤC ---
     const currentUserId = "{{ Auth::id() }}";
 
-    // --- 1. SLIDER & CÁC SỰ KIỆN KHỞI TẠO ---
+    // --- 1. KHỞI TẠO KHI TRANG LOAD ---
     document.addEventListener('DOMContentLoaded', function() {
-        
-        // A. HERO SLIDER
+        // Hero Slider
         const sliderWrapper = document.getElementById('sliderWrapper');
         const dots = document.querySelectorAll('.indicator-dot');
         const prevBtn = document.getElementById('heroPrevBtn');
@@ -522,275 +516,277 @@
                 if (!sliderWrapper) return;
                 sliderWrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
                 dots.forEach((dot, index) => {
-                    if (index === currentSlide) {
-                        dot.classList.add('bg-brand-accent', 'w-8');
-                        dot.classList.remove('bg-white/30');
-                    } else {
-                        dot.classList.remove('bg-brand-accent', 'w-8');
-                        dot.classList.add('bg-white/30');
-                    }
+                    dot.classList.toggle('bg-brand-accent', index === currentSlide);
+                    dot.classList.toggle('w-8', index === currentSlide);
+                    dot.classList.toggle('bg-white/30', index !== currentSlide);
                 });
             }
-
-            function nextSlide() {
-                currentSlide = (currentSlide + 1) % totalSlides;
-                updateSlider();
-                resetTimer();
-            }
-
-            function prevSlide() {
-                currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-                updateSlider();
-                resetTimer();
-            }
-
-            function startTimer() {
-                slideInterval = setInterval(nextSlide, 5000);
-            }
-
-            function resetTimer() {
-                clearInterval(slideInterval);
-                startTimer();
-            }
-
+            function nextSlide() { currentSlide = (currentSlide + 1) % totalSlides; updateSlider(); resetTimer(); }
+            function prevSlide() { currentSlide = (currentSlide - 1 + totalSlides) % totalSlides; updateSlider(); resetTimer(); }
+            function startTimer() { slideInterval = setInterval(nextSlide, 5000); }
+            function resetTimer() { clearInterval(slideInterval); startTimer(); }
             if (nextBtn) nextBtn.addEventListener('click', nextSlide);
             if (prevBtn) prevBtn.addEventListener('click', prevSlide);
-
             dots.forEach((dot) => {
                 dot.addEventListener('click', function() {
                     currentSlide = parseInt(this.getAttribute('data-index'));
-                    updateSlider();
-                    resetTimer();
+                    updateSlider(); resetTimer();
                 });
             });
-
             startTimer();
-        } else {
-            // Ẩn nút điều hướng nếu chỉ có 1 slide
-            if(prevBtn) prevBtn.style.display = 'none';
-            if(nextBtn) nextBtn.style.display = 'none';
         }
 
-        // B. NEW BOOKS SLIDER (Scroll ngang)
+        // New Books Slider
         const sliderNewBooks = document.getElementById('sliderNewBooks');
         const btnPrevNew = document.getElementById('btnPrevNewBooks');
         const btnNextNew = document.getElementById('btnNextNewBooks');
-
         if(sliderNewBooks && btnPrevNew && btnNextNew) {
-            btnNextNew.addEventListener('click', () => {
-                sliderNewBooks.scrollBy({ left: 220, behavior: 'smooth' });
-            });
-            btnPrevNew.addEventListener('click', () => {
-                sliderNewBooks.scrollBy({ left: -220, behavior: 'smooth' });
-            });
+            btnNextNew.addEventListener('click', () => sliderNewBooks.scrollBy({ left: 220, behavior: 'smooth' }));
+            btnPrevNew.addEventListener('click', () => sliderNewBooks.scrollBy({ left: -220, behavior: 'smooth' }));
         }
 
-        // C. GẮN SỰ KIỆN PHÂN TRANG (Cho dữ liệu load lần đầu)
         attachPaginationEvents();
-
-        // Thiết lập trạng thái Tab ban đầu dựa trên URL (nếu có ?sort_review=...)
         const initialSort = new URLSearchParams(window.location.search).get('sort_review') || 'latest';
-        try { updateTabUI(initialSort); } catch(e) { /* ignore if function not ready */ }
+        updateTabUI(initialSort);
     });
 
-    // --- 2. CÁC HÀM XỬ LÝ AJAX (Định nghĩa global để onclick gọi được) ---
+    // --- 2. HÀM ĐIỀU KHIỂN GIAO DIỆN (TOGGLE) ---
 
-    // Hàm load comment (Dùng cho cả Tab và Phân trang)
-    function loadComments(urlOrSortType) {
-        let url;
+    // Mở khung bình luận của Post và focus ô nhập
+    function togglePostComments(postId) {
+        const list = document.getElementById(`comments-list-${postId}`);
+        const chevron = document.getElementById(`chevron-${postId}`);
+        const input = document.getElementById(`post-comment-input-${postId}`);
         
-        // Kiểm tra xem input là URL (từ phân trang) hay loại sắp xếp (từ tab)
-        if (urlOrSortType.includes('http')) {
-            url = urlOrSortType; 
-        } else {
-            // Cập nhật giao diện Tab
-            updateTabUI(urlOrSortType);
-            url = `/?sort_review=${urlOrSortType}`;
+        if (list) {
+            const isHidden = list.classList.contains('hidden');
+            list.classList.toggle('hidden');
+            if(chevron) chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+            if(isHidden && input) input.focus();
         }
+    }
 
-        // Show spinner
+    // Mở khung trả lời của từng Comment
+    function toggleReplySection(commentId) {
+        const section = document.getElementById(`reply-section-${commentId}`);
+        const input = document.getElementById(`reply-input-${commentId}`);
+        
+        if (section) {
+            const isHidden = section.classList.contains('hidden');
+            // Đóng các khung reply khác
+            document.querySelectorAll('[id^="reply-section-"]').forEach(el => el.classList.add('hidden'));
+            
+            section.classList.toggle('hidden');
+            if(!isHidden) section.classList.add('hidden'); // Nếu đang hiện thì ẩn
+            else if(input) input.focus();
+        }
+    }
+
+    // Tự động giãn ô textarea
+    function autoResize(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    // --- 3. HÀM XỬ LÝ DỮ LIỆU (AJAX & FETCH) ---
+
+    function loadComments(urlOrSortType) {
+        let url = urlOrSortType.includes('http') ? urlOrSortType : `/?sort_review=${urlOrSortType}`;
         const spinner = document.getElementById('loading-spinner');
         const contentWrapper = document.getElementById('comments-content-wrapper');
         
         if(spinner) spinner.classList.remove('hidden');
         if(contentWrapper) contentWrapper.style.opacity = '0.5';
 
-        // Fetch Data
-        fetch(url, {
-            headers: { "X-Requested-With": "XMLHttpRequest" } // Báo hiệu Ajax
-        })
+        fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
         .then(response => response.text())
         .then(html => {
             if(contentWrapper) {
                 contentWrapper.innerHTML = html;
                 contentWrapper.style.opacity = '1';
-                
-                // Gắn lại sự kiện cho các link phân trang mới
                 attachPaginationEvents();
             }
         })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Có lỗi khi tải dữ liệu.');
-        })
-        .finally(() => {
-            if(spinner) spinner.classList.add('hidden');
-        });
+        .finally(() => { if(spinner) spinner.classList.add('hidden'); });
+        
+        if (!urlOrSortType.includes('http')) updateTabUI(urlOrSortType);
     }
 
-    // Cập nhật UI Tab
-    function updateTabUI(sortType) {
-        const tabLatest = document.getElementById('tab-latest');
-        const tabPopular = document.getElementById('tab-popular');
-        const activeClass = ['bg-white', 'text-brand-green', 'shadow-sm'];
-        const inactiveClass = ['text-gray-500', 'hover:text-gray-700'];
+    // 1. Sửa định nghĩa hàm, thêm tham số 'e'
+    // Thêm tham số 'btnElement' để xác định trực tiếp nút được bấm
+    function submitComment(postId, parentId = null, event) {
+    if (event) event.preventDefault();
+    
+    const targetId = parentId ? `reply-input-${parentId}` : `post-comment-input-${postId}`;
+    const elementBox = document.getElementById(targetId);
+    
+    if (!elementBox) return;
 
-        // Reset
-        tabLatest.classList.remove(...activeClass);
-        tabLatest.classList.add(...inactiveClass);
-        tabPopular.classList.remove(...activeClass);
-        tabPopular.classList.add(...inactiveClass);
+    const valueContent = elementBox.value.trim();
+    if (!valueContent) {
+        alert("Vui lòng nhập nội dung!");
+        return;
+    }
 
-        // Active logic
-        if (sortType === 'latest') {
-            tabLatest.classList.add(...activeClass);
-            tabLatest.classList.remove(...inactiveClass);
-        } else {
-            tabPopular.classList.add(...activeClass);
-            tabPopular.classList.remove(...inactiveClass);
+    const btnAction = event.currentTarget || event.target.closest('button');
+    const oldHtml = btnAction ? btnAction.innerHTML : '';
+    if (btnAction) {
+        btnAction.disabled = true;
+        btnAction.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    }
+
+    fetch(`/post/${postId}/comment`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ content: valueContent, parent_id: parentId })
+    })
+    .then(async r => {
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.message || "Lỗi server");
+        return d;
+    })
+    .then(data => {
+        if (data.success) {
+            elementBox.value = '';
+            elementBox.style.height = 'auto';
+
+            // 1. Cập nhật số lượng bình luận ngay lập tức
+            const countLabels = document.querySelectorAll(`.comment-count-${postId}`);
+            countLabels.forEach(el => {
+                el.innerText = `Bình luận (${data.new_count})`;
+            });
+
+            // 2. Tạo HTML bình luận mới để chèn vào giao diện
+            const newCommentHtml = `
+    <div class="flex gap-3 animate-fade-in mb-6">
+        <img src="${data.comment.user_avatar}" class="w-9 h-9 rounded-full border border-white shadow-sm flex-shrink-0">
+        <div class="flex-1">
+            <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-gray-100 shadow-sm">
+                <div class="flex justify-between items-center mb-1">
+                    <h5 class="font-bold text-xs text-gray-800">${data.comment.user_name}</h5>
+                    <span class="text-[10px] text-gray-400">${data.comment.created_at}</span>
+                </div>
+                <p class="text-xs text-gray-600">${data.comment.content}</p>
+            </div>
+
+            ${!parentId ? `
+                <div class="flex gap-3 mt-1 ml-2">
+                    <button onclick="handleLike(${data.comment.id}, 'comment')" 
+                            id="like-btn-comment-${data.comment.id}"
+                            class="text-[10px] font-bold flex items-center gap-1 text-gray-400 hover:text-red-500">
+                        <i id="like-icon-comment-${data.comment.id}" class="far fa-heart text-xs"></i>
+                        <span id="like-count-comment-${data.comment.id}">0</span>
+                    </button>
+
+                    <button onclick="toggleReplySection(${data.comment.id})" class="text-[10px] font-bold text-gray-400 hover:text-blue-500 transition">
+                        Trả lời (0)
+                    </button>
+                </div>
+                
+                <div id="reply-section-${data.comment.id}" class="hidden mt-3 space-y-4 border-l-2 border-gray-100 pl-4 animate-fade-in">
+                    <div class="flex gap-2 relative mt-2">
+                        <textarea id="reply-input-${data.comment.id}" rows="1" 
+                                  class="w-full text-xs p-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green resize-none shadow-sm" 
+                                  placeholder="Nhập câu trả lời..."></textarea>
+                        <button type="button" onclick="submitComment(${postId}, ${data.comment.id}, event)" 
+                                class="text-brand-green px-3 py-1 bg-brand-green/10 rounded-lg text-xs font-bold hover:bg-brand-green hover:text-white transition">Gửi</button>
+                    </div>
+                </div>
+            ` : `
+                <button onclick="handleLike(${data.comment.id}, 'comment')" 
+                        id="like-btn-comment-${data.comment.id}"
+                        class="text-[9px] font-bold ml-2 mt-1 flex items-center gap-1 text-gray-400">
+                    <i id="like-icon-comment-${data.comment.id}" class="far fa-heart"></i>
+                    <span id="like-count-comment-${data.comment.id}">0</span>
+                </button>
+            `}
+        </div>
+    </div>`;
+            // 3. Chèn vào đúng vị trí (Reply hoặc Comment chính)
+            if (parentId) {
+                const replySection = document.getElementById(`reply-section-${parentId}`);
+                replySection.classList.remove('hidden');
+                // Chèn vào trước ô nhập reply
+                replySection.insertAdjacentHTML('beforeend', newCommentHtml);
+            } else {
+                const list = document.querySelector(`#comments-list-${postId} .space-y-6`);
+                // Xóa dòng "Chưa có bình luận" nếu tồn tại
+                const emptyMsg = list.querySelector('p.italic');
+                if (emptyMsg) emptyMsg.remove();
+                
+                // Chèn lên đầu danh sách bình luận mới nhất
+                list.insertAdjacentHTML('afterbegin', newCommentHtml);
+            }
+
+            if (btnAction) {
+                btnAction.disabled = false;
+                btnAction.innerHTML = oldHtml;
+            }
         }
-    }
-
-    // Gắn sự kiện click cho link phân trang (để chặn reload)
-    function attachPaginationEvents() {
-        const links = document.querySelectorAll('.ajax-pagination-link');
-        links.forEach(link => {
-            // Xóa sự kiện cũ để tránh duplicate
-            link.removeEventListener('click', handlePaginationClick);
-            // Thêm sự kiện mới
-            link.addEventListener('click', handlePaginationClick);
-        });
-    }
-
-    // Xử lý khi click phân trang
-    function handlePaginationClick(e) {
-        e.preventDefault(); 
-        const url = this.getAttribute('href');
-        if (url) {
-            loadComments(url);
+    })
+    .catch(e => {
+        alert("Lỗi: " + e.message);
+        if (btnAction) {
+            btnAction.disabled = false;
+            btnAction.innerHTML = oldHtml;
         }
-    }
+    });
+}       
 
-    // --- 3. LIKE & REPLY SYSTEM ---
+// Hàm hỗ trợ reset nút khi lỗi
+    function resetBtn(btn, html) {
+    if (btn) {
+        btn.innerHTML = html;
+        btn.disabled = false;
+    }
+    }
 
     function handleLike(id, type) {
-        if (!currentUserId) {
-            alert("Vui lòng đăng nhập để thả tim!");
-            window.location.href = "/login";
-            return;
-        }
-
+        if (!currentUserId) { alert("Vui lòng đăng nhập!"); window.location.href = "/login"; return; }
         const btn = document.getElementById(`like-btn-${type}-${id}`);
         const icon = document.getElementById(`like-icon-${type}-${id}`);
         const countSpan = document.getElementById(`like-count-${type}-${id}`);
+        if (!btn || !icon || !countSpan) return;
 
-        if (!btn) return;
-
-        const isLiked = icon.classList.contains('fas'); 
-        
-        // Optimistic UI Update (Cập nhật giao diện ngay lập tức)
-        if(isLiked) {
-            icon.classList.remove('fas', 'text-red-500');
-            icon.classList.add('far');
-            btn.classList.remove('text-red-500');
-            let currentCount = parseInt(countSpan.innerText);
-            countSpan.innerText = Math.max(0, currentCount - 1);
-        } else {
-            icon.classList.remove('far');
-            icon.classList.add('fas', 'bounce');
-            btn.classList.add('text-red-500');
-            let currentCount = parseInt(countSpan.innerText);
-            countSpan.innerText = currentCount + 1;
-        }
-
-        // Gửi request lên server
-        fetch('/like', { 
+        const isLiked = icon.classList.contains('fas');
+        fetch('/like', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
             body: JSON.stringify({ id: id, type: type })
         })
-        .then(response => response.json())
+        .then(r => r.json())
         .then(data => {
             if (data.success) {
-                // Server xác nhận thành công, cập nhật lại số lượng chính xác
+                icon.classList.toggle('fas', data.liked);
+                icon.classList.toggle('far', !data.liked);
+                icon.classList.toggle('text-red-500', data.liked);
+                btn.classList.toggle('text-red-500', data.liked);
                 countSpan.innerText = data.count;
             }
-        })
-        .catch(error => console.error('Error:', error));
+        });
     }
 
-    function toggleReplyForm(commentId) {
-        if (!currentUserId) {
-            alert("Vui lòng đăng nhập để bình luận!");
-            window.location.href = "/login";
-            return;
-        }
+    function attachPaginationEvents() {
+        document.querySelectorAll('.ajax-pagination-link').forEach(link => {
+            link.onclick = function(e) { e.preventDefault(); loadComments(this.getAttribute('href')); };
+        });
+    }
+
+    function updateTabUI(sortType) {
+        const tabLatest = document.getElementById('tab-latest');
+        const tabPopular = document.getElementById('tab-popular');
+        if (!tabLatest || !tabPopular) return;
+        const active = ['bg-white', 'text-brand-green', 'shadow-sm'];
+        const inactive = ['text-gray-500', 'hover:text-gray-700'];
         
-        const form = document.getElementById(`reply-form-${commentId}`);
-        const input = document.getElementById(`reply-input-${commentId}`);
-        
-        // Đóng các form khác
-        document.querySelectorAll('[id^="reply-form-"]').forEach(el => el.classList.add('hidden'));
-        
-        if (form.classList.contains('hidden')) {
-            form.classList.remove('hidden');
-            input.focus();
-        } else {
-            form.classList.add('hidden');
-        }
-    }
-
-    function autoResize(textarea) {
-        textarea.style.height = 'auto';
-        textarea.style.height = textarea.scrollHeight + 'px';
-    }
-
-    function handleEnter(event, commentId) {
-        if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault();
-            submitInlineReply(commentId);
-        }
-    }
-
-    function submitInlineReply(commentId) {
-        const input = document.getElementById(`reply-input-${commentId}`);
-        const content = input.value.trim();
-
-        if (!content) {
-            alert("Nội dung không được để trống!");
-            return;
-        }
-
-        fetch(`/comment/${commentId}/reply`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ content: content })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload(); // Reload để thấy comment mới
-            } else {
-                alert("Có lỗi xảy ra, vui lòng thử lại.");
-            }
-        })
-        .catch(error => console.error('Error:', error));
+        tabLatest.classList.remove(...(sortType === 'latest' ? inactive : active));
+        tabLatest.classList.add(...(sortType === 'latest' ? active : inactive));
+        tabPopular.classList.remove(...(sortType === 'popular' ? inactive : active));
+        tabPopular.classList.add(...(sortType === 'popular' ? active : inactive));
     }
 </script>
 <style>
