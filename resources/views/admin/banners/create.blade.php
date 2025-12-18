@@ -1,47 +1,58 @@
 @extends('layouts.admin')
-@section('title', 'Thêm Banner')
-@section('header', 'Tạo Banner Mới')
+@section('title', 'Thêm Banner Mới')
+@section('header', 'Thêm Banner Mới')
 
 @section('content')
+    {{-- Frontend Warning Alert --}}
+    <div id="warning-alert"
+        class="hidden bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400 px-4 py-3 rounded-lg mb-6 flex items-center justify-between gap-3 shadow-sm transition-all duration-500">
+        <div class="flex items-center gap-3">
+            <i class="fas fa-exclamation-triangle text-xl"></i>
+            <span class="font-medium" id="warning-message">Thông báo</span>
+        </div>
+        <button onclick="dismissWarning()"
+            class="text-yellow-500 hover:text-yellow-700 dark:hover:text-yellow-300 transition">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
     <div
         class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 max-w-4xl mx-auto transition-colors duration-300">
-        <form action="{{ route('admin.banners.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('admin.banners.store') }}" method="POST" enctype="multipart/form-data" id="banner-form">
             @csrf
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {{-- Cột Trái --}}
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Tiêu đề chính <span
+                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Tiêu đề <span
                                 class="text-red-500">*</span></label>
                         <input type="text" name="title"
-                            class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white"
-                            required placeholder="VD: Nhà Giả Kim">
+                            class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic"
+                            required placeholder="Ví dụ: Nhà Giả Kim">
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Tag nhỏ (Góc
-                            trên)</label>
+                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Tag quảng bá</label>
                         <input type="text" name="tag"
-                            class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white"
-                            placeholder="VD: Sách Bán Chạy">
+                            class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic"
+                            placeholder="Gợi ý: Sách Bán Chạy">
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Mô tả / Trích
-                            dẫn</label>
+                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Mô tả</label>
                         <textarea name="description" rows="3"
-                            class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white"
-                            placeholder="Một câu quote hay..."></textarea>
+                            class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic resize-y min-h-[80px]"
+                            placeholder="Một câu trích dẫn ấn tượng..."></textarea>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Đánh giá</label>
                             <input type="text" name="rating"
-                                class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white"
-                                placeholder="VD: 4.8/5.0">
+                                class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic"
+                                placeholder="Ví dụ: 4.5/5.0">
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Thứ tự hiển
                                 thị</label>
-                            <input type="number" name="order" value="0"
+                            <input type="number" name="order" value="0" min="0"
                                 class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white">
                         </div>
                     </div>
@@ -49,27 +60,58 @@
 
                 {{-- Cột Phải --}}
                 <div class="space-y-4">
+                    {{-- Upload ảnh từ máy --}}
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Hình ảnh (Banner)
-                            <span class="text-red-500">*</span></label>
-                        <input type="file" name="image" required
+                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Hình ảnh
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <input type="file" name="image" id="image-file" accept=".png,.jpg,.jpeg,.gif,.webp"
                             class="w-full text-sm text-gray-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-900/50 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/70">
-                        <p class="text-xs text-gray-400 dark:text-slate-500 mt-1">Nên dùng ảnh ngang, kích thước khoảng
-                            800x600px.</p>
+                        <p class="text-xs text-gray-400 dark:text-slate-500 mt-1 italic">
+                            Hỗ trợ: PNG, JPG, GIF, WebP. Nên dùng ảnh ngang khoảng 800x600px.
+                        </p>
                     </div>
+
+                    {{-- Hoặc dùng URL ảnh --}}
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Đường dẫn khi bấm
-                            vào</label>
-                        <input type="text" name="link"
-                            class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white"
-                            placeholder="VD: https://gocsach.vn/chi-tiet/nha-gia-kim">
+                        <input type="url" name="image_url" id="image-url"
+                            class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic"
+                            placeholder="https://gocsach.vn/sach.png">
+                        <p class="text-xs text-gray-400 dark:text-slate-500 mt-1 italic">Dán đường dẫn trực tiếp đến file
+                            ảnh (.png, .jpg, .gif,...)</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">
+                            Đường dẫn khi nhấn xem
+                        </label>
+                        <input type="text" name="link" id="link-input"
+                            class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic"
+                            placeholder="https://gocsach.vn/chi-tiet/nha-gia-kim">
                     </div>
                     <div class="pt-4">
                         <label
-                            class="flex items-center gap-3 p-4 border dark:border-slate-600 rounded-lg bg-gray-50 dark:bg-slate-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-600 transition">
-                            <input type="checkbox" name="is_active" checked
-                                class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
-                            <span class="font-medium text-gray-700 dark:text-slate-300">Hiển thị ngay trên trang chủ</span>
+                            class="flex items-center justify-between p-4 border dark:border-slate-600 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-700 dark:to-slate-600 cursor-pointer hover:shadow-md transition-all duration-300">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
+                                    <i class="fas fa-eye text-blue-600 dark:text-blue-400"></i>
+                                </div>
+                                <div>
+                                    <span class="font-bold text-gray-800 dark:text-white block">Hiển thị trên Trang
+                                        Chủ</span>
+                                </div>
+                            </div>
+                            {{-- Toggle Switch --}}
+                            <div class="relative">
+                                <input type="checkbox" name="is_active" id="toggle-active" checked class="sr-only peer">
+                                <div
+                                    class="w-14 h-7 bg-gray-300 dark:bg-slate-500 rounded-full peer peer-checked:bg-green-500 transition-colors duration-300">
+                                </div>
+                                <div
+                                    class="absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-300 peer-checked:translate-x-7">
+                                </div>
+                            </div>
                         </label>
                     </div>
                 </div>
@@ -80,9 +122,62 @@
                     class="px-6 py-2.5 rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 font-bold transition">Hủy</a>
                 <button type="submit"
                     class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg transition transform hover:-translate-y-0.5">
-                    <i class="fas fa-save mr-2"></i> Lưu Banner
+                    <i class="fas fa-save mr-2"></i> Lưu
                 </button>
             </div>
         </form>
     </div>
+
+    <script>
+        // Show warning function
+        function showWarning(message) {
+            const alert = document.getElementById('warning-alert');
+            const msgEl = document.getElementById('warning-message');
+            if (alert && msgEl) {
+                msgEl.textContent = message;
+                alert.classList.remove('hidden');
+                alert.style.opacity = '1';
+                alert.style.transform = 'translateY(0)';
+                // Auto dismiss after 5 seconds
+                setTimeout(dismissWarning, 5000);
+            }
+        }
+
+        // Dismiss warning function
+        function dismissWarning() {
+            const alert = document.getElementById('warning-alert');
+            if (alert) {
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-10px)';
+                setTimeout(() => alert.classList.add('hidden'), 500);
+            }
+        }
+
+        // Form validation
+        document.getElementById('banner-form').addEventListener('submit', function (e) {
+            const imageFile = document.getElementById('image-file').files.length;
+            const imageUrl = document.getElementById('image-url').value.trim();
+
+            // Check if at least one image source is provided
+            if (!imageFile && !imageUrl) {
+                e.preventDefault();
+                showWarning('Vui lòng tải ảnh từ máy hoặc thêm URL từ Internet!');
+                return false;
+            }
+        });
+
+        // Disable file input if URL is entered and vice versa
+        document.getElementById('image-url').addEventListener('input', function () {
+            document.getElementById('image-file').disabled = this.value.trim() !== '';
+        });
+
+        document.getElementById('image-file').addEventListener('change', function () {
+            if (this.files.length > 0) {
+                document.getElementById('image-url').value = '';
+                document.getElementById('image-url').disabled = true;
+            } else {
+                document.getElementById('image-url').disabled = false;
+            }
+        });
+    </script>
 @endsection

@@ -65,7 +65,11 @@
                         </h1>
                         <div class="flex items-center gap-4 text-sm font-medium">
                             <span class="text-gray-500">Tác giả:
-                                @if($book->author)
+                                @if(isset($book->authors) && $book->authors->isNotEmpty())
+                                    @foreach($book->authors as $a)
+                                        <a href="{{ route('authors.show', $a->slug ?? \Str::slug($a->name)) }}" class="text-brand-green font-bold hover:underline">{{ $a->name }}</a>@if(!$loop->last), @endif
+                                    @endforeach
+                                @elseif($book->author)
                                     <a href="{{ route('authors.show', $book->author->slug ?? \Str::slug($book->author->name)) }}" class="text-brand-green font-bold hover:underline">{{ $book->author->name }}</a>
                                 @else
                                     <span class="text-brand-green font-bold">{{ $book->author_name ?? 'Đang cập nhật' }}</span>

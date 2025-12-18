@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable, SoftDeletes;
 
@@ -16,7 +17,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'secret_code',
         'avatar',
         'bio',
         'role',
@@ -157,6 +157,22 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    // Quan hệ với Avatar Frame (Khung avatar)
+    public function avatarFrames()
+    {
+        return $this->belongsToMany(AvatarFrame::class, 'user_avatar_frames')
+            ->withPivot('is_equipped', 'earned_at')
+            ->withTimestamps();
+    }
+
+    // Lấy khung avatar đang sử dụng
+    public function equippedFrame()
+    {
+        return $this->avatarFrames()
+            ->wherePivot('is_equipped', true)
+            ->first();
+    }
+
     // --- 4. HÀM TÍNH ĐIỂM THỬ THÁCH (CHUẨN XÁC) ---
     public function updateChallengeProgress()
     {
@@ -194,11 +210,20 @@ class User extends Authenticatable
             // Lưu vào DB
             $this->challenges()->updateExistingPivot($challenge->id, $pivotData);
 
-            // Trao huy hiệu nếu xong
+            // Trao phần thưởng nếu hoàn thành
             if ($isCompleted) {
+                // Trao huy hiệu (Badge)
                 if (!$this->badges()->where('badge_id', $challenge->badge_id)->exists()) {
                     $this->badges()->attach($challenge->badge_id, [
                         'earned_at' => now()
+                    ]);
+                }
+
+                // Trao khung avatar (Frame) nếu có
+                if ($challenge->avatar_frame_id && !$this->avatarFrames()->where('avatar_frame_id', $challenge->avatar_frame_id)->exists()) {
+                    $this->avatarFrames()->attach($challenge->avatar_frame_id, [
+                        'earned_at' => now(),
+                        'is_equipped' => false
                     ]);
                 }
             }

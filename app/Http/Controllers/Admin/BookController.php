@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Book;
 use App\Models\Category;
+use App\Models\Author;
 use App\Models\AdminActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -69,9 +70,13 @@ class BookController extends Controller
         $data['created_by_user_id'] = Auth::id();
         $data['is_approved'] = true;
 
-        // Xử lý upload ảnh
+        // Xử lý ảnh bìa
         if ($request->hasFile('cover_image')) {
+            // Ưu tiên file upload
             $data['cover_image'] = $request->file('cover_image')->store('books', 'public');
+        } elseif ($request->filled('cover_image_url')) {
+            // Nếu không có file, sử dụng URL
+            $data['cover_image'] = $request->cover_image_url;
         }
 
         // 1. Tạo sách
@@ -79,6 +84,23 @@ class BookController extends Controller
 
         // 2. Gắn thể loại (Quan hệ nhiều-nhiều)
         $book->categories()->attach($request->category_ids);
+
+        // 3. Xử lý tác giả: cho phép nhập nhiều tên (phân cách bằng dấu phẩy)
+        $authorInput = $request->input('author_name', '');
+        $names = array_filter(array_map('trim', preg_split('/[\r\n,;]+/', $authorInput)));
+        $authorIds = [];
+        foreach ($names as $name) {
+            if (empty($name)) continue;
+            $slug = Author::generateSlug($name);
+            $author = Author::firstOrCreate(['name' => $name], ['slug' => $slug]);
+            $authorIds[] = $author->id;
+        }
+        if (!empty($authorIds)) {
+            $book->authors()->sync($authorIds);
+            // Đồng bộ field author_name (giữ tương thích với chỗ khác)
+            $book->author_name = implode(', ', $names);
+            $book->save();
+        }
 
         // Ghi log
         AdminActivityLog::log(
@@ -121,18 +143,41 @@ class BookController extends Controller
             $data['slug'] = Str::slug($request->title) . '-' . time();
         }
 
-        // Xử lý ảnh mới
+        // Xử lý ảnh bìa
         if ($request->hasFile('cover_image')) {
-            // Xóa ảnh cũ nếu có
-            if ($book->cover_image && Storage::disk('public')->exists($book->cover_image)) {
+            // Xóa ảnh cũ nếu có (chỉ xóa file local, không xóa URL)
+            if ($book->cover_image && !str_starts_with($book->cover_image, 'http') && Storage::disk('public')->exists($book->cover_image)) {
                 Storage::disk('public')->delete($book->cover_image);
             }
             $data['cover_image'] = $request->file('cover_image')->store('books', 'public');
+        } elseif ($request->filled('cover_image_url')) {
+            // Nếu không có file mới, sử dụng URL
+            // Xóa ảnh cũ nếu có (chỉ xóa file local)
+            if ($book->cover_image && !str_starts_with($book->cover_image, 'http') && Storage::disk('public')->exists($book->cover_image)) {
+                Storage::disk('public')->delete($book->cover_image);
+            }
+            $data['cover_image'] = $request->cover_image_url;
         }
 
         // Update thông tin cơ bản và đồng bộ
         $book->update($data);
         $book->categories()->sync($request->category_ids);
+
+        // Xử lý tác giả (tương tự store)
+        $authorInput = $request->input('author_name', '');
+        $names = array_filter(array_map('trim', preg_split('/[\r\n,;]+/', $authorInput)));
+        $authorIds = [];
+        foreach ($names as $name) {
+            if (empty($name)) continue;
+            $slug = Author::generateSlug($name);
+            $author = Author::firstOrCreate(['name' => $name], ['slug' => $slug]);
+            $authorIds[] = $author->id;
+        }
+        if (!empty($authorIds)) {
+            $book->authors()->sync($authorIds);
+            $book->author_name = implode(', ', $names);
+            $book->save();
+        }
 
         // Ghi log
         AdminActivityLog::log(
