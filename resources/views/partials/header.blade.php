@@ -25,7 +25,7 @@
 </div>
 
 {{-- Header --}}
-<header class="bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 shadow-sm transition-all duration-300">
+<header id="main-header" class="bg-white/95 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 shadow-sm transition-all duration-300">
     <div class="container mx-auto px-4 py-3">
         <div class="flex flex-wrap justify-between items-center gap-4">
             
@@ -202,6 +202,11 @@
                         </a>
                     </div>
                 @endauth
+
+                {{-- Mobile Menu Button --}}
+                <button id="mobile-menu-btn" class="md:hidden p-2 text-gray-600 hover:text-brand-green hover:bg-gray-100 rounded-lg transition">
+                    <i class="fas fa-bars text-xl" id="mobile-menu-icon"></i>
+                </button>
             </div>
         </div>
 
@@ -223,6 +228,81 @@
         </div>
     </div>
 </header>
+
+{{-- Mobile Menu Overlay --}}
+<div id="mobile-menu" class="fixed inset-0 z-[60] hidden">
+    {{-- Backdrop --}}
+    <div id="mobile-menu-backdrop" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+    
+    {{-- Menu Panel --}}
+    <div id="mobile-menu-panel" class="absolute top-0 right-0 w-80 max-w-[85vw] h-full bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-out">
+        {{-- Header --}}
+        <div class="flex items-center justify-between p-4 border-b border-gray-100 bg-brand-green text-white">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-book-reader"></i>
+                <span class="font-bold">GÓC SÁCH</span>
+            </div>
+            <button id="close-mobile-menu" class="p-2 hover:bg-white/10 rounded-lg transition">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        {{-- Search --}}
+        <div class="p-4 border-b border-gray-100">
+            <form action="{{ route('books.search') }}" method="GET" class="relative">
+                <input type="text" name="keyword" placeholder="Tìm kiếm sách..." 
+                       class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:border-brand-green">
+                <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-brand-green text-white rounded-full flex items-center justify-center">
+                    <i class="fas fa-search text-xs"></i>
+                </button>
+            </form>
+        </div>
+        
+        {{-- Navigation Links --}}
+        <nav class="p-4 space-y-1">
+            <a href="{{ route('home') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition {{ request()->routeIs('home') ? 'bg-brand-green/10 text-brand-green font-bold' : 'text-gray-700' }}">
+                <i class="fas fa-home w-5"></i> Trang Chủ
+            </a>
+            <a href="{{ route('books.list') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition {{ request()->routeIs('books.list') ? 'bg-brand-green/10 text-brand-green font-bold' : 'text-gray-700' }}">
+                <i class="fas fa-book w-5"></i> Danh Sách Sách
+            </a>
+            <a href="{{ route('books.search') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition {{ request()->routeIs('books.search') ? 'bg-brand-green/10 text-brand-green font-bold' : 'text-gray-700' }}">
+                <i class="fas fa-star w-5"></i> Review Hay
+            </a>
+            <a href="{{ route('authors.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition {{ request()->routeIs('authors.*') ? 'bg-brand-green/10 text-brand-green font-bold' : 'text-gray-700' }}">
+                <i class="fas fa-user-edit w-5"></i> Tác Giả
+            </a>
+            <a href="{{ route('challenges.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold">
+                <i class="fas fa-fire w-5"></i> Thử Thách Đọc Sách
+            </a>
+        </nav>
+        
+        {{-- User Section --}}
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 bg-gray-50">
+            @auth
+                <div class="flex items-center gap-3 mb-3">
+                    <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode(Auth::user()->name) }}" class="w-10 h-10 rounded-full border-2 border-brand-green">
+                    <div>
+                        <p class="font-bold text-gray-800 text-sm">{{ Auth::user()->name }}</p>
+                        <p class="text-xs text-gray-500">{{ Auth::user()->email }}</p>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <a href="{{ route('profile') }}" class="flex-1 text-center px-3 py-2 bg-brand-green text-white rounded-lg text-sm font-bold">Hồ sơ</a>
+                    <form method="POST" action="{{ route('logout') }}" class="flex-1">
+                        @csrf
+                        <button type="submit" class="w-full px-3 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-300 transition">Đăng xuất</button>
+                    </form>
+                </div>
+            @else
+                <div class="space-y-2">
+                    <a href="{{ route('login') }}" class="block text-center px-4 py-2.5 border-2 border-brand-green text-brand-green rounded-lg font-bold hover:bg-brand-green hover:text-white transition">Đăng Nhập</a>
+                    <a href="{{ route('register') }}" class="block text-center px-4 py-2.5 bg-brand-green text-white rounded-lg font-bold">Đăng Ký Miễn Phí</a>
+                </div>
+            @endauth
+        </div>
+    </div>
+</div>
 
 {{-- Modals --}}
 <div id="rulesModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -321,6 +401,23 @@
     @keyframes scaleUp {
         0% { opacity: 0; transform: scale(0.95); }
         100% { opacity: 1; transform: scale(1); }
+    }
+
+    /* Header Shrink */
+    .header-scrolled {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+    }
+    .header-scrolled .logo-text {
+        font-size: 1rem !important;
+    }
+    .header-scrolled .logo-icon {
+        width: 2rem !important;
+        height: 2rem !important;
+    }
+    .header-scrolled .nav-section {
+        margin-top: 0.25rem !important;
+        padding-top: 0.5rem !important;
     }
 </style>
 
@@ -448,6 +545,83 @@ document.addEventListener('DOMContentLoaded', function() {
         searchInput.addEventListener('focus', function() {
             if (resultsBox.innerHTML.trim() !== '' && this.value.length >= 2) {
                 resultsBox.classList.remove('hidden');
+            }
+        });
+    }
+});
+</script>
+
+{{-- Mobile Menu & Header Shrink Script --}}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mobile Menu
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuPanel = document.getElementById('mobile-menu-panel');
+    const mobileMenuBackdrop = document.getElementById('mobile-menu-backdrop');
+    const closeMobileMenu = document.getElementById('close-mobile-menu');
+    const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+
+    function openMobileMenu() {
+        mobileMenu.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => {
+            mobileMenuPanel.classList.remove('translate-x-full');
+        }, 10);
+        mobileMenuIcon.classList.remove('fa-bars');
+        mobileMenuIcon.classList.add('fa-times');
+    }
+
+    function closeMobileMenuFn() {
+        mobileMenuPanel.classList.add('translate-x-full');
+        mobileMenuIcon.classList.remove('fa-times');
+        mobileMenuIcon.classList.add('fa-bars');
+        setTimeout(() => {
+            mobileMenu.classList.add('hidden');
+            document.body.style.overflow = '';
+        }, 300);
+    }
+
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', openMobileMenu);
+    }
+    if (closeMobileMenu) {
+        closeMobileMenu.addEventListener('click', closeMobileMenuFn);
+    }
+    if (mobileMenuBackdrop) {
+        mobileMenuBackdrop.addEventListener('click', closeMobileMenuFn);
+    }
+
+    // ESC to close mobile menu
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && mobileMenu && !mobileMenu.classList.contains('hidden')) {
+            closeMobileMenuFn();
+        }
+    });
+
+    // Header Shrink on Scroll
+    const header = document.getElementById('main-header');
+    const headerContainer = header ? header.querySelector('.container') : null;
+    const navSection = header ? header.querySelector('.hidden.md\\:flex') : null;
+    
+    if (header && headerContainer) {
+        window.addEventListener('scroll', function() {
+            const currentScroll = window.pageYOffset;
+            
+            if (currentScroll > 50) {
+                headerContainer.classList.add('py-2');
+                headerContainer.classList.remove('py-3');
+                if (navSection) {
+                    navSection.classList.add('mt-1', 'pt-2');
+                    navSection.classList.remove('mt-2', 'pt-3');
+                }
+            } else {
+                headerContainer.classList.remove('py-2');
+                headerContainer.classList.add('py-3');
+                if (navSection) {
+                    navSection.classList.remove('mt-1', 'pt-2');
+                    navSection.classList.add('mt-2', 'pt-3');
+                }
             }
         });
     }

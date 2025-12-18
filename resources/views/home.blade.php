@@ -373,7 +373,7 @@
                 <div class="space-y-8">
                     {{-- Widget 0: Châm Ngôn Hôm Nay --}}
                     @if(isset($dailyQuote) && $dailyQuote)
-                    <div class="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 rounded-2xl p-6 border border-amber-100 shadow-lg relative overflow-hidden group hover:shadow-xl transition-shadow duration-300">
+                    <div class="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 rounded-2xl p-7 border border-amber-100 shadow-lg relative overflow-hidden group hover:shadow-xl transition-shadow duration-300">
                         {{-- Decorative Elements --}}
                         <div class="absolute -top-6 -right-6 w-24 h-24 bg-amber-200/30 rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform duration-500"></div>
                         <div class="absolute -bottom-4 -left-4 w-16 h-16 bg-orange-200/30 rounded-full blur-xl pointer-events-none"></div>
@@ -411,8 +411,76 @@
                     </div>
                     @endif
 
+                    {{-- Widget: Hôm nay đọc gì? --}}
+                    @if(isset($randomBook) && $randomBook)
+                    <div class="bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 rounded-2xl p-6 border border-purple-100 shadow-lg relative overflow-hidden group hover:shadow-xl transition-all duration-300">
+                        {{-- Decorative --}}
+                        <div class="absolute -top-6 -right-6 w-20 h-20 bg-purple-200/30 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-500"></div>
+                        <div class="absolute -bottom-4 -left-4 w-16 h-16 bg-pink-200/30 rounded-full blur-xl pointer-events-none"></div>
+                        
+                        {{-- Header --}}
+                        <div class="flex items-center justify-between mb-4 relative">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-md">
+                                    <i class="fas fa-dice text-white text-sm"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-serif font-bold text-gray-800 text-sm leading-none">Hôm nay đọc gì?</h3>
+                                    <span class="text-[10px] text-gray-400">Gợi ý cho bạn</span>
+                                </div>
+                            </div>
+                            <a href="{{ route('home') }}" class="text-[10px] text-purple-500 hover:text-purple-700 font-bold" title="Đổi sách khác vào ngày mai">
+                                <i class="fas fa-sync-alt"></i>
+                            </a>
+                        </div>
+                        
+                        {{-- Book Card --}}
+                        <a href="{{ route('detail', $randomBook->slug) }}" class="block group/book">
+                            <div class="flex gap-4">
+                                {{-- Book Cover --}}
+                                <div class="w-20 h-28 rounded-lg overflow-hidden shadow-lg flex-shrink-0 transform group-hover/book:scale-105 transition-transform duration-300">
+                                    @php
+                                        $coverUrl = !empty($randomBook->cover_image) 
+                                            ? (str_starts_with($randomBook->cover_image, 'http') ? $randomBook->cover_image : asset('storage/' . $randomBook->cover_image))
+                                            : 'https://via.placeholder.com/80x112?text=No+Image';
+                                    @endphp
+                                    <img src="{{ $coverUrl }}" alt="{{ $randomBook->title }}" class="w-full h-full object-cover">
+                                </div>
+                                
+                                {{-- Book Info --}}
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-bold text-gray-800 text-sm leading-tight line-clamp-2 group-hover/book:text-purple-600 transition-colors">
+                                        {{ $randomBook->title }}
+                                    </h4>
+                                    <p class="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                                        <i class="fas fa-user-edit text-[10px]"></i>
+                                        {{ $randomBook->author_name ?? 'Ẩn danh' }}
+                                    </p>
+                                    
+                                    {{-- Rating --}}
+                                    <div class="flex items-center gap-1 mt-2">
+                                        <div class="flex text-yellow-400 text-[10px]">
+                                            @for($i = 1; $i <= 5; $i++)
+                                                <i class="fas fa-star {{ $i <= round($randomBook->avg_rating ?? 0) ? '' : 'opacity-30' }}"></i>
+                                            @endfor
+                                        </div>
+                                        <span class="text-[10px] text-gray-400">({{ number_format($randomBook->view_count ?? 0) }} lượt xem)</span>
+                                    </div>
+                                    
+                                    {{-- CTA Button --}}
+                                    <div class="mt-3">
+                                        <span class="inline-flex items-center gap-1 text-xs font-bold text-purple-600 group-hover/book:text-purple-700">
+                                            Khám phá ngay <i class="fas fa-arrow-right text-[10px] group-hover/book:translate-x-1 transition-transform"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    @endif
+
                     {{-- Widget 1: Top Thịnh Hành --}}
-                    <div class="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 border border-gray-100 shadow-lg relative overflow-hidden">
+                    <div class="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-7 border border-gray-100 shadow-lg relative overflow-hidden">
                         {{-- Decorative --}}
                         <div class="absolute -top-4 -right-4 w-20 h-20 bg-orange-100 rounded-full blur-2xl pointer-events-none"></div>
                         
@@ -458,15 +526,29 @@
                         </div>
                     </div>
 
-                    {{-- Widget 2: Thể Loại --}}
-                    <div class="bg-brand-beige/30 rounded-xl p-6 border border-brand-beige">
-                        <h3 class="font-serif font-bold text-lg text-brand-green mb-4 flex items-center gap-2"><i class="fas fa-tags text-brand-accent"></i> Thể Loại</h3>
-                        <div class="flex flex-wrap gap-2">
+                    {{-- Widget 2: Thể Loại - Redesigned --}}
+                    <div class="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-2xl p-6 border border-emerald-100 shadow-lg relative overflow-hidden">
+                        {{-- Decorative --}}
+                        <div class="absolute -top-6 -right-6 w-24 h-24 bg-emerald-200/40 rounded-full blur-2xl pointer-events-none"></div>
+                        <div class="absolute -bottom-4 -left-4 w-16 h-16 bg-teal-200/30 rounded-full blur-xl pointer-events-none"></div>
+                        
+                        <div class="flex items-center gap-3 mb-4 relative">
+                            <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-md">
+                                <i class="fas fa-layer-group text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-serif font-bold text-gray-800 leading-none">Thể Loại Sách</h3>
+                                <span class="text-[10px] text-gray-400">Khám phá theo sở thích</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-2 relative">
                             @if(isset($categories) && $categories->count() > 0)
-                                @foreach($categories as $category)
-                                    <a href="{{ route('books.list', ['categories' => [$category->name]]) }}" class="group flex items-center gap-2 bg-white text-gray-600 px-3 py-1.5 rounded-full text-xs font-bold border border-gray-100 hover:border-brand-accent hover:text-brand-accent hover:shadow-md transition-all duration-300">
+                                @foreach($categories->take(12) as $category)
+                                    <a href="{{ route('books.list', ['categories' => [$category->name]]) }}" 
+                                       class="group flex items-center gap-1.5 bg-white/80 backdrop-blur-sm text-gray-600 px-3 py-1.5 rounded-full text-xs font-medium border border-white hover:border-emerald-400 hover:bg-emerald-500 hover:text-white hover:shadow-lg transition-all duration-300">
                                         <span>{{ $category->name }}</span>
-                                        <span class="bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded-full text-[10px] group-hover:bg-brand-accent/10 group-hover:text-brand-accent transition">
+                                        <span class="bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full text-[9px] font-bold group-hover:bg-white/30 group-hover:text-white transition">
                                             {{ $category->books_count ?? 0 }}
                                         </span>
                                     </a>
@@ -476,54 +558,103 @@
                             @endif
                         </div>
 
-                        @if(isset($categories) && $categories->count() > 10)
-                            <div class="mt-4 text-center">
-                                <a href="{{ route('books.list') }}" class="text-xs text-brand-green font-bold hover:underline">Xem tất cả thể loại</a>
+                        @if(isset($categories) && $categories->count() > 12)
+                            <div class="mt-4 text-center relative">
+                                <a href="{{ route('books.list') }}" class="inline-flex items-center gap-1 text-xs text-emerald-600 font-bold hover:text-emerald-700 transition">
+                                    Xem tất cả <i class="fas fa-arrow-right text-[10px]"></i>
+                                </a>
                             </div>
                         @endif
                     </div>
 
-                    {{-- Widget 3: Liên Kết Mua Sách --}}
-                    <div class="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
-                        <h3 class="font-serif font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
-                            <span class="text-brand-accent">🛒</span> Mua Sách Giá Tốt
-                        </h3>
+                    {{-- Widget 3: Liên Kết Mua Sách - Redesigned --}}
+                    <div class="bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 rounded-2xl p-6 border border-amber-100 shadow-lg relative overflow-hidden">
+                        {{-- Decorative --}}
+                        <div class="absolute -top-6 -right-6 w-20 h-20 bg-amber-200/40 rounded-full blur-2xl pointer-events-none"></div>
                         
-                        <div class="space-y-3">
-                            <a href="https://tiki.vn/nha-sach-tiki/c8322" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition group bg-white">
+                        <div class="flex items-center gap-3 mb-4 relative">
+                            <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-md">
+                                <i class="fas fa-shopping-bag text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-serif font-bold text-gray-800 leading-none">Mua Sách Giá Tốt</h3>
+                                <span class="text-[10px] text-gray-400">Đối tác uy tín</span>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2 relative">
+                            <a href="https://tiki.vn/nha-sach-tiki/c8322" target="_blank" class="flex items-center justify-between p-3 rounded-xl bg-white/80 backdrop-blur-sm border border-white hover:border-blue-300 hover:bg-blue-50 hover:shadow-md transition-all duration-300 group">
                                 <div class="flex items-center gap-3">
                                     <img src="https://upload.wikimedia.org/wikipedia/commons/4/43/Logo_Tiki_2023.png" class="w-8 h-8 object-contain" alt="Tiki">
-                                    <div class="flex flex-col">
-                                        <span class="font-bold text-sm text-gray-700 group-hover:text-blue-600">Tiki Trading</span>
-                                        <span class="text-[10px] text-green-600 font-bold bg-green-100 px-1.5 py-0.5 rounded w-fit">Giảm tới 35%</span>
+                                    <div>
+                                        <span class="font-bold text-sm text-gray-700 group-hover:text-blue-600 block">Tiki Trading</span>
+                                        <span class="text-[10px] text-green-600 font-bold">🔥 Giảm tới 35%</span>
                                     </div>
                                 </div>
-                                <i class="fas fa-external-link-alt text-gray-300 text-xs group-hover:text-blue-500"></i>
+                                <i class="fas fa-chevron-right text-gray-300 text-xs group-hover:text-blue-500 group-hover:translate-x-1 transition-all"></i>
                             </a>
 
-                            <a href="https://shopee.vn/nhasachphuongnam" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-orange-400 hover:bg-orange-50 transition group bg-white">
+                            <a href="https://shopee.vn/nhasachphuongnam" target="_blank" class="flex items-center justify-between p-3 rounded-xl bg-white/80 backdrop-blur-sm border border-white hover:border-orange-300 hover:bg-orange-50 hover:shadow-md transition-all duration-300 group">
                                 <div class="flex items-center gap-3">
                                     <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg" class="w-8 h-8 object-contain" alt="Shopee">
-                                    <div class="flex flex-col">
-                                        <span class="font-bold text-sm text-gray-700 group-hover:text-orange-600">Shopee Mall</span>
-                                        <span class="text-[10px] text-orange-500 font-bold bg-orange-100 px-1.5 py-0.5 rounded w-fit">Freeship Extra</span>
+                                    <div>
+                                        <span class="font-bold text-sm text-gray-700 group-hover:text-orange-600 block">Shopee Mall</span>
+                                        <span class="text-[10px] text-orange-500 font-bold">🚚 Freeship Extra</span>
                                     </div>
                                 </div>
-                                <i class="fas fa-external-link-alt text-gray-300 text-xs group-hover:text-orange-500"></i>
+                                <i class="fas fa-chevron-right text-gray-300 text-xs group-hover:text-orange-500 group-hover:translate-x-1 transition-all"></i>
                             </a>
 
-                            <a href="https://www.fahasa.com/" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-red-400 hover:bg-red-50 transition group bg-white">
+                            <a href="https://www.fahasa.com/" target="_blank" class="flex items-center justify-between p-3 rounded-xl bg-white/80 backdrop-blur-sm border border-white hover:border-red-300 hover:bg-red-50 hover:shadow-md transition-all duration-300 group">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-xs">F</div>
-                                    <div class="flex flex-col">
-                                        <span class="font-bold text-sm text-gray-700 group-hover:text-red-600">Fahasa.com</span>
-                                        <span class="text-[10px] text-gray-500">Sách chính hãng</span>
+                                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white font-bold text-xs shadow-sm">F</div>
+                                    <div>
+                                        <span class="font-bold text-sm text-gray-700 group-hover:text-red-600 block">Fahasa.com</span>
+                                        <span class="text-[10px] text-gray-500">✓ Sách chính hãng</span>
                                     </div>
                                 </div>
-                                <i class="fas fa-external-link-alt text-gray-300 text-xs group-hover:text-red-500"></i>
+                                <i class="fas fa-chevron-right text-gray-300 text-xs group-hover:text-red-500 group-hover:translate-x-1 transition-all"></i>
                             </a>
                         </div>
                     </div>
+
+                    {{-- Widget: Thống Kê Cộng Đồng - Light Style --}}
+                    @if(isset($communityStats))
+                    <div class="bg-gradient-to-br from-blue-50 via-indigo-50 to-violet-50 rounded-2xl p-6 border border-blue-100 shadow-lg relative overflow-hidden">
+                        {{-- Decorative --}}
+                        <div class="absolute -top-6 -right-6 w-24 h-24 bg-blue-200/40 rounded-full blur-2xl pointer-events-none"></div>
+                        <div class="absolute -bottom-4 -left-4 w-16 h-16 bg-indigo-200/30 rounded-full blur-xl pointer-events-none"></div>
+                        
+                        <div class="flex items-center gap-3 mb-4 relative">
+                            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
+                                <i class="fas fa-chart-pie text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-serif font-bold text-gray-800 leading-none">Thống Kê</h3>
+                                <span class="text-[10px] text-gray-400">Số liệu của Góc Sách</span>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-2 relative">
+                            <div class="bg-white/80 backdrop-blur-sm rounded-xl p-3 text-center border border-white hover:border-blue-200 hover:shadow-md transition-all group">
+                                <div class="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition">{{ number_format($communityStats['books']) }}</div>
+                                <div class="text-[10px] text-gray-500 uppercase font-medium">Cuốn sách</div>
+                            </div>
+                            <div class="bg-white/80 backdrop-blur-sm rounded-xl p-3 text-center border border-white hover:border-blue-200 hover:shadow-md transition-all group">
+                                <div class="text-xl font-bold text-gray-800 group-hover:text-indigo-600 transition">{{ number_format($communityStats['members']) }}</div>
+                                <div class="text-[10px] text-gray-500 uppercase font-medium">Thành viên</div>
+                            </div>
+                            <div class="bg-white/80 backdrop-blur-sm rounded-xl p-3 text-center border border-white hover:border-blue-200 hover:shadow-md transition-all group">
+                                <div class="text-xl font-bold text-gray-800 group-hover:text-violet-600 transition">{{ number_format($communityStats['reviews']) }}</div>
+                                <div class="text-[10px] text-gray-500 uppercase font-medium">Đánh giá</div>
+                            </div>
+                            <div class="bg-white/80 backdrop-blur-sm rounded-xl p-3 text-center border border-white hover:border-blue-200 hover:shadow-md transition-all group">
+                                <div class="text-xl font-bold text-gray-800 group-hover:text-purple-600 transition">{{ number_format($communityStats['comments']) }}</div>
+                                <div class="text-[10px] text-gray-500 uppercase font-medium">Bình luận</div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
 
                 </div> {{-- END DIV STICKY GROUP --}}
 
@@ -531,6 +662,8 @@
         </div> {{-- END CỘT 4 --}}
     </div>
 </main>
+
+{{-- Đã chuyển Thống kê cộng đồng lên sidebar --}}
 
 {{-- BỎ MODAL POPUP CŨ --}}
 @endsection
