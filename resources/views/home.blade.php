@@ -310,7 +310,7 @@
                 <div>
                     <h2 class="text-2xl font-bold text-gray-800 font-serif leading-none flex items-center gap-3">Cộng Đồng Review
                         {{-- Dữ liệu từ bảng comments --}}
-                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-semibold">{{ $latestReviews->total() ?? 0 }} bình luận</span>
+                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-semibold">{{ $communityStats['comments'] ?? 0 }} bình luận</span>
                     </h2>
                     <p class="text-sm text-gray-500 mt-1">Góc chia sẻ cảm nhận từ độc giả</p>
                 </div>
