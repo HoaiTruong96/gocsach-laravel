@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Models\Book;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AuthController;
@@ -92,10 +93,34 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 
-    Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('forgot.password');
-    Route::post('/check-secret', [AuthController::class, 'checkSecret'])->name('check.secret');
-    Route::post('/update-password', [AuthController::class, 'updatePassword'])->name('update.password');
+    // Quên mật khẩu
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetPasswordForm'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 });
+
+// ====================================================
+// 2.5 NHÓM XÁC THỰC EMAIL (EMAIL VERIFICATION)
+// ====================================================
+
+// 1. Giao diện thông báo "Hãy check mail"
+Route::get('/email/verify', function () {
+    return view('auth.verify-email');
+})->middleware('auth')->name('verification.notice');
+
+// 2. Xử lý khi người dùng click vào link trong email
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+    return redirect()->route('home')->with('success', 'Email đã được xác thực thành công!');
+})->middleware(['auth', 'signed'])->name('verification.verify');
+
+// 3. Gửi lại email xác thực (nếu user không nhận được)
+Route::post('/email/verification-notification', function (Request $request) {
+    $request->user()->sendEmailVerificationNotification();
+    return back()->with('message', 'Link xác thực đã được gửi lại!');
+})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+
 // Route cho trang Thử Thách
 // Code này chạy qua Controller để lấy dữ liệu rồi mới trả về View
 Route::get('/thu-thach', [ChallengeController::class, 'index'])->name('challenges.index');
@@ -136,15 +161,6 @@ Route::middleware('auth')->group(function () {
     
     // Đọc 1 thông báo cụ thể -> Chuyển hướng
     Route::get('/notifications/{id}', [HomeController::class, 'markAsRead'])->name('notification.read');
-
-    // --- REVIEW / POST ---
-    Route::get('/reviews/viet-bai', function () {
-        $user = Auth::user();
-        return view('create-review', compact('user'));
-    })->name('reviews.create');
-
-    // Lưu bài viết mới
-    Route::post('/posts/store', [PostController::class, 'store'])->name('posts.store');
 
     // --- API NỘI BỘ (Cho JS tìm sách khi viết review) ---
     Route::get('/api/books/search', function (Illuminate\Http\Request $request) {

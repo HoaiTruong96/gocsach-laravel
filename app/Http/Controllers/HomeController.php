@@ -80,10 +80,28 @@ class HomeController extends Controller
             $dailyQuote = $quotes[$dayOfYear % $quotes->count()];
         }
 
+        // --- THỐNG KÊ CỘNG ĐỒNG ---
+        $communityStats = [
+            'books' => Book::where('is_approved', true)->count(),
+            'members' => \App\Models\User::count(),
+            'reviews' => Post::where('status', 'published')->count(),
+            'comments' => Comment::count(),
+        ];
+
+        // --- SÁCH NGẪU NHIÊN "HÔM NAY ĐỌC GÌ?" ---
+        $allApprovedBooks = Book::where('is_approved', true)->get();
+        $randomBook = null;
+        if ($allApprovedBooks->count() > 0) {
+            // Dùng ngày làm seed để cùng ngày hiển thị cùng sách
+            $dayOfYear = now()->dayOfYear + now()->year;
+            $randomBook = $allApprovedBooks[$dayOfYear % $allApprovedBooks->count()];
+        }
+
         // Truyền biến $latestReviews vào view
         return view('home', compact(
             'heroSlides', 'books', 'latestReviews', 'categories', 
-            'featuredArticle', 'sidebarArticles', 'dailyQuote'
+            'featuredArticle', 'sidebarArticles', 'dailyQuote',
+            'communityStats', 'randomBook'
         ));
     }
 
