@@ -38,21 +38,21 @@ Route::post('/post/{post_id}/comment', [CommentController::class, 'store'])->mid
 // AJAX Live Search (cho Header)
 Route::get('/ajax-search', function (Illuminate\Http\Request $request) {
     $keyword = $request->get('keyword');
-    
+
     if (!$keyword || strlen($keyword) < 2) {
         return response()->json([]);
     }
-    
+
     $books = App\Models\Book::where('is_approved', true)
-        ->where(function($q) use ($keyword) {
+        ->where(function ($q) use ($keyword) {
             $q->where('title', 'like', "%{$keyword}%")
-              ->orWhere('author_name', 'like', "%{$keyword}%");
+                ->orWhere('author_name', 'like', "%{$keyword}%");
         })
         ->select('id', 'title', 'slug', 'author_name', 'cover_image', 'avg_rating')
         ->orderBy('view_count', 'desc')
         ->limit(8)
         ->get();
-    
+
     return response()->json($books);
 })->name('ajax.search');
 
@@ -130,7 +130,7 @@ Route::get('/thu-thach', [ChallengeController::class, 'index'])->name('challenge
 // 3. NHÓM THÀNH VIÊN (AUTH REQUIRED)
 // ====================================================
 Route::middleware('auth')->group(function () {
-    
+
     // --- AUTH ---
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/change-password', [AuthController::class, 'showChangePasswordForm'])->name('change.password');
@@ -148,28 +148,19 @@ Route::middleware('auth')->group(function () {
     // --- LIKE & COMMENT (AJAX) ---
     // Route xử lý Like chung (cho cả Post và Comment)
     Route::post('/like', [HomeController::class, 'toggleLike'])->name('handle.like');
-    
+
     // Route gửi Reply (Bình luận trả lời)
     Route::post('/comment/{id}/reply', [HomeController::class, 'storeReply'])->name('comment.reply');
-    
+
     // Route comment bài viết (nếu dùng PostController riêng)
     Route::post('/posts/{id}/comment', [PostController::class, 'postComment'])->name('posts.comment');
 
     // --- THÔNG BÁO (NOTIFICATION) ---
     // Đánh dấu tất cả là đã đọc
     Route::get('/notifications/read-all', [HomeController::class, 'markAllAsRead'])->name('notification.readAll');
-    
+
     // Đọc 1 thông báo cụ thể -> Chuyển hướng
     Route::get('/notifications/{id}', [HomeController::class, 'markAsRead'])->name('notification.read');
-
-    // --- REVIEW / POST ---
-    Route::get('/reviews/viet-bai', function () {
-        $user = Auth::user();
-        return view('create-review', compact('user'));
-    })->name('reviews.create');
-
-    // Lưu bài viết mới
-    Route::post('/posts/store', [PostController::class, 'store'])->name('posts.store');
 
     // --- API NỘI BỘ (Cho JS tìm sách khi viết review) ---
     Route::get('/api/books/search', function (Illuminate\Http\Request $request) {
@@ -181,19 +172,6 @@ Route::middleware('auth')->group(function () {
             ->limit(10)
             ->get();
         return response()->json($books);
-    });
-
-    // API lấy sách phổ biến (random 6 từ top 20 sách có lượt xem cao nhất)
-    Route::get('/api/books/popular', function () {
-        $books = Illuminate\Support\Facades\DB::table('books')
-            ->where('is_approved', true)
-            ->orderBy('view_count', 'desc')
-            ->select('id', 'title', 'author_name', 'published_year', 'cover_image', 'slug', 'avg_rating')
-            ->limit(20)  // Lấy top 20
-            ->get()
-            ->shuffle()  // Random thứ tự
-            ->take(6);   // Chỉ lấy 6 cuốn
-        return response()->json($books->values());
     });
     // chalenges
     Route::post('/challenge/join/{id}', [ChallengeController::class, 'join'])->name('challenge.join');
@@ -219,6 +197,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('banners', BannerController::class);
     Route::resource('badges', \App\Http\Controllers\Admin\BadgeController::class);
     Route::resource('challenges', \App\Http\Controllers\Admin\ChallengeController::class);
+    Route::resource('avatar-frames', \App\Http\Controllers\Admin\AvatarFrameController::class);
     // Authors - dùng adminIndex() thay vì index() cho trang admin
     Route::get('authors', [AuthorController::class, 'adminIndex'])->name('authors.index');
     Route::get('authors/create', [AuthorController::class, 'create'])->name('authors.create');
