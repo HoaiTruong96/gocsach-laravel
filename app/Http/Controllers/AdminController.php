@@ -39,7 +39,7 @@ class AdminController extends Controller
         $tableData = [];
         for ($month = 12; $month >= 1; $month--) {
             $tableData[] = [
-                'month' => "Tháng {$month}/{$selectedYear}",
+                'month' => "T{$month}/{$selectedYear}",
                 'reviews' => $dataReviews[$month - 1],
                 'users' => $dataViews[$month - 1]
             ];
@@ -51,7 +51,7 @@ class AdminController extends Controller
             ->whereYear('created_at', $selectedYear)
             ->whereMonth('created_at', $selectedMonth)
             ->latest()
-            ->paginate(5, ['*'], 'reviews_page')
+            ->paginate(5, ['*'], 'page')
             ->withPath(route('admin.dashboard.reviews'))
             ->appends(['month' => $selectedMonth, 'year' => $selectedYear]);
 
@@ -60,7 +60,7 @@ class AdminController extends Controller
             ->whereYear('created_at', $selectedYear)
             ->whereMonth('created_at', $selectedMonth)
             ->latest()
-            ->paginate(5, ['*'], 'users_page')
+            ->paginate(5, ['*'], 'page')
             ->withPath(route('admin.dashboard.users'))
             ->appends(['month' => $selectedMonth, 'year' => $selectedYear]);
 
@@ -93,7 +93,7 @@ class AdminController extends Controller
             ->whereYear('created_at', $selectedYear)
             ->whereMonth('created_at', $selectedMonth)
             ->latest()
-            ->paginate(5)
+            ->paginate(5, ['*'], 'page')
             ->withPath(route('admin.dashboard.reviews'))
             ->appends(['month' => $selectedMonth, 'year' => $selectedYear]);
 
@@ -116,7 +116,7 @@ class AdminController extends Controller
             ->whereYear('created_at', $selectedYear)
             ->whereMonth('created_at', $selectedMonth)
             ->latest()
-            ->paginate(5)
+            ->paginate(5, ['*'], 'page')
             ->withPath(route('admin.dashboard.users'))
             ->appends(['month' => $selectedMonth, 'year' => $selectedYear]);
 
