@@ -92,6 +92,22 @@
                             <div id="search-loading" class="hidden text-center mt-2 text-gray-400 text-sm">
                                 <i class="fas fa-spinner fa-spin mr-1"></i> Đang tìm...
                             </div>
+
+                            {{-- KHUNG ĐỀ XUẤT SÁCH PHỔ BIẾN --}}
+                            <div id="book-suggestions" class="mt-6">
+                                <div class="flex items-center gap-2 mb-3">
+                                    <i class="fas fa-fire text-orange-500"></i>
+                                    <span class="text-sm font-bold text-gray-600 uppercase tracking-wide">Sách phổ biến</span>
+                                </div>
+                                
+                                <div id="suggestions-loading" class="flex justify-center py-6">
+                                    <i class="fas fa-spinner fa-spin text-brand-green text-xl"></i>
+                                </div>
+
+                                <div id="suggestions-grid" class="hidden grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    {{-- Sách sẽ được load bằng JavaScript --}}
+                                </div>
+                            </div>
                         </div>
 
                        {{-- GIAI ĐOẠN 2: FORM REVIEW --}}
@@ -240,19 +256,76 @@
                 console.error(error);
             });
 
-        // --- 2. Logic Tìm kiếm & Rating (Giữ nguyên cũ) ---
+        // --- 2. Logic Tìm kiếm & Rating ---
         const searchInput = document.getElementById('book-search-input');
         const dropdown = document.getElementById('search-dropdown');
         const loading = document.getElementById('search-loading');
         const stepSearch = document.getElementById('step-search');
         const stepReview = document.getElementById('step-review');
+        const bookSuggestions = document.getElementById('book-suggestions');
+        const suggestionsGrid = document.getElementById('suggestions-grid');
+        const suggestionsLoading = document.getElementById('suggestions-loading');
 
         let debounceTimer;
 
+        // --- 3. Load sách phổ biến khi trang khởi tạo ---
+        function loadPopularBooks() {
+            fetch('/api/books/popular')
+                .then(res => res.json())
+                .then(books => {
+                    suggestionsLoading.classList.add('hidden');
+                    
+                    if (books.length === 0) {
+                        bookSuggestions.classList.add('hidden');
+                        return;
+                    }
+
+                    suggestionsGrid.innerHTML = books.map(b => {
+                        const cover = b.cover_image 
+                            ? (b.cover_image.startsWith('http') ? b.cover_image : '/storage/' + b.cover_image)
+                            : 'https://via.placeholder.com/80x120?text=' + encodeURIComponent(b.title.substring(0, 10));
+                        
+                        return `
+                            <div onclick='selectBook(${JSON.stringify(b).replace(/'/g, "&#39;")})' 
+                                 class="flex gap-3 p-3 bg-gray-50 hover:bg-brand-green/5 border border-gray-100 hover:border-brand-green/30 rounded-xl cursor-pointer transition group">
+                                <img src="${cover}" 
+                                     class="w-12 h-16 object-cover rounded shadow-sm border border-gray-200 flex-shrink-0"
+                                     onerror="this.src='https://via.placeholder.com/80x120?text=Book'">
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-bold text-sm text-gray-800 line-clamp-2 group-hover:text-brand-green transition">${b.title}</h4>
+                                    <p class="text-xs text-gray-500 mt-1 truncate">${b.author_name || 'Chưa rõ tác giả'}</p>
+                                    <div class="flex items-center gap-1 mt-1">
+                                        <i class="fas fa-star text-yellow-400 text-[10px]"></i>
+                                        <span class="text-[10px] text-gray-400">${b.avg_rating ? parseFloat(b.avg_rating).toFixed(1) : 'N/A'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    suggestionsGrid.classList.remove('hidden');
+                })
+                .catch(err => {
+                    console.error('Lỗi load sách phổ biến:', err);
+                    suggestionsLoading.innerHTML = '<p class="text-sm text-gray-400">Không thể tải đề xuất</p>';
+                });
+        }
+
+        // Gọi khi trang load
+        loadPopularBooks();
+
+        // --- 4. Logic tìm kiếm ---
         searchInput.addEventListener('input', (e) => {
             clearTimeout(debounceTimer);
             const val = e.target.value.trim();
             
+            // Ẩn/hiện khung đề xuất dựa trên input
+            if (val.length >= 1) {
+                bookSuggestions.classList.add('hidden');
+            } else {
+                bookSuggestions.classList.remove('hidden');
+            }
+
             if(val.length < 2) { 
                 dropdown.classList.add('hidden'); 
                 return; 
@@ -310,6 +383,7 @@
             stepReview.classList.add('hidden');
             stepReview.classList.remove('flex');
             stepSearch.classList.remove('hidden');
+            bookSuggestions.classList.remove('hidden'); // Hiện lại khung đề xuất
             searchInput.focus();
         }
 
