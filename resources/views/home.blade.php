@@ -564,11 +564,25 @@
                                         </p>
 
                                         {{-- Rating --}}
+                                        @php
+                                            $avgRating = $randomBook->avg_rating ?? 0;
+                                            $fullStars = floor($avgRating);
+                                            $hasHalfStar = ($avgRating - $fullStars) >= 0.5;
+                                            $emptyStars = 5 - $fullStars - ($hasHalfStar ? 1 : 0);
+                                        @endphp
                                         <div class="flex items-center gap-2 mt-3">
                                             <div class="flex text-yellow-400 text-sm">
-                                                @for($i = 1; $i <= 5; $i++)
-                                                    <i
-                                                        class="fas fa-star {{ $i <= round($randomBook->avg_rating ?? 0) ? '' : 'opacity-30' }}"></i>
+                                                {{-- Sao đầy --}}
+                                                @for($i = 0; $i < $fullStars; $i++)
+                                                    <i class="fas fa-star"></i>
+                                                @endfor
+                                                {{-- Sao nửa --}}
+                                                @if($hasHalfStar)
+                                                    <i class="fas fa-star-half-alt"></i>
+                                                @endif
+                                                {{-- Sao rỗng --}}
+                                                @for($i = 0; $i < $emptyStars; $i++)
+                                                    <i class="far fa-star opacity-50"></i>
                                                 @endfor
                                             </div>
                                             <span
@@ -868,6 +882,44 @@
                                     <div class="text-xl font-bold text-gray-800 group-hover:text-purple-600 transition">
                                         {{ number_format($communityStats['comments']) }}</div>
                                     <div class="text-[10px] text-gray-500 uppercase font-medium">Bình luận</div>
+                                </div>
+                                {{-- Thống kê lượt đọc --}}
+                                <div
+                                    class="bg-white/80 backdrop-blur-sm rounded-xl p-3 text-center border border-white hover:border-emerald-200 hover:shadow-md transition-all group">
+                                    <div class="text-xl font-bold text-gray-800 group-hover:text-emerald-600 transition">
+                                        {{ number_format($communityStats['book_views'] ?? 0) }}</div>
+                                    <div class="text-[10px] text-gray-500 uppercase font-medium">Lượt đọc sách</div>
+                                </div>
+                                <div
+                                    class="bg-white/80 backdrop-blur-sm rounded-xl p-3 text-center border border-white hover:border-orange-200 hover:shadow-md transition-all group">
+                                    <div class="text-xl font-bold text-gray-800 group-hover:text-orange-600 transition">
+                                        {{ number_format($communityStats['post_views'] ?? 0) }}</div>
+                                    <div class="text-[10px] text-gray-500 uppercase font-medium">Lượt đọc bài</div>
+                                </div>
+                                {{-- Thống kê tác giả, thể loại, lượt thích --}}
+                                <div
+                                    class="bg-white/80 backdrop-blur-sm rounded-xl p-3 text-center border border-white hover:border-teal-200 hover:shadow-md transition-all group">
+                                    <div class="text-xl font-bold text-gray-800 group-hover:text-teal-600 transition">
+                                        {{ number_format($communityStats['authors'] ?? 0) }}</div>
+                                    <div class="text-[10px] text-gray-500 uppercase font-medium">Tác giả</div>
+                                </div>
+                                <div
+                                    class="bg-white/80 backdrop-blur-sm rounded-xl p-3 text-center border border-white hover:border-cyan-200 hover:shadow-md transition-all group">
+                                    <div class="text-xl font-bold text-gray-800 group-hover:text-cyan-600 transition">
+                                        {{ number_format($communityStats['categories'] ?? 0) }}</div>
+                                    <div class="text-[10px] text-gray-500 uppercase font-medium">Thể loại</div>
+                                </div>
+                                <div
+                                    class="bg-white/80 backdrop-blur-sm rounded-xl p-3 text-center border border-white hover:border-pink-200 hover:shadow-md transition-all group">
+                                    <div class="text-xl font-bold text-gray-800 group-hover:text-pink-600 transition">
+                                        {{ number_format($communityStats['post_likes'] ?? 0) }}</div>
+                                    <div class="text-[10px] text-gray-500 uppercase font-medium">Like bài</div>
+                                </div>
+                                <div
+                                    class="bg-white/80 backdrop-blur-sm rounded-xl p-3 text-center border border-white hover:border-rose-200 hover:shadow-md transition-all group">
+                                    <div class="text-xl font-bold text-gray-800 group-hover:text-rose-600 transition">
+                                        {{ number_format($communityStats['comment_likes'] ?? 0) }}</div>
+                                    <div class="text-[10px] text-gray-500 uppercase font-medium">Like bình luận</div>
                                 </div>
                             </div>
                         </div>

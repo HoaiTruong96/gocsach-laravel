@@ -91,15 +91,25 @@ class HomeController extends Controller
             'members' => \App\Models\User::count(),
             'reviews' => Post::where('status', 'published')->count(),
             'comments' => Comment::count(),
+            'book_views' => Book::where('is_approved', true)->sum('view_count'), // Tổng lượt đọc sách
+            'post_views' => Post::where('status', 'published')->sum('view_count'), // Tổng lượt đọc bài
+            'authors' => \App\Models\Author::count(), // Số tác giả
+            'categories' => Category::count(), // Số thể loại
+            'post_likes' => Like::count(), // Lượt thích bài review
+            'comment_likes' => CommentLike::count(), // Lượt thích bình luận
         ];
 
         // --- SÁCH NGẪU NHIÊN "HÔM NAY ĐỌC GÌ?" ---
-        $allApprovedBooks = Book::where('is_approved', true)->get();
+        $allApprovedBooks = Book::where('is_approved', true)
+            ->withAvg(['posts'], 'rating')
+            ->get();
         $randomBook = null;
         if ($allApprovedBooks->count() > 0) {
             // Dùng ngày làm seed để cùng ngày hiển thị cùng sách
             $dayOfYear = now()->dayOfYear + now()->year;
             $randomBook = $allApprovedBooks[$dayOfYear % $allApprovedBooks->count()];
+            // Gán avg_rating từ posts
+            $randomBook->avg_rating = round($randomBook->posts_avg_rating ?? 0, 1);
         }
 
         // Truyền biến $latestReviews vào view
