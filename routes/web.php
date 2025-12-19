@@ -157,6 +157,9 @@ Route::middleware('auth')->group(function () {
     // Route xử lý Like chung (cho cả Post và Comment)
     Route::post('/like', [HomeController::class, 'toggleLike'])->name('handle.like');
 
+    // Route lưu bài viết (Save Post)
+    Route::post('/post/save', [HomeController::class, 'toggleSavePost'])->name('post.save');
+
     // Route gửi Reply (Bình luận trả lời)
     Route::post('/comment/{id}/reply', [HomeController::class, 'storeReply'])->name('comment.reply');
 

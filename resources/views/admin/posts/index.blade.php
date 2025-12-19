@@ -45,6 +45,8 @@
                                         <p class="text-xs text-gray-500 dark:text-slate-400 mb-1">
                                             {{ $review->created_at->diffForHumans() }}
                                         </p>
+                                        {{ $review->created_at->diffForHumans() }}
+                                        </p>
                                         <a href="{{ route('book.show', $review->book->slug ?? '#') }}"
                                             class="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center"
                                             target="_blank">
@@ -58,13 +60,13 @@
                             <td class="px-6 py-4 align-top">
                                 <h4 class="font-bold text-gray-800 dark:text-white text-sm mb-1">{{ $review->title }}</h4>
                                 <p class="text-gray-600 dark:text-slate-300 text-sm line-clamp-2 mb-2">
-                                    {{ Str::limit(strip_tags($review->content), 100) }}</p>
-                                <button type="button" 
-                                        onclick="showReviewModal({{ $review->id }})"
-                                        class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium">
+                                    {{ Str::limit(strip_tags($review->content), 100) }}
+                                </p>
+                                <button type="button" onclick="showReviewModal({{ $review->id }})"
+                                    class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium">
                                     <i class="fas fa-eye mr-1"></i> Xem chi tiết
                                 </button>
-                                
+
                                 {{-- Hidden full content for modal --}}
                                 <div id="review-content-{{ $review->id }}" class="hidden">
                                     <div class="review-title">{{ $review->title }}</div>
@@ -249,118 +251,126 @@
                         </button>
                     </div>
                 </form>
-    {{-- Modal Xem Chi Tiết Review --}}
-    <div id="reviewModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4" onclick="closeReviewModal(event)">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden" onclick="event.stopPropagation()">
-            {{-- Header --}}
-            <div class="flex items-center justify-between p-6 border-b dark:border-slate-700 bg-gray-50 dark:bg-slate-700">
-                <div>
-                    <h3 id="modal-title" class="text-xl font-bold text-gray-800 dark:text-white"></h3>
-                    <div class="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-slate-400">
-                        <span><i class="fas fa-user mr-1"></i> <span id="modal-user"></span></span>
-                        <span><i class="fas fa-book mr-1"></i> <span id="modal-book"></span></span>
-                        <span><i class="fas fa-calendar mr-1"></i> <span id="modal-date"></span></span>
-                        <span class="text-yellow-500"><i class="fas fa-star mr-1"></i> <span id="modal-rating"></span>/5</span>
+                {{-- Modal Xem Chi Tiết Review --}}
+                <div id="reviewModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4"
+                    onclick="closeReviewModal(event)">
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden"
+                        onclick="event.stopPropagation()">
+                        {{-- Header --}}
+                        <div
+                            class="flex items-center justify-between p-6 border-b dark:border-slate-700 bg-gray-50 dark:bg-slate-700">
+                            <div>
+                                <h3 id="modal-title" class="text-xl font-bold text-gray-800 dark:text-white"></h3>
+                                <div class="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-slate-400">
+                                    <span><i class="fas fa-user mr-1"></i> <span id="modal-user"></span></span>
+                                    <span><i class="fas fa-book mr-1"></i> <span id="modal-book"></span></span>
+                                    <span><i class="fas fa-calendar mr-1"></i> <span id="modal-date"></span></span>
+                                    <span class="text-yellow-500"><i class="fas fa-star mr-1"></i> <span
+                                            id="modal-rating"></span>/5</span>
+                                </div>
+                            </div>
+                            <button onclick="closeReviewModal()"
+                                class="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-600 hover:bg-gray-200 dark:hover:bg-slate-500 flex items-center justify-center transition">
+                                <i class="fas fa-times text-gray-500 dark:text-slate-300"></i>
+                            </button>
+                        </div>
+
+                        {{-- Content --}}
+                        <div class="p-6 overflow-y-auto max-h-[60vh]">
+                            <div id="modal-content"
+                                class="prose dark:prose-invert max-w-none text-gray-700 dark:text-slate-300 leading-relaxed">
+                            </div>
+                        </div>
+
+                        {{-- Footer --}}
+                        <div class="p-4 border-t dark:border-slate-700 bg-gray-50 dark:bg-slate-700 flex justify-end gap-3">
+                            <button onclick="closeReviewModal()"
+                                class="px-4 py-2 rounded-lg bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-slate-200 font-medium hover:bg-gray-300 dark:hover:bg-slate-500 transition">
+                                Đóng
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <button onclick="closeReviewModal()" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-600 hover:bg-gray-200 dark:hover:bg-slate-500 flex items-center justify-center transition">
-                    <i class="fas fa-times text-gray-500 dark:text-slate-300"></i>
-                </button>
-            </div>
-            
-            {{-- Content --}}
-            <div class="p-6 overflow-y-auto max-h-[60vh]">
-                <div id="modal-content" class="prose dark:prose-invert max-w-none text-gray-700 dark:text-slate-300 leading-relaxed"></div>
-            </div>
-            
-            {{-- Footer --}}
-            <div class="p-4 border-t dark:border-slate-700 bg-gray-50 dark:bg-slate-700 flex justify-end gap-3">
-                <button onclick="closeReviewModal()" class="px-4 py-2 rounded-lg bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-slate-200 font-medium hover:bg-gray-300 dark:hover:bg-slate-500 transition">
-                    Đóng
-                </button>
-            </div>
-        </div>
-    </div>
 
-    <script>
-        function openRejectModal(postId, postTitle) {
-            const modal = document.getElementById('rejectModal');
-            const form = document.getElementById('rejectForm');
-            const titleEl = document.getElementById('rejectPostTitle');
+                <script>
+                    function openRejectModal(postId, postTitle) {
+                        const modal = document.getElementById('rejectModal');
+                        const form = document.getElementById('rejectForm');
+                        const titleEl = document.getElementById('rejectPostTitle');
 
-            // Set form action
-            form.action = `/admin/posts/${postId}`;
-            titleEl.textContent = postTitle;
+                        // Set form action
+                        form.action = `/admin/posts/${postId}`;
+                        titleEl.textContent = postTitle;
 
-            // Reset form
-            form.reset();
-            document.getElementById('customReasonContainer').classList.add('hidden');
+                        // Reset form
+                        form.reset();
+                        document.getElementById('customReasonContainer').classList.add('hidden');
 
-            // Show modal
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
+                        // Show modal
+                        modal.classList.remove('hidden');
+                        document.body.style.overflow = 'hidden';
+                    }
 
-        function closeRejectModal() {
-            const modal = document.getElementById('rejectModal');
-            modal.classList.add('hidden');
-            document.body.style.overflow = '';
-        }
+                    function closeRejectModal() {
+                        const modal = document.getElementById('rejectModal');
+                        modal.classList.add('hidden');
+                        document.body.style.overflow = '';
+                    }
 
-        function toggleCustomReason() {
-            const container = document.getElementById('customReasonContainer');
-            const otherRadio = document.getElementById('otherReasonRadio');
+                    function toggleCustomReason() {
+                        const container = document.getElementById('customReasonContainer');
+                        const otherRadio = document.getElementById('otherReasonRadio');
 
-            if (otherRadio.checked) {
-                container.classList.remove('hidden');
-                document.getElementById('customReasonInput').focus();
-            } else {
-                container.classList.add('hidden');
-            }
-        }
+                        if (otherRadio.checked) {
+                            container.classList.remove('hidden');
+                            document.getElementById('customReasonInput').focus();
+                        } else {
+                            container.classList.add('hidden');
+                        }
+                    }
 
-        // Đóng modal khi nhấn ESC
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') {
-                closeRejectModal();
-            }
-        });
+                    // Đóng modal khi nhấn ESC
+                    document.addEventListener('keydown', function (e) {
+                        if (e.key === 'Escape') {
+                            closeRejectModal();
+                        }
+                    });
 
-        // Xử lý form submit để gửi custom reason
-        document.getElementById('rejectForm').addEventListener('submit', function (e) {
-            const otherRadio = document.getElementById('otherReasonRadio');
-            const customInput = document.getElementById('customReasonInput');
+                    // Xử lý form submit để gửi custom reason
+                    document.getElementById('rejectForm').addEventListener('submit', function (e) {
+                        const otherRadio = document.getElementById('otherReasonRadio');
+                        const customInput = document.getElementById('customReasonInput');
 
-            if (otherRadio.checked && customInput.value.trim()) {
-                // Thay đổi giá trị radio sang custom reason
-                otherRadio.value = customInput.value.trim();
-            }
-        function showReviewModal(reviewId) {
-            const container = document.getElementById('review-content-' + reviewId);
-            if (!container) return;
-            
-            document.getElementById('modal-title').textContent = container.querySelector('.review-title').textContent;
-            document.getElementById('modal-user').textContent = container.querySelector('.review-user').textContent;
-            document.getElementById('modal-book').textContent = container.querySelector('.review-book').textContent;
-            document.getElementById('modal-rating').textContent = container.querySelector('.review-rating').textContent;
-            document.getElementById('modal-date').textContent = container.querySelector('.review-date').textContent;
-            document.getElementById('modal-content').innerHTML = container.querySelector('.review-content').innerHTML;
-            
-            document.getElementById('reviewModal').classList.remove('hidden');
-            document.getElementById('reviewModal').classList.add('flex');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        function closeReviewModal(event) {
-            if (event && event.target !== event.currentTarget) return;
-            document.getElementById('reviewModal').classList.add('hidden');
-            document.getElementById('reviewModal').classList.remove('flex');
-            document.body.style.overflow = '';
-        }
-        
-        // ESC key to close
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closeReviewModal();
-        });
-    </script>
+                        if (otherRadio.checked && customInput.value.trim()) {
+                            // Thay đổi giá trị radio sang custom reason
+                            otherRadio.value = customInput.value.trim();
+                        }
+                        function showReviewModal(reviewId) {
+                            const container = document.getElementById('review-content-' + reviewId);
+                            if (!container) return;
+
+                            document.getElementById('modal-title').textContent = container.querySelector('.review-title').textContent;
+                            document.getElementById('modal-user').textContent = container.querySelector('.review-user').textContent;
+                            document.getElementById('modal-book').textContent = container.querySelector('.review-book').textContent;
+                            document.getElementById('modal-rating').textContent = container.querySelector('.review-rating').textContent;
+                            document.getElementById('modal-date').textContent = container.querySelector('.review-date').textContent;
+                            document.getElementById('modal-content').innerHTML = container.querySelector('.review-content').innerHTML;
+
+                            document.getElementById('reviewModal').classList.remove('hidden');
+                            document.getElementById('reviewModal').classList.add('flex');
+                            document.body.style.overflow = 'hidden';
+                        }
+
+                        function closeReviewModal(event) {
+                            if (event && event.target !== event.currentTarget) return;
+                            document.getElementById('reviewModal').classList.add('hidden');
+                            document.getElementById('reviewModal').classList.remove('flex');
+                            document.body.style.overflow = '';
+                        }
+
+                        // ESC key to close
+                        document.addEventListener('keydown', function (e) {
+                            if (e.key === 'Escape') closeReviewModal();
+                        });
+                </script>
 @endsection

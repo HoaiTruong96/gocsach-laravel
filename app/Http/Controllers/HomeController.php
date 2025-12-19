@@ -173,6 +173,37 @@ class HomeController extends Controller
         return response()->json(['success' => true, 'liked' => $liked, 'count' => $count, 'type' => $type]);
     }
 
+    // --- LOGIC LƯU BÀI VIẾT (SAVE POST) ---
+    public function toggleSavePost(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $request->validate(['post_id' => 'required|integer|exists:posts,id']);
+        $userId = Auth::id();
+        $postId = $request->post_id;
+
+        $user = Auth::user();
+        $isSaved = $user->savedPosts()->where('post_id', $postId)->exists();
+
+        if ($isSaved) {
+            // Bỏ lưu
+            $user->savedPosts()->detach($postId);
+            $saved = false;
+        } else {
+            // Lưu bài viết
+            $user->savedPosts()->attach($postId);
+            $saved = true;
+        }
+
+        return response()->json([
+            'success' => true,
+            'saved' => $saved,
+            'message' => $saved ? 'Đã lưu bài viết!' : 'Đã bỏ lưu bài viết!'
+        ]);
+    }
+
     // --- LOGIC REPLY (ĐÃ SỬA LỖI DATABASE) ---
     public function storeReply(Request $request, $id)
     {
@@ -206,11 +237,21 @@ class HomeController extends Controller
                 \Log::error("Lỗi gửi thông báo: " . $e->getMessage());
             }
         }
+
+        $equippedFrame = $user->equippedFrame();
+        $frameUrl = null;
+        if ($equippedFrame) {
+            $frameUrl = \Illuminate\Support\Str::startsWith($equippedFrame->frame_image, 'http')
+                ? $equippedFrame->frame_image
+                : asset('storage/' . $equippedFrame->frame_image);
+        }
+
         return response()->json([
             'success' => true,
             'reply_id' => $reply->id,
             'user_name' => $user->name,
             'user_avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random',
+            'user_frame' => $frameUrl,
             'content' => $reply->content,
             'time' => 'Vừa xong'
         ]);
