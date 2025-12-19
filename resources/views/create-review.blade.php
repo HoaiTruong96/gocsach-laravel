@@ -176,29 +176,64 @@
                                         placeholder="Tiêu đề (Ví dụ: Một cuốn sách ám ảnh...)">
                                 </div>
 
-                                {{-- [MỚI] KHUNG UPLOAD ẢNH BÌA --}}
+                                {{-- [MỚI] KHUNG UPLOAD ẢNH BÌA VỚI TABS --}}
                                 <div>
                                     <label class="block text-sm font-bold text-gray-700 mb-2">Ảnh bìa bài viết (Tùy chọn)</label>
-                                    <div class="flex items-center justify-center w-full">
-                                        <label for="thumbnail-upload" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition relative overflow-hidden group">
-                                            {{-- Giao diện mặc định --}}
-                                            <div class="flex flex-col items-center justify-center pt-5 pb-6" id="upload-placeholder">
-                                                <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2 group-hover:text-brand-green transition"></i>
-                                                <p class="text-sm text-gray-500"><span class="font-semibold">Bấm để tải ảnh lên</span></p>
-                                                <p class="text-xs text-gray-400 mt-1">PNG, JPG (Tối đa 2MB)</p>
+                                    
+                                    {{-- Tabs chọn hình thức upload --}}
+                                    <div class="flex gap-2 mb-3">
+                                        <button type="button" onclick="showThumbnailTab('file')" id="thumb-tab-file"
+                                            class="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-600 font-bold transition">
+                                            <i class="fas fa-upload mr-1"></i> Upload File
+                                        </button>
+                                        <button type="button" onclick="showThumbnailTab('url')" id="thumb-tab-url"
+                                            class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600 font-bold transition">
+                                            <i class="fas fa-link mr-1"></i> Nhập URL
+                                        </button>
+                                    </div>
+
+                                    {{-- Upload File --}}
+                                    <div id="thumb-upload-file">
+                                        <div class="flex items-center justify-center w-full">
+                                            <label for="thumbnail-upload" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition relative overflow-hidden group">
+                                                {{-- Giao diện mặc định --}}
+                                                <div class="flex flex-col items-center justify-center pt-5 pb-6" id="upload-placeholder">
+                                                    <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2 group-hover:text-brand-green transition"></i>
+                                                    <p class="text-sm text-gray-500"><span class="font-semibold">Bấm để tải ảnh lên</span></p>
+                                                    <p class="text-xs text-gray-400 mt-1">JPG, PNG, WebP, GIF, SVG (Tối đa 2MB)</p>
+                                                </div>
+                                                
+                                                {{-- Ảnh Preview (Ẩn mặc định) --}}
+                                                <img id="thumbnail-preview" class="absolute inset-0 w-full h-full object-cover hidden" />
+                                                
+                                                {{-- Input file ẩn --}}
+                                                <input id="thumbnail-upload" name="thumbnail" type="file" class="hidden" accept=".jpg,.jpeg,.png,.webp,.gif,.svg" onchange="previewThumbnail(event)" />
+                                                
+                                                {{-- Nút xóa ảnh (Hiện khi có ảnh) --}}
+                                                <button type="button" id="remove-thumbnail" onclick="removeThumbnail(event)" class="hidden absolute top-2 right-2 bg-white text-red-500 rounded-full p-1 shadow-md hover:bg-red-50 z-20">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    {{-- Nhập URL --}}
+                                    <div id="thumb-upload-url" class="hidden">
+                                        <input type="url" name="thumbnail_url" id="thumbnail-url-input"
+                                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition"
+                                            placeholder="https://example.com/image.jpg"
+                                            oninput="previewThumbnailUrl(this.value)">
+                                        <p class="text-xs text-gray-400 mt-2">Dán đường dẫn trực tiếp đến file ảnh (.jpg, .png, .gif,...)</p>
+                                        
+                                        {{-- Preview URL --}}
+                                        <div id="url-preview-container" class="hidden mt-3">
+                                            <div class="relative rounded-lg overflow-hidden border border-gray-200 w-full h-32 bg-gray-100 flex items-center justify-center">
+                                                <img id="url-preview" src="" class="max-h-full max-w-full object-contain">
+                                                <button type="button" onclick="clearUrlPreview()" class="absolute top-2 right-2 bg-white text-red-500 rounded-full p-1 shadow-md hover:bg-red-50">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
                                             </div>
-                                            
-                                            {{-- Ảnh Preview (Ẩn mặc định) --}}
-                                            <img id="thumbnail-preview" class="absolute inset-0 w-full h-full object-cover hidden" />
-                                            
-                                            {{-- Input file ẩn --}}
-                                            <input id="thumbnail-upload" name="thumbnail" type="file" class="hidden" accept="image/*" onchange="previewThumbnail(event)" />
-                                            
-                                            {{-- Nút xóa ảnh (Hiện khi có ảnh) --}}
-                                            <button type="button" id="remove-thumbnail" onclick="removeThumbnail(event)" class="hidden absolute top-2 right-2 bg-white text-red-500 rounded-full p-1 shadow-md hover:bg-red-50 z-20">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </label>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -232,6 +267,9 @@
                                         document.getElementById('thumbnail-preview').classList.remove('hidden');
                                         document.getElementById('upload-placeholder').classList.add('opacity-0');
                                         document.getElementById('remove-thumbnail').classList.remove('hidden');
+                                        // Xóa URL input khi chọn file
+                                        document.getElementById('thumbnail-url-input').value = '';
+                                        clearUrlPreview();
                                     }
                                     reader.readAsDataURL(file);
                                 }
@@ -245,6 +283,49 @@
                                 document.getElementById('thumbnail-preview').classList.add('hidden');
                                 document.getElementById('upload-placeholder').classList.remove('opacity-0');
                                 document.getElementById('remove-thumbnail').classList.add('hidden');
+                            }
+
+                            // Chuyển tab upload thumbnail
+                            function showThumbnailTab(type) {
+                                const fileTab = document.getElementById('thumb-tab-file');
+                                const urlTab = document.getElementById('thumb-tab-url');
+                                const fileDiv = document.getElementById('thumb-upload-file');
+                                const urlDiv = document.getElementById('thumb-upload-url');
+
+                                if (type === 'file') {
+                                    fileTab.classList.remove('bg-gray-100', 'text-gray-600');
+                                    fileTab.classList.add('bg-blue-100', 'text-blue-600');
+                                    urlTab.classList.remove('bg-blue-100', 'text-blue-600');
+                                    urlTab.classList.add('bg-gray-100', 'text-gray-600');
+                                    fileDiv.classList.remove('hidden');
+                                    urlDiv.classList.add('hidden');
+                                } else {
+                                    urlTab.classList.remove('bg-gray-100', 'text-gray-600');
+                                    urlTab.classList.add('bg-blue-100', 'text-blue-600');
+                                    fileTab.classList.remove('bg-blue-100', 'text-blue-600');
+                                    fileTab.classList.add('bg-gray-100', 'text-gray-600');
+                                    urlDiv.classList.remove('hidden');
+                                    fileDiv.classList.add('hidden');
+                                }
+                            }
+
+                            // Preview URL ảnh
+                            function previewThumbnailUrl(url) {
+                                if (url) {
+                                    document.getElementById('url-preview').src = url;
+                                    document.getElementById('url-preview-container').classList.remove('hidden');
+                                    // Xóa file input khi nhập URL
+                                    removeThumbnail({ preventDefault: ()=>{}, stopPropagation: ()=>{} });
+                                } else {
+                                    clearUrlPreview();
+                                }
+                            }
+
+                            // Xóa URL preview
+                            function clearUrlPreview() {
+                                document.getElementById('thumbnail-url-input').value = '';
+                                document.getElementById('url-preview').src = '';
+                                document.getElementById('url-preview-container').classList.add('hidden');
                             }
                         </script>
                     </div>

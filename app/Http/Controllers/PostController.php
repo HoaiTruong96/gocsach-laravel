@@ -23,18 +23,22 @@ class PostController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required|min:10',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
+            'thumbnail_url' => 'nullable|url|max:500',
         ], [
             'book_id.exists' => 'Vui lòng chọn một cuốn sách hợp lệ.',
             'title.required' => 'Bạn chưa nhập tiêu đề bài viết.',
             'content.min' => 'Nội dung review quá ngắn.',
             'thumbnail.image' => 'File tải lên phải là hình ảnh.',
             'thumbnail.max' => 'Ảnh không được lớn hơn 2MB.',
+            'thumbnail_url.url' => 'Đường dẫn ảnh không hợp lệ.',
         ]);
 
-        // 2. Xử lý upload thumbnail (nếu có)
+        // 2. Xử lý upload thumbnail (ưu tiên file, sau đó là URL)
         $thumbnailPath = null;
         if ($request->hasFile('thumbnail')) {
             $thumbnailPath = $request->file('thumbnail')->store('posts/thumbnails', 'public');
+        } elseif ($request->filled('thumbnail_url')) {
+            $thumbnailPath = $request->thumbnail_url;
         }
 
         // 3. Tạo Slug
