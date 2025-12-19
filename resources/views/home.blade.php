@@ -355,60 +355,49 @@
                 </section>
 
                 {{-- 3. CỘNG ĐỒNG REVIEW --}}
-                <section id="community-posts" class="mb-16 scroll-mt-24">
-                    <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                        <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-1 h-8 bg-brand-accent rounded-full"></div>
-                                <div>
-                                    <h2
-                                        class="text-2xl font-bold text-gray-800 font-serif leading-none flex items-center gap-3">
-                                        Cộng Đồng Review
-                                        {{-- Dữ liệu từ bảng comments --}}
-                                        <span
-                                            class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-semibold">{{ $communityStats['comments'] ?? 0 }}
-                                            bình luận</span>
-                                    </h2>
-                                    <p class="text-sm text-gray-500 mt-1">Góc chia sẻ cảm nhận từ độc giả</p>
-                                </div>
-                            </div>
+<section id="community-posts" class="mb-16 scroll-mt-24">
+    <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-1 h-8 bg-brand-accent rounded-full"></div> 
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 font-serif leading-none flex items-center gap-3">Cộng Đồng Review
+                        {{-- Dữ liệu từ bảng comments --}}
+                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-semibold">{{ $communityStats['comments'] ?? 0 }} bình luận</span>
+                    </h2>
+                    <p class="text-sm text-gray-500 mt-1">Góc chia sẻ cảm nhận từ độc giả</p>
+                </div>
+            </div>
+            
+            {{-- Bộ lọc Review --}}
+            <div class="flex items-center gap-3">
+                <div class="bg-brand-green/10 rounded-full p-1.5 flex text-xs font-bold">
+                    <button onclick="loadComments('latest')" id="tab-latest" class="px-4 py-1.5 rounded-full transition-all duration-300 bg-white text-brand-green shadow-sm">
+                        Mới nhất
+                    </button>
+                    <button onclick="loadComments('popular')" id="tab-popular" class="px-4 py-1.5 rounded-full transition-all duration-300 text-gray-500 hover:bg-gray-50">
+                        Nổi bật
+                    </button>
+                </div>
+                <a href="{{ route('books.search') }}" class="text-xs text-gray-400 hover:text-gray-600 ml-3">Xem tất cả</a>
+            </div>
+        </div>
+        
+        {{-- Container chứa danh sách --}}
+        <div id="comments-container" class="relative min-h-[200px] bg-gray-50 rounded-2xl p-4 border border-gray-100">
+            {{-- Loading Spinner --}}
+            <div id="loading-spinner" class="hidden absolute inset-0 bg-white/80 z-20 flex items-center justify-center rounded-2xl transition-opacity duration-300">
+                <div class="animate-spin rounded-full h-8 w-8 border-2 border-brand-green border-t-transparent"></div>
+            </div>
 
-                            {{-- Bộ lọc Review --}}
-                            <div class="flex items-center gap-3">
-                                <div class="bg-brand-green/10 rounded-full p-1.5 flex text-xs font-bold">
-                                    <button onclick="loadComments('latest')" id="tab-latest"
-                                        class="px-4 py-1.5 rounded-full transition-all duration-300 bg-white text-brand-green shadow-sm">
-                                        Mới nhất
-                                    </button>
-                                    <button onclick="loadComments('popular')" id="tab-popular"
-                                        class="px-4 py-1.5 rounded-full transition-all duration-300 text-gray-500 hover:bg-gray-50">
-                                        Nổi bật
-                                    </button>
-                                </div>
-                                <a href="{{ route('books.search') }}"
-                                    class="text-xs text-gray-400 hover:text-gray-600 ml-3">Xem tất cả</a>
-                            </div>
-                        </div>
-
-                        {{-- Container chứa danh sách --}}
-                        <div id="comments-container"
-                            class="relative min-h-[200px] bg-gray-50 rounded-2xl p-4 border border-gray-100">
-                            {{-- Loading Spinner --}}
-                            <div id="loading-spinner"
-                                class="hidden absolute inset-0 bg-white/80 z-20 flex items-center justify-center rounded-2xl transition-opacity duration-300">
-                                <div
-                                    class="animate-spin rounded-full h-8 w-8 border-2 border-brand-green border-t-transparent">
-                                </div>
-                            </div>
-
-                            {{-- NỘI DUNG AJAX SẼ ĐỔ VÀO ĐÂY --}}
-                            <div id="comments-content-wrapper">
-                                {{-- [ĐÃ SỬA]: Truyền biến latestReviews --}}
-                                @include('partials.home_comments', ['latestReviews' => $latestReviews])
-                            </div>
-                        </div>
-                    </div>
-                </section>
+            {{-- NỘI DUNG AJAX SẼ ĐỔ VÀO ĐÂY --}}
+            <div id="comments-content-wrapper">
+                {{-- [ĐÃ SỬA]: Truyền biến latestReviews --}}
+                @include('partials.home_comments', ['latestReviews' => $latestReviews])
+            </div>
+        </div>
+    </div>
+</section>
 
                 {{-- Banner Sự Kiện - PREMIUM --}}
                 <div

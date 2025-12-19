@@ -8,8 +8,6 @@
             </a>
             <a href="mailto:contact@gocsach.com"
                 class="hover:text-brand-accent cursor-pointer transition flex items-center">
-            <a href="mailto:contact@gocsach.com"
-                class="hover:text-brand-accent cursor-pointer transition flex items-center">
                 <i class="fas fa-envelope mr-2"></i> contact@gocsach.com
             </a>
         </div>
@@ -138,9 +136,6 @@
                                                 @endphp
                                                 <div class="w-8 h-8 rounded-full {{ $bgColor }} flex items-center justify-center">
                                                     <i class="{{ $notification->data['icon'] }} {{ $iconColor }} text-sm"></i>
-                                                <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                                                    <i
-                                                        class="{{ $notification->data['icon'] }} {{ $notification->data['color'] ?? 'text-green-600' }} text-sm"></i>
                                                 </div>
                                             @else
                                                 <img src="{{ $notification->data['user_avatar'] ?? 'https://ui-avatars.com/api/?name=User' }}"
@@ -183,11 +178,10 @@
 
                     {{-- User Dropdown --}}
                     <div class="relative group pb-2 -mb-2 z-50">
-                        <a href="{{ route('profile') }}"
-                            class="flex items-center gap-2 focus:outline-none py-1 group-hover:opacity-80 transition cursor-pointer relative z-20">
+                        <a href="{{ route('profile') }}" class="flex items-center gap-2 focus:outline-none py-1 group-hover:opacity-80 transition cursor-pointer relative z-20">
                             @include('partials.user-avatar-with-frame', [
                                 'user' => Auth::user(),
-                                'size' => 'w-10 h-10',
+                                'size' => 'w-14 h-14',
                                 'avatarSize' => 'w-9 h-9'
                             ])
                             <div class="hidden lg:flex flex-col items-start">
