@@ -319,7 +319,7 @@
                         class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.quotes.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                         <i
                             class="fas fa-quote-left w-5 text-center {{ request()->routeIs('admin.quotes.*') ? 'text-white' : 'text-slate-400 group-hover:text-amber-400' }}"></i>
-                        <span class="font-medium text-sm">Châm Ngôn</span>
+                        <span class="font-medium text-sm">Quản Lý Châm Ngôn</span>
                     </a>
 
                     <a href="{{ route('admin.books.index') }}"
@@ -348,14 +348,33 @@
                         class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.posts.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                         <i
                             class="fas fa-star w-5 text-center {{ request()->routeIs('admin.posts.*') ? 'text-white' : 'text-slate-400 group-hover:text-yellow-400' }}"></i>
-                        <span class="font-medium text-sm">Kiểm Duyệt Bài</span>
+                        <span class="font-medium text-sm">Kiểm Duyệt Bài Đăng</span>
                         {{-- Badge số lượng bài chờ duyệt --}}
                         @php
                             $pendingPostsCount = \App\Models\Post::where('status', 'pending')->count();
                         @endphp
                         @if($pendingPostsCount > 0)
-                            <span class="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md animate-pulse">
+                            <span
+                                class="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md animate-pulse">
                                 {{ $pendingPostsCount }}
+                            </span>
+                        @endif
+                    </a>
+
+                    {{-- Báo Cáo Bình Luận --}}
+                    <a href="{{ route('admin.comment-reports.index') }}"
+                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.comment-reports.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
+                        <i
+                            class="fas fa-flag w-5 text-center {{ request()->routeIs('admin.comment-reports.*') ? 'text-white' : 'text-slate-400 group-hover:text-red-400' }}"></i>
+                        <span class="font-medium text-sm">Báo Cáo Bình Luận</span>
+                        {{-- Badge số lượng báo cáo chờ xử lý --}}
+                        @php
+                            $pendingReportsCount = \App\Models\CommentReport::where('status', 'pending')->count();
+                        @endphp
+                        @if($pendingReportsCount > 0)
+                            <span
+                                class="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md animate-pulse">
+                                {{ $pendingReportsCount }}
                             </span>
                         @endif
                     </a>
@@ -447,8 +466,19 @@
                         <div
                             class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-full border border-gray-200 dark:border-slate-600 shadow-sm transition-colors duration-300">
                             <i class="far fa-calendar-alt text-blue-500"></i>
-                            <span>{{ date('d/m/Y') }}</span>
+                            <span id="live-date">{{ date('d/m/Y') }}</span>
                         </div>
+                        <script>
+                            function updateDate() {
+                                const now = new Date();
+                                const day = String(now.getDate()).padStart(2, '0');
+                                const month = String(now.getMonth() + 1).padStart(2, '0');
+                                const year = now.getFullYear();
+                                document.getElementById('live-date').textContent = `${day}/${month}/${year}`;
+                            }
+                            updateDate();
+                            setInterval(updateDate, 60000);
+                        </script>
                     </div>
                 </div>
 
@@ -556,16 +586,6 @@
 
                         // Find the closest card/container
                         const container = this.closest('.rounded-xl, .rounded-lg');
-                        let overlay = null;
-
-                        if (container) {
-                            // Add loading overlay to this container only
-                            container.style.position = 'relative';
-                            overlay = document.createElement('div');
-                            overlay.className = 'absolute inset-0 bg-white/80 dark:bg-slate-800/80 flex items-center justify-center z-10 rounded-xl rounded-lg';
-                            overlay.innerHTML = '<i class="fas fa-spinner fa-spin text-2xl text-blue-500"></i>';
-                            container.appendChild(overlay);
-                        }
 
                         fetch(url, {
                             headers: {
@@ -588,7 +608,6 @@
                             })
                             .catch(error => {
                                 console.error('Error loading page:', error);
-                                if (overlay) overlay.remove();
                                 window.location.href = url;
                             });
                     });

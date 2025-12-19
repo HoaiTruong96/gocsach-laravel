@@ -162,6 +162,6 @@ class BannerController extends Controller
         // Giảm order của các banner có order lớn hơn banner vừa xóa
         Banner::where('order', '>', $deletedOrder)->decrement('order');
 
-        return redirect()->back()->with('success', 'Đã xóa Banner.');
+        return redirect()->back()->with('success', 'Đã xóa Banner!');
     }
 }

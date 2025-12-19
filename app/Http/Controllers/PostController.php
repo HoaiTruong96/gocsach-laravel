@@ -40,7 +40,11 @@ class PostController extends Controller
         // 3. Tạo Slug
         $slug = Str::slug($request->title) . '-' . time();
 
-        // 4. Lưu vào Database với status = pending
+        // 4. Xác định trạng thái: Admin = tự động duyệt, User = chờ duyệt
+        $isAdmin = Auth::user()->role === 'admin';
+        $status = $isAdmin ? 'published' : 'pending';
+
+        // 5. Lưu vào Database
         $post = Post::create([
             'user_id' => Auth::id(),
             'book_id' => $request->input('book_id'),
@@ -49,18 +53,21 @@ class PostController extends Controller
             'rating' => $request->input('rating'),
             'content' => $request->input('content'),
             'thumbnail' => $thumbnailPath,
-            'status' => 'pending', // Chờ Admin duyệt
+            'status' => $status,
         ]);
 
-        // 5. Cập nhật tiến độ Thử Thách (Chỉ khi bài đã được duyệt)
-        // Lưu ý: Logic này thường được đặt ở Admin Controller khi duyệt bài
-        // Ở đây chỉ là placeholder, sẽ không chạy vì status = pending
+        // 6. Cập nhật tiến độ Thử Thách (Chỉ khi bài đã được duyệt - admin)
         if ($post->status == 'published') {
             Auth::user()->updateChallengeProgress();
         }
 
+        // 7. Thông báo phù hợp với trạng thái
+        $message = $isAdmin
+            ? 'Bài viết đã được đăng thành công!'
+            : 'Đã gửi bài viết! Vui lòng chờ Admin phê duyệt.';
+
         return redirect()->route('profile', Auth::id())
-            ->with('success', 'Đã gửi bài viết! Vui lòng chờ Admin phê duyệt.');
+            ->with('success', $message);
     }
 
     // Toggle Like (Giữ nguyên)

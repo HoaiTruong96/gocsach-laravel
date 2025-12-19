@@ -26,7 +26,7 @@
                 {{-- Cột Trái --}}
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Tiêu đề bài viết <span
+                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Tiêu đề <span
                                 class="text-red-500">*</span></label>
                         <input type="text" name="title" value="{{ old('title', $article->title) }}"
                             class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic"
@@ -35,7 +35,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Nhãn (Tag)</label>
+                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Tag giới thiệu</label>
                         <input type="text" name="tag" value="{{ old('tag', $article->tag) }}"
                             class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic"
                             placeholder="Gợi ý: Mẹo Đọc, Cảm Hứng, Review">
@@ -43,8 +43,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Mô tả ngắn
-                            (Sapo)</label>
+                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Mô tả</label>
                         <textarea name="excerpt" rows="3"
                             class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic resize-y min-h-[80px]"
                             placeholder="Mô tả ngắn gọn về bài viết...">{{ old('excerpt', $article->excerpt) }}</textarea>
@@ -90,22 +89,22 @@
                             <div class="flex gap-2 mb-2">
                                 <button type="button" onclick="showUploadTab('file')" id="tab-file"
                                     class="px-3 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 font-bold transition">
-                                    <i class="fas fa-upload mr-1"></i> Upload File
+                                    <i class="fas fa-upload mr-1"></i> Tải từ máy
                                 </button>
                                 <button type="button" onclick="showUploadTab('url')" id="tab-url"
                                     class="px-3 py-1 text-xs rounded-full bg-gray-100 dark:bg-slate-600 text-gray-600 dark:text-slate-400 font-bold transition">
-                                    <i class="fas fa-link mr-1"></i> Nhập URL
+                                    <i class="fas fa-link mr-1"></i> URL Ngoài
                                 </button>
                             </div>
 
                             {{-- Fixed height container to prevent content jump --}}
-                            <div class="min-h-[70px]">
+                            <div class="min-h-[100px]">
                                 <div id="upload-file">
                                     <input type="file" name="thumbnail" id="image-file"
                                         accept=".png,.jpg,.jpeg,.gif,.webp,.svg" onchange="previewFile()"
                                         class="w-full text-sm text-gray-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-900/50 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/70">
                                     <p class="text-xs text-gray-400 dark:text-slate-500 mt-1 italic">Hỗ trợ: PNG, JPG, GIF,
-                                        WebP</p>
+                                        WebP, SVG.</p>
                                 </div>
 
                                 <div id="upload-url" class="hidden">
@@ -113,7 +112,7 @@
                                         class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic"
                                         placeholder="https://gocsach.vn/anh-bai-viet.png">
                                     <p class="text-xs text-gray-400 dark:text-slate-500 mt-1 italic">Dán đường dẫn trực tiếp
-                                        đến file ảnh</p>
+                                        đến file ảnh (.png, .jpg, .gif,...)</p>
                                 </div>
                             </div>
                         </div>
@@ -132,7 +131,7 @@
                                 </div>
                                 <div>
                                     <span class="font-bold text-gray-800 dark:text-white block">Bài Tiêu Điểm</span>
-                                    <span class="text-xs text-gray-500 dark:text-slate-400">Hiển thị to nhất trên trang
+                                    <span class="text-xs text-gray-500 dark:text-slate-400">Hiển thị lớn nhất trên trang
                                         chủ</span>
                                 </div>
                             </div>
@@ -160,7 +159,7 @@
                                 </div>
                                 <div>
                                     <span class="font-bold text-gray-800 dark:text-white block">Hiển thị bài viết</span>
-                                    <span class="text-xs text-gray-500 dark:text-slate-400">Tắt để ẩn bài khỏi trang
+                                    <span class="text-xs text-gray-500 dark:text-slate-400">Chỉnh chế độ hiển thị trên trang
                                         chủ</span>
                                 </div>
                             </div>

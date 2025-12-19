@@ -77,7 +77,7 @@ class ActivityLogController extends Controller
             "Dọn dẹp {$deleted} log cũ hơn {$days} ngày",
         );
 
-        return back()->with('success', "Đã xóa {$deleted} log cũ.");
+        return back()->with('success', "Đã xóa {$deleted} log cũ!");
     }
 
     /**
