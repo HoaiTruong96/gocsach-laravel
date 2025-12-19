@@ -72,6 +72,6 @@ class QuoteController extends Controller
         $quote = Quote::findOrFail($id);
         $quote->delete();
 
-        return redirect()->back()->with('success', 'Đã xóa châm ngôn.');
+        return redirect()->back()->with('success', 'Đã xóa châm ngôn!');
     }
 }

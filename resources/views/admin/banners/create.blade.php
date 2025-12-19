@@ -45,15 +45,14 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Đánh giá</label>
-                            <input type="text" name="rating" oninput="this.value = this.value.replace(/[^0-9./]/g, '')"
+                            <input type="number" name="rating" min="1" max="5" step="0.1"
                                 class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic"
-                                placeholder="Ví dụ: 4.5/5.0">
+                                placeholder="1.0 - 5.0">
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Thứ tự hiển
                                 thị</label>
                             <input type="number" name="order" value="0" min="0"
-                                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                                 class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white">
                         </div>
                     </div>
@@ -84,16 +83,16 @@
                             <div class="flex gap-2 mb-2">
                                 <button type="button" onclick="showUploadTab('file')" id="tab-file"
                                     class="px-3 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 font-bold transition">
-                                    <i class="fas fa-upload mr-1"></i> Upload File
+                                    <i class="fas fa-upload mr-1"></i> Tải từ máy
                                 </button>
                                 <button type="button" onclick="showUploadTab('url')" id="tab-url"
                                     class="px-3 py-1 text-xs rounded-full bg-gray-100 dark:bg-slate-600 text-gray-600 dark:text-slate-400 font-bold transition">
-                                    <i class="fas fa-link mr-1"></i> Nhập URL
+                                    <i class="fas fa-link mr-1"></i> URL Ngoài
                                 </button>
                             </div>
 
                             {{-- Fixed height container to prevent content jump --}}
-                            <div class="min-h-[70px]">
+                            <div class="min-h-[100px]">
                                 <div id="upload-file">
                                     <input type="file" name="image" id="image-file" accept=".png,.jpg,.jpeg,.gif,.webp,.svg"
                                         onchange="previewFile()"
@@ -119,7 +118,7 @@
 
                     <div>
                         <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">
-                            Đường dẫn khi nhấn xem
+                            Đường dẫn đọc Review
                         </label>
                         <input type="text" name="link" id="link-input"
                             class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic"
