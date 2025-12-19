@@ -44,7 +44,7 @@
                 <h3 class="text-xl font-bold text-gray-800 font-serif">Tạo Tài Khoản</h3>
             </div>
 
-            <form method="POST" action="{{ route('register') }}">
+            <form method="POST" action="{{ route('register') }}" onsubmit="return validateFormBeforeSubmit()">
                 @csrf
 
                 @if ($errors->any())
@@ -67,9 +67,17 @@
                     <label class="block text-gray-700 text-sm font-bold mb-1">Email</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fas fa-envelope"></i></span>
-                        <input type="email" name="email" class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green transition" placeholder="email@example.com" required value="{{ old('email') }}">
+                        <input type="email" name="email" id="email-input" 
+                            class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green transition" 
+                            placeholder="yourname@gmail.com" required 
+                            value="{{ $errors->has('email') ? '' : old('email') }}"
+                            onfocus="hideEmailWarning()"
+                            onblur="validateEmailOnBlur(this)">
                     </div>
-                    @error('email') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                    {{-- Chỉ 1 cảnh báo duy nhất cho email --}}
+                    <p id="email-warning" class="text-red-500 text-xs mt-1 {{ $errors->has('email') ? '' : 'hidden' }}">
+                        <i class="fas fa-exclamation-triangle mr-1"></i><span id="email-warning-text">{{ $errors->first('email') ?: 'Chỉ chấp nhận email @gmail.com. Vui lòng sử dụng địa chỉ Gmail.' }}</span>
+                    </p>
                 </div>
 
                 <div class="mb-4">
@@ -122,6 +130,65 @@
                 icon.classList.remove('fa-eye-slash');
                 icon.classList.add('fa-eye');
             }
+        }
+
+        // Ẩn cảnh báo khi focus vào ô email
+        function hideEmailWarning() {
+            const warning = document.getElementById('email-warning');
+            const input = document.getElementById('email-input');
+            warning.classList.add('hidden');
+            input.classList.remove('border-red-400');
+        }
+
+        // Kiểm tra email khi rời khỏi ô input (giống Gmail/Microsoft)
+        function validateEmailOnBlur(input) {
+            const warning = document.getElementById('email-warning');
+            const warningText = document.getElementById('email-warning-text');
+            const value = input.value.trim();
+            
+            // Nếu ô trống thì không hiện cảnh báo (để browser tự validate required)
+            if (value === '') {
+                warning.classList.add('hidden');
+                input.classList.remove('border-red-400');
+                return;
+            }
+            
+            // Kiểm tra xem có phải email @gmail.com không
+            const isGmail = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(value);
+            
+            if (!isGmail) {
+                // Cập nhật text cảnh báo (thay thế cảnh báo cũ từ server)
+                warningText.textContent = 'Chỉ chấp nhận email @gmail.com. Vui lòng sử dụng địa chỉ Gmail.';
+                warning.classList.remove('hidden');
+                input.classList.add('border-red-400');
+                input.classList.remove('border-gray-200');
+            } else {
+                warning.classList.add('hidden');
+                input.classList.remove('border-red-400');
+                input.classList.add('border-gray-200');
+            }
+        }
+
+        // Validate form trước khi submit - ngăn submit nếu email sai (giữ lại mật khẩu)
+        function validateFormBeforeSubmit() {
+            const emailInput = document.getElementById('email-input');
+            const warning = document.getElementById('email-warning');
+            const warningText = document.getElementById('email-warning-text');
+            const value = emailInput.value.trim();
+            
+            // Kiểm tra email có phải @gmail.com không
+            const isGmail = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(value);
+            
+            if (!isGmail && value !== '') {
+                // Hiện cảnh báo và ngăn submit
+                warningText.textContent = 'Chỉ chấp nhận email @gmail.com. Vui lòng sử dụng địa chỉ Gmail.';
+                warning.classList.remove('hidden');
+                emailInput.classList.add('border-red-400');
+                emailInput.focus();
+                return false; // Ngăn form submit
+            }
+            
+            return true; // Cho phép submit
         }
     </script>
 </body>

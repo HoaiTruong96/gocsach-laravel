@@ -133,6 +133,7 @@ class ProfileController extends Controller
             'reviews' => $reviews,
             'myBooks' => $myBooks,
             'suggestedBooks' => $suggestedBooks,
+            'savedPosts' => $savedPosts,
             'totalBooks' => $totalBooks,
             'totalReviews' => $totalReviews,
             'totalFollowing' => $totalFollowing,

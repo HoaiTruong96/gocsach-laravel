@@ -91,15 +91,25 @@ class HomeController extends Controller
             'members' => \App\Models\User::count(),
             'reviews' => Post::where('status', 'published')->count(),
             'comments' => Comment::count(),
+            'book_views' => Book::where('is_approved', true)->sum('view_count'), // Tổng lượt đọc sách
+            'post_views' => Post::where('status', 'published')->sum('view_count'), // Tổng lượt đọc bài
+            'authors' => \App\Models\Author::count(), // Số tác giả
+            'categories' => Category::count(), // Số thể loại
+            'post_likes' => Like::count(), // Lượt thích bài review
+            'comment_likes' => CommentLike::count(), // Lượt thích bình luận
         ];
 
         // --- SÁCH NGẪU NHIÊN "HÔM NAY ĐỌC GÌ?" ---
-        $allApprovedBooks = Book::where('is_approved', true)->get();
+        $allApprovedBooks = Book::where('is_approved', true)
+            ->withAvg(['posts'], 'rating')
+            ->get();
         $randomBook = null;
         if ($allApprovedBooks->count() > 0) {
             // Dùng ngày làm seed để cùng ngày hiển thị cùng sách
             $dayOfYear = now()->dayOfYear + now()->year;
             $randomBook = $allApprovedBooks[$dayOfYear % $allApprovedBooks->count()];
+            // Gán avg_rating từ posts
+            $randomBook->avg_rating = round($randomBook->posts_avg_rating ?? 0, 1);
         }
 
         // Truyền biến $latestReviews vào view
@@ -171,6 +181,37 @@ class HomeController extends Controller
             $count = CommentLike::where('comment_id', $id)->count();
         }
         return response()->json(['success' => true, 'liked' => $liked, 'count' => $count, 'type' => $type]);
+    }
+
+    // --- LOGIC LƯU BÀI VIẾT (SAVE POST) ---
+    public function toggleSavePost(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $request->validate(['post_id' => 'required|integer|exists:posts,id']);
+        $userId = Auth::id();
+        $postId = $request->post_id;
+
+        $user = Auth::user();
+        $isSaved = $user->savedPosts()->where('post_id', $postId)->exists();
+
+        if ($isSaved) {
+            // Bỏ lưu
+            $user->savedPosts()->detach($postId);
+            $saved = false;
+        } else {
+            // Lưu bài viết
+            $user->savedPosts()->attach($postId);
+            $saved = true;
+        }
+
+        return response()->json([
+            'success' => true,
+            'saved' => $saved,
+            'message' => $saved ? 'Đã lưu bài viết!' : 'Đã bỏ lưu bài viết!'
+        ]);
     }
 
     // --- LOGIC REPLY (ĐÃ SỬA LỖI DATABASE) ---
@@ -255,6 +296,7 @@ class HomeController extends Controller
             return [
                 'id' => $notification->id,
                 'is_system' => $isSystemNotification,
+                'title' => $notification->data['title'] ?? 'Thông báo hệ thống',
                 'icon' => $notification->data['icon'] ?? null,
                 'color' => $notification->data['color'] ?? 'text-green-600',
                 'user_avatar' => $notification->data['user_avatar'] ?? 'https://ui-avatars.com/api/?name=User',

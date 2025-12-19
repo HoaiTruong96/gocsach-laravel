@@ -8,6 +8,8 @@
             </a>
             <a href="mailto:contact@gocsach.com"
                 class="hover:text-brand-accent cursor-pointer transition flex items-center">
+            <a href="mailto:contact@gocsach.com"
+                class="hover:text-brand-accent cursor-pointer transition flex items-center">
                 <i class="fas fa-envelope mr-2"></i> contact@gocsach.com
             </a>
         </div>
@@ -110,10 +112,6 @@
                                 class="{{ Auth::user()->unreadNotifications->count() > 0 ? '' : 'hidden' }} absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white animate-bounce">
                                 <span id="notification-count">{{ Auth::user()->unreadNotifications->count() }}</span>
                             </span>
-                            <span id="notification-badge"
-                                class="{{ Auth::user()->unreadNotifications->count() > 0 ? '' : 'hidden' }} absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white animate-bounce">
-                                <span id="notification-count">{{ Auth::user()->unreadNotifications->count() }}</span>
-                            </span>
                         </button>
                         <div
                             class="dropdown-menu dropdown-bridge absolute right-0 top-full mt-0 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in z-50 origin-top-right">
@@ -133,6 +131,13 @@
                                         class="flex gap-3 px-4 py-3 hover:bg-gray-50 transition border-b border-gray-50 {{ $notification->read_at ? 'opacity-60 grayscale-[0.5]' : 'bg-blue-50/30' }}">
                                         <div class="flex-shrink-0 mt-1">
                                             @if($isSystemNotification)
+                                                @php
+                                                    // Xác định màu nền icon dựa vào loại thông báo
+                                                    $iconColor = $notification->data['color'] ?? 'text-green-600';
+                                                    $bgColor = str_contains($iconColor, 'red') ? 'bg-red-100' : 'bg-green-100';
+                                                @endphp
+                                                <div class="w-8 h-8 rounded-full {{ $bgColor }} flex items-center justify-center">
+                                                    <i class="{{ $notification->data['icon'] }} {{ $iconColor }} text-sm"></i>
                                                 <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
                                                     <i
                                                         class="{{ $notification->data['icon'] }} {{ $notification->data['color'] ?? 'text-green-600' }} text-sm"></i>
@@ -145,7 +150,7 @@
 
                                         <div class="flex-1">
                                             @if($isSystemNotification)
-                                                <p class="text-sm font-bold text-gray-800">Bài viết của bạn đã được duyệt</p>
+                                                <p class="text-sm font-bold text-gray-800">{{ $notification->data['title'] ?? 'Thông báo hệ thống' }}</p>
                                                 <p class="text-xs text-gray-600 line-clamp-2 mt-0.5">
                                                     {{ $notification->data['message'] ?? '' }}</p>
                                             @else
@@ -180,12 +185,15 @@
                     <div class="relative group pb-2 -mb-2 z-50">
                         <a href="{{ route('profile') }}"
                             class="flex items-center gap-2 focus:outline-none py-1 group-hover:opacity-80 transition cursor-pointer relative z-20">
-                            <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&background=3E5F4E&color=fff&size=40' }}"
-                                class="w-9 h-9 rounded-full border-2 border-brand-beige shadow-sm group-hover:border-brand-green transition object-cover">
+                            @include('partials.user-avatar-with-frame', [
+                                'user' => Auth::user(),
+                                'size' => 'w-10 h-10',
+                                'avatarSize' => 'w-9 h-9'
+                            ])
                             <div class="hidden lg:flex flex-col items-start">
                                 <span
                                     class="text-xs font-bold text-gray-700 truncate max-w-[80px]">{{ Auth::user()->name }}</span>
-                                <span class="text-[10px] text-gray-400">Thành viên</span>
+                                <span class="text-[10px] text-gray-400">{{ Auth::user()->role == 'admin' ? 'Quản trị viên' : 'Thành viên' }}</span>
                             </div>
                             <i class="fas fa-chevron-down text-xs text-gray-400 ml-1"></i>
                         </a>
@@ -332,8 +340,11 @@
         <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 bg-gray-50">
                 @auth
                 <div class="flex items-center gap-3 mb-3">
-                    <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}"
-                        class="w-10 h-10 rounded-full border-2 border-brand-green">
+                    @include('partials.user-avatar-with-frame', [
+                        'user' => Auth::user(),
+                        'size' => 'w-12 h-12',
+                        'avatarSize' => 'w-10 h-10'
+                    ])
                     <div>
                         <p class="font-bold text-gray-800 text-sm">{{ Auth::user()->name }}</p>
                         <p class="text-xs text-gray-500">{{ Auth::user()->email }}</p>
@@ -748,18 +759,20 @@ document.addEventListener('DOMContentLoaded', function() {
             data.notifications.forEach(n => {
                 const isRead = n.read_at !== null;
                 const bgClass = isRead ? 'opacity-60 grayscale-[0.5]' : 'bg-blue-50/30';
+                // Xác định màu nền icon động (đỏ cho từ chối, xanh cho duyệt)
+                const iconBgColor = n.color && n.color.includes('red') ? 'bg-red-100' : 'bg-green-100';
                 
                 html += `
                     <a href="${n.link}" class="flex gap-3 px-4 py-3 hover:bg-gray-50 transition border-b border-gray-50 ${bgClass}">
                         <div class="flex-shrink-0 mt-1">
                             ${n.is_system 
-                                ? `<div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center"><i class="${n.icon} ${n.color} text-sm"></i></div>`
+                                ? `<div class="w-8 h-8 rounded-full ${iconBgColor} flex items-center justify-center"><i class="${n.icon} ${n.color} text-sm"></i></div>`
                                 : `<img src="${n.user_avatar}" class="w-8 h-8 rounded-full border border-gray-100 object-cover">`
                             }
                         </div>
                         <div class="flex-1">
                             ${n.is_system 
-                                ? `<p class="text-sm font-bold text-gray-800">Bài viết của bạn đã được duyệt</p><p class="text-xs text-gray-600 line-clamp-2 mt-0.5">${n.message}</p>`
+                                ? `<p class="text-sm font-bold text-gray-800">${n.title || 'Thông báo hệ thống'}</p><p class="text-xs text-gray-600 line-clamp-2 mt-0.5">${n.message}</p>`
                                 : `<p class="text-sm text-gray-700 line-clamp-2"><span class="font-bold text-gray-900">${n.user_name}</span> ${n.message}<span class="font-bold block text-xs text-gray-500 italic mt-0.5">"${n.post_title}"</span></p>`
                             }
                             <p class="text-[10px] text-gray-400 mt-1 flex items-center"><i class="far fa-clock mr-1"></i> ${n.time}</p>
