@@ -72,8 +72,8 @@ class HomeController extends Controller
             $book->avg_rating = round($book->posts_avg_rating ?? 0, 1);
         }
 
-        $featuredArticle = Article::with('user')->where('is_featured', true)->latest()->first();
-        $sidebarArticles = Article::with('user')->where('is_featured', false)->latest()->take(2)->get();
+        $featuredArticle = Article::with('user')->where('is_featured', true)->where('is_active', true)->latest()->first();
+        $sidebarArticles = Article::with('user')->where('is_featured', false)->where('is_active', true)->latest()->take(2)->get();
         $categories = Category::withCount('books')->orderBy('name', 'asc')->get();
 
         // --- LẤY QUOTE NGẪU NHIÊN THEO NGÀY ---
@@ -247,21 +247,11 @@ class HomeController extends Controller
                 \Log::error("Lỗi gửi thông báo: " . $e->getMessage());
             }
         }
-
-        $equippedFrame = $user->equippedFrame();
-        $frameUrl = null;
-        if ($equippedFrame) {
-            $frameUrl = \Illuminate\Support\Str::startsWith($equippedFrame->frame_image, 'http')
-                ? $equippedFrame->frame_image
-                : asset('storage/' . $equippedFrame->frame_image);
-        }
-
         return response()->json([
             'success' => true,
             'reply_id' => $reply->id,
             'user_name' => $user->name,
             'user_avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random',
-            'user_frame' => $frameUrl,
             'content' => $reply->content,
             'time' => 'Vừa xong'
         ]);

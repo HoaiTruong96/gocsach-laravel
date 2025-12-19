@@ -31,7 +31,7 @@ class BookSuggestionController extends Controller
             'category_ids' => 'nullable|array',
             'category_ids.*' => 'exists:categories,id',
             'description' => 'nullable|string|max:2000',
-            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
         ], [
             'title.required' => 'Vui lòng nhập tên sách.',
             'author_name.required' => 'Vui lòng nhập tên tác giả.',
@@ -69,6 +69,6 @@ class BookSuggestionController extends Controller
 
         // 6. Redirect back to profile with success message
         return redirect()->route('profile', Auth::id())
-                        ->with('success', 'Đề xuất sách thành công! Vui lòng chờ Admin phê duyệt.');
+            ->with('success', 'Đề xuất sách thành công! Vui lòng chờ Admin phê duyệt.');
     }
 }

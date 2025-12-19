@@ -22,7 +22,7 @@ class PostController extends Controller
             'rating' => 'required|integer|min:1|max:5',
             'title' => 'required|string|max:255',
             'content' => 'required|min:10',
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
         ], [
             'book_id.exists' => 'Vui lòng chọn một cuốn sách hợp lệ.',
             'title.required' => 'Bạn chưa nhập tiêu đề bài viết.',
@@ -126,14 +126,6 @@ class PostController extends Controller
             $post->user->notify(new PostCommentedNotification($user, $post));
         }
 
-        $equippedFrame = $user->equippedFrame();
-        $frameUrl = null;
-        if ($equippedFrame) {
-            $frameUrl = \Illuminate\Support\Str::startsWith($equippedFrame->frame_image, 'http')
-                ? $equippedFrame->frame_image
-                : asset('storage/' . $equippedFrame->frame_image);
-        }
-
         // Đếm lại số comment
         $commentCount = Comment::where('post_id', $id)->count();
 
@@ -142,7 +134,6 @@ class PostController extends Controller
             'comment_id' => $comment->id,
             'user_name' => $user->name,
             'user_avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random',
-            'user_frame' => $frameUrl,
             'content' => $comment->content,
             'count' => $commentCount,
             'created_at' => 'Vừa xong'

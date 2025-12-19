@@ -4,7 +4,8 @@
 
 @section('content')
     <div class="max-w-2xl mx-auto">
-        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
             <div class="p-6 border-b border-gray-100 dark:border-slate-700">
                 <h2 class="font-bold text-gray-800 dark:text-white text-lg flex items-center gap-2">
                     <i class="fas fa-quote-left text-amber-500"></i>
@@ -58,6 +59,7 @@
                             Thứ tự hiển thị
                         </label>
                         <input type="number" name="order" value="{{ old('order', 0) }}"
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                             class="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 dark:bg-slate-700 dark:text-white transition">
                     </div>
 
