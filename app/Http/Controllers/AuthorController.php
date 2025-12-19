@@ -35,8 +35,9 @@ class AuthorController extends Controller
             $names = preg_split('/[,;]|\s+và\s+|\s+and\s+/iu', $book->author_name);
             foreach ($names as $name) {
                 $name = trim($name);
-                if (empty($name)) continue;
-                
+                if (empty($name))
+                    continue;
+
                 if (!isset($authorCounts[$name])) {
                     $authorCounts[$name] = 0;
                 }
@@ -46,7 +47,7 @@ class AuthorController extends Controller
 
         // Lọc theo từ khóa tìm kiếm
         if ($q) {
-            $authorCounts = array_filter($authorCounts, function($count, $name) use ($q) {
+            $authorCounts = array_filter($authorCounts, function ($count, $name) use ($q) {
                 return stripos($name, $q) !== false;
             }, ARRAY_FILTER_USE_BOTH);
         }
@@ -56,7 +57,7 @@ class AuthorController extends Controller
         $authorsInfo = Author::whereIn('name', $authorNames)->get()->keyBy('name');
 
         // Tạo collection các tác giả
-        $authorsData = collect($authorCounts)->map(function($count, $name) use ($authorsInfo) {
+        $authorsData = collect($authorCounts)->map(function ($count, $name) use ($authorsInfo) {
             $info = $authorsInfo->get($name);
             return (object) [
                 'name' => $name,
@@ -100,26 +101,26 @@ class AuthorController extends Controller
     {
         // Tìm trong bảng authors trước
         $author = Author::where('slug', $slug)->first();
-        
+
         $authorName = $author ? $author->name : str_replace('-', ' ', $slug);
 
         // Tìm sách có chứa tên tác giả (hỗ trợ nhiều dạng phân cách)
         // Đồng thời bao gồm các sách đã được gắn qua bảng pivot `author_book`.
         $books = Book::where('is_approved', true)
-            ->where(function($query) use ($authorName, $author) {
+            ->where(function ($query) use ($authorName, $author) {
                 // Tìm bằng LIKE với % ở cả 2 đầu để bắt mọi trường hợp
                 $query->where('author_name', $authorName) // Exact match
                     ->orWhere('author_name', 'like', '%' . $authorName . '%'); // Substring match
-
+    
                 // Nếu tác giả tồn tại trong bảng authors, thêm các sách được liên kết qua pivot
                 if ($author && isset($author->id)) {
-                    $query->orWhereHas('authors', function($q) use ($author) {
+                    $query->orWhereHas('authors', function ($q) use ($author) {
                         $q->where('authors.id', $author->id);
                     });
                 }
             })
             ->paginate(12);
-        
+
         // Nếu không tìm thấy author trong bảng authors, tạo object giả
         if (!$author) {
             $author = (object) [
@@ -145,22 +146,24 @@ class AuthorController extends Controller
     public function adminIndex(Request $request)
     {
         $tab = $request->get('tab', 'all');
-        
+
         // Lấy tất cả tác giả từ bảng authors với số sách
-        $authorsFromTable = Author::withCount(['books' => function($q) {
-            $q->where('is_approved', true);
-        }])->orderBy('name')->get();
-        
+        $authorsFromTable = Author::withCount([
+            'books' => function ($q) {
+                $q->where('is_approved', true);
+            }
+        ])->orderBy('name')->get();
+
         // Lấy tất cả author_name từ books mà CHƯA có trong bảng authors
         // Cần tách nhiều tên tác giả trong một trường (phân cách bằng dấu phẩy, chấm phẩy, "và", "and")
         $registeredNames = Author::pluck('name')->map(fn($n) => mb_strtolower(trim($n)))->toArray();
-        
+
         $booksWithAuthors = DB::table('books')
             ->select('author_name')
             ->whereNotNull('author_name')
             ->where('author_name', '<>', '')
             ->get();
-        
+
         // Tách từng tên tác giả và đếm số sách
         $unregisteredCounts = [];
         foreach ($booksWithAuthors as $book) {
@@ -168,8 +171,9 @@ class AuthorController extends Controller
             $names = preg_split('/[,;]|\s+và\s+|\s+and\s+/iu', $book->author_name);
             foreach ($names as $name) {
                 $name = trim($name);
-                if (empty($name)) continue;
-                
+                if (empty($name))
+                    continue;
+
                 // Kiểm tra tên này đã đăng ký hay chưa
                 if (!in_array(mb_strtolower($name), $registeredNames)) {
                     if (!isset($unregisteredCounts[$name])) {
@@ -179,9 +183,9 @@ class AuthorController extends Controller
                 }
             }
         }
-        
+
         // Chuyển thành collection
-        $authorsFromBooks = collect($unregisteredCounts)->map(function($count, $name) {
+        $authorsFromBooks = collect($unregisteredCounts)->map(function ($count, $name) {
             return (object) [
                 'id' => null,
                 'name' => $name,
@@ -195,12 +199,12 @@ class AuthorController extends Controller
                 'is_from_books' => true, // Đánh dấu chưa có trong bảng authors
             ];
         })->sortBy('name')->values();
-        
+
         // Đánh dấu các tác giả đã có trong bảng authors
-        $authorsFromTable->each(function($author) {
+        $authorsFromTable->each(function ($author) {
             $author->is_from_books = false;
         });
-        
+
         // Kết hợp và phân loại theo tab
         if ($tab === 'registered') {
             // Chỉ hiển thị tác giả đã có trong bảng authors
@@ -212,7 +216,7 @@ class AuthorController extends Controller
             // Hiển thị tất cả
             $allAuthors = $authorsFromTable->concat($authorsFromBooks)->sortBy('name');
         }
-        
+
         // Phân trang thủ công
         $page = $request->get('page', 1);
         $perPage = 20;
@@ -224,7 +228,7 @@ class AuthorController extends Controller
             $page,
             ['path' => $request->url(), 'query' => $request->query()]
         );
-        
+
         // Thống kê
         $stats = [
             'total' => $authorsFromTable->count() + $authorsFromBooks->count(),

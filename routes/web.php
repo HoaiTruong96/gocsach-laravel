@@ -82,6 +82,9 @@ Route::get('/api/user/{id}/following', [FollowController::class, 'getFollowing']
 // Ranking
 Route::get('/ranking/top-liked', [RankingController::class, 'topLikedPosts']);
 
+// Public Profile - Xem profile thành viên (không cần đăng nhập)
+Route::get('/thanh-vien/{id}', [ProfileController::class, 'index'])->name('public.profile');
+
 
 // ====================================================
 // 2. NHÓM KHÁCH (GUEST ONLY)
@@ -154,6 +157,9 @@ Route::middleware('auth')->group(function () {
     // Route xử lý Like chung (cho cả Post và Comment)
     Route::post('/like', [HomeController::class, 'toggleLike'])->name('handle.like');
 
+    // Route lưu bài viết (Save Post)
+    Route::post('/post/save', [HomeController::class, 'toggleSavePost'])->name('post.save');
+
     // Route gửi Reply (Bình luận trả lời)
     Route::post('/comment/{id}/reply', [HomeController::class, 'storeReply'])->name('comment.reply');
 
@@ -205,10 +211,20 @@ Route::middleware('auth')->group(function () {
     // Lưu bài viết mới
     Route::post('/posts/store', [PostController::class, 'store'])->name('posts.store');
 
+    // API lấy thông báo realtime (cho polling)
+    Route::get('/api/notifications', [HomeController::class, 'getNotifications'])->name('api.notifications');
+
     // --- REVIEW / POST ---
-    Route::get('/reviews/viet-bai', function () {
+    Route::get('/reviews/viet-bai', function (Illuminate\Http\Request $request) {
         $user = Auth::user();
-        return view('create-review', compact('user'));
+        $preselectedBook = null;
+
+        // Nếu có book_id, lấy thông tin sách để tự động chọn
+        if ($request->has('book_id')) {
+            $preselectedBook = Book::find($request->book_id);
+        }
+
+        return view('create-review', compact('user', 'preselectedBook'));
     })->name('reviews.create');
 
     // Lưu bài viết mới
