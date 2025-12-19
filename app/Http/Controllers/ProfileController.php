@@ -26,7 +26,7 @@ class ProfileController extends Controller
         $request->validate([
             'name' => 'required|string|max:100',
             'bio' => 'nullable|string|max:500',
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
         ], [
             'name.required' => 'Tên hiển thị là bắt buộc.',
             'name.max' => 'Tên không được quá 100 ký tự.',
@@ -125,18 +125,6 @@ class ProfileController extends Controller
             $suggestedBooks = Book::where('created_by_user_id', $user->id)
                 ->orderBy('created_at', 'desc')
                 ->take(12)
-                ->get();
-        }
-
-        // 6. Lấy danh sách bài viết đã lưu (Bookmark)
-        // Chỉ hiển thị cho chính chủ profile
-        $savedPosts = collect();
-        if (Auth::id() == $user->id) {
-            $savedPosts = $user->savedPosts()
-                ->with(['book', 'user', 'comments.user', 'likes'])
-                ->withCount(['likes', 'comments'])
-                ->where('status', 'published')
-                ->take(20)
                 ->get();
         }
 

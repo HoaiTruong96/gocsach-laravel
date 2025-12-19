@@ -17,7 +17,13 @@ class Article extends Model
         'excerpt',
         'content',
         'is_featured',
+        'is_active',
         'user_id'
+    ];
+
+    protected $casts = [
+        'is_featured' => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     // Quan hệ: Bài viết thuộc về 1 người dùng (Admin/Tác giả)

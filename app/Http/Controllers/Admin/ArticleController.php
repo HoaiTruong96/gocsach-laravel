@@ -18,10 +18,15 @@ class ArticleController extends Controller
     }
     public function show($slug)
     {
-        $article = Article::where('slug', $slug)->firstOrFail();
-        // Tăng view (nếu bảng articles có cột view_count)
-        // $article->increment('view_count'); 
-        
+        $query = Article::where('slug', $slug);
+
+        // Nếu không phải admin thì chỉ hiển thị bài viết đang active
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
+            $query->where('is_active', true);
+        }
+
+        $article = $query->firstOrFail();
+
         return view('articles.show', compact('article'));
     }
 
@@ -39,13 +44,14 @@ class ArticleController extends Controller
             'tag' => 'nullable|max:50',
             'excerpt' => 'nullable|max:500',
             'content' => 'required',
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
             'thumbnail_url' => 'nullable|url|max:500',
         ]);
 
         $data = $request->except(['thumbnail', 'thumbnail_url']);
         $data['slug'] = Str::slug($request->title) . '-' . time();
         $data['is_featured'] = $request->has('is_featured');
+        $data['is_active'] = $request->has('is_active');
         $data['user_id'] = auth()->id();
         $data['view_count'] = 0;
 
@@ -79,26 +85,32 @@ class ArticleController extends Controller
             'tag' => 'nullable|max:50',
             'excerpt' => 'nullable|max:500',
             'content' => 'required',
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
+            'thumbnail_url' => 'nullable|url|max:500',
         ]);
 
-        $data = $request->except(['thumbnail']);
-        $data['is_featured'] = $request->has('is_featured'); // Checkbox trả về "on" hoặc null
+        $data = $request->except(['thumbnail', 'thumbnail_url']);
+        $data['is_featured'] = $request->has('is_featured');
+        $data['is_active'] = $request->has('is_active');
 
-        // Xử lý upload ảnh mới
+        // Xử lý upload ảnh mới hoặc URL
         if ($request->hasFile('thumbnail')) {
             // Xóa ảnh cũ nếu không phải link online
             if ($article->thumbnail && !Str::startsWith($article->thumbnail, 'http')) {
                 Storage::delete('public/' . $article->thumbnail);
             }
-            
-            // Lưu ảnh mới
             $path = $request->file('thumbnail')->store('articles', 'public');
             $data['thumbnail'] = $path;
+        } elseif ($request->filled('thumbnail_url')) {
+            // Xóa ảnh cũ nếu không phải link online
+            if ($article->thumbnail && !Str::startsWith($article->thumbnail, 'http')) {
+                Storage::delete('public/' . $article->thumbnail);
+            }
+            $data['thumbnail'] = $request->thumbnail_url;
         }
 
         $article->update($data);
 
-        return redirect()->route('home')->with('success', 'Cập nhật bài viết thành công!');
+        return redirect()->route('admin.articles.index')->with('success', 'Cập nhật bài viết thành công!');
     }
 }

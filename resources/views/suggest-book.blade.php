@@ -75,6 +75,25 @@
                             placeholder="Ví dụ: Haruki Murakami">
                     </div>
 
+                    {{-- DANH MỤC --}}
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">
+                            Danh mục (Chọn nhiều) <span class="text-gray-400 font-normal">(Tùy chọn)</span>
+                        </label>
+                        <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 max-h-48 overflow-y-auto">
+                            <div class="grid grid-cols-2 gap-3">
+                                @foreach($categories as $category)
+                                    <label class="flex items-center gap-2 cursor-pointer hover:bg-white p-2 rounded-lg transition">
+                                        <input type="checkbox" name="category_ids[]" value="{{ $category->id }}"
+                                            class="w-4 h-4 text-brand-green border-gray-300 rounded focus:ring-brand-green"
+                                            {{ in_array($category->id, old('category_ids', [])) ? 'checked' : '' }}>
+                                        <span class="text-sm text-gray-700">{{ $category->name }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
                     {{-- ẢNH BÌA --}}
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">
