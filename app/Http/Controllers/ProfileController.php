@@ -27,19 +27,21 @@ class ProfileController extends Controller
             'name' => 'required|string|max:100',
             'bio' => 'nullable|string|max:500',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
+            'avatar_url' => 'nullable|url|max:500',
         ], [
             'name.required' => 'Tên hiển thị là bắt buộc.',
             'name.max' => 'Tên không được quá 100 ký tự.',
             'bio.max' => 'Giới thiệu không được quá 500 ký tự.',
             'avatar.image' => 'File phải là hình ảnh.',
             'avatar.max' => 'Ảnh không được quá 2MB.',
+            'avatar_url.url' => 'Đường dẫn ảnh không hợp lệ.',
         ]);
 
         /** @var \App\Models\User $user */
         $user->name = $request->input('name');
         $user->bio = $request->input('bio');
 
-        // Xử lý upload avatar
+        // Xử lý upload avatar (ưu tiên file, sau đó là URL)
         if ($request->hasFile('avatar')) {
             // Xóa avatar cũ nếu có và không phải URL bên ngoài
             if ($user->avatar && !Str::startsWith($user->avatar, 'http')) {
@@ -49,6 +51,13 @@ class ProfileController extends Controller
             // Lưu avatar mới
             $path = $request->file('avatar')->store('avatars', 'public');
             $user->avatar = '/storage/' . $path;
+        } elseif ($request->filled('avatar_url')) {
+            // Xóa avatar cũ nếu có và không phải URL bên ngoài
+            if ($user->avatar && !Str::startsWith($user->avatar, 'http')) {
+                Storage::delete('public/' . str_replace('/storage/', '', $user->avatar));
+            }
+            // Sử dụng URL
+            $user->avatar = $request->avatar_url;
         }
 
         $user->save();
@@ -121,10 +130,18 @@ class ProfileController extends Controller
         // 5. Lấy danh sách sách đề xuất (do user tạo)
         // Chỉ hiển thị cho chính chủ profile
         $suggestedBooks = collect();
+        $savedPosts = collect();
         if (Auth::id() == $user->id) {
             $suggestedBooks = Book::where('created_by_user_id', $user->id)
                 ->orderBy('created_at', 'desc')
                 ->take(12)
+                ->get();
+            
+            // 6. Lấy danh sách bài viết đã lưu
+            $savedPosts = $user->savedPosts()
+                ->with(['user', 'book', 'likes', 'comments.user'])
+                ->withCount(['likes', 'comments'])
+                ->orderByPivot('created_at', 'desc')
                 ->get();
         }
 
