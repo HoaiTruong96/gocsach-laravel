@@ -45,7 +45,7 @@
                         <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">
                             <i class="fas fa-upload mr-1"></i> Tải ảnh mới từ máy
                         </label>
-                        <input type="file" name="frame_image" accept=".gif,.png,.jpg,.jpeg,.webp"
+                        <input type="file" name="frame_image" accept=".gif,.png,.jpg,.jpeg,.webp,.svg"
                             class="w-full text-sm text-gray-500 dark:text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 dark:file:bg-purple-900/50 file:text-purple-700 dark:file:text-purple-300 hover:file:bg-purple-100">
                         <p class="text-xs text-gray-400 mt-1">Hỗ trợ: GIF, PNG, JPG, WebP</p>
                     </div>
@@ -65,6 +65,7 @@
                         <div>
                             <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Thứ tự</label>
                             <input type="number" name="order" value="{{ old('order', $frame->order) }}" min="0"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                                 class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white">
                         </div>
                         <div class="flex items-end pb-2">

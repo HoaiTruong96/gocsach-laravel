@@ -11,11 +11,25 @@ use Illuminate\Support\Str;
 class BannerController extends Controller
 {
     // Hiển thị danh sách Banner
-    public function index()
+    public function index(Request $request)
     {
-        $banners = Banner::orderBy('order', 'asc')->get();
-        // Bạn cần tạo view admin.banners.index nếu muốn quản lý danh sách
-        return view('admin.banners.index', compact('banners'));
+        $sortField = $request->input('sort', 'order');
+        $sortDirection = $request->input('direction', 'asc');
+
+        // Validate sort field
+        $allowedSorts = ['order', 'title', 'created_at'];
+        if (!in_array($sortField, $allowedSorts)) {
+            $sortField = 'order';
+        }
+
+        // Validate direction
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'asc';
+        }
+
+        $banners = Banner::orderBy($sortField, $sortDirection)->get();
+
+        return view('admin.banners.index', compact('banners', 'sortField', 'sortDirection'));
     }
 
     // Hiển thị form tạo mới
@@ -30,7 +44,7 @@ class BannerController extends Controller
         // Validate - yêu cầu ảnh hoặc URL ảnh
         $request->validate([
             'title' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
             'image_url' => 'nullable|url',
             'order' => 'integer|min:0',
         ]);
@@ -42,6 +56,19 @@ class BannerController extends Controller
 
         $data = $request->except(['image', 'image_url']);
         $data['is_active'] = $request->has('is_active');
+
+        // Xử lý thứ tự hiển thị
+        $requestedOrder = (int) $request->input('order', 0);
+
+        if ($requestedOrder <= 0) {
+            // Nếu không chọn thứ tự (= 0) thì tự động thêm vào cuối
+            $maxOrder = Banner::max('order') ?? 0;
+            $data['order'] = $maxOrder + 1;
+        } else {
+            // Nếu chọn thứ tự cụ thể, đẩy các banner có order >= xuống 1 bậc
+            Banner::where('order', '>=', $requestedOrder)->increment('order');
+            $data['order'] = $requestedOrder;
+        }
 
         // Xử lý ảnh: ưu tiên file upload, nếu không có thì dùng URL
         if ($request->hasFile('image')) {
@@ -70,13 +97,34 @@ class BannerController extends Controller
 
         $request->validate([
             'title' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
             'image_url' => 'nullable|url',
             'order' => 'integer|min:0',
         ]);
 
         $data = $request->except(['image', 'image_url']);
         $data['is_active'] = $request->has('is_active'); // Checkbox
+
+        // Xử lý thứ tự hiển thị nếu có thay đổi
+        $oldOrder = $banner->order;
+        $newOrder = (int) $request->input('order', $oldOrder);
+
+        if ($newOrder !== $oldOrder && $newOrder > 0) {
+            if ($newOrder < $oldOrder) {
+                // Di chuyển lên: đẩy các banner từ newOrder đến oldOrder-1 xuống 1 bậc
+                Banner::where('order', '>=', $newOrder)
+                    ->where('order', '<', $oldOrder)
+                    ->where('id', '!=', $banner->id)
+                    ->increment('order');
+            } else {
+                // Di chuyển xuống: đẩy các banner từ oldOrder+1 đến newOrder lên 1 bậc
+                Banner::where('order', '>', $oldOrder)
+                    ->where('order', '<=', $newOrder)
+                    ->where('id', '!=', $banner->id)
+                    ->decrement('order');
+            }
+            $data['order'] = $newOrder;
+        }
 
         // Xử lý ảnh: ưu tiên file upload, sau đó URL ảnh
         if ($request->hasFile('image')) {
@@ -102,10 +150,17 @@ class BannerController extends Controller
     public function destroy($id)
     {
         $banner = Banner::findOrFail($id);
+        $deletedOrder = $banner->order;
+
+        // Xóa ảnh nếu nằm trong storage
         if ($banner->image && !Str::startsWith($banner->image, 'http')) {
             Storage::delete('public/' . $banner->image);
         }
+
         $banner->delete();
+
+        // Giảm order của các banner có order lớn hơn banner vừa xóa
+        Banner::where('order', '>', $deletedOrder)->decrement('order');
 
         return redirect()->back()->with('success', 'Đã xóa Banner.');
     }
