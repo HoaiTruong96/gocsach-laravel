@@ -138,15 +138,33 @@
 
                             {{-- 2. Chọn sao --}}
                             <div class="flex flex-col items-center justify-center py-4 border-y border-dashed border-gray-100">
-                                <label class="block text-sm font-bold text-gray-500 mb-2 uppercase tracking-wide">Đánh giá của bạn</label>
-                                <div class="flex items-center gap-3">
-                                    <div class="flex text-3xl gap-1" id="star-container">
+                                <label class="block text-sm font-bold text-gray-500 mb-3 uppercase tracking-wide">Đánh giá của bạn</label>
+                                
+                                {{-- Hiển thị số sao --}}
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="flex text-2xl gap-0.5" id="star-display">
                                         @for($i=1; $i<=5; $i++)
-                                            <i class="fas fa-star text-yellow-400 cursor-pointer hover:scale-110 transition p-1" onclick="setRating({{ $i }})"></i>
+                                            <i class="fas fa-star text-yellow-400"></i>
                                         @endfor
                                     </div>
-                                    <span id="rating-label" class="text-sm font-bold text-brand-green bg-brand-green/10 px-3 py-1 rounded-full min-w-[90px] text-center">Tuyệt vời</span>
+                                    <span id="rating-value" class="text-2xl font-bold text-brand-green">5.0</span>
                                 </div>
+                                
+                                {{-- Slider --}}
+                                <div class="w-full max-w-xs">
+                                    <input type="range" id="rating-slider" min="1" max="5" step="0.1" value="5"
+                                        class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-green"
+                                        oninput="updateRating(this.value)">
+                                    <div class="flex justify-between text-xs text-gray-400 mt-1">
+                                        <span>1.0</span>
+                                        <span>2.0</span>
+                                        <span>3.0</span>
+                                        <span>4.0</span>
+                                        <span>5.0</span>
+                                    </div>
+                                </div>
+                                
+                                <span id="rating-label" class="mt-3 text-sm font-bold text-brand-green bg-brand-green/10 px-3 py-1 rounded-full">Tuyệt vời</span>
                             </div>
 
                             {{-- 3. Nội dung & Hình ảnh --}}
@@ -387,16 +405,35 @@
             searchInput.focus();
         }
 
-        function setRating(star) {
-            document.getElementById('selected-rating-value').value = star;
-            const stars = document.getElementById('star-container').children;
-            const labels = ["Tệ", "Không hay", "Bình thường", "Hay", "Tuyệt vời"];
-            document.getElementById('rating-label').innerText = labels[star-1];
+        function updateRating(value) {
+            const rating = parseFloat(value);
+            document.getElementById('selected-rating-value').value = rating;
+            document.getElementById('rating-value').innerText = rating.toFixed(1);
             
+            // Cập nhật hiển thị sao
+            const stars = document.getElementById('star-display').children;
             for(let i=0; i<5; i++) {
-                stars[i].classList.toggle('text-yellow-400', i < star);
-                stars[i].classList.toggle('text-gray-300', i >= star);
+                if (rating >= i + 1) {
+                    // Sao đầy
+                    stars[i].className = 'fas fa-star text-yellow-400';
+                } else if (rating > i && rating < i + 1) {
+                    // Sao nửa
+                    stars[i].className = 'fas fa-star-half-alt text-yellow-400';
+                } else {
+                    // Sao rỗng
+                    stars[i].className = 'far fa-star text-gray-300';
+                }
             }
+            
+            // Cập nhật label
+            let label = '';
+            if (rating < 2) label = 'Tệ';
+            else if (rating < 3) label = 'Không hay';
+            else if (rating < 3.5) label = 'Bình thường';
+            else if (rating < 4.5) label = 'Hay';
+            else label = 'Tuyệt vời';
+            
+            document.getElementById('rating-label').innerText = label;
         }
 
         document.addEventListener('click', (e) => {

@@ -92,78 +92,233 @@
                     </div>
                 </div>
 
-            {{-- TRƯỜNG HỢP 2: ĐANG THỰC HIỆN (Thẻ Trắng có thanh tiến độ) --}}
+            {{-- TRƯỜNG HỢP 2: ĐANG THỰC HIỆN (Thẻ Design Mới) --}}
             @elseif($isJoined)
-                <div class="bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6 relative group hover:shadow-md transition duration-300">
-                    <div class="flex-1 text-center md:text-left w-full">
-                        <div class="flex items-center justify-center md:justify-start gap-3 mb-2">
-                            <span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">
-                                Đang Diễn Ra
+                <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden group hover:shadow-lg transition duration-300">
+                    {{-- Header với badge trạng thái --}}
+                    <div class="bg-gradient-to-r from-blue-50 to-green-50 px-6 py-3 border-b border-gray-100">
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <div class="flex items-center gap-3">
+                                <span class="inline-flex items-center gap-2 bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-full">
+                                    <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                                    Đang Diễn Ra
+                                </span>
+                                <span class="text-xs text-gray-500 font-medium">
+                                    <i class="fas fa-clock mr-1"></i> Còn {{ (int) now()->diffInDays(\Carbon\Carbon::parse($challenge->end_date)) }} ngày
+                                </span>
+                            </div>
+                            <span class="text-xs text-gray-400">
+                                Hạn chót: {{ \Carbon\Carbon::parse($challenge->end_date)->format('d/m/Y') }}
                             </span>
-                            <span class="text-xs text-gray-400 font-medium">
-                                <i class="fas fa-clock mr-1"></i> Hạn chót: {{ \Carbon\Carbon::parse($challenge->end_date)->format('d/m/Y') }}
-                            </span>
-                        </div>
-                        
-                        <h3 class="text-xl md:text-2xl font-serif font-bold text-gray-800 mb-2">
-                            {{ $challenge->name }}
-                        </h3>
-                        <p class="text-gray-500 text-sm mb-4">
-                            {{ $challenge->description ?? 'Cố lên! Bạn đang làm rất tốt.' }}
-                        </p>
-
-                        {{-- Thanh tiến độ --}}
-                        <div class="bg-gray-100 rounded-full h-3 w-full max-w-md mx-auto md:mx-0 overflow-hidden relative border border-gray-200">
-                            <div class="bg-brand-green h-full rounded-full relative transition-all duration-1000" style="width: {{ $percent }}%"></div>
-                        </div>
-                        <div class="flex justify-between max-w-md mx-auto md:mx-0 mt-1 text-xs font-bold">
-                            <span class="text-brand-green">{{ $userChallenge->pivot->current_count }} / {{ $challenge->target_count }} bài</span>
-                            <span class="text-gray-400">{{ round($percent) }}%</span>
                         </div>
                     </div>
+                    
+                    <div class="p-6 md:p-8">
+                        <div class="flex flex-col lg:flex-row gap-6">
+                            {{-- Left: Thông tin & Tiến độ --}}
+                            <div class="flex-1">
+                                <h3 class="text-xl md:text-2xl font-serif font-bold text-gray-800 mb-2">
+                                    {{ $challenge->name }}
+                                </h3>
+                                <p class="text-gray-500 text-sm mb-5">
+                                    {{ $challenge->description ?? 'Cố lên! Bạn đang làm rất tốt.' }}
+                                </p>
 
-                    <div class="flex-shrink-0 text-center">
-                        <a href="{{ route('reviews.create') }}" class="inline-block bg-brand-green text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-lg hover:bg-[#1e3a2f] transition transform hover:-translate-y-0.5">
-                            Viết Review Ngay
-                        </a>
-                        <p class="text-[10px] text-gray-400 italic mt-2">Viết thêm bài để tăng điểm</p>
+                                {{-- Thanh tiến độ đẹp hơn --}}
+                                <div class="bg-gray-100 rounded-full h-4 w-full overflow-hidden relative border border-gray-200 mb-2">
+                                    <div class="bg-gradient-to-r from-brand-green to-emerald-400 h-full rounded-full relative transition-all duration-1000 flex items-center justify-end pr-2" style="width: {{ max($percent, 5) }}%">
+                                        @if($percent >= 15)
+                                            <span class="text-[10px] text-white font-bold">{{ round($percent) }}%</span>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="flex justify-between text-xs font-bold mb-6">
+                                    <span class="text-brand-green flex items-center gap-1">
+                                        <i class="fas fa-pen-fancy"></i>
+                                        {{ $userChallenge->pivot->current_count }} / {{ $challenge->target_count }} bài
+                                    </span>
+                                    @if($percent < 15)
+                                        <span class="text-gray-400">{{ round($percent) }}%</span>
+                                    @endif
+                                </div>
+                                
+                                {{-- CTA Button --}}
+                                <a href="{{ route('reviews.create') }}" class="inline-flex items-center gap-2 bg-brand-green text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-lg hover:bg-[#1e3a2f] transition transform hover:-translate-y-0.5 hover:shadow-xl">
+                                    <i class="fas fa-feather-alt"></i>
+                                    Viết Review Ngay
+                                </a>
+                            </div>
+                            
+                            {{-- Right: Phần thưởng --}}
+                            <div class="lg:w-64 flex-shrink-0">
+                                <div class="bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 border border-gray-100">
+                                    <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                        <i class="fas fa-gift text-brand-accent"></i> Phần Thưởng Nhận Được
+                                    </h4>
+                                    
+                                    <div class="space-y-3">
+                                        {{-- Badge Reward --}}
+                                        @if($challenge->badge)
+                                            <div class="flex items-center gap-3 bg-yellow-50 p-2.5 rounded-lg border border-yellow-100">
+                                                <div class="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center shadow-sm">
+                                                    @if($challenge->badge->icon)
+                                                        <img src="{{ Str::startsWith($challenge->badge->icon, 'http') ? $challenge->badge->icon : asset('storage/' . $challenge->badge->icon) }}" alt="" class="w-6 h-6 object-contain">
+                                                    @else
+                                                        <i class="fas fa-medal text-white"></i>
+                                                    @endif
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-bold text-gray-800 truncate">{{ $challenge->badge->name }}</p>
+                                                    <p class="text-[10px] text-yellow-600">Huy Hiệu</p>
+                                                </div>
+                                            </div>
+                                        @else
+                                            <div class="flex items-center gap-3 bg-yellow-50 p-2.5 rounded-lg border border-yellow-100">
+                                                <div class="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center shadow-sm">
+                                                    <i class="fas fa-medal text-white"></i>
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-bold text-gray-800">Danh Hiệu</p>
+                                                    <p class="text-[10px] text-yellow-600">Huy Hiệu Vinh Danh</p>
+                                                </div>
+                                            </div>
+                                        @endif
+                                        
+                                        {{-- Avatar Frame Reward --}}
+                                        @if($challenge->avatarFrame)
+                                            <div class="flex items-center gap-3 bg-purple-50 p-2.5 rounded-lg border border-purple-100">
+                                                <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center shadow-sm overflow-hidden p-1">
+                                                    <img src="{{ Str::startsWith($challenge->avatarFrame->frame_image, 'http') ? $challenge->avatarFrame->frame_image : asset('storage/' . $challenge->avatarFrame->frame_image) }}" 
+                                                         alt="{{ $challenge->avatarFrame->name }}" 
+                                                         class="w-full h-full object-contain">
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-bold text-gray-800 truncate">{{ $challenge->avatarFrame->name }}</p>
+                                                    <p class="text-[10px] text-purple-600">Khung Avatar</p>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-            {{-- TRƯỜNG HỢP 3: CHƯA THAM GIA (Thẻ Xanh Đậm) --}}
+            {{-- TRƯỜNG HỢP 3: CHƯA THAM GIA (Thẻ Design Mới) --}}
             @else
-                <div class="bg-[#2A483A] rounded-2xl p-6 md:p-8 shadow-lg text-white flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden group hover:-translate-y-1 transition duration-300">
-                    <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: url('https://www.transparenttextures.com/patterns/cubes.png');"></div>
+                <div class="bg-gradient-to-br from-[#1a2f25] via-[#2A483A] to-[#1a2f25] rounded-2xl shadow-xl text-white relative overflow-hidden group hover:-translate-y-1 transition duration-300">
+                    {{-- Background Pattern --}}
+                    <div class="absolute inset-0 opacity-5" style="background-image: url('https://www.transparenttextures.com/patterns/cubes.png');"></div>
                     
-                    <div class="relative z-10 flex-1 text-center md:text-left">
-                        <span class="inline-block border border-brand-accent/50 text-brand-accent text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider mb-3 bg-black/10">
-                            Sự Kiện Mới
-                        </span>
-                        <h3 class="text-2xl md:text-3xl font-serif font-bold mb-2 text-white">
-                            {{ $challenge->name }}
-                        </h3>
-                        <p class="text-white/70 text-sm md:text-base font-light max-w-xl">
-                            {{ $challenge->description ?? 'Hoàn thành mục tiêu để nhận huy hiệu danh giá.' }}
-                        </p>
-                        
-                        <div class="mt-4 flex flex-wrap justify-center md:justify-start gap-4 text-xs text-white/50 font-medium">
-                            <span class="flex items-center gap-1.5"><i class="fas fa-bullseye"></i> Mục tiêu: {{ $challenge->target_count }} bài review</span>
-                            <span class="flex items-center gap-1.5"><i class="far fa-calendar-alt"></i> Hạn: {{ \Carbon\Carbon::parse($challenge->end_date)->format('d/m/Y') }}</span>
-                            <span class="flex items-center gap-1.5">
-                                <i class="fas fa-gift"></i> 
-                                Phần thưởng: Danh hiệu{{ $challenge->avatarFrame ? ' + Khung Avatar' : '' }}
+                    {{-- Decorative Elements --}}
+                    <div class="absolute -right-8 -top-8 w-40 h-40 bg-brand-accent/10 rounded-full blur-2xl"></div>
+                    <div class="absolute -left-8 -bottom-8 w-32 h-32 bg-yellow-400/10 rounded-full blur-2xl"></div>
+                    
+                    <div class="relative z-10 p-6 md:p-8">
+                        {{-- Header với thời gian --}}
+                        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                            <span class="inline-flex items-center gap-2 bg-brand-accent/20 border border-brand-accent/30 text-brand-accent text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm">
+                                <span class="w-2 h-2 bg-brand-accent rounded-full animate-pulse"></span>
+                                Sự Kiện Mới
                             </span>
+                            <div class="flex items-center gap-4 text-xs text-white/60 font-medium">
+                                <span class="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-full">
+                                    <i class="far fa-calendar-alt"></i> 
+                                    {{ \Carbon\Carbon::parse($challenge->start_date)->format('d/m') }} - {{ \Carbon\Carbon::parse($challenge->end_date)->format('d/m/Y') }}
+                                </span>
+                                <span class="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-full">
+                                    <i class="fas fa-users"></i>
+                                    {{ $challenge->users->count() }} người tham gia
+                                </span>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="relative z-10 flex-shrink-0">
-                        <form action="{{ route('challenge.join', $challenge->id) }}" method="POST">
-                            @csrf
-                            <button type="submit" class="bg-brand-accent hover:bg-[#c29263] text-white px-8 py-3 rounded-full font-bold shadow-lg transition transform hover:scale-105 active:scale-95 flex items-center gap-2">
-                                <span>Tham Gia Ngay</span>
-                                <i class="fas fa-arrow-right"></i>
-                            </button>
-                        </form>
+                        
+                        {{-- Main Content --}}
+                        <div class="flex flex-col lg:flex-row gap-6">
+                            {{-- Left: Info --}}
+                            <div class="flex-1">
+                                <h3 class="text-2xl md:text-3xl font-serif font-bold mb-3 text-white leading-tight">
+                                    {{ $challenge->name }}
+                                </h3>
+                                <p class="text-white/70 text-sm md:text-base font-light mb-5 leading-relaxed">
+                                    {{ $challenge->description ?? 'Hoàn thành mục tiêu để nhận huy hiệu danh giá và khung avatar độc quyền.' }}
+                                </p>
+                                
+                                {{-- Mục tiêu với visual --}}
+                                <div class="flex items-center gap-4 mb-6">
+                                    <div class="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/10">
+                                        <i class="fas fa-bullseye text-brand-accent"></i>
+                                        <span class="text-sm font-semibold">{{ $challenge->target_count }} bài review</span>
+                                    </div>
+                                    <div class="text-xs text-white/50">
+                                        Còn <span class="text-brand-accent font-bold">{{ (int) now()->diffInDays(\Carbon\Carbon::parse($challenge->end_date)) }}</span> ngày
+                                    </div>
+                                </div>
+                                
+                                {{-- CTA Button --}}
+                                <form action="{{ route('challenge.join', $challenge->id) }}" method="POST" class="inline-block">
+                                    @csrf
+                                    <button type="submit" class="bg-gradient-to-r from-brand-accent to-[#c29263] hover:from-[#c29263] hover:to-brand-accent text-white px-8 py-3 rounded-full font-bold shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-brand-accent/25 active:scale-95 flex items-center gap-2 group">
+                                        <span>Tham Gia Ngay</span>
+                                        <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            {{-- Right: Phần thưởng --}}
+                            <div class="lg:w-72 flex-shrink-0">
+                                <div class="bg-white/5 backdrop-blur-sm rounded-2xl p-5 border border-white/10">
+                                    <h4 class="text-xs font-bold text-white/60 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                        <i class="fas fa-gift text-brand-accent"></i> Phần Thưởng
+                                    </h4>
+                                    
+                                    <div class="space-y-4">
+                                        {{-- Badge Reward --}}
+                                        @if($challenge->badge)
+                                            <div class="flex items-center gap-3 bg-gradient-to-r from-yellow-500/10 to-transparent p-3 rounded-xl border border-yellow-400/20">
+                                                <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg shadow-yellow-500/20">
+                                                    @if($challenge->badge->icon)
+                                                        <img src="{{ Str::startsWith($challenge->badge->icon, 'http') ? $challenge->badge->icon : asset('storage/' . $challenge->badge->icon) }}" alt="" class="w-8 h-8 object-contain">
+                                                    @else
+                                                        <i class="fas fa-medal text-white text-xl"></i>
+                                                    @endif
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-bold text-white truncate">{{ $challenge->badge->name }}</p>
+                                                    <p class="text-[10px] text-yellow-400/80 uppercase tracking-wide">Huy Hiệu Danh Dự</p>
+                                                </div>
+                                            </div>
+                                        @else
+                                            <div class="flex items-center gap-3 bg-gradient-to-r from-yellow-500/10 to-transparent p-3 rounded-xl border border-yellow-400/20">
+                                                <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg shadow-yellow-500/20">
+                                                    <i class="fas fa-medal text-white text-xl"></i>
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-bold text-white">Danh Hiệu</p>
+                                                    <p class="text-[10px] text-yellow-400/80 uppercase tracking-wide">Huy Hiệu Vinh Danh</p>
+                                                </div>
+                                            </div>
+                                        @endif
+                                        
+                                        {{-- Avatar Frame Reward --}}
+                                        @if($challenge->avatarFrame)
+                                            <div class="flex items-center gap-3 bg-gradient-to-r from-purple-500/10 to-transparent p-3 rounded-xl border border-purple-400/20">
+                                                <div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20 overflow-hidden p-1">
+                                                    <img src="{{ Str::startsWith($challenge->avatarFrame->frame_image, 'http') ? $challenge->avatarFrame->frame_image : asset('storage/' . $challenge->avatarFrame->frame_image) }}" 
+                                                         alt="{{ $challenge->avatarFrame->name }}" 
+                                                         class="w-full h-full object-contain">
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-bold text-white truncate">{{ $challenge->avatarFrame->name }}</p>
+                                                    <p class="text-[10px] text-purple-400/80 uppercase tracking-wide">Khung Avatar Độc Quyền</p>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             @endif
