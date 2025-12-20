@@ -22,25 +22,33 @@ class PostController extends Controller
             'rating' => 'required|integer|min:1|max:5',
             'title' => 'required|string|max:255',
             'content' => 'required|min:10',
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
+            'thumbnail_url' => 'nullable|url|max:500',
         ], [
             'book_id.exists' => 'Vui lòng chọn một cuốn sách hợp lệ.',
             'title.required' => 'Bạn chưa nhập tiêu đề bài viết.',
             'content.min' => 'Nội dung review quá ngắn.',
             'thumbnail.image' => 'File tải lên phải là hình ảnh.',
             'thumbnail.max' => 'Ảnh không được lớn hơn 2MB.',
+            'thumbnail_url.url' => 'Đường dẫn ảnh không hợp lệ.',
         ]);
 
-        // 2. Xử lý upload thumbnail (nếu có)
+        // 2. Xử lý upload thumbnail (ưu tiên file, sau đó là URL)
         $thumbnailPath = null;
         if ($request->hasFile('thumbnail')) {
             $thumbnailPath = $request->file('thumbnail')->store('posts/thumbnails', 'public');
+        } elseif ($request->filled('thumbnail_url')) {
+            $thumbnailPath = $request->thumbnail_url;
         }
 
         // 3. Tạo Slug
         $slug = Str::slug($request->title) . '-' . time();
 
-        // 4. Lưu vào Database với status = pending
+        // 4. Xác định trạng thái: Admin = tự động duyệt, User = chờ duyệt
+        $isAdmin = Auth::user()->role === 'admin';
+        $status = $isAdmin ? 'published' : 'pending';
+
+        // 5. Lưu vào Database
         $post = Post::create([
             'user_id' => Auth::id(),
             'book_id' => $request->input('book_id'),
@@ -49,18 +57,21 @@ class PostController extends Controller
             'rating' => $request->input('rating'),
             'content' => $request->input('content'),
             'thumbnail' => $thumbnailPath,
-            'status' => 'pending', // Chờ Admin duyệt
+            'status' => $status,
         ]);
 
-        // 5. Cập nhật tiến độ Thử Thách (Chỉ khi bài đã được duyệt)
-        // Lưu ý: Logic này thường được đặt ở Admin Controller khi duyệt bài
-        // Ở đây chỉ là placeholder, sẽ không chạy vì status = pending
+        // 6. Cập nhật tiến độ Thử Thách (Chỉ khi bài đã được duyệt - admin)
         if ($post->status == 'published') {
             Auth::user()->updateChallengeProgress();
         }
 
+        // 7. Thông báo phù hợp với trạng thái
+        $message = $isAdmin
+            ? 'Bài viết đã được đăng thành công!'
+            : 'Đã gửi bài viết! Vui lòng chờ Admin phê duyệt.';
+
         return redirect()->route('profile', Auth::id())
-            ->with('success', 'Đã gửi bài viết! Vui lòng chờ Admin phê duyệt.');
+            ->with('success', $message);
     }
 
     // Toggle Like (Giữ nguyên)
@@ -126,14 +137,6 @@ class PostController extends Controller
             $post->user->notify(new PostCommentedNotification($user, $post));
         }
 
-        $equippedFrame = $user->equippedFrame();
-        $frameUrl = null;
-        if ($equippedFrame) {
-            $frameUrl = \Illuminate\Support\Str::startsWith($equippedFrame->frame_image, 'http')
-                ? $equippedFrame->frame_image
-                : asset('storage/' . $equippedFrame->frame_image);
-        }
-
         // Đếm lại số comment
         $commentCount = Comment::where('post_id', $id)->count();
 
@@ -142,7 +145,6 @@ class PostController extends Controller
             'comment_id' => $comment->id,
             'user_name' => $user->name,
             'user_avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random',
-            'user_frame' => $frameUrl,
             'content' => $comment->content,
             'count' => $commentCount,
             'created_at' => 'Vừa xong'

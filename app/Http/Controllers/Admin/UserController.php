@@ -42,6 +42,6 @@ class UserController extends Controller
             null
         );
 
-        return back()->with('success', 'Đã xóa thành viên');
+        return back()->with('success', 'Đã xóa thành viên!');
     }
 }

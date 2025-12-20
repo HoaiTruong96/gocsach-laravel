@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Tổng Quan Hệ Thống')
+@section('title', 'Dashboard')
 @section('header', 'Dashboard')
 
 @section('content')

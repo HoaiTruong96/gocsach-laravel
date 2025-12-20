@@ -45,14 +45,15 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Đánh giá</label>
-                            <input type="text" name="rating"
+                            <input type="number" name="rating" min="1" max="5" step="0.1"
                                 class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic"
-                                placeholder="Ví dụ: 4.5/5.0">
+                                placeholder="1.0 - 5.0">
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Thứ tự hiển
                                 thị</label>
                             <input type="number" name="order" value="0" min="0"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                                 class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white">
                         </div>
                     </div>
@@ -60,30 +61,65 @@
 
                 {{-- Cột Phải --}}
                 <div class="space-y-4">
-                    {{-- Upload ảnh từ máy --}}
+                    {{-- Hình ảnh với Tabs --}}
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Hình ảnh
+                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Ảnh bìa
                             <span class="text-red-500">*</span>
                         </label>
-                        <input type="file" name="image" id="image-file" accept=".png,.jpg,.jpeg,.gif,.webp"
-                            class="w-full text-sm text-gray-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-900/50 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/70">
-                        <p class="text-xs text-gray-400 dark:text-slate-500 mt-1 italic">
-                            Hỗ trợ: PNG, JPG, GIF, WebP. Nên dùng ảnh ngang khoảng 800x600px.
-                        </p>
-                    </div>
 
-                    {{-- Hoặc dùng URL ảnh --}}
-                    <div>
-                        <input type="url" name="image_url" id="image-url"
-                            class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic"
-                            placeholder="https://gocsach.vn/sach.png">
-                        <p class="text-xs text-gray-400 dark:text-slate-500 mt-1 italic">Dán đường dẫn trực tiếp đến file
-                            ảnh (.png, .jpg, .gif,...)</p>
+                        {{-- Preview ảnh --}}
+                        <div id="image-preview-container" class="hidden mb-3">
+                            <div
+                                class="relative rounded-lg overflow-hidden border border-gray-200 dark:border-slate-600 w-full h-40 bg-gray-100 dark:bg-slate-700 flex items-center justify-center">
+                                <img id="image-preview" src="" class="max-h-full max-w-full object-contain">
+                                <button type="button" onclick="clearPreview()"
+                                    class="absolute top-2 right-2 w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition">
+                                    <i class="fas fa-times text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Tabs chọn hình thức upload --}}
+                        <div class="mb-3">
+                            <div class="flex gap-2 mb-2">
+                                <button type="button" onclick="showUploadTab('file')" id="tab-file"
+                                    class="px-3 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 font-bold transition">
+                                    <i class="fas fa-upload mr-1"></i> Tải từ máy
+                                </button>
+                                <button type="button" onclick="showUploadTab('url')" id="tab-url"
+                                    class="px-3 py-1 text-xs rounded-full bg-gray-100 dark:bg-slate-600 text-gray-600 dark:text-slate-400 font-bold transition">
+                                    <i class="fas fa-link mr-1"></i> URL Ngoài
+                                </button>
+                            </div>
+
+                            {{-- Fixed height container to prevent content jump --}}
+                            <div class="min-h-[100px]">
+                                <div id="upload-file">
+                                    <input type="file" name="image" id="image-file" accept=".png,.jpg,.jpeg,.gif,.webp,.svg"
+                                        onchange="previewFile()"
+                                        class="w-full text-sm text-gray-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-900/50 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/70">
+                                    <p class="text-xs text-gray-400 dark:text-slate-500 mt-1 italic">
+                                        Hỗ trợ: PNG, JPG, GIF, WebP, SVG.
+                                    </p>
+                                    <p class="text-xs text-gray-400 dark:text-slate-500 mt-1 italic">
+                                        Nên dùng ảnh ngang khoảng 800x600px.
+                                    </p>
+                                </div>
+
+                                <div id="upload-url" class="hidden">
+                                    <input type="url" name="image_url" id="image-url" oninput="previewUrl()"
+                                        class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic"
+                                        placeholder="https://gocsach.vn/sach.png">
+                                    <p class="text-xs text-gray-400 dark:text-slate-500 mt-1 italic">Dán đường dẫn trực tiếp
+                                        đến file ảnh (.png, .jpg, .gif,...)</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div>
                         <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">
-                            Đường dẫn khi nhấn xem
+                            Đường dẫn đọc Review
                         </label>
                         <input type="text" name="link" id="link-input"
                             class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic"
@@ -153,6 +189,70 @@
             }
         }
 
+        // Tab switching for upload type
+        function showUploadTab(type) {
+            document.getElementById('upload-file').classList.add('hidden');
+            document.getElementById('upload-url').classList.add('hidden');
+            document.getElementById('tab-file').classList.remove('bg-blue-100', 'dark:bg-blue-900/50', 'text-blue-600', 'dark:text-blue-300');
+            document.getElementById('tab-file').classList.add('bg-gray-100', 'dark:bg-slate-600', 'text-gray-600', 'dark:text-slate-400');
+            document.getElementById('tab-url').classList.remove('bg-blue-100', 'dark:bg-blue-900/50', 'text-blue-600', 'dark:text-blue-300');
+            document.getElementById('tab-url').classList.add('bg-gray-100', 'dark:bg-slate-600', 'text-gray-600', 'dark:text-slate-400');
+
+            if (type === 'file') {
+                document.getElementById('upload-file').classList.remove('hidden');
+                document.getElementById('tab-file').classList.remove('bg-gray-100', 'dark:bg-slate-600', 'text-gray-600', 'dark:text-slate-400');
+                document.getElementById('tab-file').classList.add('bg-blue-100', 'dark:bg-blue-900/50', 'text-blue-600', 'dark:text-blue-300');
+            } else {
+                document.getElementById('upload-url').classList.remove('hidden');
+                document.getElementById('tab-url').classList.remove('bg-gray-100', 'dark:bg-slate-600', 'text-gray-600', 'dark:text-slate-400');
+                document.getElementById('tab-url').classList.add('bg-blue-100', 'dark:bg-blue-900/50', 'text-blue-600', 'dark:text-blue-300');
+            }
+        }
+
+        // Preview file from input
+        function previewFile() {
+            const fileInput = document.getElementById('image-file');
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    showPreview(e.target.result);
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Preview URL
+        function previewUrl() {
+            const url = document.getElementById('image-url').value.trim();
+            if (url) {
+                showPreview(url);
+            } else {
+                hidePreview();
+            }
+        }
+
+        // Show preview
+        function showPreview(src) {
+            const container = document.getElementById('image-preview-container');
+            const img = document.getElementById('image-preview');
+            img.src = src;
+            container.classList.remove('hidden');
+        }
+
+        // Hide preview
+        function hidePreview() {
+            const container = document.getElementById('image-preview-container');
+            container.classList.add('hidden');
+        }
+
+        // Clear preview and inputs
+        function clearPreview() {
+            document.getElementById('image-file').value = '';
+            document.getElementById('image-url').value = '';
+            hidePreview();
+        }
+
         // Form validation
         document.getElementById('banner-form').addEventListener('submit', function (e) {
             const imageFile = document.getElementById('image-file').files.length;
@@ -163,20 +263,6 @@
                 e.preventDefault();
                 showWarning('Vui lòng tải ảnh từ máy hoặc thêm URL từ Internet!');
                 return false;
-            }
-        });
-
-        // Disable file input if URL is entered and vice versa
-        document.getElementById('image-url').addEventListener('input', function () {
-            document.getElementById('image-file').disabled = this.value.trim() !== '';
-        });
-
-        document.getElementById('image-file').addEventListener('change', function () {
-            if (this.files.length > 0) {
-                document.getElementById('image-url').value = '';
-                document.getElementById('image-url').disabled = true;
-            } else {
-                document.getElementById('image-url').disabled = false;
             }
         });
     </script>

@@ -31,7 +31,8 @@ class BookSuggestionController extends Controller
             'category_ids' => 'nullable|array',
             'category_ids.*' => 'exists:categories,id',
             'description' => 'nullable|string|max:2000',
-            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
+            'cover_image_url' => 'nullable|url|max:500',
         ], [
             'title.required' => 'Vui lòng nhập tên sách.',
             'author_name.required' => 'Vui lòng nhập tên tác giả.',
@@ -39,12 +40,15 @@ class BookSuggestionController extends Controller
             'description.max' => 'Mô tả không được quá 2000 ký tự.',
             'cover_image.image' => 'File tải lên phải là hình ảnh.',
             'cover_image.max' => 'Ảnh bìa không được lớn hơn 2MB.',
+            'cover_image_url.url' => 'Đường dẫn ảnh không hợp lệ.',
         ]);
 
-        // 2. Xử lý upload ảnh bìa
+        // 2. Xử lý upload ảnh bìa (ưu tiên file, sau đó là URL)
         $coverPath = null;
         if ($request->hasFile('cover_image')) {
             $coverPath = $request->file('cover_image')->store('books/covers', 'public');
+        } elseif ($request->filled('cover_image_url')) {
+            $coverPath = $request->cover_image_url;
         }
 
         // 3. Create slug
@@ -69,6 +73,6 @@ class BookSuggestionController extends Controller
 
         // 6. Redirect back to profile with success message
         return redirect()->route('profile', Auth::id())
-                        ->with('success', 'Đề xuất sách thành công! Vui lòng chờ Admin phê duyệt.');
+            ->with('success', 'Đề xuất sách thành công! Vui lòng chờ Admin phê duyệt.');
     }
 }
