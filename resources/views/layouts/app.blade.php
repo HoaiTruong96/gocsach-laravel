@@ -62,12 +62,66 @@
     @stack('scripts')
 
     <script>
+        // Mobile Menu Toggle
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        if(mobileMenuBtn) {
-            mobileMenuBtn.addEventListener('click', () => {
-                alert('Tính năng menu mobile sẽ được cập nhật!');
-            });
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuPanel = document.getElementById('mobile-menu-panel');
+        const closeMobileMenuBtn = document.getElementById('close-mobile-menu');
+        const mobileMenuBackdrop = document.getElementById('mobile-menu-backdrop');
+        const mobileMenuIcon = document.getElementById('mobile-menu-icon');
+
+        function openMobileMenu() {
+            if (mobileMenu && mobileMenuPanel) {
+                mobileMenu.classList.remove('hidden');
+                // Trigger animation
+                setTimeout(() => {
+                    mobileMenuPanel.classList.remove('translate-x-full');
+                }, 10);
+                // Change icon to X
+                if (mobileMenuIcon) {
+                    mobileMenuIcon.classList.remove('fa-bars');
+                    mobileMenuIcon.classList.add('fa-times');
+                }
+                // Prevent body scroll
+                document.body.style.overflow = 'hidden';
+            }
         }
+
+        function closeMobileMenu() {
+            if (mobileMenu && mobileMenuPanel) {
+                mobileMenuPanel.classList.add('translate-x-full');
+                // Wait for animation to complete before hiding
+                setTimeout(() => {
+                    mobileMenu.classList.add('hidden');
+                }, 300);
+                // Change icon back to bars
+                if (mobileMenuIcon) {
+                    mobileMenuIcon.classList.remove('fa-times');
+                    mobileMenuIcon.classList.add('fa-bars');
+                }
+                // Restore body scroll
+                document.body.style.overflow = '';
+            }
+        }
+
+        if (mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', openMobileMenu);
+        }
+
+        if (closeMobileMenuBtn) {
+            closeMobileMenuBtn.addEventListener('click', closeMobileMenu);
+        }
+
+        if (mobileMenuBackdrop) {
+            mobileMenuBackdrop.addEventListener('click', closeMobileMenu);
+        }
+
+        // Close on ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && mobileMenu && !mobileMenu.classList.contains('hidden')) {
+                closeMobileMenu();
+            }
+        });
     </script>
 </body>
 </html>
