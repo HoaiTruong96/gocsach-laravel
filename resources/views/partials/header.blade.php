@@ -229,12 +229,13 @@
                     </div>
                 @else
                     {{-- Guest --}}
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2 sm:gap-3">
                         <a href="{{ route('login') }}"
-                            class="text-gray-600 hover:text-brand-green font-bold text-sm px-3 py-2 rounded-lg hover:bg-gray-100 transition hidden sm:block">Đăng
-                            Nhập</a>
+                            class="bg-brand-green text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-full hover:bg-[#16271f] transition font-bold shadow-md text-sm flex items-center gap-2">
+                            <i class="fas fa-sign-in-alt text-xs"></i> <span class="hidden sm:inline">Đăng Nhập</span><span class="sm:hidden">Đăng nhập</span>
+                        </a>
                         <a href="{{ route('register') }}"
-                            class="bg-brand-green text-white px-5 py-2.5 rounded-full hover:bg-[#16271f] transition font-bold shadow-md text-sm flex items-center gap-2">
+                            class="hidden sm:flex items-center gap-2 text-gray-600 hover:text-brand-green font-bold text-sm px-3 py-2 rounded-lg border border-gray-200 hover:border-brand-green hover:bg-gray-50 transition">
                             <i class="fas fa-user-plus text-xs"></i> <span>Đăng Ký</span>
                         </a>
                     </div>
@@ -358,11 +359,11 @@
             @else
                 <div class="space-y-2">
                     <a href="{{ route('login') }}"
-                        class="block text-center px-4 py-2.5 border-2 border-brand-green text-brand-green rounded-lg font-bold hover:bg-brand-green hover:text-white transition">Đăng
-                        Nhập</a>
+                        class="block text-center px-4 py-2.5 bg-brand-green text-white rounded-lg font-bold hover:bg-[#16271f] transition shadow-md">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Đăng Nhập</a>
                     <a href="{{ route('register') }}"
-                        class="block text-center px-4 py-2.5 bg-brand-green text-white rounded-lg font-bold">Đăng Ký Miễn
-                        Phí</a>
+                        class="block text-center px-4 py-2.5 border-2 border-gray-200 text-gray-600 rounded-lg font-bold hover:border-brand-green hover:text-brand-green transition">
+                        <i class="fas fa-user-plus mr-2"></i>Đăng Ký Miễn Phí</a>
                 </div>
             @endauth
         </div>
