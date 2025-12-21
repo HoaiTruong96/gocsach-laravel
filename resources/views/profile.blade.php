@@ -18,8 +18,6 @@
         @if(session('success'))
             <div
                 class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg relative shadow-sm flex items-center gap-3">
-            <div
-                class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg relative shadow-sm flex items-center gap-3">
                 <i class="fas fa-check-circle text-xl"></i>
                 <span class="block sm:inline font-medium">{{ session('success') }}</span>
                 <button class="absolute top-0 bottom-0 right-0 px-4 py-3" onclick="this.parentElement.remove();">
@@ -214,24 +212,27 @@
                                             <div
                                                 class="w-2 h-2 bg-gray-800 transform rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2">
                                             </div>
-                                        </div>
+                                </div>
                                     </div>
                                 @endforeach
                             </div>
-
-                                @if($user->equippedFrame())
-                                    <button onclick="unequipFrame()"
-                                        class="mt-3 w-full text-[10px] text-gray-500 hover:text-red-500 transition py-1 rounded hover:bg-red-50 border border-transparent hover:border-red-200">
-                                        <i class="fas fa-times-circle"></i> Gỡ khung avatar
-                                    </button>
-                                @endif
-                            @else
-                                <!-- Empty State: Chưa có khung avatar -->
-                                <div class="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-                                    <i class="fas fa-image text-3xl text-gray-300 mb-2"></i>
-                                    <p class="text-xs text-gray-400">Bạn chưa sở hữu khung avatar nào</p>
-                                </div>
+                            @if($user->equippedFrame())
+                                <button onclick="unequipFrame()"
+                                    class="mt-3 w-full text-[10px] text-gray-500 hover:text-red-500 transition py-1 rounded hover:bg-red-50 border border-transparent hover:border-red-200">
+                                    <i class="fas fa-times-circle"></i> Gỡ khung avatar
+                                </button>
                             @endif
+                        </div>
+                    @else
+                        {{-- Empty State: Chưa có khung avatar (cho isOwnProfile) --}}
+                        <div class="mb-6 border-t border-b border-gray-100 py-4">
+                            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">
+                                <i class="fas fa-image mr-1"></i> Khung Avatar
+                            </h4>
+                            <div class="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                                <i class="fas fa-image text-3xl text-gray-300 mb-2"></i>
+                                <p class="text-xs text-gray-400">Bạn chưa sở hữu khung avatar nào</p>
+                            </div>
                         </div>
                     @endif
                     {{-- KẾT THÚC KHUNG AVATAR --}}
@@ -244,17 +245,10 @@
                         <p><i class="fas fa-sync-alt mr-2 w-4 text-center"></i> Cập nhật: <span
                                 class="text-gray-600">{{ $user->updated_at ? $user->updated_at->format('d/m/Y') : 'N/A' }}</span>
                         </p>
-                        <p><i class="far fa-calendar-alt mr-2 w-4 text-center"></i> Tham gia: <span
-                                class="text-gray-600">{{ $user->created_at ? $user->created_at->format('d/m/Y') : 'N/A' }}</span>
-                        </p>
-                        <p><i class="fas fa-sync-alt mr-2 w-4 text-center"></i> Cập nhật: <span
-                                class="text-gray-600">{{ $user->updated_at ? $user->updated_at->format('d/m/Y') : 'N/A' }}</span>
-                        </p>
                     </div>
 
                     <div class="space-y-2">
                         @if(Auth::check() && Auth::id() != $user->id)
-                            <button onclick="toggleFollow({{ $user->id }})" id="btn-follow"
                             <button onclick="toggleFollow({{ $user->id }})" id="btn-follow"
                                 class="w-full py-2.5 rounded-lg font-bold transition mb-4 shadow-md flex items-center justify-center gap-2 {{ Auth::user()->isFollowing($user->id) ? 'bg-gray-200 text-gray-800' : 'bg-blue-600 text-white hover:bg-blue-700' }}">
                                 <i class="fas {{ Auth::user()->isFollowing($user->id) ? 'fa-check' : 'fa-user-plus' }}"></i>
@@ -262,12 +256,9 @@
                                     {{ Auth::user()->isFollowing($user->id) ? 'Đang theo dõi' : 'Theo dõi' }}
                                 </span>
                             </button>
-                            </button>
                         @endif
 
                         @if(Auth::id() == $user->id)
-                            <button onclick="openEditProfileModal()"
-                                class="block w-full border border-brand-green text-brand-green py-2 rounded-lg font-bold text-sm hover:bg-brand-green hover:text-white transition">
                             <button onclick="openEditProfileModal()"
                                 class="block w-full border border-brand-green text-brand-green py-2 rounded-lg font-bold text-sm hover:bg-brand-green hover:text-white transition">
                                 <i class="fas fa-edit mr-1"></i> Chỉnh sửa hồ sơ

@@ -104,21 +104,21 @@
                                     {!! $review->content !!}
                                 </div>
 
-                                <div class="flex items-center gap-6 pt-4 border-t border-gray-50">
+                                <div class="flex items-center justify-between md:justify-start gap-4 md:gap-6 pt-4 border-t border-gray-50">
                                     {{-- Nút Like --}}
                                     <button 
                                         type="button"
                                         onclick="handleLike({{ $review->id }}, 'post')" 
                                         id="like-btn-post-{{ $review->id }}"
-                                        class="flex items-center gap-2 text-xs font-bold transition group {{ Auth::check() && $review->likes->where('user_id', Auth::id())->count() > 0 ? 'text-red-500' : 'text-gray-500 hover:text-red-500' }}">
+                                        class="flex items-center gap-1.5 md:gap-2 text-xs font-bold transition group {{ Auth::check() && $review->likes->where('user_id', Auth::id())->count() > 0 ? 'text-red-500' : 'text-gray-500 hover:text-red-500' }}">
                                         <i id="like-icon-post-{{ $review->id }}" class="{{ Auth::check() && $review->likes->where('user_id', Auth::id())->count() > 0 ? 'fas' : 'far' }} fa-heart text-sm group-hover:bg-red-50 p-1.5 rounded-full"></i> 
-                                        Thích (<span id="like-count-post-{{ $review->id }}">{{ $review->likes_count ?? 0 }}</span>)
+                                        <span class="hidden md:inline">Thích (</span><span id="like-count-post-{{ $review->id }}">{{ $review->likes_count ?? 0 }}</span><span class="hidden md:inline">)</span>
                                     </button>
 
                                     {{-- Nút Bình luận --}}
-                                    <button onclick="toggleComment({{ $review->id }})" class="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-blue-500 transition group">
+                                    <button onclick="toggleComment({{ $review->id }})" class="flex items-center gap-1.5 md:gap-2 text-xs font-bold text-gray-500 hover:text-blue-500 transition group">
                                         <i class="far fa-comment-dots text-sm group-hover:bg-blue-50 p-1.5 rounded-full"></i> 
-                                        Bình luận (<span id="comment-count-{{ $review->id }}">{{ $review->comments_count ?? 0 }}</span>)
+                                        <span class="hidden md:inline">Bình luận (</span><span id="comment-count-{{ $review->id }}">{{ $review->comments_count ?? 0 }}</span><span class="hidden md:inline">)</span>
                                     </button>
 
                                     {{-- Nút Lưu bài viết --}}
@@ -130,17 +130,27 @@
                                             type="button"
                                             onclick="handleSavePost({{ $review->id }})" 
                                             id="save-btn-{{ $review->id }}"
-                                            class="flex items-center gap-2 text-xs font-bold transition group {{ $isSaved ? 'text-yellow-500' : 'text-gray-500 hover:text-yellow-500' }}">
+                                            class="flex items-center gap-1.5 md:gap-2 text-xs font-bold transition group {{ $isSaved ? 'text-yellow-500' : 'text-gray-500 hover:text-yellow-500' }}">
                                             <i id="save-icon-{{ $review->id }}" class="{{ $isSaved ? 'fas' : 'far' }} fa-bookmark text-sm group-hover:bg-yellow-50 p-1.5 rounded-full"></i> 
-                                            <span id="save-text-{{ $review->id }}">{{ $isSaved ? 'Đã lưu' : 'Lưu' }}</span>
+                                            <span id="save-text-{{ $review->id }}" class="hidden md:inline">{{ $isSaved ? 'Đã lưu' : 'Lưu' }}</span>
                                         </button>
+
+                                        {{-- Nút Báo cáo bài viết --}}
+                                        @if($review->user_id !== Auth::id())
+                                            <button onclick="openReportModal({{ $review->id }}, 'post')"
+                                                class="flex items-center gap-1.5 md:gap-2 text-xs font-bold text-gray-500 hover:text-red-500 transition group ml-auto md:ml-auto"
+                                                title="Báo cáo bài viết này">
+                                                <i class="far fa-flag text-sm group-hover:bg-red-50 p-1.5 rounded-full"></i> 
+                                                <span class="hidden md:inline">Báo cáo</span>
+                                            </button>
+                                        @endif
                                     @else
                                         <button 
                                             type="button"
                                             onclick="showLoginToast('lưu')" 
-                                            class="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-yellow-500 transition group">
+                                            class="flex items-center gap-1.5 md:gap-2 text-xs font-bold text-gray-500 hover:text-yellow-500 transition group">
                                             <i class="far fa-bookmark text-sm group-hover:bg-yellow-50 p-1.5 rounded-full"></i> 
-                                            Lưu
+                                            <span class="hidden md:inline">Lưu</span>
                                         </button>
                                     @endauth
                                 </div>
@@ -206,6 +216,16 @@
                                                                     <i class="far fa-comment-dots"></i>
                                                                     <span>Trả lời ({{ $replies->count() }})</span>
                                                                 </button>
+                                                                {{-- Nút Báo cáo comment --}}
+                                                                @auth
+                                                                    @if($comment->user_id !== Auth::id())
+                                                                        <button onclick="openReportModal({{ $comment->id }}, 'comment')"
+                                                                            class="text-[10px] font-bold text-gray-400 hover:text-red-500 transition"
+                                                                            title="Báo cáo">
+                                                                            <i class="far fa-flag"></i>
+                                                                        </button>
+                                                                    @endif
+                                                                @endauth
                                                             </div>
 
                                                             {{-- REPLY SECTION --}}
@@ -229,12 +249,24 @@
                                                                                     </div>
                                                                                     <p class="text-gray-600 whitespace-pre-line">{{ $reply->content }}</p>
                                                                                 </div>
-                                                                                <button onclick="handleLike({{ $reply->id }}, 'comment')" 
-                                                                                        id="like-btn-comment-{{ $reply->id }}"
-                                                                                        class="text-[9px] font-bold text-gray-400 hover:text-red-500 mt-1 ml-1 flex gap-1 items-center transition {{ Auth::check() && $reply->likes->where('user_id', Auth::id())->count() > 0 ? 'text-red-500' : '' }}">
-                                                                                    <i id="like-icon-comment-{{ $reply->id }}" class="{{ Auth::check() && $reply->likes->where('user_id', Auth::id())->count() > 0 ? 'fas' : 'far' }} fa-heart"></i>
-                                                                                    <span id="like-count-comment-{{ $reply->id }}">{{ $reply->likes->count() }}</span>
-                                                                                </button>
+                                                                                <div class="flex items-center gap-2 ml-1 mt-1">
+                                                                                    <button onclick="handleLike({{ $reply->id }}, 'comment')" 
+                                                                                            id="like-btn-comment-{{ $reply->id }}"
+                                                                                            class="text-[9px] font-bold text-gray-400 hover:text-red-500 flex gap-1 items-center transition {{ Auth::check() && $reply->likes->where('user_id', Auth::id())->count() > 0 ? 'text-red-500' : '' }}">
+                                                                                        <i id="like-icon-comment-{{ $reply->id }}" class="{{ Auth::check() && $reply->likes->where('user_id', Auth::id())->count() > 0 ? 'fas' : 'far' }} fa-heart"></i>
+                                                                                        <span id="like-count-comment-{{ $reply->id }}">{{ $reply->likes->count() }}</span>
+                                                                                    </button>
+                                                                                    {{-- Nút Báo cáo Reply --}}
+                                                                                    @auth
+                                                                                        @if($reply->user_id !== Auth::id())
+                                                                                            <button onclick="openReportModal({{ $reply->id }}, 'comment')"
+                                                                                                class="text-[9px] font-bold text-gray-400 hover:text-red-500 transition"
+                                                                                                title="Báo cáo">
+                                                                                                <i class="far fa-flag"></i>
+                                                                                            </button>
+                                                                                        @endif
+                                                                                    @endauth
+                                                                                </div>
                                                                             </div>
                                                                         </div>
                                                                     @endforeach
