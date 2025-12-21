@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +12,9 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300&family=Nunito+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300&family=Nunito+Sans:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -39,13 +42,38 @@
     </script>
 
     <style>
-        body { background-color: #FAF9F6; color: #333; }
-        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #E5E7EB; border-radius: 20px; }
-        .custom-scrollbar:hover::-webkit-scrollbar-thumb { background-color: #3E5F4E; }
-        .hero-slider-wrapper { transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
+        body {
+            background-color: #FAF9F6;
+            color: #333;
+        }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #E5E7EB;
+            border-radius: 20px;
+        }
+
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+            background-color: #3E5F4E;
+        }
+
+        .hero-slider-wrapper {
+            transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        }
     </style>
 </head>
 
@@ -58,6 +86,9 @@
     </div>
 
     @include('partials.footer')
+
+    {{-- Report Modal (Available on all pages) --}}
+    @include('partials.report-modal')
 
     @stack('scripts')
 
@@ -124,4 +155,5 @@
         });
     </script>
 </body>
+
 </html>

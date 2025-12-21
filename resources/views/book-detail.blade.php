@@ -198,29 +198,39 @@
                                 {!! $mainPost->content !!}
                             </div>
 
-                            {{-- NÚT LIKE VÀ COMMENT CHO BÀI REVIEW --}}
-                            <div class="mt-8 pt-6 border-t border-gray-100">
-                                <div class="flex items-center gap-6">
-                                    {{-- Nút Like bài review --}}
-                                    <button 
-                                        type="button"
-                                        onclick="handleLike({{ $mainPost->id }}, 'post')" 
-                                        id="like-btn-post-{{ $mainPost->id }}"
-                                        class="flex items-center gap-2 text-sm font-bold transition {{ Auth::check() && $mainPost->likes->where('user_id', Auth::id())->count() > 0 ? 'text-red-500' : 'text-gray-400 hover:text-red-500' }}">
-                                        <i id="like-icon-post-{{ $mainPost->id }}" class="{{ Auth::check() && $mainPost->likes->where('user_id', Auth::id())->count() > 0 ? 'fas' : 'far' }} fa-heart text-lg"></i>
-                                        <span id="like-count-post-{{ $mainPost->id }}">{{ $mainPost->likes->count() }}</span> Thích
-                                    </button>
+                                    {{-- Nút Like và Comment cho bài review --}}
+                                    <div class="flex items-center gap-6">
+                                        {{-- Nút Like bài review --}}
+                                        <button 
+                                            type="button"
+                                            onclick="handleLike({{ $mainPost->id }}, 'post')" 
+                                            id="like-btn-post-{{ $mainPost->id }}"
+                                            class="flex items-center gap-2 text-sm font-bold transition {{ Auth::check() && $mainPost->likes->where('user_id', Auth::id())->count() > 0 ? 'text-red-500' : 'text-gray-400 hover:text-red-500' }}">
+                                            <i id="like-icon-post-{{ $mainPost->id }}" class="{{ Auth::check() && $mainPost->likes->where('user_id', Auth::id())->count() > 0 ? 'fas' : 'far' }} fa-heart text-lg"></i>
+                                            <span id="like-count-post-{{ $mainPost->id }}">{{ $mainPost->likes->count() }}</span> Thích
+                                        </button>
 
-                                    {{-- Nút mở khung bình luận --}}
-                                    <button 
-                                        type="button"
-                                        onclick="togglePostCommentSection({{ $mainPost->id }})" 
-                                        class="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-brand-green transition group">
-                                        <i class="far fa-comment-dots text-lg group-hover:scale-110 transition-transform"></i>
-                                        <span>Bình luận ({{ $mainPost->comments->whereNull('parent_id')->count() }})</span>
-                                        <i id="chevron-post-{{ $mainPost->id }}" class="fas fa-chevron-down text-xs ml-1 transition-transform duration-300"></i>
-                                    </button>
-                                </div>
+                                        {{-- Nút mở khung bình luận --}}
+                                        <button 
+                                            type="button"
+                                            onclick="togglePostCommentSection({{ $mainPost->id }})" 
+                                            class="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-brand-green transition group">
+                                            <i class="far fa-comment-dots text-lg group-hover:scale-110 transition-transform"></i>
+                                            <span>Bình luận ({{ $mainPost->comments->whereNull('parent_id')->count() }})</span>
+                                            <i id="chevron-post-{{ $mainPost->id }}" class="fas fa-chevron-down text-xs ml-1 transition-transform duration-300"></i>
+                                        </button>
+
+                                        {{-- Nút Báo cáo Bài viết --}}
+                                        @auth
+                                            @if($mainPost->user_id !== Auth::id())
+                                                <button onclick="openReportModal({{ $mainPost->id }}, 'post')"
+                                                    class="flex items-center gap-1 text-sm font-bold text-gray-400 hover:text-red-500 transition ml-auto"
+                                                    title="Báo cáo bài viết này">
+                                                    <i class="far fa-flag"></i> Báo cáo
+                                                </button>
+                                            @endif
+                                        @endauth
+                                    </div>
 
                                 {{-- KHUNG BÌNH LUẬN BÀI REVIEW (ẨN/HIỆN) --}}
                                 <div id="post-comment-section-{{ $mainPost->id }}" class="hidden mt-6 bg-gray-50/50 rounded-xl p-4 border border-gray-100 animate-fade-in">
@@ -296,6 +306,17 @@
                                                             <i class="far fa-comment-dots"></i>
                                                             <span>Trả lời ({{ $comment->replies->count() }})</span>
                                                         </button>
+
+                                                        {{-- Nút Báo cáo comment --}}
+                                                        @auth
+                                                            @if($comment->user_id !== Auth::id())
+                                                                <button onclick="openReportModal({{ $comment->id }}, 'comment')"
+                                                                    class="text-[10px] font-bold text-gray-400 hover:text-red-500 transition"
+                                                                    title="Báo cáo">
+                                                                    <i class="far fa-flag"></i>
+                                                                </button>
+                                                            @endif
+                                                        @endauth
                                                     </div>
 
                                                     {{-- Khung reply (ẩn) - dùng prefix pr- để phân biệt --}}
@@ -366,8 +387,7 @@
                                         @endforelse
                                     </div>
                                 </div>
-                            </div>
-                        </article>
+                            </article>
                     @else
                         {{-- Trường hợp chưa có review nào --}}
                         <div class="bg-white p-12 rounded-2xl text-center border border-dashed border-gray-300 shadow-sm mb-6">
@@ -437,7 +457,7 @@
                                 {{-- THẺ CHA COMMENT --}}
                                 <div id="comment-{{ $comment->id }}" class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition duration-300">
                                     <div class="flex items-start gap-4">
-                                        <div class="flex-shrink-0">
+                                        <div class="flex-shrink-0 h-fit">
                                             <a href="{{ route('public.profile', $comment->user->id ?? 0) }}">
                                                 @if($comment->user)
                                                     @include('partials.user-avatar-with-frame', [
@@ -450,11 +470,11 @@
                                                 @endif
                                             </a>
                                         </div>
-                                        <div class="flex-1">
+                                        <div class="flex-1 min-w-0">
                                             <div class="flex justify-between items-start mb-1">
                                                 <div>
                                                     <a href="{{ route('public.profile', $comment->user->id ?? 0) }}" class="hover:text-brand-green transition">
-                                                        <h4 class="font-bold text-gray-900 text-sm flex items-center">
+                                                        <h4 class="font-bold text-gray-900 text-sm flex items-center gap-1">
                                                             {{ $comment->user->name ?? 'Người dùng' }}
                                                             @if($comment->user)
                                                                 @include('partials.user-badges', ['user' => $comment->user, 'size' => 'xs'])
@@ -464,7 +484,7 @@
                                                     <span class="text-xs text-gray-400">{{ $comment->created_at->diffForHumans() }}</span>
                                                 </div>
                                             </div>
-                                            <div class="text-gray-700 text-sm leading-relaxed whitespace-pre-line mt-2">
+                                            <div class="text-gray-700 text-sm leading-relaxed whitespace-pre-line mt-2 break-words">
                                                 {{ $comment->content }}
                                             </div>
 
@@ -489,6 +509,17 @@
                                                     <span>Trả lời ({{ $replies->count() }})</span>
                                                     <i id="chevron-reply-{{ $comment->id }}" class="fas fa-chevron-down text-[10px] ml-1 transition-transform duration-300"></i>
                                                 </button>
+
+                                                {{-- Nút Báo cáo Comment --}}
+                                                @auth
+                                                    @if($comment->user_id !== Auth::id())
+                                                        <button onclick="openReportModal({{ $comment->id }}, 'comment')"
+                                                            class="flex items-center gap-1 text-xs font-bold text-gray-400 hover:text-red-500 transition ml-auto"
+                                                            title="Báo cáo bình luận này">
+                                                            <i class="far fa-flag"></i>
+                                                        </button>
+                                                    @endif
+                                                @endauth
                                             </div>
 
                                             {{-- KHUNG TRẢ LỜI (ẨN/HIỆN KHI CLICK) --}}
@@ -520,12 +551,24 @@
                                                                     <p class="text-[11px] text-gray-600">{{ $reply->content }}</p>
                                                                 </div>
                                                                 {{-- Like cho reply --}}
-                                                                <button onclick="handleLike({{ $reply->id }}, 'comment')" 
-                                                                        id="like-btn-comment-{{ $reply->id }}"
-                                                                        class="text-[9px] font-bold ml-2 mt-1 flex items-center gap-1 {{ Auth::check() && $reply->likes->where('user_id', Auth::id())->count() > 0 ? 'text-red-500' : 'text-gray-400 hover:text-red-500' }} transition">
-                                                                    <i id="like-icon-comment-{{ $reply->id }}" class="{{ Auth::check() && $reply->likes->where('user_id', Auth::id())->count() > 0 ? 'fas' : 'far' }} fa-heart"></i>
-                                                                    <span id="like-count-comment-{{ $reply->id }}">{{ $reply->likes->count() }}</span>
-                                                                </button>
+                                                                <div class="flex items-center gap-2 ml-2 mt-1">
+                                                                    <button onclick="handleLike({{ $reply->id }}, 'comment')" 
+                                                                            id="like-btn-comment-{{ $reply->id }}"
+                                                                            class="text-[9px] font-bold flex items-center gap-1 {{ Auth::check() && $reply->likes->where('user_id', Auth::id())->count() > 0 ? 'text-red-500' : 'text-gray-400 hover:text-red-500' }} transition">
+                                                                        <i id="like-icon-comment-{{ $reply->id }}" class="{{ Auth::check() && $reply->likes->where('user_id', Auth::id())->count() > 0 ? 'fas' : 'far' }} fa-heart"></i>
+                                                                        <span id="like-count-comment-{{ $reply->id }}">{{ $reply->likes->count() }}</span>
+                                                                    </button>
+                                                                    {{-- Nút Báo cáo Reply --}}
+                                                                    @auth
+                                                                        @if($reply->user_id !== Auth::id())
+                                                                            <button onclick="openReportModal({{ $reply->id }}, 'comment')"
+                                                                                class="text-[9px] font-bold text-gray-400 hover:text-red-500 transition"
+                                                                                title="Báo cáo">
+                                                                                <i class="far fa-flag"></i>
+                                                                            </button>
+                                                                        @endif
+                                                                    @endauth
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     @empty

@@ -266,11 +266,21 @@ class HomeController extends Controller
                 \Log::error("Lỗi gửi thông báo: " . $e->getMessage());
             }
         }
+
+        $equippedFrame = $user->equippedFrame();
+        $frameUrl = null;
+        if ($equippedFrame) {
+            $frameUrl = \Illuminate\Support\Str::startsWith($equippedFrame->frame_image, 'http')
+                ? $equippedFrame->frame_image
+                : asset('storage/' . $equippedFrame->frame_image);
+        }
+
         return response()->json([
             'success' => true,
             'reply_id' => $reply->id,
             'user_name' => $user->name,
             'user_avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random',
+            'user_frame' => $frameUrl,
             'content' => $reply->content,
             'time' => 'Vừa xong'
         ]);
@@ -310,18 +320,72 @@ class HomeController extends Controller
         $unreadCount = $user->unreadNotifications->count();
 
         $formattedNotifications = $notifications->map(function ($notification) {
-            $isSystemNotification = isset($notification->data['icon']);
+            $dbType = $notification->type;
+            $dataType = $notification->data['type'] ?? '';
+
+            // Danh sách các class Notification là System
+            $systemClasses = [
+                'App\Notifications\NewReportNotification',
+                'App\Notifications\NewBookRequestNotification',
+                'App\Notifications\BookApprovedNotification',
+                'App\Notifications\AdminNewPostNotification'
+            ];
+
+            $systemTypes = ['new_report', 'book_request', 'book_approved', 'admin_new_post'];
+
+            // Check nếu là system notification
+            $isSystemNotification = in_array($dbType, $systemClasses) || in_array($dataType, $systemTypes) || isset($notification->data['icon']);
+
+            // Xác định Type chuẩn
+            $type = $dataType ?: match ($dbType) {
+                'App\Notifications\NewReportNotification' => 'new_report',
+                'App\Notifications\NewBookRequestNotification' => 'book_request',
+                'App\Notifications\BookApprovedNotification' => 'book_approved',
+                'App\Notifications\AdminNewPostNotification' => 'admin_new_post',
+                default => ''
+            };
+
+            // Mặc định cho User notification
+            $title = $notification->data['title'] ?? '';
+            $icon = $notification->data['icon'] ?? null;
+            $color = $notification->data['color'] ?? 'text-green-600';
+
+            // Nếu là System thì set cứng Icon/Title theo Type
+            if ($isSystemNotification) {
+                switch ($type) {
+                    case 'new_report':
+                        $icon = 'fas fa-flag';
+                        $title = 'Báo cáo mới';
+                        $color = 'text-yellow-600';
+                        break;
+                    case 'book_request':
+                        $icon = 'fas fa-book';
+                        $title = 'Gợi ý sách mới';
+                        $color = 'text-yellow-600';
+                        break;
+                    case 'book_approved':
+                        $icon = 'fas fa-check-circle';
+                        $title = 'Sách được duyệt';
+                        $color = 'text-green-600';
+                        break;
+                    case 'admin_new_post':
+                        $icon = 'fas fa-file-contract';
+                        $title = 'Bài đăng mới ';
+                        $color = 'text-red-600';
+                        break;
+                }
+            }
 
             return [
                 'id' => $notification->id,
                 'is_system' => $isSystemNotification,
-                'title' => $notification->data['title'] ?? 'Thông báo hệ thống',
-                'icon' => $notification->data['icon'] ?? null,
-                'color' => $notification->data['color'] ?? 'text-green-600',
+                'title' => $title,
+                'icon' => $icon,
+                'color' => $color,
                 'user_avatar' => $notification->data['user_avatar'] ?? 'https://ui-avatars.com/api/?name=User',
-                'user_name' => $notification->data['user_name'] ?? 'Ai đó',
+                'user_name' => $notification->data['user_name'] ?? '', // Bỏ default "Ai đó" để handle ở fontend nếu cần, hoặc để rỗng
                 'message' => $notification->data['message'] ?? 'đã tương tác với bạn',
-                'post_title' => \Str::limit($notification->data['post_title'] ?? '', 50),
+                'post_title' => \Str::limit($notification->data['post_title'] ?? ($notification->data['book_title'] ?? ''), 50),
                 'time' => $notification->created_at->diffForHumans(),
                 'read_at' => $notification->read_at,
                 'link' => route('notification.read', $notification->id)
