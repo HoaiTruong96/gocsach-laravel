@@ -97,7 +97,7 @@ class ProfileController extends Controller
         $totalFollowing = $user->followings()->count();
         $totalFollowers = $user->followers()->count();
 
-        // 3. Lấy danh sách bài Review (CÓ PHÂN QUYỀN)
+        // 3. Lấy danh sách bài Review (CÓ PHÂN QUYỀN) - PHÂN TRANG 10 BÀI
         $reviewsQuery = $user->posts()
             ->with('book') // Lấy kèm thông tin sách
             ->withCount(['likes', 'comments'])
@@ -110,7 +110,8 @@ class ProfileController extends Controller
         }
         // Nếu là chủ nhà -> Xem hết (pending, published, rejected)
 
-        $reviews = $reviewsQuery->paginate(10);
+        // Phân trang 10 bài/trang
+        $reviews = $reviewsQuery->paginate(10, ['*'], 'review_page')->withQueryString();
 
         // 4. Lấy sách trong tủ
         $query = $user->bookshelves()->orderByPivot('created_at', 'desc');
@@ -127,15 +128,17 @@ class ProfileController extends Controller
 
         $myBooks = $query->take(12)->get();
 
-        // 5. Lấy danh sách sách đề xuất (do user tạo)
+        // 5. Lấy danh sách sách đề xuất (do user tạo) - PHÂN TRANG 12 SÁCH
         // Chỉ hiển thị cho chính chủ profile
         $suggestedBooks = collect();
+        $totalSuggestedBooks = 0;
         $savedPosts = collect();
         if (Auth::id() == $user->id) {
+            $totalSuggestedBooks = Book::where('created_by_user_id', $user->id)->count();
+            // Phân trang 12 sách/trang
             $suggestedBooks = Book::where('created_by_user_id', $user->id)
                 ->orderBy('created_at', 'desc')
-                ->take(12)
-                ->get();
+                ->paginate(12, ['*'], 'book_page')->withQueryString();
             
             // 6. Lấy danh sách bài viết đã lưu
             $savedPosts = $user->savedPosts()
@@ -153,9 +156,60 @@ class ProfileController extends Controller
             'savedPosts' => $savedPosts,
             'totalBooks' => $totalBooks,
             'totalReviews' => $totalReviews,
+            'totalSuggestedBooks' => $totalSuggestedBooks,
             'totalFollowing' => $totalFollowing,
             'totalFollowers' => $totalFollowers,
             'isOwnProfile' => Auth::id() == $user->id,
+        ]);
+    }
+
+    /**
+     * Trang xem tất cả bài review của user
+     */
+    public function allReviews($id)
+    {
+        $user = User::with('activeBadges')->findOrFail($id);
+
+        // Lấy danh sách bài Review (CÓ PHÂN QUYỀN)
+        $reviewsQuery = $user->posts()
+            ->with('book')
+            ->withCount(['likes', 'comments'])
+            ->orderBy('created_at', 'desc');
+
+        // Nếu không phải chủ profile -> Chỉ lấy bài đã duyệt
+        if (Auth::id() != $user->id) {
+            $reviewsQuery->where('status', 'published');
+        }
+
+        $reviews = $reviewsQuery->paginate(10);
+
+        return view('profile-reviews', [
+            'user' => $user,
+            'reviews' => $reviews,
+            'isOwnProfile' => Auth::id() == $user->id,
+        ]);
+    }
+
+    /**
+     * Trang xem tất cả sách đề xuất của user
+     */
+    public function allSuggestedBooks($id)
+    {
+        $user = User::with('activeBadges')->findOrFail($id);
+
+        // Chỉ cho phép chính chủ xem trang này
+        if (Auth::id() != $user->id) {
+            return redirect()->route('profile', $id)->with('error', 'Bạn không có quyền xem trang này.');
+        }
+
+        $suggestedBooks = Book::where('created_by_user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(12);
+
+        return view('profile-suggested-books', [
+            'user' => $user,
+            'suggestedBooks' => $suggestedBooks,
+            'isOwnProfile' => true,
         ]);
     }
 
