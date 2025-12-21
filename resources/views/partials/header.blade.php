@@ -8,8 +8,6 @@
             </a>
             <a href="mailto:contact@gocsach.com"
                 class="hover:text-brand-accent cursor-pointer transition flex items-center">
-            <a href="mailto:contact@gocsach.com"
-                class="hover:text-brand-accent cursor-pointer transition flex items-center">
                 <i class="fas fa-envelope mr-2"></i> contact@gocsach.com
             </a>
         </div>

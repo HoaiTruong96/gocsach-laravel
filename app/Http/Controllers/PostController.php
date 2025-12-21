@@ -12,17 +12,12 @@ use App\Notifications\NewLikeNotification;
 use App\Notifications\PostCommentedNotification;
 use App\Notifications\CommentLikedNotification;
 
-class PostController extends Controller
-{
-    public function store(Request $request)
-    {
+class PostController extends Controlle
     public function store(Request $request)
     {
         // 1. Validate dữ liệu
         $request->validate([
             'book_id' => 'required|exists:books,id',
-            'rating' => 'required|integer|min:1|max:5',
-            'title' => 'required|string|max:255',
             'rating' => 'required|integer|min:1|max:5',
             'title' => 'required|string|max:255',
             'content' => 'required|min:10',
@@ -54,12 +49,7 @@ class PostController extends Controller
 
         // 5. Lưu vào Database
         $post = Post::create([
-            'user_id' => Auth::id(),
-            'book_id' => $request->input('book_id'),
-            'title' => $request->input('title'),
-            'slug' => $slug,
-            'rating' => $request->input('rating'),
-            'content' => $request->input('content'),
+            
             'user_id' => Auth::id(),
             'book_id' => $request->input('book_id'),
             'title' => $request->input('title'),
@@ -67,7 +57,7 @@ class PostController extends Controller
             'rating' => $request->input('rating'),
             'content' => $request->input('content'),
             'thumbnail' => $thumbnailPath,
-            'status' => 'pending', // Chờ Admin duyệt
+            'status' => $status,
         ]);
 
         // 6. Cập nhật tiến độ Thử Thách (Chỉ khi bài đã được duyệt - admin)
@@ -92,8 +82,6 @@ class PostController extends Controller
             return response()->json(['error' => 'Bạn cần đăng nhập!'], 401);
 
         $post = Post::find($id);
-        if (!$post)
-            return response()->json(['error' => 'Bài viết không tồn tại!'], 404);
         if (!$post)
             return response()->json(['error' => 'Bài viết không tồn tại!'], 404);
 
