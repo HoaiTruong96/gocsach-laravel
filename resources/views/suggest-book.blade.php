@@ -99,28 +99,63 @@
                         <label class="block text-sm font-bold text-gray-700 mb-2">
                             Ảnh bìa sách <span class="text-gray-400 font-normal">(Tùy chọn)</span>
                         </label>
-                        <div class="flex items-start gap-4">
-                            {{-- Preview Area --}}
-                            <div class="relative w-24 h-32 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden group" id="cover-preview-container">
-                                <img id="cover-preview" class="absolute inset-0 w-full h-full object-cover hidden">
-                                <div id="cover-placeholder" class="text-center">
-                                    <i class="fas fa-image text-2xl text-gray-400"></i>
-                                    <p class="text-[10px] text-gray-400 mt-1">150×225</p>
+                        
+                        {{-- Tabs chọn hình thức upload --}}
+                        <div class="flex gap-2 mb-3">
+                            <button type="button" onclick="showCoverTab('file')" id="cover-tab-file"
+                                class="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-600 font-bold transition">
+                                <i class="fas fa-upload mr-1"></i> Upload File
+                            </button>
+                            <button type="button" onclick="showCoverTab('url')" id="cover-tab-url"
+                                class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600 font-bold transition">
+                                <i class="fas fa-link mr-1"></i> Nhập URL
+                            </button>
+                        </div>
+
+                        {{-- Upload File --}}
+                        <div id="cover-upload-file">
+                            <div class="flex items-start gap-4">
+                                {{-- Preview Area --}}
+                                <div class="relative w-24 h-32 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden group" id="cover-preview-container">
+                                    <img id="cover-preview" class="absolute inset-0 w-full h-full object-cover hidden">
+                                    <div id="cover-placeholder" class="text-center">
+                                        <i class="fas fa-image text-2xl text-gray-400"></i>
+                                        <p class="text-[10px] text-gray-400 mt-1">150×225</p>
+                                    </div>
+                                </div>
+                                
+                                {{-- Upload Button --}}
+                                <div class="flex-1">
+                                    <label for="cover-upload" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition text-sm font-medium text-gray-600">
+                                        <i class="fas fa-cloud-upload-alt"></i> Chọn ảnh bìa
+                                    </label>
+                                    <input id="cover-upload" name="cover_image" type="file" class="hidden" accept=".jpg,.jpeg,.png,.webp,.gif,.svg" onchange="previewCover(event)">
+                                    <p class="text-xs text-gray-400 mt-2">JPG, PNG, WebP, GIF, SVG (Tối đa 2MB)</p>
+                                    
+                                    {{-- Nút xóa ảnh --}}
+                                    <button type="button" id="remove-cover" onclick="removeCover()" class="hidden text-xs text-red-500 hover:underline mt-2">
+                                        <i class="fas fa-times mr-1"></i> Xóa ảnh
+                                    </button>
                                 </div>
                             </div>
+                        </div>
+
+                        {{-- Nhập URL --}}
+                        <div id="cover-upload-url" class="hidden">
+                            <input type="url" name="cover_image_url" id="cover-url-input"
+                                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition"
+                                placeholder="https://example.com/book-cover.jpg"
+                                oninput="previewCoverUrl(this.value)">
+                            <p class="text-xs text-gray-400 mt-2">Dán đường dẫn trực tiếp đến file ảnh (.jpg, .png, .gif,...)</p>
                             
-                            {{-- Upload Button --}}
-                            <div class="flex-1">
-                                <label for="cover-upload" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2. 5 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition text-sm font-medium text-gray-600">
-                                    <i class="fas fa-cloud-upload-alt"></i> Chọn ảnh bìa
-                                </label>
-                                <input id="cover-upload" name="cover_image" type="file" class="hidden" accept="image/*" onchange="previewCover(event)">
-                                <p class="text-xs text-gray-400 mt-2">PNG, JPG, WEBP (Tối đa 2MB)</p>
-                                
-                                {{-- Nút xóa ảnh --}}
-                                <button type="button" id="remove-cover" onclick="removeCover()" class="hidden text-xs text-red-500 hover:underline mt-2">
-                                    <i class="fas fa-times mr-1"></i> Xóa ảnh
-                                </button>
+                            {{-- Preview URL --}}
+                            <div id="url-cover-preview-container" class="hidden mt-3">
+                                <div class="relative rounded-lg overflow-hidden border border-gray-200 w-24 h-32 bg-gray-100 flex items-center justify-center">
+                                    <img id="url-cover-preview" src="" class="w-full h-full object-cover">
+                                    <button type="button" onclick="clearCoverUrlPreview()" class="absolute top-1 right-1 bg-white text-red-500 rounded-full w-5 h-5 flex items-center justify-center shadow-md hover:bg-red-50 text-xs">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -178,6 +213,9 @@
                     document.getElementById('cover-preview').classList.remove('hidden');
                     document.getElementById('cover-placeholder').classList.add('hidden');
                     document.getElementById('remove-cover').classList.remove('hidden');
+                    // Xóa URL input khi chọn file
+                    document.getElementById('cover-url-input').value = '';
+                    clearCoverUrlPreview();
                 }
                 reader.readAsDataURL(file);
             }
@@ -189,6 +227,49 @@
             document.getElementById('cover-preview').classList.add('hidden');
             document.getElementById('cover-placeholder').classList.remove('hidden');
             document.getElementById('remove-cover').classList.add('hidden');
+        }
+
+        // Chuyển tab upload cover
+        function showCoverTab(type) {
+            const fileTab = document.getElementById('cover-tab-file');
+            const urlTab = document.getElementById('cover-tab-url');
+            const fileDiv = document.getElementById('cover-upload-file');
+            const urlDiv = document.getElementById('cover-upload-url');
+
+            if (type === 'file') {
+                fileTab.classList.remove('bg-gray-100', 'text-gray-600');
+                fileTab.classList.add('bg-blue-100', 'text-blue-600');
+                urlTab.classList.remove('bg-blue-100', 'text-blue-600');
+                urlTab.classList.add('bg-gray-100', 'text-gray-600');
+                fileDiv.classList.remove('hidden');
+                urlDiv.classList.add('hidden');
+            } else {
+                urlTab.classList.remove('bg-gray-100', 'text-gray-600');
+                urlTab.classList.add('bg-blue-100', 'text-blue-600');
+                fileTab.classList.remove('bg-blue-100', 'text-blue-600');
+                fileTab.classList.add('bg-gray-100', 'text-gray-600');
+                urlDiv.classList.remove('hidden');
+                fileDiv.classList.add('hidden');
+            }
+        }
+
+        // Preview URL ảnh
+        function previewCoverUrl(url) {
+            if (url) {
+                document.getElementById('url-cover-preview').src = url;
+                document.getElementById('url-cover-preview-container').classList.remove('hidden');
+                // Xóa file input khi nhập URL
+                removeCover();
+            } else {
+                clearCoverUrlPreview();
+            }
+        }
+
+        // Xóa URL preview
+        function clearCoverUrlPreview() {
+            document.getElementById('cover-url-input').value = '';
+            document.getElementById('url-cover-preview').src = '';
+            document.getElementById('url-cover-preview-container').classList.add('hidden');
         }
     </script>
 @endsection

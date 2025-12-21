@@ -112,6 +112,23 @@ class HomeController extends Controller
             $randomBook->avg_rating = round($randomBook->posts_avg_rating ?? 0, 1);
         }
 
+        // --- BÀI REVIEW NỔI BẬT (FEATURED POSTS) ---
+        // Mới nhất - sắp xếp theo ngày tạo
+        $latestPosts = Post::with(['user', 'book'])
+            ->where('status', 'published')
+            ->whereNotNull('thumbnail')
+            ->orderByDesc('created_at')
+            ->take(8)
+            ->get();
+
+        // Hot nhất - sắp xếp theo lượt xem
+        $hotPosts = Post::with(['user', 'book'])
+            ->where('status', 'published')
+            ->whereNotNull('thumbnail')
+            ->orderByDesc('view_count')
+            ->take(8)
+            ->get();
+
         // Truyền biến $latestReviews vào view
         return view('home', compact(
             'heroSlides',
@@ -122,7 +139,9 @@ class HomeController extends Controller
             'sidebarArticles',
             'dailyQuote',
             'communityStats',
-            'randomBook'
+            'randomBook',
+            'latestPosts',
+            'hotPosts'
         ));
     }
 

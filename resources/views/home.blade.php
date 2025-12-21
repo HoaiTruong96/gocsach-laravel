@@ -3,7 +3,7 @@
 @section('title', 'Trang Chủ - Góc Sách')
 
 @section('content')
-    <section id="hero-carousel" class="relative text-white py-12 lg:py-16 overflow-hidden bg-[#2A483A] group">
+    <section id="hero-carousel" class="relative text-white py-8 sm:py-12 lg:py-16 overflow-hidden bg-[#2A483A] group">
         {{-- Background Pattern --}}
         <div class="absolute inset-0 opacity-10 pointer-events-none"
             style="background-image: url('https://www.transparenttextures.com/patterns/cubes.png');"></div>
@@ -26,7 +26,7 @@
                         {{-- 1. Ảnh Bìa Sách --}}
                         <div class="w-full md:w-5/12 flex justify-center md:justify-end perspective-1000">
                             <div
-                                class="relative w-48 h-72 md:w-56 md:h-80 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-r-lg rounded-l-sm transform rotate-y-12 hover:rotate-y-0 hover:scale-105 transition-all duration-700 cursor-pointer group/book">
+                                class="relative w-36 h-52 sm:w-48 sm:h-72 md:w-56 md:h-80 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-r-lg rounded-l-sm transform rotate-y-12 hover:rotate-y-0 hover:scale-105 transition-all duration-700 cursor-pointer group/book">
                                 <div
                                     class="absolute inset-0 bg-white/10 opacity-0 group-hover/book:opacity-20 transition-opacity z-20">
                                 </div>
@@ -56,7 +56,7 @@
                                 </span>
                             </div>
 
-                            <h1 class="text-3xl md:text-5xl font-bold leading-tight font-serif text-brand-beige drop-shadow-md">
+                            <h1 class="text-2xl sm:text-3xl md:text-5xl font-bold leading-tight font-serif text-brand-beige drop-shadow-md">
                                 {{ is_object($slide) ? $slide->title : $slide['title'] }}
                             </h1>
 
@@ -83,7 +83,7 @@
                                 </span>
                             </div>
 
-                            <p class="text-gray-200 text-lg font-light italic max-w-2xl leading-relaxed drop-shadow">
+                            <p class="text-gray-200 text-base sm:text-lg font-light italic max-w-2xl leading-relaxed drop-shadow line-clamp-3 sm:line-clamp-none">
                                 {{ is_object($slide) ? ($slide->description ?? $slide->desc ?? '') : $slide['desc'] }}
                             </p>
 
@@ -104,11 +104,11 @@
 
         {{-- Nút Điều Hướng --}}
         <button id="heroPrevBtn"
-            class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/20 hover:bg-brand-accent/80 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 hover:scale-110 z-20 cursor-pointer">
+            class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/30 sm:bg-black/20 hover:bg-brand-accent/80 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-70 sm:opacity-0 group-hover:opacity-100 hover:scale-110 z-20 cursor-pointer">
             <i class="fas fa-chevron-left text-xl"></i>
         </button>
         <button id="heroNextBtn"
-            class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/20 hover:bg-brand-accent/80 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 hover:scale-110 z-20 cursor-pointer">
+            class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/30 sm:bg-black/20 hover:bg-brand-accent/80 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-70 sm:opacity-0 group-hover:opacity-100 hover:scale-110 z-20 cursor-pointer">
             <i class="fas fa-chevron-right text-xl"></i>
         </button>
 
@@ -123,11 +123,11 @@
     </section>
 
     {{-- MAIN LAYOUT --}}
-    <main class="container mx-auto px-4 py-12">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+    <main class="container mx-auto px-3 sm:px-4 py-8 sm:py-12">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
 
             {{-- [CỘT TRÁI - CHIẾM 8 PHẦN] --}}
-            <div class="lg:col-span-8 space-y-16">
+            <div class="lg:col-span-8 space-y-10 sm:space-y-16">
 
                 {{-- 1. TẠP CHÍ ĐỌC --}}
                 <section class="relative">
@@ -143,7 +143,7 @@
                                 <i class="fas fa-newspaper text-white text-lg"></i>
                             </div>
                             <div>
-                                <h2 class="text-2xl md:text-3xl font-bold text-gray-800 font-serif flex items-center gap-3">
+                                <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 font-serif flex items-center gap-2 sm:gap-3">
                                     Tạp Chí Đọc
                                     <span
                                         class="text-xs bg-brand-green/10 text-brand-green px-2.5 py-1 rounded-full font-bold">FEATURED</span>
@@ -226,9 +226,215 @@
                     </div>
                 </section>
 
+                {{-- 1.5. BÀI REVIEW SÁCH --}}
+                @if((isset($latestPosts) && $latestPosts->count() > 0) || (isset($hotPosts) && $hotPosts->count() > 0))
+                <section id="featured-reviews" class="relative group/slider bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 rounded-2xl p-4 sm:p-6 border border-rose-100 shadow-sm">
+                    {{-- Decorative --}}
+                    <div class="absolute -top-4 -right-4 w-24 h-24 bg-rose-200/30 rounded-full blur-2xl pointer-events-none"></div>
+                    <div class="absolute -bottom-4 -left-4 w-20 h-20 bg-purple-200/30 rounded-full blur-xl pointer-events-none"></div>
+
+                    {{-- Header với Tabs --}}
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 relative gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-500 rounded-xl flex items-center justify-center shadow-md">
+                                <i class="fas fa-pen-fancy text-white"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-lg sm:text-xl font-bold text-gray-800 font-serif">
+                                    Bài Review Sách
+                                </h2>
+                                <p class="text-xs text-gray-500">Những bài review hay nhất từ cộng đồng</p>
+                            </div>
+                        </div>
+                        
+                        {{-- Tabs + Xem tất cả --}}
+                        <div class="flex items-center gap-3">
+                            <div class="bg-rose-100 rounded-full p-1 flex text-xs font-bold">
+                                <button onclick="switchReviewTab('latest')" id="tab-review-latest" 
+                                    class="px-3 sm:px-4 py-1.5 rounded-full transition-all duration-300 bg-white text-rose-600 shadow-sm">
+                                    <i class="fas fa-clock mr-1"></i>Mới nhất
+                                </button>
+                                <button onclick="switchReviewTab('hot')" id="tab-review-hot" 
+                                    class="px-3 sm:px-4 py-1.5 rounded-full transition-all duration-300 text-gray-500 hover:text-rose-500">
+                                    <i class="fas fa-fire mr-1"></i>Hot nhất
+                                </button>
+                            </div>
+                            <a href="{{ route('books.search') }}"
+                                class="text-xs font-bold px-3 py-1.5 bg-rose-500 text-white hover:bg-rose-600 rounded-full transition shadow-md flex items-center gap-1">
+                                <span class="hidden sm:inline">Xem tất cả</span>
+                                <i class="fas fa-arrow-right text-[10px]"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    {{-- Slider Container cho MỚI NHẤT --}}
+                    <div id="reviews-latest-container" class="relative px-2 group/slider">
+                        {{-- Prev Button --}}
+                        <button class="btn-prev-reviews absolute left-0 top-1/2 -translate-y-1/2 -ml-1 sm:-ml-3 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-white hover:bg-rose-500 hover:scale-110 transition-all opacity-100 sm:opacity-0 group-hover/slider:opacity-100 duration-300">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+
+                        <div class="slider-reviews flex gap-4 sm:gap-5 overflow-x-auto scroll-smooth no-scrollbar pb-4">
+                            @foreach($latestPosts as $index => $post)
+                                @php
+                                    $thumbnailUrl = !empty($post->thumbnail)
+                                        ? (str_starts_with($post->thumbnail, 'http') ? $post->thumbnail : asset('storage/' . $post->thumbnail))
+                                        : ($post->book && $post->book->cover_image 
+                                            ? (str_starts_with($post->book->cover_image, 'http') ? $post->book->cover_image : asset('storage/' . $post->book->cover_image))
+                                            : 'https://via.placeholder.com/300x200?text=No+Image');
+                                    $rating = $post->rating ?? 0;
+                                    $fullStars = floor($rating);
+                                    $hasHalfStar = ($rating - $fullStars) >= 0.5;
+                                    $emptyStars = 5 - $fullStars - ($hasHalfStar ? 1 : 0);
+                                    $isNew = $index < 3; // 3 bài đầu hiện NEW
+                                @endphp
+
+                                <div class="w-64 sm:w-72 md:w-80 flex-shrink-0 group">
+                                    <a href="{{ $post->book ? route('book.reviews', $post->book->slug) . '#post-' . $post->id : '#' }}" class="block">
+                                        <div class="relative w-full aspect-[16/10] rounded-xl overflow-hidden shadow-lg mb-3 bg-gradient-to-br from-gray-100 to-gray-200 transform transition-all duration-500 group-hover:scale-[1.02] group-hover:shadow-xl">
+                                            <img src="{{ $thumbnailUrl }}" alt="{{ $post->title }}"
+                                                class="w-full h-full object-cover transition duration-700 group-hover:brightness-110"
+                                                onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+
+                                            {{-- NEW Badge --}}
+                                            @if($isNew)
+                                            <div class="absolute top-3 left-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1 animate-pulse">
+                                                <i class="fas fa-sparkles text-[8px]"></i> NEW
+                                            </div>
+                                            @else
+                                            <div class="absolute top-3 left-3 bg-black/50 backdrop-blur-sm text-white text-[10px] font-medium px-2.5 py-1 rounded-full flex items-center gap-1">
+                                                <i class="far fa-eye"></i>
+                                                <span>{{ number_format($post->view_count ?? 0) }}</span>
+                                            </div>
+                                            @endif
+
+                                            @if($rating > 0)
+                                            <div class="absolute top-3 right-3 bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1">
+                                                <i class="fas fa-star text-yellow-400"></i>
+                                                <span>{{ number_format($rating, 1) }}</span>
+                                            </div>
+                                            @endif
+
+                                            <div class="absolute bottom-0 left-0 right-0 p-4">
+                                                @if($rating > 0)
+                                                <div class="flex text-yellow-400 text-xs mb-2">
+                                                    @for($i = 0; $i < $fullStars; $i++)<i class="fas fa-star"></i>@endfor
+                                                    @if($hasHalfStar)<i class="fas fa-star-half-alt"></i>@endif
+                                                    @for($i = 0; $i < $emptyStars; $i++)<i class="far fa-star opacity-50"></i>@endfor
+                                                </div>
+                                                @endif
+                                                <h3 class="text-white font-bold text-sm leading-snug line-clamp-2 drop-shadow-md">{{ $post->title }}</h3>
+                                                <div class="flex items-center gap-2 mt-2">
+                                                    <img src="{{ $post->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($post->user->name ?? 'User') }}" class="w-5 h-5 rounded-full border border-white/50 object-cover">
+                                                    <span class="text-white/80 text-[10px] font-medium truncate">{{ $post->user->name ?? 'Ẩn danh' }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                    @if($post->book)
+                                    <div class="px-1">
+                                        <p class="text-[11px] text-gray-500 truncate flex items-center gap-1">
+                                            <i class="fas fa-book text-[9px] text-rose-400"></i>
+                                            <a href="{{ route('detail', $post->book->slug ?? $post->book->id) }}" class="hover:text-rose-500 transition">{{ $post->book->title }}</a>
+                                        </p>
+                                    </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <button class="btn-next-reviews absolute right-0 top-1/2 -translate-y-1/2 -mr-1 sm:-mr-3 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-white hover:bg-rose-500 hover:scale-110 transition-all opacity-100 sm:opacity-0 group-hover/slider:opacity-100 duration-300">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+
+                    {{-- Slider Container cho HOT NHẤT (ẩn ban đầu) --}}
+                    <div id="reviews-hot-container" class="relative px-2 group/slider hidden">
+                        <button class="btn-prev-reviews absolute left-0 top-1/2 -translate-y-1/2 -ml-1 sm:-ml-3 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-white hover:bg-rose-500 hover:scale-110 transition-all opacity-100 sm:opacity-0 group-hover/slider:opacity-100 duration-300">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+
+                        <div class="slider-reviews flex gap-4 sm:gap-5 overflow-x-auto scroll-smooth no-scrollbar pb-4">
+                            @foreach($hotPosts as $index => $post)
+                                @php
+                                    $thumbnailUrl = !empty($post->thumbnail)
+                                        ? (str_starts_with($post->thumbnail, 'http') ? $post->thumbnail : asset('storage/' . $post->thumbnail))
+                                        : ($post->book && $post->book->cover_image 
+                                            ? (str_starts_with($post->book->cover_image, 'http') ? $post->book->cover_image : asset('storage/' . $post->book->cover_image))
+                                            : 'https://via.placeholder.com/300x200?text=No+Image');
+                                    $rating = $post->rating ?? 0;
+                                    $fullStars = floor($rating);
+                                    $hasHalfStar = ($rating - $fullStars) >= 0.5;
+                                    $emptyStars = 5 - $fullStars - ($hasHalfStar ? 1 : 0);
+                                    $isHot = $index < 3; // 3 bài đầu hiện HOT
+                                @endphp
+
+                                <div class="w-64 sm:w-72 md:w-80 flex-shrink-0 group">
+                                    <a href="{{ $post->book ? route('book.reviews', $post->book->slug) . '#post-' . $post->id : '#' }}" class="block">
+                                        <div class="relative w-full aspect-[16/10] rounded-xl overflow-hidden shadow-lg mb-3 bg-gradient-to-br from-gray-100 to-gray-200 transform transition-all duration-500 group-hover:scale-[1.02] group-hover:shadow-xl">
+                                            <img src="{{ $thumbnailUrl }}" alt="{{ $post->title }}"
+                                                class="w-full h-full object-cover transition duration-700 group-hover:brightness-110"
+                                                onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+
+                                            {{-- HOT Badge --}}
+                                            @if($isHot)
+                                            <div class="absolute top-3 left-3 bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1 animate-pulse">
+                                                <i class="fas fa-fire text-[8px]"></i> HOT
+                                            </div>
+                                            @else
+                                            <div class="absolute top-3 left-3 bg-black/50 backdrop-blur-sm text-white text-[10px] font-medium px-2.5 py-1 rounded-full flex items-center gap-1">
+                                                <i class="far fa-eye"></i>
+                                                <span>{{ number_format($post->view_count ?? 0) }}</span>
+                                            </div>
+                                            @endif
+
+                                            @if($rating > 0)
+                                            <div class="absolute top-3 right-3 bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1">
+                                                <i class="fas fa-star text-yellow-400"></i>
+                                                <span>{{ number_format($rating, 1) }}</span>
+                                            </div>
+                                            @endif
+
+                                            <div class="absolute bottom-0 left-0 right-0 p-4">
+                                                @if($rating > 0)
+                                                <div class="flex text-yellow-400 text-xs mb-2">
+                                                    @for($i = 0; $i < $fullStars; $i++)<i class="fas fa-star"></i>@endfor
+                                                    @if($hasHalfStar)<i class="fas fa-star-half-alt"></i>@endif
+                                                    @for($i = 0; $i < $emptyStars; $i++)<i class="far fa-star opacity-50"></i>@endfor
+                                                </div>
+                                                @endif
+                                                <h3 class="text-white font-bold text-sm leading-snug line-clamp-2 drop-shadow-md">{{ $post->title }}</h3>
+                                                <div class="flex items-center gap-2 mt-2">
+                                                    <img src="{{ $post->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($post->user->name ?? 'User') }}" class="w-5 h-5 rounded-full border border-white/50 object-cover">
+                                                    <span class="text-white/80 text-[10px] font-medium truncate">{{ $post->user->name ?? 'Ẩn danh' }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                    @if($post->book)
+                                    <div class="px-1">
+                                        <p class="text-[11px] text-gray-500 truncate flex items-center gap-1">
+                                            <i class="fas fa-book text-[9px] text-rose-400"></i>
+                                            <a href="{{ route('detail', $post->book->slug ?? $post->book->id) }}" class="hover:text-rose-500 transition">{{ $post->book->title }}</a>
+                                        </p>
+                                    </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <button class="btn-next-reviews absolute right-0 top-1/2 -translate-y-1/2 -mr-1 sm:-mr-3 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-white hover:bg-rose-500 hover:scale-110 transition-all opacity-100 sm:opacity-0 group-hover/slider:opacity-100 duration-300">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </section>
+                @endif
+
                 {{-- 2. SÁCH MỚI CẬP NHẬT --}}
                 <section id="new-books"
-                    class="relative group/slider bg-gradient-to-br from-brand-green/5 via-white to-brand-beige/20 rounded-2xl p-6 border border-gray-100 shadow-sm">
+                    class="relative group/slider bg-gradient-to-br from-brand-green/5 via-white to-brand-beige/20 rounded-2xl p-4 sm:p-6 border border-gray-100 shadow-sm">
                     {{-- Header --}}
                     <div class="flex justify-between items-center mb-6">
                         <div class="flex items-center gap-3">
@@ -236,7 +442,7 @@
                                 <i class="fas fa-book-open text-brand-green"></i>
                             </div>
                             <div>
-                                <h2 class="text-xl font-bold text-gray-800 font-serif flex items-center gap-2">
+                                <h2 class="text-lg sm:text-xl font-bold text-gray-800 font-serif flex items-center gap-2">
                                     Sách Mới Cập Nhật
                                     <span
                                         class="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-bold animate-pulse">MỚI</span>
@@ -255,7 +461,7 @@
                     <div class="relative px-2">
                         {{-- Prev Button --}}
                         <button id="btnPrevNewBooks"
-                            class="absolute left-0 top-1/2 -translate-y-1/2 -ml-3 z-10 w-10 h-10 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-white hover:bg-brand-green hover:scale-110 transition-all opacity-0 group-hover/slider:opacity-100 duration-300">
+                            class="absolute left-0 top-1/2 -translate-y-1/2 -ml-1 sm:-ml-3 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-white hover:bg-brand-green hover:scale-110 transition-all opacity-100 sm:opacity-0 group-hover/slider:opacity-100 duration-300">
                             <i class="fas fa-chevron-left"></i>
                         </button>
 
@@ -271,7 +477,7 @@
                                         $rating = $book->avg_rating ?? rand(35, 50) / 10;
                                     @endphp
 
-                                    <div class="w-36 md:w-44 flex-shrink-0 group">
+                                    <div class="w-32 sm:w-36 md:w-44 flex-shrink-0 group">
                                         {{-- Book Card --}}
                                         <div
                                             class="relative w-full aspect-[2/3] rounded-xl overflow-hidden shadow-lg mb-3 bg-gradient-to-br from-gray-100 to-gray-200 transform transition-all duration-500 group-hover:scale-105 group-hover:shadow-xl">
@@ -340,7 +546,7 @@
 
                         {{-- Next Button --}}
                         <button id="btnNextNewBooks"
-                            class="absolute right-0 top-1/2 -translate-y-1/2 -mr-3 z-10 w-10 h-10 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-white hover:bg-brand-green hover:scale-110 transition-all opacity-0 group-hover/slider:opacity-100 duration-300">
+                            class="absolute right-0 top-1/2 -translate-y-1/2 -mr-1 sm:-mr-3 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-white hover:bg-brand-green hover:scale-110 transition-all opacity-100 sm:opacity-0 group-hover/slider:opacity-100 duration-300">
                             <i class="fas fa-chevron-right"></i>
                         </button>
                     </div>
@@ -355,13 +561,13 @@
                 </section>
 
                 {{-- 3. CỘNG ĐỒNG REVIEW --}}
-<section id="community-posts" class="mb-16 scroll-mt-24">
-    <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+<section id="community-posts" class="mb-10 sm:mb-16 scroll-mt-24">
+    <div class="bg-white rounded-2xl p-4 sm:p-6 border border-gray-100 shadow-sm">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-4">
             <div class="flex items-center gap-3">
                 <div class="w-1 h-8 bg-brand-accent rounded-full"></div> 
                 <div>
-                    <h2 class="text-2xl font-bold text-gray-800 font-serif leading-none flex items-center gap-3">Cộng Đồng Review
+                <h2 class="text-lg sm:text-2xl font-bold text-gray-800 font-serif leading-none flex flex-wrap items-center gap-2 sm:gap-3">Cộng Đồng Review
                         {{-- Dữ liệu từ bảng comments --}}
                         <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-semibold">{{ $communityStats['comments'] ?? 0 }} bình luận</span>
                     </h2>
@@ -371,8 +577,8 @@
             
             {{-- Bộ lọc Review --}}
             <div class="flex items-center gap-3">
-                <div class="bg-brand-green/10 rounded-full p-1.5 flex text-xs font-bold">
-                    <button onclick="loadComments('latest')" id="tab-latest" class="px-4 py-1.5 rounded-full transition-all duration-300 bg-white text-brand-green shadow-sm">
+                <div class="bg-brand-green/10 rounded-full p-1 sm:p-1.5 flex text-xs font-bold">
+                    <button onclick="loadComments('latest')" id="tab-latest" class="px-3 sm:px-4 py-1 sm:py-1.5 rounded-full transition-all duration-300 bg-white text-brand-green shadow-sm">
                         Mới nhất
                     </button>
                     <button onclick="loadComments('popular')" id="tab-popular" class="px-4 py-1.5 rounded-full transition-all duration-300 text-gray-500 hover:bg-gray-50">
@@ -401,7 +607,7 @@
 
                 {{-- Banner Sự Kiện - PREMIUM --}}
                 <div
-                    class="bg-gradient-to-br from-[#2A483A] via-[#1e3a2f] to-[#0f1f17] rounded-2xl p-8 relative overflow-hidden shadow-xl text-white group hover:shadow-2xl transition-all duration-500">
+                    class="bg-gradient-to-br from-[#2A483A] via-[#1e3a2f] to-[#0f1f17] rounded-2xl p-5 sm:p-8 relative overflow-hidden shadow-xl text-white group hover:shadow-2xl transition-all duration-500">
                     {{-- Decorative Elements --}}
                     <div
                         class="absolute top-0 right-0 w-72 h-72 bg-brand-accent/10 rounded-full blur-3xl -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-700">
@@ -411,12 +617,12 @@
                     <div class="absolute top-1/2 right-1/4 w-2 h-2 bg-brand-accent rounded-full animate-ping"></div>
                     <div class="absolute bottom-1/3 left-1/4 w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></div>
 
-                    <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-                        <div class="flex items-center gap-5">
+                    <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6 text-center md:text-left">
+                        <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-5">
                             {{-- Icon Trophy --}}
                             <div
-                                class="w-16 h-16 bg-gradient-to-br from-brand-accent to-yellow-400 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:rotate-6 transition-transform duration-300">
-                                <i class="fas fa-trophy text-white text-2xl"></i>
+                                class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-brand-accent to-yellow-400 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg transform group-hover:rotate-6 transition-transform duration-300">
+                                <i class="fas fa-trophy text-white text-xl sm:text-2xl"></i>
                             </div>
 
                             <div>
@@ -425,9 +631,8 @@
                                     <span class="w-1.5 h-1.5 bg-brand-accent rounded-full animate-pulse"></span>
                                     Sự kiện HOT
                                 </span>
-                                <h3 class="text-2xl md:text-3xl font-serif font-bold mb-2 text-brand-beige">Thử Thách Đọc
-                                    Sách 2025</h3>
-                                <p class="text-white/70 text-sm font-light max-w-md leading-relaxed">
+                                <h3 class="text-xl sm:text-2xl md:text-3xl font-serif font-bold mb-2 text-brand-beige">Thử Thách Đọc Sách 2025</h3>
+                                <p class="text-white/70 text-xs sm:text-sm font-light max-w-md leading-relaxed">
                                     <i class="fas fa-medal text-yellow-400 mr-1"></i>
                                     Hoàn thành <span class="text-brand-accent font-bold">3 cuốn sách</span> để nhận huy hiệu
                                     "Mọt Sách Cần Cù" và nhiều phần thưởng hấp dẫn!
@@ -436,7 +641,7 @@
                         </div>
 
                         <a href="{{ route('challenges.index') }}"
-                            class="bg-gradient-to-r from-brand-accent to-yellow-500 hover:from-yellow-500 hover:to-brand-accent text-white px-8 py-3.5 rounded-full font-bold shadow-xl hover:shadow-2xl transition-all text-sm whitespace-nowrap flex items-center gap-2 transform hover:-translate-y-1">
+                            class="bg-gradient-to-r from-brand-accent to-yellow-500 hover:from-yellow-500 hover:to-brand-accent text-white px-6 sm:px-8 py-3 sm:py-3.5 rounded-full font-bold shadow-xl hover:shadow-2xl transition-all text-xs sm:text-sm whitespace-nowrap flex items-center gap-2 transform hover:-translate-y-1 w-full sm:w-auto justify-center">
                             <i class="fas fa-rocket"></i>
                             Tham Gia Ngay
                         </a>
@@ -446,11 +651,11 @@
 
             {{-- [CỘT PHẢI - 4 PHẦN] --}}
             <div class="lg:col-span-4">
-                <div class="space-y-8">
+                <div class="space-y-6 sm:space-y-8">
                     {{-- Widget 0: Châm Ngôn Hôm Nay --}}
                     @if(isset($dailyQuote) && $dailyQuote)
                         <div
-                            class="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 rounded-2xl p-7 border border-amber-100 shadow-lg relative overflow-hidden group hover:shadow-xl transition-shadow duration-300">
+                            class="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 rounded-2xl p-5 sm:p-7 border border-amber-100 shadow-lg relative overflow-hidden group hover:shadow-xl transition-shadow duration-300">
                             {{-- Decorative Elements --}}
                             <div
                                 class="absolute -top-6 -right-6 w-24 h-24 bg-amber-200/30 rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform duration-500">
@@ -497,7 +702,7 @@
                     {{-- Widget: Hôm nay đọc gì? --}}
                     @if(isset($randomBook) && $randomBook)
                         <div
-                            class="bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 rounded-2xl p-7 border border-purple-100 shadow-lg relative overflow-hidden group hover:shadow-xl transition-all duration-300">
+                            class="bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 rounded-2xl p-5 sm:p-7 border border-purple-100 shadow-lg relative overflow-hidden group hover:shadow-xl transition-all duration-300">
                             {{-- Decorative --}}
                             <div
                                 class="absolute -top-8 -right-8 w-28 h-28 bg-purple-200/30 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-500">
@@ -595,7 +800,7 @@
 
                     {{-- Widget 1: Top Thịnh Hành - Redesigned --}}
                     <div
-                        class="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 rounded-2xl p-7 border border-orange-100 shadow-lg relative overflow-hidden group/widget hover:shadow-xl transition-shadow duration-300">
+                        class="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 rounded-2xl p-5 sm:p-7 border border-orange-100 shadow-lg relative overflow-hidden group/widget hover:shadow-xl transition-shadow duration-300">
                         {{-- Decorative Elements --}}
                         <div
                             class="absolute -top-8 -right-8 w-32 h-32 bg-gradient-to-br from-orange-200/40 to-red-200/30 rounded-full blur-2xl pointer-events-none group-hover/widget:scale-110 transition-transform duration-500">
@@ -708,7 +913,7 @@
 
                     {{-- Widget 2: Thể Loại - Redesigned --}}
                     <div
-                        class="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-2xl p-6 border border-emerald-100 shadow-lg relative overflow-hidden">
+                        class="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-2xl p-4 sm:p-6 border border-emerald-100 shadow-lg relative overflow-hidden">
                         {{-- Decorative --}}
                         <div
                             class="absolute -top-6 -right-6 w-24 h-24 bg-emerald-200/40 rounded-full blur-2xl pointer-events-none">
@@ -757,7 +962,7 @@
 
                     {{-- Widget 3: Liên Kết Mua Sách - Redesigned --}}
                     <div
-                        class="bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 rounded-2xl p-6 border border-amber-100 shadow-lg relative overflow-hidden">
+                        class="bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 rounded-2xl p-4 sm:p-6 border border-amber-100 shadow-lg relative overflow-hidden">
                         {{-- Decorative --}}
                         <div
                             class="absolute -top-6 -right-6 w-20 h-20 bg-amber-200/40 rounded-full blur-2xl pointer-events-none">
@@ -827,7 +1032,7 @@
                     {{-- Widget: Thống Kê Cộng Đồng - Light Style --}}
                     @if(isset($communityStats))
                         <div
-                            class="bg-gradient-to-br from-blue-50 via-indigo-50 to-violet-50 rounded-2xl p-6 border border-blue-100 shadow-lg relative overflow-hidden">
+                            class="bg-gradient-to-br from-blue-50 via-indigo-50 to-violet-50 rounded-2xl p-4 sm:p-6 border border-blue-100 shadow-lg relative overflow-hidden">
                             {{-- Decorative --}}
                             <div
                                 class="absolute -top-6 -right-6 w-24 h-24 bg-blue-200/40 rounded-full blur-2xl pointer-events-none">
@@ -975,6 +1180,44 @@
                 btnNextNew.addEventListener('click', () => sliderNewBooks.scrollBy({ left: 220, behavior: 'smooth' }));
                 btnPrevNew.addEventListener('click', () => sliderNewBooks.scrollBy({ left: -220, behavior: 'smooth' }));
             }
+
+            // Featured Reviews Tabs and Sliders
+            window.switchReviewTab = function(tab) {
+                const latestContainer = document.getElementById('reviews-latest-container');
+                const hotContainer = document.getElementById('reviews-hot-container');
+                const tabLatest = document.getElementById('tab-review-latest');
+                const tabHot = document.getElementById('tab-review-hot');
+                
+                if (tab === 'latest') {
+                    latestContainer?.classList.remove('hidden');
+                    hotContainer?.classList.add('hidden');
+                    tabLatest?.classList.add('bg-white', 'text-rose-600', 'shadow-sm');
+                    tabLatest?.classList.remove('text-gray-500');
+                    tabHot?.classList.remove('bg-white', 'text-rose-600', 'shadow-sm');
+                    tabHot?.classList.add('text-gray-500');
+                } else {
+                    latestContainer?.classList.add('hidden');
+                    hotContainer?.classList.remove('hidden');
+                    tabHot?.classList.add('bg-white', 'text-rose-600', 'shadow-sm');
+                    tabHot?.classList.remove('text-gray-500');
+                    tabLatest?.classList.remove('bg-white', 'text-rose-600', 'shadow-sm');
+                    tabLatest?.classList.add('text-gray-500');
+                }
+            };
+
+            // Reviews Slider Controls
+            document.querySelectorAll('.btn-prev-reviews').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const slider = this.closest('.group\\/slider').querySelector('.slider-reviews');
+                    slider?.scrollBy({ left: -300, behavior: 'smooth' });
+                });
+            });
+            document.querySelectorAll('.btn-next-reviews').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const slider = this.closest('.group\\/slider').querySelector('.slider-reviews');
+                    slider?.scrollBy({ left: 300, behavior: 'smooth' });
+                });
+            });
 
             attachPaginationEvents();
             const initialSort = new URLSearchParams(window.location.search).get('sort_review') || 'latest';

@@ -92,6 +92,7 @@
                             <div class="mb-2">
                                 <label class="text-xs text-gray-500 dark:text-slate-400 mb-1 block">Tải ảnh từ máy:</label>
                                 <input type="file" name="cover_image" id="file-input" onchange="previewFile()"
+                                    accept=".jpg,.jpeg,.png,.webp,.gif,.svg"
                                     class="w-full text-sm text-gray-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-900/50 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/70 bg-white dark:bg-slate-600 border border-gray-300 dark:border-slate-500 rounded-lg">
                             </div>
 
