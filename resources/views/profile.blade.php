@@ -18,6 +18,8 @@
         @if(session('success'))
             <div
                 class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg relative shadow-sm flex items-center gap-3">
+            <div
+                class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg relative shadow-sm flex items-center gap-3">
                 <i class="fas fa-check-circle text-xl"></i>
                 <span class="block sm:inline font-medium">{{ session('success') }}</span>
                 <button class="absolute top-0 bottom-0 right-0 px-4 py-3" onclick="this.parentElement.remove();">
@@ -217,17 +219,31 @@
                                 @endforeach
                             </div>
 
-                            @if($user->equippedFrame())
-                                <button onclick="unequipFrame()"
-                                    class="mt-3 w-full text-[10px] text-gray-500 hover:text-red-500 transition py-1 rounded hover:bg-red-50 border border-transparent hover:border-red-200">
-                                    <i class="fas fa-times-circle"></i> Gỡ khung avatar
-                                </button>
+                                @if($user->equippedFrame())
+                                    <button onclick="unequipFrame()"
+                                        class="mt-3 w-full text-[10px] text-gray-500 hover:text-red-500 transition py-1 rounded hover:bg-red-50 border border-transparent hover:border-red-200">
+                                        <i class="fas fa-times-circle"></i> Gỡ khung avatar
+                                    </button>
+                                @endif
+                            @else
+                                <!-- Empty State: Chưa có khung avatar -->
+                                <div class="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                                    <i class="fas fa-image text-3xl text-gray-300 mb-2"></i>
+                                    <p class="text-xs text-gray-400">Bạn chưa sở hữu khung avatar nào</p>
+                                </div>
                             @endif
                         </div>
                     @endif
                     {{-- KẾT THÚC KHUNG AVATAR --}}
 
+
                     <div class="text-xs text-gray-400 space-y-1.5 mb-6 text-left pl-2">
+                        <p><i class="far fa-calendar-alt mr-2 w-4 text-center"></i> Tham gia: <span
+                                class="text-gray-600">{{ $user->created_at ? $user->created_at->format('d/m/Y') : 'N/A' }}</span>
+                        </p>
+                        <p><i class="fas fa-sync-alt mr-2 w-4 text-center"></i> Cập nhật: <span
+                                class="text-gray-600">{{ $user->updated_at ? $user->updated_at->format('d/m/Y') : 'N/A' }}</span>
+                        </p>
                         <p><i class="far fa-calendar-alt mr-2 w-4 text-center"></i> Tham gia: <span
                                 class="text-gray-600">{{ $user->created_at ? $user->created_at->format('d/m/Y') : 'N/A' }}</span>
                         </p>
@@ -239,15 +255,19 @@
                     <div class="space-y-2">
                         @if(Auth::check() && Auth::id() != $user->id)
                             <button onclick="toggleFollow({{ $user->id }})" id="btn-follow"
+                            <button onclick="toggleFollow({{ $user->id }})" id="btn-follow"
                                 class="w-full py-2.5 rounded-lg font-bold transition mb-4 shadow-md flex items-center justify-center gap-2 {{ Auth::user()->isFollowing($user->id) ? 'bg-gray-200 text-gray-800' : 'bg-blue-600 text-white hover:bg-blue-700' }}">
                                 <i class="fas {{ Auth::user()->isFollowing($user->id) ? 'fa-check' : 'fa-user-plus' }}"></i>
                                 <span id="follow-text">
                                     {{ Auth::user()->isFollowing($user->id) ? 'Đang theo dõi' : 'Theo dõi' }}
                                 </span>
                             </button>
+                            </button>
                         @endif
 
                         @if(Auth::id() == $user->id)
+                            <button onclick="openEditProfileModal()"
+                                class="block w-full border border-brand-green text-brand-green py-2 rounded-lg font-bold text-sm hover:bg-brand-green hover:text-white transition">
                             <button onclick="openEditProfileModal()"
                                 class="block w-full border border-brand-green text-brand-green py-2 rounded-lg font-bold text-sm hover:bg-brand-green hover:text-white transition">
                                 <i class="fas fa-edit mr-1"></i> Chỉnh sửa hồ sơ
@@ -809,8 +829,43 @@
                 const reader = new FileReader();
                 reader.onload = function (e) {
                     document.getElementById('avatarPreview').src = e.target.result;
+                    // Xóa URL input khi chọn file
+                    document.getElementById('avatarUrlInput').value = '';
                 };
                 reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Xem trước ảnh từ URL
+        function previewAvatarUrl(url) {
+            if (url) {
+                document.getElementById('avatarPreview').src = url;
+                // Xóa file input khi nhập URL
+                document.getElementById('avatarInput').value = '';
+            }
+        }
+
+        // Chuyển tab upload avatar
+        function showAvatarTab(type) {
+            const fileTab = document.getElementById('avatar-tab-file');
+            const urlTab = document.getElementById('avatar-tab-url');
+            const fileDiv = document.getElementById('avatar-upload-file');
+            const urlDiv = document.getElementById('avatar-upload-url');
+
+            if (type === 'file') {
+                fileTab.classList.remove('bg-gray-100', 'text-gray-600');
+                fileTab.classList.add('bg-brand-green/10', 'text-brand-green');
+                urlTab.classList.remove('bg-brand-green/10', 'text-brand-green');
+                urlTab.classList.add('bg-gray-100', 'text-gray-600');
+                fileDiv.classList.remove('hidden');
+                urlDiv.classList.add('hidden');
+            } else {
+                urlTab.classList.remove('bg-gray-100', 'text-gray-600');
+                urlTab.classList.add('bg-brand-green/10', 'text-brand-green');
+                fileTab.classList.remove('bg-brand-green/10', 'text-brand-green');
+                fileTab.classList.add('bg-gray-100', 'text-gray-600');
+                urlDiv.classList.remove('hidden');
+                fileDiv.classList.add('hidden');
             }
         }
 
@@ -948,22 +1003,52 @@
                                 class="hidden mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm">
                             </div>
 
-                            {{-- Avatar Upload --}}
-                            <div class="flex flex-col items-center mb-6">
-                                <div class="relative group">
-                                    <img id="avatarPreview"
-                                        src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=3E5F4E&color=fff&size=128' }}"
-                                        class="w-28 h-28 rounded-full border-4 border-brand-beige shadow-lg object-cover">
-
-                                    <label for="avatarInput"
-                                        class="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition cursor-pointer">
-                                        <span class="text-white text-sm font-medium"><i class="fas fa-camera mr-1"></i> Đổi
-                                            ảnh</span>
-                                    </label>
-                                    <input type="file" id="avatarInput" name="avatar" accept="image/*" class="hidden"
-                                        onchange="previewAvatar(this)">
+                            {{-- Avatar Upload với Tabs --}}
+                            <div class="mb-6">
+                                <label class="block text-sm font-semibold text-gray-700 mb-3 text-center">
+                                    <i class="fas fa-image mr-1 text-brand-green"></i> Ảnh đại diện
+                                </label>
+                                
+                                {{-- Preview ảnh --}}
+                                <div class="flex justify-center mb-4">
+                                    <div class="relative group">
+                                        <img id="avatarPreview"
+                                            src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=3E5F4E&color=fff&size=128' }}"
+                                            class="w-28 h-28 rounded-full border-4 border-brand-beige shadow-lg object-cover">
+                                    </div>
                                 </div>
-                                <p class="text-xs text-gray-400 mt-2">Click vào ảnh để thay đổi (Tối đa 2MB)</p>
+
+                                {{-- Tabs chọn hình thức upload --}}
+                                <div class="flex gap-2 justify-center mb-3">
+                                    <button type="button" onclick="showAvatarTab('file')" id="avatar-tab-file"
+                                        class="px-3 py-1.5 text-xs rounded-full bg-brand-green/10 text-brand-green font-bold transition">
+                                        <i class="fas fa-upload mr-1"></i> Upload File
+                                    </button>
+                                    <button type="button" onclick="showAvatarTab('url')" id="avatar-tab-url"
+                                        class="px-3 py-1.5 text-xs rounded-full bg-gray-100 text-gray-600 font-bold transition">
+                                        <i class="fas fa-link mr-1"></i> Nhập URL
+                                    </button>
+                                </div>
+
+                                {{-- Upload File --}}
+                                <div id="avatar-upload-file" class="text-center">
+                                    <label for="avatarInput"
+                                        class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition text-sm font-medium text-gray-600">
+                                        <i class="fas fa-cloud-upload-alt"></i> Chọn ảnh từ máy
+                                    </label>
+                                    <input type="file" id="avatarInput" name="avatar" accept=".jpg,.jpeg,.png,.webp,.gif,.svg" class="hidden"
+                                        onchange="previewAvatar(this)">
+                                    <p class="text-xs text-gray-400 mt-2">JPG, PNG, WebP, GIF, SVG (Tối đa 2MB)</p>
+                                </div>
+
+                                {{-- Nhập URL --}}
+                                <div id="avatar-upload-url" class="hidden">
+                                    <input type="url" name="avatar_url" id="avatarUrlInput"
+                                        class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition text-gray-800 text-sm"
+                                        placeholder="https://example.com/avatar.jpg"
+                                        oninput="previewAvatarUrl(this.value)">
+                                    <p class="text-xs text-gray-400 mt-2 text-center">Dán đường dẫn trực tiếp đến file ảnh</p>
+                                </div>
                             </div>
 
                             {{-- Name Input --}}

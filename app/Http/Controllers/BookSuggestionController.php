@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Book;
+use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
@@ -14,7 +15,8 @@ class BookSuggestionController extends Controller
      */
     public function create()
     {
-        return view('suggest-book');
+        $categories = Category::orderBy('name')->get();
+        return view('suggest-book', compact('categories'));
     }
 
     /**
@@ -26,27 +28,34 @@ class BookSuggestionController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'author_name' => 'required|string|max:255',
+            'category_ids' => 'nullable|array',
+            'category_ids.*' => 'exists:categories,id',
             'description' => 'nullable|string|max:2000',
-            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
+            'cover_image_url' => 'nullable|url|max:500',
         ], [
             'title.required' => 'Vui lòng nhập tên sách.',
             'author_name.required' => 'Vui lòng nhập tên tác giả.',
+            'category_ids.*.exists' => 'Danh mục không hợp lệ.',
             'description.max' => 'Mô tả không được quá 2000 ký tự.',
             'cover_image.image' => 'File tải lên phải là hình ảnh.',
             'cover_image.max' => 'Ảnh bìa không được lớn hơn 2MB.',
+            'cover_image_url.url' => 'Đường dẫn ảnh không hợp lệ.',
         ]);
 
-        // 2. Xử lý upload ảnh bìa
+        // 2. Xử lý upload ảnh bìa (ưu tiên file, sau đó là URL)
         $coverPath = null;
         if ($request->hasFile('cover_image')) {
             $coverPath = $request->file('cover_image')->store('books/covers', 'public');
+        } elseif ($request->filled('cover_image_url')) {
+            $coverPath = $request->cover_image_url;
         }
 
         // 3. Create slug
         $slug = Str::slug($request->title) . '-' . Str::random(4);
 
         // 4. Create book with is_approved = false
-        Book::create([
+        $book = Book::create([
             'title' => $request->title,
             'slug' => $slug,
             'author_name' => $request->author_name,
@@ -57,8 +66,13 @@ class BookSuggestionController extends Controller
             'view_count' => 0,
         ]);
 
-        // 4. Redirect back to profile with success message
+        // 5. Attach categories if selected
+        if ($request->category_ids && count($request->category_ids) > 0) {
+            $book->categories()->attach($request->category_ids);
+        }
+
+        // 6. Redirect back to profile with success message
         return redirect()->route('profile', Auth::id())
-                        ->with('success', 'Đề xuất sách thành công! Vui lòng chờ Admin phê duyệt.');
+            ->with('success', 'Đề xuất sách thành công! Vui lòng chờ Admin phê duyệt.');
     }
 }

@@ -72,8 +72,8 @@ class HomeController extends Controller
             $book->avg_rating = round($book->posts_avg_rating ?? 0, 1);
         }
 
-        $featuredArticle = Article::with('user')->where('is_featured', true)->latest()->first();
-        $sidebarArticles = Article::with('user')->where('is_featured', false)->latest()->take(2)->get();
+        $featuredArticle = Article::with('user')->where('is_featured', true)->where('is_active', true)->latest()->first();
+        $sidebarArticles = Article::with('user')->where('is_featured', false)->where('is_active', true)->latest()->take(2)->get();
         $categories = Category::withCount('books')->orderBy('name', 'asc')->get();
 
         // --- LẤY QUOTE NGẪU NHIÊN THEO NGÀY ---
@@ -91,16 +91,43 @@ class HomeController extends Controller
             'members' => \App\Models\User::count(),
             'reviews' => Post::where('status', 'published')->count(),
             'comments' => Comment::count(),
+            'book_views' => Book::where('is_approved', true)->sum('view_count'), // Tổng lượt đọc sách
+            'post_views' => Post::where('status', 'published')->sum('view_count'), // Tổng lượt đọc bài
+            'authors' => \App\Models\Author::count(), // Số tác giả
+            'categories' => Category::count(), // Số thể loại
+            'post_likes' => Like::count(), // Lượt thích bài review
+            'comment_likes' => CommentLike::count(), // Lượt thích bình luận
         ];
 
         // --- SÁCH NGẪU NHIÊN "HÔM NAY ĐỌC GÌ?" ---
-        $allApprovedBooks = Book::where('is_approved', true)->get();
+        $allApprovedBooks = Book::where('is_approved', true)
+            ->withAvg(['posts'], 'rating')
+            ->get();
         $randomBook = null;
         if ($allApprovedBooks->count() > 0) {
             // Dùng ngày làm seed để cùng ngày hiển thị cùng sách
             $dayOfYear = now()->dayOfYear + now()->year;
             $randomBook = $allApprovedBooks[$dayOfYear % $allApprovedBooks->count()];
+            // Gán avg_rating từ posts
+            $randomBook->avg_rating = round($randomBook->posts_avg_rating ?? 0, 1);
         }
+
+        // --- BÀI REVIEW NỔI BẬT (FEATURED POSTS) ---
+        // Mới nhất - sắp xếp theo ngày tạo
+        $latestPosts = Post::with(['user', 'book'])
+            ->where('status', 'published')
+            ->whereNotNull('thumbnail')
+            ->orderByDesc('created_at')
+            ->take(8)
+            ->get();
+
+        // Hot nhất - sắp xếp theo lượt xem
+        $hotPosts = Post::with(['user', 'book'])
+            ->where('status', 'published')
+            ->whereNotNull('thumbnail')
+            ->orderByDesc('view_count')
+            ->take(8)
+            ->get();
 
         // Truyền biến $latestReviews vào view
         return view('home', compact(
@@ -112,7 +139,9 @@ class HomeController extends Controller
             'sidebarArticles',
             'dailyQuote',
             'communityStats',
-            'randomBook'
+            'randomBook',
+            'latestPosts',
+            'hotPosts'
         ));
     }
 

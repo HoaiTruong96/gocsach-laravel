@@ -1,11 +1,11 @@
 @if(isset($latestReviews) && $latestReviews->count() > 0)
-    <div class="grid grid-cols-1 gap-6">
+    <div class="grid grid-cols-1 gap-4 sm:gap-6">
         @foreach($latestReviews as $comment)
             @php
                 $book = $comment->post->book ?? null;
             @endphp
             {{-- ITEM BÌNH LUẬN (COMMENT) --}}
-            <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+            <div class="bg-white rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
 
                 {{-- 1. HEADER --}}
                 <div class="flex justify-between items-start mb-3">

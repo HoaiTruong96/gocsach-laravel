@@ -241,6 +241,19 @@ Route::middleware('auth')->group(function () {
             ->get();
         return response()->json($books);
     });
+
+    // API lấy sách phổ biến (Cho trang viết review)
+    Route::get('/api/books/popular', function () {
+        // Lấy top 20 sách phổ biến nhất, sau đó random 6 cuốn
+        $books = App\Models\Book::where('is_approved', true)
+            ->orderBy('view_count', 'desc')
+            ->select('id', 'title', 'author_name', 'published_year', 'cover_image', 'slug', 'avg_rating')
+            ->limit(20)
+            ->get()
+            ->shuffle()
+            ->take(6);
+        return response()->json($books->values());
+    });
     // chalenges
     Route::post('/challenge/join/{id}', [ChallengeController::class, 'join'])->name('challenge.join');
 });
@@ -288,4 +301,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Game / Gamification
     Route::get('/game', [\App\Http\Controllers\Admin\GameController::class, 'index'])->name('game.index');
     Route::post('/challenges/{challenge}/award-badge/{userId}', [\App\Http\Controllers\Admin\ChallengeController::class, 'awardBadge'])->name('challenges.award-badge');
+
+    // Comment Reports
+    Route::get('/comment-reports', [\App\Http\Controllers\Admin\CommentReportController::class, 'index'])->name('comment-reports.index');
+    Route::get('/comment-reports/{commentReport}', [\App\Http\Controllers\Admin\CommentReportController::class, 'show'])->name('comment-reports.show');
+    Route::post('/comment-reports/{commentReport}/approve', [\App\Http\Controllers\Admin\CommentReportController::class, 'approve'])->name('comment-reports.approve');
+    Route::post('/comment-reports/{commentReport}/reject', [\App\Http\Controllers\Admin\CommentReportController::class, 'reject'])->name('comment-reports.reject');
+    Route::delete('/comment-reports/{commentReport}', [\App\Http\Controllers\Admin\CommentReportController::class, 'destroy'])->name('comment-reports.destroy');
 });

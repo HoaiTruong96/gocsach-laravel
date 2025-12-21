@@ -50,7 +50,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Năm xuất bản</label>
-                    <input type="number" name="published_year" value="{{ old('published_year', $book->published_year) }}" class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-800 dark:text-white" placeholder="2024">
+                    <input type="number" name="published_year" value="{{ old('published_year', $book->published_year) }}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-800 dark:text-white" placeholder="2024">
                 </div>
                 
                 {{-- Phần Upload Ảnh có Preview (Giống trang Create) --}}
@@ -92,6 +92,7 @@
                             <div class="mb-2">
                                 <label class="text-xs text-gray-500 dark:text-slate-400 mb-1 block">Tải ảnh từ máy:</label>
                                 <input type="file" name="cover_image" id="file-input" onchange="previewFile()"
+                                    accept=".jpg,.jpeg,.png,.webp,.gif,.svg"
                                     class="w-full text-sm text-gray-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-900/50 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/70 bg-white dark:bg-slate-600 border border-gray-300 dark:border-slate-500 rounded-lg">
                             </div>
 

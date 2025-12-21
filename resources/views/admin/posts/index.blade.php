@@ -3,21 +3,48 @@
 @section('header', 'Quản lý Đánh giá Sách')
 
 @section('content')
-    <div
+    <div id="posts-container"
         class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden transition-colors duration-300">
-        <div
-            class="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-700">
-            <div class="flex gap-4">
-                <span
-                    class="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300 rounded-lg text-sm font-bold">
-                    <i class="fas fa-clock mr-1"></i> {{ $reviews->where('status', 'pending')->count() }} Chờ duyệt
-                </span>
-                <span
-                    class="px-3 py-1 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 rounded-lg text-sm font-bold">
-                    <i class="fas fa-check-circle mr-1"></i> {{ $reviews->where('status', 'published')->count() }} Đã đăng
-                </span>
+
+        {{-- AJAX Tabs lọc theo trạng thái --}}
+        <div class="p-4 border-b border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-700">
+            <div class="flex flex-wrap gap-2" id="status-tabs">
+                <button type="button" data-status=""
+                    class="ajax-tab px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap {{ !request('status') ? 'bg-blue-600 text-white shadow-md' : 'bg-white dark:bg-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-500 border border-gray-200 dark:border-slate-500' }}">
+                    <i class="fas fa-list mr-1"></i> Tất cả
+                    <span
+                        class="ml-1 px-1.5 py-0.5 rounded text-xs font-bold {{ !request('status') ? 'bg-white/20' : 'bg-slate-200 dark:bg-slate-500 text-slate-600 dark:text-slate-200' }}"
+                        id="count-all">{{ \App\Models\Post::whereNotNull('book_id')->count() }}</span>
+                </button>
+                <button type="button" data-status="pending"
+                    class="ajax-tab px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap {{ request('status') == 'pending' ? 'bg-yellow-500 text-white shadow-md' : 'bg-white dark:bg-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-500 border border-gray-200 dark:border-slate-500' }}">
+                    <i class="fas fa-clock mr-1"></i> Chờ duyệt
+                    <span
+                        class="ml-1 px-1.5 py-0.5 rounded text-xs font-bold {{ request('status') == 'pending' ? 'bg-white/20' : 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300' }}"
+                        id="count-pending">{{ \App\Models\Post::whereNotNull('book_id')->where('status', 'pending')->count() }}</span>
+                </button>
+                <button type="button" data-status="published"
+                    class="ajax-tab px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap {{ request('status') == 'published' ? 'bg-green-500 text-white shadow-md' : 'bg-white dark:bg-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-500 border border-gray-200 dark:border-slate-500' }}">
+                    <i class="fas fa-check-circle mr-1"></i> Đã đăng
+                    <span
+                        class="ml-1 px-1.5 py-0.5 rounded text-xs font-bold {{ request('status') == 'published' ? 'bg-white/20' : 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300' }}"
+                        id="count-published">{{ \App\Models\Post::whereNotNull('book_id')->where('status', 'published')->count() }}</span>
+                </button>
+                <button type="button" data-status="hidden"
+                    class="ajax-tab px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap {{ request('status') == 'hidden' ? 'bg-gray-500 text-white shadow-md' : 'bg-white dark:bg-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-500 border border-gray-200 dark:border-slate-500' }}">
+                    <i class="fas fa-eye-slash mr-1"></i> Đang ẩn
+                    <span
+                        class="ml-1 px-1.5 py-0.5 rounded text-xs font-bold {{ request('status') == 'hidden' ? 'bg-white/20' : 'bg-gray-200 dark:bg-slate-500 text-gray-600 dark:text-slate-300' }}"
+                        id="count-hidden">{{ \App\Models\Post::whereNotNull('book_id')->where('status', 'hidden')->count() }}</span>
+                </button>
+                <button type="button" data-status="rejected"
+                    class="ajax-tab px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap {{ request('status') == 'rejected' ? 'bg-red-500 text-white shadow-md' : 'bg-white dark:bg-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-500 border border-gray-200 dark:border-slate-500' }}">
+                    <i class="fas fa-ban mr-1"></i> Từ chối
+                    <span
+                        class="ml-1 px-1.5 py-0.5 rounded text-xs font-bold {{ request('status') == 'rejected' ? 'bg-white/20' : 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300' }}"
+                        id="count-rejected">{{ \App\Models\Post::whereNotNull('book_id')->where('status', 'rejected')->count() }}</span>
+                </button>
             </div>
-            <span class="text-sm text-gray-500 dark:text-slate-400">Tổng cộng: {{ $reviews->total() }} bài</span>
         </div>
 
         <div class="overflow-x-auto">
@@ -25,11 +52,11 @@
                 <thead
                     class="bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400 text-xs uppercase border-b dark:border-slate-700">
                     <tr>
-                        <th class="px-6 py-3">Người viết & Sách</th>
-                        <th class="px-6 py-3">Nội dung tóm tắt</th>
-                        <th class="px-6 py-3 text-center">Đánh giá</th>
-                        <th class="px-6 py-3 text-center">Trạng thái</th>
-                        <th class="px-6 py-3 text-right">Hành động</th>
+                        <th class="px-6 py-3 whitespace-nowrap">Người viết & Sách</th>
+                        <th class="px-6 py-3 whitespace-nowrap">Nội dung tóm tắt</th>
+                        <th class="px-6 py-3 text-center whitespace-nowrap">Đánh giá</th>
+                        <th class="px-6 py-3 text-center whitespace-nowrap">Trạng thái</th>
+                        <th class="px-6 py-3 text-center whitespace-nowrap">Hành động</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
@@ -44,6 +71,8 @@
                                         <p class="text-sm font-bold text-gray-800 dark:text-white">{{ $review->user->name }}</p>
                                         <p class="text-xs text-gray-500 dark:text-slate-400 mb-1">
                                             {{ $review->created_at->diffForHumans() }}
+                                        </p>
+                                        {{ $review->created_at->diffForHumans() }}
                                         </p>
                                         {{ $review->created_at->diffForHumans() }}
                                         </p>
@@ -80,7 +109,7 @@
 
                             <td class="px-6 py-4 text-center align-top">
                                 <div
-                                    class="inline-block text-yellow-400 font-bold bg-yellow-50 dark:bg-yellow-900/30 px-2 py-1 rounded text-sm border border-yellow-100 dark:border-yellow-800">
+                                    class="inline-flex items-center gap-1 text-yellow-500 font-bold bg-yellow-50 dark:bg-yellow-900/30 px-2 py-1 rounded text-sm border border-yellow-100 dark:border-yellow-800 whitespace-nowrap">
                                     {{ $review->rating }} <i class="fas fa-star text-xs"></i>
                                 </div>
                             </td>
@@ -101,6 +130,11 @@
                                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300">
                                         Đã từ chối
                                     </span>
+                                @elseif($review->status == 'hidden')
+                                    <span
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-slate-600 text-gray-600 dark:text-slate-300 whitespace-nowrap">
+                                        Đang ẩn
+                                    </span>
                                 @else
                                     <span
                                         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-slate-600 text-gray-800 dark:text-slate-200">
@@ -110,30 +144,59 @@
                             </td>
 
                             <td class="px-6 py-4 text-right align-top">
-                                <div class="flex flex-col gap-2 items-end">
+                                <div class="flex justify-end gap-2">
                                     @if($review->status == 'pending')
                                         <form action="{{ route('admin.posts.update', $review->id) }}" method="POST">
                                             @csrf @method('PUT')
                                             <input type="hidden" name="status" value="published">
                                             <button
-                                                class="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700 transition w-24">
-                                                <i class="fas fa-check mr-1"></i> Duyệt ngay
+                                                class="w-8 h-8 flex items-center justify-center rounded-full bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-600 hover:text-white transition"
+                                                title="Duyệt bài">
+                                                <i class="fas fa-check text-xs"></i>
                                             </button>
                                         </form>
 
                                         <!-- Nút mở modal từ chối -->
                                         <button type="button"
                                             onclick="openRejectModal({{ $review->id }}, '{{ addslashes($review->title) }}')"
-                                            class="bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-slate-200 px-3 py-1 rounded text-xs hover:bg-gray-300 dark:hover:bg-slate-500 transition w-24">
-                                            <i class="fas fa-ban mr-1"></i> Từ chối
+                                            class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-slate-600 text-gray-500 dark:text-slate-300 hover:bg-gray-500 hover:text-white transition"
+                                            title="Từ chối">
+                                            <i class="fas fa-ban text-xs"></i>
                                         </button>
                                     @else
+                                        {{-- Bài đã published: có thể ẩn --}}
+                                        @if($review->status == 'published')
+                                            <form action="{{ route('admin.posts.update', $review->id) }}" method="POST">
+                                                @csrf @method('PUT')
+                                                <input type="hidden" name="status" value="hidden">
+                                                <button
+                                                    class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-slate-600 text-gray-500 dark:text-slate-400 hover:bg-gray-500 hover:text-white transition"
+                                                    title="Ẩn bài viết">
+                                                    <i class="fas fa-eye-slash text-xs"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+
+                                        {{-- Bài đang ẩn: có thể hiện lại --}}
+                                        @if($review->status == 'hidden')
+                                            <form action="{{ route('admin.posts.update', $review->id) }}" method="POST">
+                                                @csrf @method('PUT')
+                                                <input type="hidden" name="status" value="published">
+                                                <button
+                                                    class="w-8 h-8 flex items-center justify-center rounded-full bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-600 hover:text-white transition"
+                                                    title="Hiện lại bài viết">
+                                                    <i class="fas fa-eye text-xs"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+
                                         <form action="{{ route('admin.posts.destroy', $review->id) }}" method="POST"
                                             onsubmit="return confirm('Xóa vĩnh viễn bài review này?');">
                                             @csrf @method('DELETE')
                                             <button
-                                                class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 px-3 py-1 rounded text-xs transition w-24 text-right">
-                                                <i class="fas fa-trash mr-1"></i> Xóa bỏ
+                                                class="w-8 h-8 flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white transition"
+                                                title="Xóa bài viết">
+                                                <i class="fas fa-trash text-xs"></i>
                                             </button>
                                         </form>
                                     @endif
@@ -345,32 +408,129 @@
                             // Thay đổi giá trị radio sang custom reason
                             otherRadio.value = customInput.value.trim();
                         }
-                        function showReviewModal(reviewId) {
-                            const container = document.getElementById('review-content-' + reviewId);
-                            if (!container) return;
+                    });
 
-                            document.getElementById('modal-title').textContent = container.querySelector('.review-title').textContent;
-                            document.getElementById('modal-user').textContent = container.querySelector('.review-user').textContent;
-                            document.getElementById('modal-book').textContent = container.querySelector('.review-book').textContent;
-                            document.getElementById('modal-rating').textContent = container.querySelector('.review-rating').textContent;
-                            document.getElementById('modal-date').textContent = container.querySelector('.review-date').textContent;
-                            document.getElementById('modal-content').innerHTML = container.querySelector('.review-content').innerHTML;
+                    function showReviewModal(reviewId) {
+                        const container = document.getElementById('review-content-' + reviewId);
+                        if (!container) return;
 
-                            document.getElementById('reviewModal').classList.remove('hidden');
-                            document.getElementById('reviewModal').classList.add('flex');
-                            document.body.style.overflow = 'hidden';
-                        }
+                        document.getElementById('modal-title').textContent = container.querySelector('.review-title').textContent;
+                        document.getElementById('modal-user').textContent = container.querySelector('.review-user').textContent;
+                        document.getElementById('modal-book').textContent = container.querySelector('.review-book').textContent;
+                        document.getElementById('modal-rating').textContent = container.querySelector('.review-rating').textContent;
+                        document.getElementById('modal-date').textContent = container.querySelector('.review-date').textContent;
+                        document.getElementById('modal-content').innerHTML = container.querySelector('.review-content').innerHTML;
 
-                        function closeReviewModal(event) {
-                            if (event && event.target !== event.currentTarget) return;
-                            document.getElementById('reviewModal').classList.add('hidden');
-                            document.getElementById('reviewModal').classList.remove('flex');
-                            document.body.style.overflow = '';
-                        }
+                        document.getElementById('reviewModal').classList.remove('hidden');
+                        document.getElementById('reviewModal').classList.add('flex');
+                        document.body.style.overflow = 'hidden';
+                    }
 
-                        // ESC key to close
-                        document.addEventListener('keydown', function (e) {
-                            if (e.key === 'Escape') closeReviewModal();
+                    function closeReviewModal(event) {
+                        if (event && event.target !== event.currentTarget) return;
+                        document.getElementById('reviewModal').classList.add('hidden');
+                        document.getElementById('reviewModal').classList.remove('flex');
+                        document.body.style.overflow = '';
+                    }
+
+                    // ========== AJAX TABS ==========
+                    let currentStatus = '{{ request('status') ?? '' }}';
+
+                    function bindAjaxTabs() {
+                        document.querySelectorAll('.ajax-tab').forEach(tab => {
+                            tab.addEventListener('click', function () {
+                                const status = this.dataset.status;
+                                currentStatus = status;
+                                loadPosts();
+                                updateTabStyles(status);
+                            });
                         });
+                    }
+
+                    function updateTabStyles(activeStatus) {
+                        document.querySelectorAll('.ajax-tab').forEach(tab => {
+                            const status = tab.dataset.status;
+                            const isActive = status === activeStatus;
+
+                            tab.classList.remove(
+                                'bg-blue-600', 'bg-yellow-500', 'bg-green-500', 'bg-gray-500', 'bg-red-500',
+                                'text-white', 'shadow-md',
+                                'bg-white', 'dark:bg-slate-600', 'text-gray-600', 'dark:text-slate-300',
+                                'hover:bg-gray-100', 'dark:hover:bg-slate-500', 'border', 'border-gray-200', 'dark:border-slate-500'
+                            );
+
+                            if (isActive) {
+                                if (status === '') tab.classList.add('bg-blue-600', 'text-white', 'shadow-md');
+                                else if (status === 'pending') tab.classList.add('bg-yellow-500', 'text-white', 'shadow-md');
+                                else if (status === 'published') tab.classList.add('bg-green-500', 'text-white', 'shadow-md');
+                                else if (status === 'hidden') tab.classList.add('bg-gray-500', 'text-white', 'shadow-md');
+                                else if (status === 'rejected') tab.classList.add('bg-red-500', 'text-white', 'shadow-md');
+                            } else {
+                                tab.classList.add('bg-white', 'dark:bg-slate-600', 'text-gray-600', 'dark:text-slate-300',
+                                    'hover:bg-gray-100', 'dark:hover:bg-slate-500', 'border', 'border-gray-200', 'dark:border-slate-500');
+                            }
+
+                            const countBadge = tab.querySelector('span');
+                            if (countBadge) {
+                                countBadge.classList.remove('bg-white/20', 'bg-slate-200', 'dark:bg-slate-500', 'text-slate-600', 'dark:text-slate-200',
+                                    'bg-yellow-100', 'dark:bg-yellow-900/50', 'text-yellow-700', 'dark:text-yellow-300',
+                                    'bg-green-100', 'dark:bg-green-900/50', 'text-green-700', 'dark:text-green-300',
+                                    'bg-gray-200', 'text-gray-600', 'bg-red-100', 'dark:bg-red-900/50', 'text-red-700', 'dark:text-red-300');
+
+                                if (isActive) {
+                                    countBadge.classList.add('bg-white/20');
+                                } else {
+                                    if (status === '') countBadge.classList.add('bg-slate-200', 'dark:bg-slate-500', 'text-slate-600', 'dark:text-slate-200');
+                                    else if (status === 'pending') countBadge.classList.add('bg-yellow-100', 'dark:bg-yellow-900/50', 'text-yellow-700', 'dark:text-yellow-300');
+                                    else if (status === 'published') countBadge.classList.add('bg-green-100', 'dark:bg-green-900/50', 'text-green-700', 'dark:text-green-300');
+                                    else if (status === 'hidden') countBadge.classList.add('bg-gray-200', 'dark:bg-slate-500', 'text-gray-600', 'dark:text-slate-300');
+                                    else if (status === 'rejected') countBadge.classList.add('bg-red-100', 'dark:bg-red-900/50', 'text-red-700', 'dark:text-red-300');
+                                }
+                            }
+                        });
+                    }
+
+                    function loadPosts() {
+                        const container = document.getElementById('posts-container');
+
+                        const url = new URL(window.location.href);
+                        url.searchParams.delete('page');
+                        if (currentStatus) {
+                            url.searchParams.set('status', currentStatus);
+                        } else {
+                            url.searchParams.delete('status');
+                        }
+
+                        fetch(url.toString(), {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        })
+                            .then(response => response.text())
+                            .then(html => {
+                                const parser = new DOMParser();
+                                const doc = parser.parseFromString(html, 'text/html');
+                                const newContainer = doc.getElementById('posts-container');
+
+                                if (newContainer) {
+                                    container.innerHTML = newContainer.innerHTML;
+                                }
+
+                                history.pushState({}, '', url.toString());
+                                bindAjaxTabs();
+                            })
+                            .catch(error => {
+                                console.error('Error loading posts:', error);
+                            });
+                    }
+
+                    // Init
+                    bindAjaxTabs();
+
+                    // ESC key to close modals
+                    document.addEventListener('keydown', function (e) {
+                        if (e.key === 'Escape') {
+                            closeRejectModal();
+                            closeReviewModal();
+                        }
+                    });
                 </script>
 @endsection

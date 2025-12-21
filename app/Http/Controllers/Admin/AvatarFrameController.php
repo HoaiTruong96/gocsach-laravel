@@ -27,7 +27,7 @@ class AvatarFrameController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:avatar_frames,name',
             'description' => 'nullable|string',
-            'frame_image' => 'nullable|image|mimes:gif,png,jpg,jpeg,webp|max:2048',
+            'frame_image' => 'nullable|image|mimes:gif,png,jpg,jpeg,webp,svg|max:2048',
             'frame_image_url' => 'nullable|url',
         ], [
             'name.required' => 'Vui lòng nhập tên khung avatar.',
@@ -87,7 +87,7 @@ class AvatarFrameController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:avatar_frames,name,' . $avatarFrame->id,
             'description' => 'nullable|string',
-            'frame_image' => 'nullable|image|mimes:gif,png,jpg,jpeg,webp|max:2048',
+            'frame_image' => 'nullable|image|mimes:gif,png,jpg,jpeg,webp,svg|max:2048',
             'frame_image_url' => 'nullable|url',
         ]);
 

@@ -16,13 +16,26 @@ class PostController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $reviews = Post::whereNotNull('book_id')
-            ->with(['user', 'book'])
+        $query = Post::whereNotNull('book_id')
+            ->with(['user', 'book']);
+
+        // Filter by status if provided
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $reviews = $query
             ->orderByRaw("CASE WHEN status = 'pending' THEN 1 ELSE 2 END")
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
+
+        // Return partial view for AJAX requests
+        if ($request->ajax()) {
+            return view('admin.posts.index', compact('reviews'));
+        }
 
         return view('admin.posts.index', compact('reviews'));
     }
@@ -136,7 +149,7 @@ class PostController extends Controller
             null
         );
 
-        return back()->with('success', 'Đã xóa bài viết');
+        return back()->with('success', 'Đã xóa bài viết!');
     }
 
     // ĐÃ XÓA HÀM approve() ĐỂ TRÁNH XUNG ĐỘT LOGIC
