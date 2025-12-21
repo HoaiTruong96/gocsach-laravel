@@ -7,6 +7,9 @@ use App\Models\Book;
 use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Notification;
+use App\Models\User;
+use App\Notifications\NewBookRequestNotification;
 
 class BookSuggestionController extends Controller
 {
@@ -69,6 +72,18 @@ class BookSuggestionController extends Controller
         // 5. Attach categories if selected
         if ($request->category_ids && count($request->category_ids) > 0) {
             $book->categories()->attach($request->category_ids);
+        }
+
+        // 6. Gửi thông báo cho Admin
+        try {
+            $admins = User::where('role', 'admin')->get();
+            Notification::send($admins, new NewBookRequestNotification([
+                'requester_name' => Auth::user()->name,
+                'book_title' => $book->title,
+                'link' => route('admin.books.index') // Hoặc link chi tiết sách chờ duyệt
+            ]));
+        } catch (\Exception $e) {
+            \Log::error("Failed to send notification: " . $e->getMessage());
         }
 
         // 6. Redirect back to profile with success message

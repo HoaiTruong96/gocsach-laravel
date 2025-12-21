@@ -176,64 +176,67 @@
                     {{-- KẾT THÚC KHUNG DANH HIỆU --}}
 
                     {{-- [MỚI] KHUNG AVATAR --}}
-                    @if(isset($isOwnProfile) && $isOwnProfile)
+                    @if(isset($isOwnProfile) && $isOwnProfile && $user->avatarFrames && $user->avatarFrames->count() > 0)
                         <div class="mb-6 border-t border-b border-gray-100 py-4">
                             <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">
                                 <i class="fas fa-image mr-1"></i> Khung Avatar
                             </h4>
 
-                            @if($user->avatarFrames && $user->avatarFrames->count() > 0)
-                                <div class="grid grid-cols-3 gap-2">
-                                    @foreach($user->avatarFrames as $frame)
-                                        <div class="relative group cursor-pointer border-2 rounded-lg p-1 transition-all
-                                                                    {{ $frame->pivot->is_equipped ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300' }}"
-                                            onclick="equipFrame({{ $frame->id }})">
+                            <div class="grid grid-cols-3 gap-2">
+                                @foreach($user->avatarFrames as $frame)
+                                    <div class="relative group cursor-pointer border-2 rounded-lg p-1 transition-all
+                                                                {{ $frame->pivot->is_equipped ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300' }}"
+                                        onclick="equipFrame({{ $frame->id }})">
 
-                                            <!-- Frame Preview -->
-                                            <div
-                                                class="aspect-square bg-gray-50 rounded overflow-hidden flex items-center justify-center">
-                                                <img src="{{ Str::startsWith($frame->frame_image, 'http') ? $frame->frame_image : asset('storage/' . $frame->frame_image) }}"
-                                                    alt="{{ $frame->name }}" class="w-full h-full object-contain">
-                                            </div>
-
-                                            <!-- Equipped Badge -->
-                                            @if($frame->pivot->is_equipped)
-                                                <div
-                                                    class="absolute -top-1 -right-1 bg-purple-500 text-white text-[8px] px-1 py-0.5 rounded-full font-bold shadow">
-                                                    Đang dùng
-                                                </div>
-                                            @endif
-
-                                            <!-- Tooltip -->
-                                            <div
-                                                class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-max">
-                                                <div class="bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-lg text-center">
-                                                    <div class="font-bold">{{ $frame->name }}</div>
-                                                </div>
-                                                <div
-                                                    class="w-2 h-2 bg-gray-800 transform rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2">
-                                                </div>
-                                            </div>
+                                        <!-- Frame Preview -->
+                                        <div
+                                            class="aspect-square bg-gray-50 rounded overflow-hidden flex items-center justify-center">
+                                            <img src="{{ Str::startsWith($frame->frame_image, 'http') ? $frame->frame_image : asset('storage/' . $frame->frame_image) }}"
+                                                alt="{{ $frame->name }}" class="w-full h-full object-contain">
                                         </div>
-                                    @endforeach
-                                </div>
 
-                                @if($user->equippedFrame())
-                                    <button onclick="unequipFrame()"
-                                        class="mt-3 w-full text-[10px] text-gray-500 hover:text-red-500 transition py-1 rounded hover:bg-red-50 border border-transparent hover:border-red-200">
-                                        <i class="fas fa-times-circle"></i> Gỡ khung avatar
-                                    </button>
-                                @endif
-                            @else
-                                <!-- Empty State: Chưa có khung avatar -->
-                                <div class="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-                                    <i class="fas fa-image text-3xl text-gray-300 mb-2"></i>
-                                    <p class="text-xs text-gray-400">Bạn chưa sở hữu khung avatar nào</p>
+                                        <!-- Equipped Badge -->
+                                        @if($frame->pivot->is_equipped)
+                                            <div
+                                                class="absolute -top-1 -right-1 bg-purple-500 text-white text-[8px] px-1 py-0.5 rounded-full font-bold shadow">
+                                                Đang dùng
+                                            </div>
+                                        @endif
+
+                                        <!-- Tooltip -->
+                                        <div
+                                            class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-max">
+                                            <div class="bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-lg text-center">
+                                                <div class="font-bold">{{ $frame->name }}</div>
+                                            </div>
+                                            <div
+                                                class="w-2 h-2 bg-gray-800 transform rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2">
+                                            </div>
                                 </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                            @if($user->equippedFrame())
+                                <button onclick="unequipFrame()"
+                                    class="mt-3 w-full text-[10px] text-gray-500 hover:text-red-500 transition py-1 rounded hover:bg-red-50 border border-transparent hover:border-red-200">
+                                    <i class="fas fa-times-circle"></i> Gỡ khung avatar
+                                </button>
                             @endif
+                        </div>
+                    @else
+                        {{-- Empty State: Chưa có khung avatar (cho isOwnProfile) --}}
+                        <div class="mb-6 border-t border-b border-gray-100 py-4">
+                            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">
+                                <i class="fas fa-image mr-1"></i> Khung Avatar
+                            </h4>
+                            <div class="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                                <i class="fas fa-image text-3xl text-gray-300 mb-2"></i>
+                                <p class="text-xs text-gray-400">Bạn chưa sở hữu khung avatar nào</p>
+                            </div>
                         </div>
                     @endif
                     {{-- KẾT THÚC KHUNG AVATAR --}}
+
 
                     <div class="text-xs text-gray-400 space-y-1.5 mb-6 text-left pl-2">
                         <p><i class="far fa-calendar-alt mr-2 w-4 text-center"></i> Tham gia: <span

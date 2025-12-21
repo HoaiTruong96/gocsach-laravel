@@ -72,6 +72,10 @@
                                         <p class="text-xs text-gray-500 dark:text-slate-400 mb-1">
                                             {{ $review->created_at->diffForHumans() }}
                                         </p>
+                                        {{ $review->created_at->diffForHumans() }}
+                                        </p>
+                                        {{ $review->created_at->diffForHumans() }}
+                                        </p>
                                         <a href="{{ route('book.show', $review->book->slug ?? '#') }}"
                                             class="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center"
                                             target="_blank">
@@ -84,9 +88,13 @@
 
                             <td class="px-6 py-4 align-top">
                                 <h4 class="font-bold text-gray-800 dark:text-white text-sm mb-1">{{ $review->title }}</h4>
-                                <p class="text-gray-600 dark:text-slate-300 text-sm line-clamp-2">
+                                <p class="text-gray-600 dark:text-slate-300 text-sm line-clamp-2 mb-2">
                                     {{ Str::limit(strip_tags($review->content), 100) }}
                                 </p>
+                                <button type="button" onclick="showReviewModal({{ $review->id }})"
+                                    class="text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium">
+                                    <i class="fas fa-eye mr-1"></i> Xem chi tiết
+                                </button>
 
                                 {{-- Hidden full content for modal --}}
                                 <div id="review-content-{{ $review->id }}" class="hidden">

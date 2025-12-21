@@ -168,6 +168,10 @@ Route::middleware('auth')->group(function () {
     // Route comment bài viết (nếu dùng PostController riêng)
     Route::post('/posts/{id}/comment', [PostController::class, 'postComment'])->name('posts.comment');
 
+    // --- REPORT (BÁO CÁO VI PHẠM) ---
+    Route::post('/report/post/{id}', [\App\Http\Controllers\ReportController::class, 'reportPost'])->name('report.post');
+    Route::post('/report/comment/{id}', [\App\Http\Controllers\ReportController::class, 'reportComment'])->name('report.comment');
+
     // --- THÔNG BÁO (NOTIFICATION) ---
     // Đánh dấu tất cả là đã đọc
     Route::get('/notifications/read-all', [HomeController::class, 'markAllAsRead'])->name('notification.readAll');
@@ -314,4 +318,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/comment-reports/{commentReport}/approve', [\App\Http\Controllers\Admin\CommentReportController::class, 'approve'])->name('comment-reports.approve');
     Route::post('/comment-reports/{commentReport}/reject', [\App\Http\Controllers\Admin\CommentReportController::class, 'reject'])->name('comment-reports.reject');
     Route::delete('/comment-reports/{commentReport}', [\App\Http\Controllers\Admin\CommentReportController::class, 'destroy'])->name('comment-reports.destroy');
+
+    // Post Reports (Báo cáo bài viết)
+    Route::get('/post-reports', [\App\Http\Controllers\Admin\PostReportController::class, 'index'])->name('post-reports.index');
+    Route::get('/post-reports/{postReport}', [\App\Http\Controllers\Admin\PostReportController::class, 'show'])->name('post-reports.show');
+    Route::post('/post-reports/{postReport}/approve', [\App\Http\Controllers\Admin\PostReportController::class, 'approve'])->name('post-reports.approve');
+    Route::post('/post-reports/{postReport}/reject', [\App\Http\Controllers\Admin\PostReportController::class, 'reject'])->name('post-reports.reject');
+    Route::post('/post-reports/{postReport}/delete-post', [\App\Http\Controllers\Admin\PostReportController::class, 'deletePost'])->name('post-reports.delete-post');
+    Route::delete('/post-reports/{postReport}', [\App\Http\Controllers\Admin\PostReportController::class, 'destroy'])->name('post-reports.destroy');
 });
