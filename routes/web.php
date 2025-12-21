@@ -144,6 +144,8 @@ Route::middleware('auth')->group(function () {
 
     // --- PROFILE & FOLLOW ---
     Route::get('/profile/{id?}', [ProfileController::class, 'index'])->name('profile');
+    Route::get('/profile/{id}/reviews', [ProfileController::class, 'allReviews'])->name('profile.reviews');
+    Route::get('/profile/{id}/suggested-books', [ProfileController::class, 'allSuggestedBooks'])->name('profile.suggested-books');
     Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/avatar-frame/equip', [ProfileController::class, 'equipAvatarFrame'])->name('profile.avatar-frame.equip');
     Route::post('/profile/avatar-frame/unequip', [ProfileController::class, 'unequipAvatarFrame'])->name('profile.avatar-frame.unequip');
@@ -195,6 +197,10 @@ Route::middleware('auth')->group(function () {
 
     // Lưu bài viết mới
     Route::post('/posts/store', [PostController::class, 'store'])->name('posts.store');
+
+    // Chỉnh sửa bài review
+    Route::get('/reviews/{id}/chinh-sua', [PostController::class, 'edit'])->name('reviews.edit');
+    Route::put('/reviews/{id}/update', [PostController::class, 'update'])->name('reviews.update');
 
     // API lấy thông báo realtime (cho polling)
     Route::get('/api/notifications', [HomeController::class, 'getNotifications'])->name('api.notifications');
