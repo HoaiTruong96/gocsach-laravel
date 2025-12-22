@@ -42,7 +42,7 @@ class CategoryController extends Controller
             $category->toArray()
         );
 
-        return back()->with('success', 'Thêm danh mục thành công');
+        return back()->with('success', 'Thêm danh mục thành công!');
     }
 
     /**
@@ -65,6 +65,6 @@ class CategoryController extends Controller
             null
         );
 
-        return back()->with('success', 'Đã xóa danh mục');
+        return back()->with('success', 'Đã xóa danh mục!');
     }
 }

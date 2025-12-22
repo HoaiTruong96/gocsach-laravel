@@ -138,15 +138,33 @@
 
                             {{-- 2. Chọn sao --}}
                             <div class="flex flex-col items-center justify-center py-4 border-y border-dashed border-gray-100">
-                                <label class="block text-sm font-bold text-gray-500 mb-2 uppercase tracking-wide">Đánh giá của bạn</label>
-                                <div class="flex items-center gap-3">
-                                    <div class="flex text-3xl gap-1" id="star-container">
+                                <label class="block text-sm font-bold text-gray-500 mb-3 uppercase tracking-wide">Đánh giá của bạn</label>
+                                
+                                {{-- Hiển thị số sao --}}
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="flex text-2xl gap-0.5" id="star-display">
                                         @for($i=1; $i<=5; $i++)
-                                            <i class="fas fa-star text-yellow-400 cursor-pointer hover:scale-110 transition p-1" onclick="setRating({{ $i }})"></i>
+                                            <i class="fas fa-star text-yellow-400"></i>
                                         @endfor
                                     </div>
-                                    <span id="rating-label" class="text-sm font-bold text-brand-green bg-brand-green/10 px-3 py-1 rounded-full min-w-[90px] text-center">Tuyệt vời</span>
+                                    <span id="rating-value" class="text-2xl font-bold text-brand-green">5.0</span>
                                 </div>
+                                
+                                {{-- Slider --}}
+                                <div class="w-full max-w-xs">
+                                    <input type="range" id="rating-slider" min="1" max="5" step="0.1" value="5"
+                                        class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand-green"
+                                        oninput="updateRating(this.value)">
+                                    <div class="flex justify-between text-xs text-gray-400 mt-1">
+                                        <span>1.0</span>
+                                        <span>2.0</span>
+                                        <span>3.0</span>
+                                        <span>4.0</span>
+                                        <span>5.0</span>
+                                    </div>
+                                </div>
+                                
+                                <span id="rating-label" class="mt-3 text-sm font-bold text-brand-green bg-brand-green/10 px-3 py-1 rounded-full">Tuyệt vời</span>
                             </div>
 
                             {{-- 3. Nội dung & Hình ảnh --}}
@@ -158,29 +176,64 @@
                                         placeholder="Tiêu đề (Ví dụ: Một cuốn sách ám ảnh...)">
                                 </div>
 
-                                {{-- [MỚI] KHUNG UPLOAD ẢNH BÌA --}}
+                                {{-- [MỚI] KHUNG UPLOAD ẢNH BÌA VỚI TABS --}}
                                 <div>
                                     <label class="block text-sm font-bold text-gray-700 mb-2">Ảnh bìa bài viết (Tùy chọn)</label>
-                                    <div class="flex items-center justify-center w-full">
-                                        <label for="thumbnail-upload" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition relative overflow-hidden group">
-                                            {{-- Giao diện mặc định --}}
-                                            <div class="flex flex-col items-center justify-center pt-5 pb-6" id="upload-placeholder">
-                                                <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2 group-hover:text-brand-green transition"></i>
-                                                <p class="text-sm text-gray-500"><span class="font-semibold">Bấm để tải ảnh lên</span></p>
-                                                <p class="text-xs text-gray-400 mt-1">PNG, JPG (Tối đa 2MB)</p>
+                                    
+                                    {{-- Tabs chọn hình thức upload --}}
+                                    <div class="flex gap-2 mb-3">
+                                        <button type="button" onclick="showThumbnailTab('file')" id="thumb-tab-file"
+                                            class="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-600 font-bold transition">
+                                            <i class="fas fa-upload mr-1"></i> Upload File
+                                        </button>
+                                        <button type="button" onclick="showThumbnailTab('url')" id="thumb-tab-url"
+                                            class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600 font-bold transition">
+                                            <i class="fas fa-link mr-1"></i> Nhập URL
+                                        </button>
+                                    </div>
+
+                                    {{-- Upload File --}}
+                                    <div id="thumb-upload-file">
+                                        <div class="flex items-center justify-center w-full">
+                                            <label for="thumbnail-upload" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition relative overflow-hidden group">
+                                                {{-- Giao diện mặc định --}}
+                                                <div class="flex flex-col items-center justify-center pt-5 pb-6" id="upload-placeholder">
+                                                    <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2 group-hover:text-brand-green transition"></i>
+                                                    <p class="text-sm text-gray-500"><span class="font-semibold">Bấm để tải ảnh lên</span></p>
+                                                    <p class="text-xs text-gray-400 mt-1">JPG, PNG, WebP, GIF, SVG (Tối đa 2MB)</p>
+                                                </div>
+                                                
+                                                {{-- Ảnh Preview (Ẩn mặc định) --}}
+                                                <img id="thumbnail-preview" class="absolute inset-0 w-full h-full object-cover hidden" />
+                                                
+                                                {{-- Input file ẩn --}}
+                                                <input id="thumbnail-upload" name="thumbnail" type="file" class="hidden" accept=".jpg,.jpeg,.png,.webp,.gif,.svg" onchange="previewThumbnail(event)" />
+                                                
+                                                {{-- Nút xóa ảnh (Hiện khi có ảnh) --}}
+                                                <button type="button" id="remove-thumbnail" onclick="removeThumbnail(event)" class="hidden absolute top-2 right-2 bg-white text-red-500 rounded-full p-1 shadow-md hover:bg-red-50 z-20">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    {{-- Nhập URL --}}
+                                    <div id="thumb-upload-url" class="hidden">
+                                        <input type="url" name="thumbnail_url" id="thumbnail-url-input"
+                                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green transition"
+                                            placeholder="https://example.com/image.jpg"
+                                            oninput="previewThumbnailUrl(this.value)">
+                                        <p class="text-xs text-gray-400 mt-2">Dán đường dẫn trực tiếp đến file ảnh (.jpg, .png, .gif,...)</p>
+                                        
+                                        {{-- Preview URL --}}
+                                        <div id="url-preview-container" class="hidden mt-3">
+                                            <div class="relative rounded-lg overflow-hidden border border-gray-200 w-full h-32 bg-gray-100 flex items-center justify-center">
+                                                <img id="url-preview" src="" class="max-h-full max-w-full object-contain">
+                                                <button type="button" onclick="clearUrlPreview()" class="absolute top-2 right-2 bg-white text-red-500 rounded-full p-1 shadow-md hover:bg-red-50">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
                                             </div>
-                                            
-                                            {{-- Ảnh Preview (Ẩn mặc định) --}}
-                                            <img id="thumbnail-preview" class="absolute inset-0 w-full h-full object-cover hidden" />
-                                            
-                                            {{-- Input file ẩn --}}
-                                            <input id="thumbnail-upload" name="thumbnail" type="file" class="hidden" accept="image/*" onchange="previewThumbnail(event)" />
-                                            
-                                            {{-- Nút xóa ảnh (Hiện khi có ảnh) --}}
-                                            <button type="button" id="remove-thumbnail" onclick="removeThumbnail(event)" class="hidden absolute top-2 right-2 bg-white text-red-500 rounded-full p-1 shadow-md hover:bg-red-50 z-20">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </label>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -214,6 +267,9 @@
                                         document.getElementById('thumbnail-preview').classList.remove('hidden');
                                         document.getElementById('upload-placeholder').classList.add('opacity-0');
                                         document.getElementById('remove-thumbnail').classList.remove('hidden');
+                                        // Xóa URL input khi chọn file
+                                        document.getElementById('thumbnail-url-input').value = '';
+                                        clearUrlPreview();
                                     }
                                     reader.readAsDataURL(file);
                                 }
@@ -227,6 +283,49 @@
                                 document.getElementById('thumbnail-preview').classList.add('hidden');
                                 document.getElementById('upload-placeholder').classList.remove('opacity-0');
                                 document.getElementById('remove-thumbnail').classList.add('hidden');
+                            }
+
+                            // Chuyển tab upload thumbnail
+                            function showThumbnailTab(type) {
+                                const fileTab = document.getElementById('thumb-tab-file');
+                                const urlTab = document.getElementById('thumb-tab-url');
+                                const fileDiv = document.getElementById('thumb-upload-file');
+                                const urlDiv = document.getElementById('thumb-upload-url');
+
+                                if (type === 'file') {
+                                    fileTab.classList.remove('bg-gray-100', 'text-gray-600');
+                                    fileTab.classList.add('bg-blue-100', 'text-blue-600');
+                                    urlTab.classList.remove('bg-blue-100', 'text-blue-600');
+                                    urlTab.classList.add('bg-gray-100', 'text-gray-600');
+                                    fileDiv.classList.remove('hidden');
+                                    urlDiv.classList.add('hidden');
+                                } else {
+                                    urlTab.classList.remove('bg-gray-100', 'text-gray-600');
+                                    urlTab.classList.add('bg-blue-100', 'text-blue-600');
+                                    fileTab.classList.remove('bg-blue-100', 'text-blue-600');
+                                    fileTab.classList.add('bg-gray-100', 'text-gray-600');
+                                    urlDiv.classList.remove('hidden');
+                                    fileDiv.classList.add('hidden');
+                                }
+                            }
+
+                            // Preview URL ảnh
+                            function previewThumbnailUrl(url) {
+                                if (url) {
+                                    document.getElementById('url-preview').src = url;
+                                    document.getElementById('url-preview-container').classList.remove('hidden');
+                                    // Xóa file input khi nhập URL
+                                    removeThumbnail({ preventDefault: ()=>{}, stopPropagation: ()=>{} });
+                                } else {
+                                    clearUrlPreview();
+                                }
+                            }
+
+                            // Xóa URL preview
+                            function clearUrlPreview() {
+                                document.getElementById('thumbnail-url-input').value = '';
+                                document.getElementById('url-preview').src = '';
+                                document.getElementById('url-preview-container').classList.add('hidden');
                             }
                         </script>
                     </div>
@@ -387,16 +486,35 @@
             searchInput.focus();
         }
 
-        function setRating(star) {
-            document.getElementById('selected-rating-value').value = star;
-            const stars = document.getElementById('star-container').children;
-            const labels = ["Tệ", "Không hay", "Bình thường", "Hay", "Tuyệt vời"];
-            document.getElementById('rating-label').innerText = labels[star-1];
+        function updateRating(value) {
+            const rating = parseFloat(value);
+            document.getElementById('selected-rating-value').value = rating;
+            document.getElementById('rating-value').innerText = rating.toFixed(1);
             
+            // Cập nhật hiển thị sao
+            const stars = document.getElementById('star-display').children;
             for(let i=0; i<5; i++) {
-                stars[i].classList.toggle('text-yellow-400', i < star);
-                stars[i].classList.toggle('text-gray-300', i >= star);
+                if (rating >= i + 1) {
+                    // Sao đầy
+                    stars[i].className = 'fas fa-star text-yellow-400';
+                } else if (rating > i && rating < i + 1) {
+                    // Sao nửa
+                    stars[i].className = 'fas fa-star-half-alt text-yellow-400';
+                } else {
+                    // Sao rỗng
+                    stars[i].className = 'far fa-star text-gray-300';
+                }
             }
+            
+            // Cập nhật label
+            let label = '';
+            if (rating < 2) label = 'Tệ';
+            else if (rating < 3) label = 'Không hay';
+            else if (rating < 3.5) label = 'Bình thường';
+            else if (rating < 4.5) label = 'Hay';
+            else label = 'Tuyệt vời';
+            
+            document.getElementById('rating-label').innerText = label;
         }
 
         document.addEventListener('click', (e) => {

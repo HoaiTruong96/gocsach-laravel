@@ -144,6 +144,8 @@ Route::middleware('auth')->group(function () {
 
     // --- PROFILE & FOLLOW ---
     Route::get('/profile/{id?}', [ProfileController::class, 'index'])->name('profile');
+    Route::get('/profile/{id}/reviews', [ProfileController::class, 'allReviews'])->name('profile.reviews');
+    Route::get('/profile/{id}/suggested-books', [ProfileController::class, 'allSuggestedBooks'])->name('profile.suggested-books');
     Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/avatar-frame/equip', [ProfileController::class, 'equipAvatarFrame'])->name('profile.avatar-frame.equip');
     Route::post('/profile/avatar-frame/unequip', [ProfileController::class, 'unequipAvatarFrame'])->name('profile.avatar-frame.unequip');
@@ -157,11 +159,18 @@ Route::middleware('auth')->group(function () {
     // Route xử lý Like chung (cho cả Post và Comment)
     Route::post('/like', [HomeController::class, 'toggleLike'])->name('handle.like');
 
+    // Route lưu bài viết (Save Post)
+    Route::post('/post/save', [HomeController::class, 'toggleSavePost'])->name('post.save');
+
     // Route gửi Reply (Bình luận trả lời)
     Route::post('/comment/{id}/reply', [HomeController::class, 'storeReply'])->name('comment.reply');
 
     // Route comment bài viết (nếu dùng PostController riêng)
     Route::post('/posts/{id}/comment', [PostController::class, 'postComment'])->name('posts.comment');
+
+    // --- REPORT (BÁO CÁO VI PHẠM) ---
+    Route::post('/report/post/{id}', [\App\Http\Controllers\ReportController::class, 'reportPost'])->name('report.post');
+    Route::post('/report/comment/{id}', [\App\Http\Controllers\ReportController::class, 'reportComment'])->name('report.comment');
 
     // --- THÔNG BÁO (NOTIFICATION) ---
     // Đánh dấu tất cả là đã đọc
@@ -188,6 +197,10 @@ Route::middleware('auth')->group(function () {
 
     // Lưu bài viết mới
     Route::post('/posts/store', [PostController::class, 'store'])->name('posts.store');
+
+    // Chỉnh sửa bài review
+    Route::get('/reviews/{id}/chinh-sua', [PostController::class, 'edit'])->name('reviews.edit');
+    Route::put('/reviews/{id}/update', [PostController::class, 'update'])->name('reviews.update');
 
     // API lấy thông báo realtime (cho polling)
     Route::get('/api/notifications', [HomeController::class, 'getNotifications'])->name('api.notifications');
@@ -238,6 +251,19 @@ Route::middleware('auth')->group(function () {
             ->get();
         return response()->json($books);
     });
+
+    // API lấy sách phổ biến (Cho trang viết review)
+    Route::get('/api/books/popular', function () {
+        // Lấy top 20 sách phổ biến nhất, sau đó random 6 cuốn
+        $books = App\Models\Book::where('is_approved', true)
+            ->orderBy('view_count', 'desc')
+            ->select('id', 'title', 'author_name', 'published_year', 'cover_image', 'slug', 'avg_rating')
+            ->limit(20)
+            ->get()
+            ->shuffle()
+            ->take(6);
+        return response()->json($books->values());
+    });
     // chalenges
     Route::post('/challenge/join/{id}', [ChallengeController::class, 'join'])->name('challenge.join');
 });
@@ -285,4 +311,19 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Game / Gamification
     Route::get('/game', [\App\Http\Controllers\Admin\GameController::class, 'index'])->name('game.index');
     Route::post('/challenges/{challenge}/award-badge/{userId}', [\App\Http\Controllers\Admin\ChallengeController::class, 'awardBadge'])->name('challenges.award-badge');
+
+    // Comment Reports
+    Route::get('/comment-reports', [\App\Http\Controllers\Admin\CommentReportController::class, 'index'])->name('comment-reports.index');
+    Route::get('/comment-reports/{commentReport}', [\App\Http\Controllers\Admin\CommentReportController::class, 'show'])->name('comment-reports.show');
+    Route::post('/comment-reports/{commentReport}/approve', [\App\Http\Controllers\Admin\CommentReportController::class, 'approve'])->name('comment-reports.approve');
+    Route::post('/comment-reports/{commentReport}/reject', [\App\Http\Controllers\Admin\CommentReportController::class, 'reject'])->name('comment-reports.reject');
+    Route::delete('/comment-reports/{commentReport}', [\App\Http\Controllers\Admin\CommentReportController::class, 'destroy'])->name('comment-reports.destroy');
+
+    // Post Reports (Báo cáo bài viết)
+    Route::get('/post-reports', [\App\Http\Controllers\Admin\PostReportController::class, 'index'])->name('post-reports.index');
+    Route::get('/post-reports/{postReport}', [\App\Http\Controllers\Admin\PostReportController::class, 'show'])->name('post-reports.show');
+    Route::post('/post-reports/{postReport}/approve', [\App\Http\Controllers\Admin\PostReportController::class, 'approve'])->name('post-reports.approve');
+    Route::post('/post-reports/{postReport}/reject', [\App\Http\Controllers\Admin\PostReportController::class, 'reject'])->name('post-reports.reject');
+    Route::post('/post-reports/{postReport}/delete-post', [\App\Http\Controllers\Admin\PostReportController::class, 'deletePost'])->name('post-reports.delete-post');
+    Route::delete('/post-reports/{postReport}', [\App\Http\Controllers\Admin\PostReportController::class, 'destroy'])->name('post-reports.destroy');
 });

@@ -52,9 +52,21 @@ class Post extends Model
         return $this->hasMany(Like::class);
     }
 
+    // Users đã lưu bài viết này
+    public function savedByUsers()
+    {
+        return $this->belongsToMany(User::class, 'saved_posts')
+            ->withTimestamps();
+    }
+
     public function scopePublished($query)
     {
         return $query->where('status', 'published');
+    }
+
+    public function reports()
+    {
+        return $this->hasMany(PostReport::class);
     }
 
     public function scopeMostLiked($query)

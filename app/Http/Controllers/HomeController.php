@@ -72,8 +72,8 @@ class HomeController extends Controller
             $book->avg_rating = round($book->posts_avg_rating ?? 0, 1);
         }
 
-        $featuredArticle = Article::with('user')->where('is_featured', true)->latest()->first();
-        $sidebarArticles = Article::with('user')->where('is_featured', false)->latest()->take(2)->get();
+        $featuredArticle = Article::with('user')->where('is_featured', true)->where('is_active', true)->latest()->first();
+        $sidebarArticles = Article::with('user')->where('is_featured', false)->where('is_active', true)->latest()->take(2)->get();
         $categories = Category::withCount('books')->orderBy('name', 'asc')->get();
 
         // --- LẤY QUOTE NGẪU NHIÊN THEO NGÀY ---
@@ -91,16 +91,43 @@ class HomeController extends Controller
             'members' => \App\Models\User::count(),
             'reviews' => Post::where('status', 'published')->count(),
             'comments' => Comment::count(),
+            'book_views' => Book::where('is_approved', true)->sum('view_count'), // Tổng lượt đọc sách
+            'post_views' => Post::where('status', 'published')->sum('view_count'), // Tổng lượt đọc bài
+            'authors' => \App\Models\Author::count(), // Số tác giả
+            'categories' => Category::count(), // Số thể loại
+            'post_likes' => Like::count(), // Lượt thích bài review
+            'comment_likes' => CommentLike::count(), // Lượt thích bình luận
         ];
 
         // --- SÁCH NGẪU NHIÊN "HÔM NAY ĐỌC GÌ?" ---
-        $allApprovedBooks = Book::where('is_approved', true)->get();
+        $allApprovedBooks = Book::where('is_approved', true)
+            ->withAvg(['posts'], 'rating')
+            ->get();
         $randomBook = null;
         if ($allApprovedBooks->count() > 0) {
             // Dùng ngày làm seed để cùng ngày hiển thị cùng sách
             $dayOfYear = now()->dayOfYear + now()->year;
             $randomBook = $allApprovedBooks[$dayOfYear % $allApprovedBooks->count()];
+            // Gán avg_rating từ posts
+            $randomBook->avg_rating = round($randomBook->posts_avg_rating ?? 0, 1);
         }
+
+        // --- BÀI REVIEW NỔI BẬT (FEATURED POSTS) ---
+        // Mới nhất - sắp xếp theo ngày tạo
+        $latestPosts = Post::with(['user', 'book'])
+            ->where('status', 'published')
+            ->whereNotNull('thumbnail')
+            ->orderByDesc('created_at')
+            ->take(8)
+            ->get();
+
+        // Hot nhất - sắp xếp theo lượt xem
+        $hotPosts = Post::with(['user', 'book'])
+            ->where('status', 'published')
+            ->whereNotNull('thumbnail')
+            ->orderByDesc('view_count')
+            ->take(8)
+            ->get();
 
         // Truyền biến $latestReviews vào view
         return view('home', compact(
@@ -112,7 +139,9 @@ class HomeController extends Controller
             'sidebarArticles',
             'dailyQuote',
             'communityStats',
-            'randomBook'
+            'randomBook',
+            'latestPosts',
+            'hotPosts'
         ));
     }
 
@@ -173,6 +202,37 @@ class HomeController extends Controller
         return response()->json(['success' => true, 'liked' => $liked, 'count' => $count, 'type' => $type]);
     }
 
+    // --- LOGIC LƯU BÀI VIẾT (SAVE POST) ---
+    public function toggleSavePost(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $request->validate(['post_id' => 'required|integer|exists:posts,id']);
+        $userId = Auth::id();
+        $postId = $request->post_id;
+
+        $user = Auth::user();
+        $isSaved = $user->savedPosts()->where('post_id', $postId)->exists();
+
+        if ($isSaved) {
+            // Bỏ lưu
+            $user->savedPosts()->detach($postId);
+            $saved = false;
+        } else {
+            // Lưu bài viết
+            $user->savedPosts()->attach($postId);
+            $saved = true;
+        }
+
+        return response()->json([
+            'success' => true,
+            'saved' => $saved,
+            'message' => $saved ? 'Đã lưu bài viết!' : 'Đã bỏ lưu bài viết!'
+        ]);
+    }
+
     // --- LOGIC REPLY (ĐÃ SỬA LỖI DATABASE) ---
     public function storeReply(Request $request, $id)
     {
@@ -206,11 +266,21 @@ class HomeController extends Controller
                 \Log::error("Lỗi gửi thông báo: " . $e->getMessage());
             }
         }
+
+        $equippedFrame = $user->equippedFrame();
+        $frameUrl = null;
+        if ($equippedFrame) {
+            $frameUrl = \Illuminate\Support\Str::startsWith($equippedFrame->frame_image, 'http')
+                ? $equippedFrame->frame_image
+                : asset('storage/' . $equippedFrame->frame_image);
+        }
+
         return response()->json([
             'success' => true,
             'reply_id' => $reply->id,
             'user_name' => $user->name,
             'user_avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random',
+            'user_frame' => $frameUrl,
             'content' => $reply->content,
             'time' => 'Vừa xong'
         ]);
@@ -250,18 +320,72 @@ class HomeController extends Controller
         $unreadCount = $user->unreadNotifications->count();
 
         $formattedNotifications = $notifications->map(function ($notification) {
-            $isSystemNotification = isset($notification->data['icon']);
+            $dbType = $notification->type;
+            $dataType = $notification->data['type'] ?? '';
+
+            // Danh sách các class Notification là System
+            $systemClasses = [
+                'App\Notifications\NewReportNotification',
+                'App\Notifications\NewBookRequestNotification',
+                'App\Notifications\BookApprovedNotification',
+                'App\Notifications\AdminNewPostNotification'
+            ];
+
+            $systemTypes = ['new_report', 'book_request', 'book_approved', 'admin_new_post'];
+
+            // Check nếu là system notification
+            $isSystemNotification = in_array($dbType, $systemClasses) || in_array($dataType, $systemTypes) || isset($notification->data['icon']);
+
+            // Xác định Type chuẩn
+            $type = $dataType ?: match ($dbType) {
+                'App\Notifications\NewReportNotification' => 'new_report',
+                'App\Notifications\NewBookRequestNotification' => 'book_request',
+                'App\Notifications\BookApprovedNotification' => 'book_approved',
+                'App\Notifications\AdminNewPostNotification' => 'admin_new_post',
+                default => ''
+            };
+
+            // Mặc định cho User notification
+            $title = $notification->data['title'] ?? '';
+            $icon = $notification->data['icon'] ?? null;
+            $color = $notification->data['color'] ?? 'text-green-600';
+
+            // Nếu là System thì set cứng Icon/Title theo Type
+            if ($isSystemNotification) {
+                switch ($type) {
+                    case 'new_report':
+                        $icon = 'fas fa-flag';
+                        $title = 'Báo cáo mới';
+                        $color = 'text-yellow-600';
+                        break;
+                    case 'book_request':
+                        $icon = 'fas fa-book';
+                        $title = 'Gợi ý sách mới';
+                        $color = 'text-yellow-600';
+                        break;
+                    case 'book_approved':
+                        $icon = 'fas fa-check-circle';
+                        $title = 'Sách được duyệt';
+                        $color = 'text-green-600';
+                        break;
+                    case 'admin_new_post':
+                        $icon = 'fas fa-file-contract';
+                        $title = 'Bài đăng mới ';
+                        $color = 'text-red-600';
+                        break;
+                }
+            }
 
             return [
                 'id' => $notification->id,
                 'is_system' => $isSystemNotification,
-                'title' => $notification->data['title'] ?? 'Thông báo hệ thống',
-                'icon' => $notification->data['icon'] ?? null,
-                'color' => $notification->data['color'] ?? 'text-green-600',
+                'title' => $title,
+                'icon' => $icon,
+                'color' => $color,
                 'user_avatar' => $notification->data['user_avatar'] ?? 'https://ui-avatars.com/api/?name=User',
-                'user_name' => $notification->data['user_name'] ?? 'Ai đó',
+                'user_name' => $notification->data['user_name'] ?? '', // Bỏ default "Ai đó" để handle ở fontend nếu cần, hoặc để rỗng
                 'message' => $notification->data['message'] ?? 'đã tương tác với bạn',
-                'post_title' => \Str::limit($notification->data['post_title'] ?? '', 50),
+                'post_title' => \Str::limit($notification->data['post_title'] ?? ($notification->data['book_title'] ?? ''), 50),
                 'time' => $notification->created_at->diffForHumans(),
                 'read_at' => $notification->read_at,
                 'link' => route('notification.read', $notification->id)

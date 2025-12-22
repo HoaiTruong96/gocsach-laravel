@@ -17,7 +17,7 @@ class ProfileController extends Controller
     public function update(Request $request)
     {
         $user = Auth::user();
-        
+
         if (!$user) {
             return response()->json(['success' => false, 'message' => 'Bạn cần đăng nhập!'], 401);
         }
@@ -26,20 +26,22 @@ class ProfileController extends Controller
         $request->validate([
             'name' => 'required|string|max:100',
             'bio' => 'nullable|string|max:500',
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
+            'avatar_url' => 'nullable|url|max:500',
         ], [
             'name.required' => 'Tên hiển thị là bắt buộc.',
             'name.max' => 'Tên không được quá 100 ký tự.',
             'bio.max' => 'Giới thiệu không được quá 500 ký tự.',
             'avatar.image' => 'File phải là hình ảnh.',
             'avatar.max' => 'Ảnh không được quá 2MB.',
+            'avatar_url.url' => 'Đường dẫn ảnh không hợp lệ.',
         ]);
 
         /** @var \App\Models\User $user */
         $user->name = $request->input('name');
         $user->bio = $request->input('bio');
 
-        // Xử lý upload avatar
+        // Xử lý upload avatar (ưu tiên file, sau đó là URL)
         if ($request->hasFile('avatar')) {
             // Xóa avatar cũ nếu có và không phải URL bên ngoài
             if ($user->avatar && !Str::startsWith($user->avatar, 'http')) {
@@ -49,6 +51,13 @@ class ProfileController extends Controller
             // Lưu avatar mới
             $path = $request->file('avatar')->store('avatars', 'public');
             $user->avatar = '/storage/' . $path;
+        } elseif ($request->filled('avatar_url')) {
+            // Xóa avatar cũ nếu có và không phải URL bên ngoài
+            if ($user->avatar && !Str::startsWith($user->avatar, 'http')) {
+                Storage::delete('public/' . str_replace('/storage/', '', $user->avatar));
+            }
+            // Sử dụng URL
+            $user->avatar = $request->avatar_url;
         }
 
         $user->save();
@@ -70,12 +79,14 @@ class ProfileController extends Controller
         if ($id) {
             // [QUAN TRỌNG] Thêm with('activeBadges') để lấy danh hiệu còn hạn
             $user = User::with('activeBadges')->find($id);
-            
-            if (!$user) return redirect()->route('home')->with('error', 'Người dùng không tồn tại!');
+
+            if (!$user)
+                return redirect()->route('home')->with('error', 'Người dùng không tồn tại!');
         } else {
             $user = Auth::user();
-            if (!$user) return redirect()->route('login');
-            
+            if (!$user)
+                return redirect()->route('login');
+
             // Nếu là chính mình, nạp thêm quan hệ badges vào
             $user->load('activeBadges');
         }
@@ -86,11 +97,11 @@ class ProfileController extends Controller
         $totalFollowing = $user->followings()->count();
         $totalFollowers = $user->followers()->count();
 
-        // 3. Lấy danh sách bài Review (CÓ PHÂN QUYỀN)
+        // 3. Lấy danh sách bài Review (CÓ PHÂN QUYỀN) - PHÂN TRANG 10 BÀI
         $reviewsQuery = $user->posts()
-                        ->with('book') // Lấy kèm thông tin sách
-                        ->withCount(['likes', 'comments'])
-                        ->orderBy('created_at', 'desc');
+            ->with('book') // Lấy kèm thông tin sách
+            ->withCount(['likes', 'comments'])
+            ->orderBy('created_at', 'desc');
 
         // Kiểm tra quyền xem:
         // Nếu người xem KHÔNG PHẢI là chủ profile (Khách) -> Chỉ lấy bài đã duyệt (published)
@@ -99,28 +110,42 @@ class ProfileController extends Controller
         }
         // Nếu là chủ nhà -> Xem hết (pending, published, rejected)
 
-        $reviews = $reviewsQuery->paginate(10);
+        // Phân trang 10 bài/trang
+        $reviews = $reviewsQuery->paginate(10, ['*'], 'review_page')->withQueryString();
 
         // 4. Lấy sách trong tủ
         $query = $user->bookshelves()->orderByPivot('created_at', 'desc');
 
         if ($request->has('status')) {
             $status = $request->get('status');
-            if ($status == 'favorites') $query->wherePivot('status', 'wishlist');
-            elseif ($status == 'reading') $query->wherePivot('status', 'reading');
-            elseif ($status == 'completed') $query->wherePivot('status', 'completed');
+            if ($status == 'favorites')
+                $query->wherePivot('status', 'wishlist');
+            elseif ($status == 'reading')
+                $query->wherePivot('status', 'reading');
+            elseif ($status == 'completed')
+                $query->wherePivot('status', 'completed');
         }
 
         $myBooks = $query->take(12)->get();
 
-        // 5. Lấy danh sách sách đề xuất (do user tạo)
+        // 5. Lấy danh sách sách đề xuất (do user tạo) - PHÂN TRANG 12 SÁCH
         // Chỉ hiển thị cho chính chủ profile
         $suggestedBooks = collect();
+        $totalSuggestedBooks = 0;
+        $savedPosts = collect();
         if (Auth::id() == $user->id) {
+            $totalSuggestedBooks = Book::where('created_by_user_id', $user->id)->count();
+            // Phân trang 12 sách/trang
             $suggestedBooks = Book::where('created_by_user_id', $user->id)
-                                ->orderBy('created_at', 'desc')
-                                ->take(12)
-                                ->get();
+                ->orderBy('created_at', 'desc')
+                ->paginate(12, ['*'], 'book_page')->withQueryString();
+            
+            // 6. Lấy danh sách bài viết đã lưu
+            $savedPosts = $user->savedPosts()
+                ->with(['user', 'book', 'likes', 'comments.user'])
+                ->withCount(['likes', 'comments'])
+                ->orderByPivot('created_at', 'desc')
+                ->get();
         }
 
         return view('profile', [
@@ -128,11 +153,63 @@ class ProfileController extends Controller
             'reviews' => $reviews,
             'myBooks' => $myBooks,
             'suggestedBooks' => $suggestedBooks,
+            'savedPosts' => $savedPosts,
             'totalBooks' => $totalBooks,
             'totalReviews' => $totalReviews,
+            'totalSuggestedBooks' => $totalSuggestedBooks,
             'totalFollowing' => $totalFollowing,
             'totalFollowers' => $totalFollowers,
             'isOwnProfile' => Auth::id() == $user->id,
+        ]);
+    }
+
+    /**
+     * Trang xem tất cả bài review của user
+     */
+    public function allReviews($id)
+    {
+        $user = User::with('activeBadges')->findOrFail($id);
+
+        // Lấy danh sách bài Review (CÓ PHÂN QUYỀN)
+        $reviewsQuery = $user->posts()
+            ->with('book')
+            ->withCount(['likes', 'comments'])
+            ->orderBy('created_at', 'desc');
+
+        // Nếu không phải chủ profile -> Chỉ lấy bài đã duyệt
+        if (Auth::id() != $user->id) {
+            $reviewsQuery->where('status', 'published');
+        }
+
+        $reviews = $reviewsQuery->paginate(10);
+
+        return view('profile-reviews', [
+            'user' => $user,
+            'reviews' => $reviews,
+            'isOwnProfile' => Auth::id() == $user->id,
+        ]);
+    }
+
+    /**
+     * Trang xem tất cả sách đề xuất của user
+     */
+    public function allSuggestedBooks($id)
+    {
+        $user = User::with('activeBadges')->findOrFail($id);
+
+        // Chỉ cho phép chính chủ xem trang này
+        if (Auth::id() != $user->id) {
+            return redirect()->route('profile', $id)->with('error', 'Bạn không có quyền xem trang này.');
+        }
+
+        $suggestedBooks = Book::where('created_by_user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(12);
+
+        return view('profile-suggested-books', [
+            'user' => $user,
+            'suggestedBooks' => $suggestedBooks,
+            'isOwnProfile' => true,
         ]);
     }
 
@@ -144,26 +221,26 @@ class ProfileController extends Controller
         $validated = $request->validate([
             'avatar_frame_id' => 'required|exists:avatar_frames,id'
         ]);
-        
+
         $user = Auth::user();
-        
+
         // Kiểm tra user có sở hữu frame này không
         if (!$user->avatarFrames()->where('avatar_frame_id', $validated['avatar_frame_id'])->exists()) {
             return response()->json(['error' => 'Bạn chưa sở hữu khung avatar này!'], 403);
         }
-        
+
         // Gỡ tất cả khung cũ
         $user->avatarFrames()->updateExistingPivot(
             $user->avatarFrames->pluck('id')->toArray(),
             ['is_equipped' => false]
         );
-        
+
         // Trang bị khung mới
         $user->avatarFrames()->updateExistingPivot(
             $validated['avatar_frame_id'],
             ['is_equipped' => true]
         );
-        
+
         return response()->json(['success' => true, 'message' => 'Đã trang bị khung avatar!']);
     }
 
@@ -173,13 +250,13 @@ class ProfileController extends Controller
     public function unequipAvatarFrame()
     {
         $user = Auth::user();
-        
+
         // Gỡ tất cả khung
         $user->avatarFrames()->updateExistingPivot(
             $user->avatarFrames->pluck('id')->toArray(),
             ['is_equipped' => false]
         );
-        
+
         return response()->json(['success' => true, 'message' => 'Đã gỡ khung avatar!']);
     }
 }

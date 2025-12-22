@@ -11,66 +11,122 @@ use Illuminate\Support\Str;
 use App\Notifications\NewLikeNotification;
 use App\Notifications\PostCommentedNotification;
 use App\Notifications\CommentLikedNotification;
+use App\Notifications\NewPostNotification;
+use App\Notifications\AdminNewPostNotification;
+use Illuminate\Support\Facades\Notification;
+use App\Models\User;
 
 class PostController extends Controller
 {
-   public function store(Request $request)
-   {
+    public function store(Request $request)
+    {
         // 1. Validate dữ liệu
         $request->validate([
             'book_id' => 'required|exists:books,id',
-            'rating'  => 'required|integer|min:1|max:5',
-            'title'   => 'required|string|max:255',
+            'rating' => 'required|numeric|min:1|max:5',
+            'title' => 'required|string|max:255',
             'content' => 'required|min:10',
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
+            'thumbnail_url' => 'nullable|url|max:500',
         ], [
+            'book_id.required' => 'Vui lòng chọn một cuốn sách để review.',
             'book_id.exists' => 'Vui lòng chọn một cuốn sách hợp lệ.',
+            'rating.required' => 'Vui lòng chọn số sao đánh giá.',
+            'rating.numeric' => 'Điểm đánh giá phải là số từ 1 đến 5.',
+            'rating.min' => 'Điểm đánh giá phải từ 1 sao trở lên.',
+            'rating.max' => 'Điểm đánh giá không được quá 5 sao.',
             'title.required' => 'Bạn chưa nhập tiêu đề bài viết.',
-            'content.min' => 'Nội dung review quá ngắn.',
+            'content.required' => 'Bạn chưa nhập nội dung bài review.',
+            'content.min' => 'Nội dung review quá ngắn (tối thiểu 10 ký tự).',
             'thumbnail.image' => 'File tải lên phải là hình ảnh.',
             'thumbnail.max' => 'Ảnh không được lớn hơn 2MB.',
+            'thumbnail_url.url' => 'Đường dẫn ảnh không hợp lệ.',
         ]);
 
-        // 2. Xử lý upload thumbnail (nếu có)
+        // 2. Xử lý upload thumbnail (ưu tiên file, sau đó là URL)
         $thumbnailPath = null;
         if ($request->hasFile('thumbnail')) {
             $thumbnailPath = $request->file('thumbnail')->store('posts/thumbnails', 'public');
+        } elseif ($request->filled('thumbnail_url')) {
+            $thumbnailPath = $request->thumbnail_url;
         }
 
         // 3. Tạo Slug
         $slug = Str::slug($request->title) . '-' . time();
 
-        // 4. Lưu vào Database với status = pending
+        // 4. Xác định trạng thái: Admin = tự động duyệt, User = chờ duyệt
+        $isAdmin = Auth::user()->role === 'admin';
+        $status = $isAdmin ? 'published' : 'pending';
+
+        // 5. Lưu vào Database
         $post = Post::create([
-            'user_id'   => Auth::id(),
-            'book_id'   => $request->input('book_id'),
-            'title'     => $request->input('title'),
-            'slug'      => $slug,
-            'rating'    => $request->input('rating'),
-            'content'   => $request->input('content'),
+
+            'user_id' => Auth::id(),
+            'book_id' => $request->input('book_id'),
+            'title' => $request->input('title'),
+            'slug' => $slug,
+            'rating' => $request->input('rating'),
+            'content' => $request->input('content'),
             'thumbnail' => $thumbnailPath,
-            'status'    => 'pending', // Chờ Admin duyệt
+            'status' => $status,
         ]);
 
-        // 5. Cập nhật tiến độ Thử Thách (Chỉ khi bài đã được duyệt)
-        // Lưu ý: Logic này thường được đặt ở Admin Controller khi duyệt bài
-        // Ở đây chỉ là placeholder, sẽ không chạy vì status = pending
+        // 6. Cập nhật tiến độ Thử Thách (Chỉ khi bài đã được duyệt - admin)
         if ($post->status == 'published') {
             Auth::user()->updateChallengeProgress();
         }
-        
+
+        // 7. Thông báo phù hợp với trạng thái
+        $message = $isAdmin
+            ? 'Bài viết đã được đăng thành công!'
+            : 'Đã gửi bài viết! Vui lòng chờ Admin phê duyệt.';
+
+        // 8. Gửi thông báo cho Followers (Nếu bài viết được published ngay)
+        if ($post->status == 'published') {
+            try {
+                $followers = Auth::user()->followers;
+                // Có thể lọc những người đã tắt thông báo nếu có tính năng đó
+                Notification::send($followers, new NewPostNotification([
+                    'author_name' => Auth::user()->name,
+                    'post_title' => $post->title,
+                    'link' => route('detail', $post->book->slug), // Link đến sách
+                    'avatar' => Auth::user()->avatar
+                ]));
+            } catch (\Exception $e) {
+                \Log::error("Failed to send follower notification: " . $e->getMessage());
+            }
+        }
+
+        // 9. Gửi cảnh báo cho Admin (New Post Alert)
+        try {
+            $admins = User::where('role', 'admin')->get();
+            // Thêm trạng thái vào tiêu đề
+            $statusMsg = $post->status == 'pending' ? ' (Chờ duyệt)' : '';
+
+            Notification::send($admins, new AdminNewPostNotification([
+                'author_name' => Auth::user()->name,
+                'post_title' => $post->title . $statusMsg,
+                'link' => route('detail', $post->book->slug),
+                'avatar' => Auth::user()->avatar
+            ]));
+        } catch (\Exception $e) {
+            \Log::error("Failed to send admin notification: " . $e->getMessage());
+        }
+
         return redirect()->route('profile', Auth::id())
-                        ->with('success', 'Đã gửi bài viết! Vui lòng chờ Admin phê duyệt.');
-   }
+            ->with('success', $message);
+    }
 
     // Toggle Like (Giữ nguyên)
     public function toggleLike($id)
     {
         $user = Auth::user();
-        if (!$user) return response()->json(['error' => 'Bạn cần đăng nhập!'], 401);
+        if (!$user)
+            return response()->json(['error' => 'Bạn cần đăng nhập!'], 401);
 
         $post = Post::find($id);
-        if (!$post) return response()->json(['error' => 'Bài viết không tồn tại!'], 404);
+        if (!$post)
+            return response()->json(['error' => 'Bài viết không tồn tại!'], 404);
 
         // Tìm like
         $like = Like::where('user_id', $user->id)->where('post_id', $id)->first();
@@ -93,8 +149,8 @@ class PostController extends Controller
         $count = Like::where('post_id', $id)->count();
 
         return response()->json([
-            'success' => true, 
-            'liked' => $liked, 
+            'success' => true,
+            'liked' => $liked,
             'count' => $count
         ]);
     }
@@ -103,12 +159,14 @@ class PostController extends Controller
     public function postComment(Request $request, $id)
     {
         $user = Auth::user();
-        if (!$user) return response()->json(['error' => 'Bạn cần đăng nhập!'], 401);
+        if (!$user)
+            return response()->json(['error' => 'Bạn cần đăng nhập!'], 401);
 
         $request->validate(['content' => 'required']);
 
         $post = Post::find($id);
-        if (!$post) return response()->json(['error' => 'Bài viết không tồn tại!'], 404);
+        if (!$post)
+            return response()->json(['error' => 'Bài viết không tồn tại!'], 404);
 
         // Lưu comment
         $comment = Comment::create([
@@ -119,7 +177,15 @@ class PostController extends Controller
 
         // Gửi thông báo (Trừ khi tự comment bài mình)
         if ($post->user_id != $user->id) {
-           $post->user->notify(new PostCommentedNotification($user, $post));
+            $post->user->notify(new PostCommentedNotification($user, $post));
+        }
+
+        $equippedFrame = $user->equippedFrame();
+        $frameUrl = null;
+        if ($equippedFrame) {
+            $frameUrl = \Illuminate\Support\Str::startsWith($equippedFrame->frame_image, 'http')
+                ? $equippedFrame->frame_image
+                : asset('storage/' . $equippedFrame->frame_image);
         }
 
         // Đếm lại số comment
@@ -129,10 +195,81 @@ class PostController extends Controller
             'success' => true,
             'comment_id' => $comment->id,
             'user_name' => $user->name,
-            'user_avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=random',
+            'user_avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random',
+            'user_frame' => $frameUrl,
             'content' => $comment->content,
             'count' => $commentCount,
             'created_at' => 'Vừa xong'
         ]);
+    }
+
+    // Hiển thị form chỉnh sửa bài review
+    public function edit($id)
+    {
+        $user = Auth::user();
+        $post = Post::with('book')->findOrFail($id);
+
+        // Chỉ cho phép chủ bài viết sửa
+        if ($post->user_id !== $user->id) {
+            abort(403, 'Bạn không có quyền sửa bài viết này.');
+        }
+
+        return view('edit-review', compact('user', 'post'));
+    }
+
+    // Cập nhật bài review
+    public function update(Request $request, $id)
+    {
+        $user = Auth::user();
+        $post = Post::findOrFail($id);
+
+        // Chỉ cho phép chủ bài viết sửa
+        if ($post->user_id !== $user->id) {
+            abort(403, 'Bạn không có quyền sửa bài viết này.');
+        }
+
+        // Validate dữ liệu
+        $request->validate([
+            'rating' => 'required|numeric|min:1|max:5',
+            'title' => 'required|string|max:255',
+            'content' => 'required|min:10',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
+            'thumbnail_url' => 'nullable|url|max:500',
+        ], [
+            'title.required' => 'Bạn chưa nhập tiêu đề bài viết.',
+            'content.min' => 'Nội dung review quá ngắn.',
+            'thumbnail.image' => 'File tải lên phải là hình ảnh.',
+            'thumbnail.max' => 'Ảnh không được lớn hơn 2MB.',
+            'thumbnail_url.url' => 'Đường dẫn ảnh không hợp lệ.',
+        ]);
+
+        // Xử lý upload thumbnail (ưu tiên file, sau đó là URL)
+        $thumbnailPath = $post->thumbnail; // Giữ ảnh cũ nếu không thay đổi
+        if ($request->hasFile('thumbnail')) {
+            $thumbnailPath = $request->file('thumbnail')->store('posts/thumbnails', 'public');
+        } elseif ($request->filled('thumbnail_url')) {
+            $thumbnailPath = $request->thumbnail_url;
+        }
+
+        // Xác định trạng thái: Admin = tự động duyệt, User = chờ duyệt lại
+        $isAdmin = $user->role === 'admin';
+        $status = $isAdmin ? 'published' : 'pending';
+
+        // Cập nhật bài viết
+        $post->update([
+            'title' => $request->input('title'),
+            'rating' => $request->input('rating'),
+            'content' => $request->input('content'),
+            'thumbnail' => $thumbnailPath,
+            'status' => $status,
+        ]);
+
+        // Thông báo phù hợp với trạng thái
+        $message = $isAdmin
+            ? 'Bài viết đã được cập nhật thành công!'
+            : 'Bài viết đã được cập nhật! Vui lòng chờ Admin phê duyệt lại.';
+
+        return redirect()->route('profile', $user->id)
+            ->with('success', $message);
     }
 }

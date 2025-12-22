@@ -52,28 +52,30 @@
             {{-- Search Bar - Ẩn trên trang Tìm kiếm vì đã có form riêng --}}
             @if(!request()->routeIs('books.search'))
                 <div class="hidden md:flex flex-1 max-w-2xl px-8 relative z-40">
-                    <form action="{{ route('books.search') }}" method="GET" class="relative w-full flex items-center"
+                    <form action="{{ route('books.list') }}" method="GET" class="relative w-full flex items-center"
                         id="header-search-form">
+                        
+                        {{-- Hidden Input cho Category --}}
+                        <input type="hidden" name="categories[]" id="header-category-input" value="">
 
                         {{-- Dropdown Danh Mục --}}
                         <div class="absolute left-0 pl-1 z-50 group pb-4 -mb-4">
                             <div
                                 class="flex items-center cursor-pointer bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full transition relative z-20">
-                                <span class="text-gray-600 text-xs font-bold mr-1">Danh mục</span>
-                                <i
-                                    class="fas fa-chevron-down text-[10px] text-gray-500 transition-transform group-hover:rotate-180"></i>
+                                <span id="header-category-label" class="text-gray-600 text-xs font-bold mr-1 max-w-[80px] truncate">Danh mục</span>
+                                <i class="fas fa-chevron-down text-[10px] text-gray-500 transition-transform group-hover:rotate-180"></i>
                             </div>
                             <div
                                 class="dropdown-menu dropdown-bridge absolute top-full left-0 mt-0 bg-white rounded-xl shadow-2xl border border-gray-100 p-4 min-w-[600px] max-w-[800px] z-10">
                                 <div class="grid grid-rows-[repeat(10,minmax(0,1fr))] grid-flow-col gap-x-8 gap-y-2">
-                                    <a href="{{ route('books.list') }}"
-                                        class="text-sm text-gray-600 hover:text-brand-green hover:font-bold truncate flex items-center">
+                                    <div onclick="selectHeaderCategory('', 'Danh mục')"
+                                        class="text-sm text-gray-600 hover:text-brand-green hover:font-bold truncate flex items-center cursor-pointer py-0.5">
                                         <i class="fas fa-caret-right text-gray-300 mr-2 text-xs"></i> Tất cả
-                                    </a>
+                                    </div>
                                     @if(isset($menuCategories))
                                         @foreach($menuCategories as $cat)
-                                            <a href="{{ route('books.list', ['category_id' => $cat->id]) }}"
-                                                class="text-sm text-gray-600 hover:text-brand-green hover:font-bold truncate block py-0.5">{{ $cat->name }}</a>
+                                            <div onclick="selectHeaderCategory('{{ $cat->name }}', '{{ $cat->name }}')"
+                                                class="text-sm text-gray-600 hover:text-brand-green hover:font-bold truncate block py-0.5 cursor-pointer">{{ $cat->name }}</div>
                                         @endforeach
                                     @endif
                                 </div>
@@ -83,13 +85,20 @@
                         {{-- Input tìm kiếm --}}
                         <input type="text" id="header-search-input" name="keyword" value="{{ request('keyword') }}"
                             autocomplete="off" placeholder="Nhập tên sách, tác giả..."
-                            class="w-full bg-gray-50 border border-gray-200 hover:border-brand-green/30 focus:border-brand-green/50 rounded-full py-2.5 pl-28 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green/10 transition-all text-gray-700 placeholder-gray-400 shadow-inner">
+                            class="w-full bg-gray-50 border border-gray-200 hover:border-brand-green/30 focus:border-brand-green/50 rounded-full py-2.5 pl-40 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green/10 transition-all text-gray-700 placeholder-gray-400 shadow-inner">
 
                         <button type="submit"
                             class="absolute right-2 top-1.5 w-8 h-8 bg-brand-green text-white rounded-full flex items-center justify-center hover:bg-brand-accent transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                             <i class="fas fa-search text-xs"></i>
                         </button>
                     </form>
+                    
+                    <script>
+                        function selectHeaderCategory(value, label) {
+                            document.getElementById('header-category-input').value = value;
+                            document.getElementById('header-category-label').innerText = label;
+                        }
+                    </script>
 
                     {{-- Kết quả Ajax (Đặt NGOÀI form để tránh form submit) --}}
                     <div id="header-search-results"
@@ -110,10 +119,6 @@
                                 class="{{ Auth::user()->unreadNotifications->count() > 0 ? '' : 'hidden' }} absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white animate-bounce">
                                 <span id="notification-count">{{ Auth::user()->unreadNotifications->count() }}</span>
                             </span>
-                            <span id="notification-badge"
-                                class="{{ Auth::user()->unreadNotifications->count() > 0 ? '' : 'hidden' }} absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white animate-bounce">
-                                <span id="notification-count">{{ Auth::user()->unreadNotifications->count() }}</span>
-                            </span>
                         </button>
                         <div
                             class="dropdown-menu dropdown-bridge absolute right-0 top-full mt-0 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in z-50 origin-top-right">
@@ -126,42 +131,94 @@
                             <div id="notification-list" class="max-h-80 overflow-y-auto">
                                 @forelse(Auth::user()->notifications as $notification)
                                     @php
-                                        $isSystemNotification = isset($notification->data['icon']);
+                                        // Check both Class Name (DB type column) and Data Type (json data)
+                                        $dbType = $notification->type;
+                                        $dataType = $notification->data['type'] ?? '';
+                                        
+                                        $systemClasses = [
+                                            'App\Notifications\NewReportNotification',
+                                            'App\Notifications\NewBookRequestNotification', 
+                                            'App\Notifications\BookApprovedNotification',
+                                            'App\Notifications\AdminNewPostNotification'
+                                        ];
+                                        
+                                        $systemTypes = ['new_report', 'book_request', 'book_approved', 'admin_new_post'];
+                                        
+                                        $isSystemNotification = in_array($dbType, $systemClasses) || in_array($dataType, $systemTypes);
+                                        
+                                        // Map Icon & Color based on dataType (preferred) or infer from dbType
+                                        $type = $dataType ?: match($dbType) {
+                                            'App\Notifications\NewReportNotification' => 'new_report',
+                                            'App\Notifications\NewBookRequestNotification' => 'book_request',
+                                            'App\Notifications\BookApprovedNotification' => 'book_approved',
+                                            'App\Notifications\AdminNewPostNotification' => 'admin_new_post',
+                                            default => ''
+                                        };
+
+                                        $icon = 'fas fa-bell';
+                                        $iconColor = 'text-yellow-600';
+                                        $title = '';
+                                        
+                                        switch($type) {
+                                            case 'new_report':
+                                                $icon = 'fas fa-flag';
+                                                $title = 'Báo cáo mới';
+                                                break;
+                                            case 'book_request':
+                                                $icon = 'fas fa-book';
+                                                $title = 'Gợi ý sách mới';
+                                                break;
+                                            case 'book_approved':
+                                                $icon = 'fas fa-check-circle';
+                                                $iconColor = 'text-green-600';
+                                                $title = 'Sách được duyệt';
+                                                break;
+                                            case 'admin_new_post':
+                                                $icon = 'fas fa-file-contract';
+                                                $iconColor = 'text-red-600';
+                                                $title = 'Bài đăng mới ';
+                                                break;
+                                            case 'new_book_follower':
+                                                $icon = 'fas fa-book-open';
+                                                $title = 'Sách mới từ người dùng';
+                                                break;
+                                        }
+                                        
+                                        $bgColor = str_contains($iconColor, 'red') ? 'bg-red-100' : 'bg-green-100';
                                     @endphp
 
                                     <a href="{{ route('notification.read', $notification->id) }}"
                                         class="flex gap-3 px-4 py-3 hover:bg-gray-50 transition border-b border-gray-50 {{ $notification->read_at ? 'opacity-60 grayscale-[0.5]' : 'bg-blue-50/30' }}">
+                                        {{-- DEBUG removed --}}
                                         <div class="flex-shrink-0 mt-1">
                                             @if($isSystemNotification)
-                                                @php
-                                                    // Xác định màu nền icon dựa vào loại thông báo
-                                                    $iconColor = $notification->data['color'] ?? 'text-green-600';
-                                                    $bgColor = str_contains($iconColor, 'red') ? 'bg-red-100' : 'bg-green-100';
-                                                @endphp
                                                 <div class="w-8 h-8 rounded-full {{ $bgColor }} flex items-center justify-center">
-                                                    <i class="{{ $notification->data['icon'] }} {{ $iconColor }} text-sm"></i>
-                                                <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                                                    <i
-                                                        class="{{ $notification->data['icon'] }} {{ $notification->data['color'] ?? 'text-green-600' }} text-sm"></i>
+                                                    <i class="{{ $icon }} {{ $iconColor }} text-sm"></i>
                                                 </div>
                                             @else
-                                                <img src="{{ $notification->data['user_avatar'] ?? 'https://ui-avatars.com/api/?name=User' }}"
+                                                <img src="{{ $notification->data['avatar'] ?? 'https://ui-avatars.com/api/?name=User' }}"
                                                     class="w-8 h-8 rounded-full border border-gray-100 object-cover">
                                             @endif
                                         </div>
 
                                         <div class="flex-1">
                                             @if($isSystemNotification)
-                                                <p class="text-sm font-bold text-gray-800">{{ $notification->data['title'] ?? 'Thông báo hệ thống' }}</p>
+                                                <p class="text-sm font-bold text-gray-800">{{ $title }}</p>
                                                 <p class="text-xs text-gray-600 line-clamp-2 mt-0.5">
                                                     {{ $notification->data['message'] ?? '' }}</p>
                                             @else
                                                 <p class="text-sm text-gray-700 line-clamp-2">
-                                                    <span
-                                                        class="font-bold text-gray-900">{{ $notification->data['user_name'] ?? 'Ai đó' }}</span>
+                                                    @php
+                                                        $displayName = $notification->data['uploader_name'] ?? ($notification->data['user_name'] ?? '');
+                                                    @endphp
+                                                    
+                                                    @if($displayName && $displayName !== 'Ai đó')
+                                                        <span class="font-bold text-gray-900">{{ $displayName }}</span>
+                                                    @endif
+                                                    
                                                     {{ $notification->data['message'] ?? 'đã tương tác với bạn' }}
                                                     <span
-                                                        class="font-bold block text-xs text-gray-500 italic mt-0.5">"{{ Str::limit($notification->data['post_title'] ?? '', 50) }}"</span>
+                                                        class="font-bold block text-xs text-gray-500 italic mt-0.5">"{{ Str::limit($notification->data['post_title'] ?? ($notification->data['book_title'] ?? ''), 50) }}"</span>
                                                 </p>
                                             @endif
                                             <p class="text-[10px] text-gray-400 mt-1 flex items-center"><i
@@ -185,16 +242,17 @@
 
                     {{-- User Dropdown --}}
                     <div class="relative group pb-2 -mb-2 z-50">
-                        <a href="{{ route('profile') }}" class="flex items-center gap-2 focus:outline-none py-1 group-hover:opacity-80 transition cursor-pointer relative z-20">
+                        <a href="{{ route('profile') }}"
+                            class="flex items-center gap-2 focus:outline-none py-1 group-hover:opacity-80 transition cursor-pointer relative z-20">
                             @include('partials.user-avatar-with-frame', [
                                 'user' => Auth::user(),
-                                'size' => 'w-14 h-14',
+                                'size' => 'w-10 h-10',
                                 'avatarSize' => 'w-9 h-9'
                             ])
                             <div class="hidden lg:flex flex-col items-start">
                                 <span
                                     class="text-xs font-bold text-gray-700 truncate max-w-[80px]">{{ Auth::user()->name }}</span>
-                                <span class="text-[10px] text-gray-400">Thành viên</span>
+                                <span class="text-[10px] text-gray-400">{{ Auth::user()->role == 'admin' ? 'Quản trị viên' : 'Thành viên' }}</span>
                             </div>
                             <i class="fas fa-chevron-down text-xs text-gray-400 ml-1"></i>
                         </a>
@@ -236,12 +294,13 @@
                     </div>
                 @else
                     {{-- Guest --}}
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2 sm:gap-3">
                         <a href="{{ route('login') }}"
-                            class="text-gray-600 hover:text-brand-green font-bold text-sm px-3 py-2 rounded-lg hover:bg-gray-100 transition hidden sm:block">Đăng
-                            Nhập</a>
+                            class="bg-brand-green text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-full hover:bg-[#16271f] transition font-bold shadow-md text-sm flex items-center gap-2">
+                            <i class="fas fa-sign-in-alt text-xs"></i> <span class="hidden sm:inline">Đăng Nhập</span><span class="sm:hidden">Đăng nhập</span>
+                        </a>
                         <a href="{{ route('register') }}"
-                            class="bg-brand-green text-white px-5 py-2.5 rounded-full hover:bg-[#16271f] transition font-bold shadow-md text-sm flex items-center gap-2">
+                            class="hidden sm:flex items-center gap-2 text-gray-600 hover:text-brand-green font-bold text-sm px-3 py-2 rounded-lg border border-gray-200 hover:border-brand-green hover:bg-gray-50 transition">
                             <i class="fas fa-user-plus text-xs"></i> <span>Đăng Ký</span>
                         </a>
                     </div>
@@ -341,8 +400,11 @@
         <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 bg-gray-50">
                 @auth
                 <div class="flex items-center gap-3 mb-3">
-                    <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}"
-                        class="w-10 h-10 rounded-full border-2 border-brand-green">
+                    @include('partials.user-avatar-with-frame', [
+                        'user' => Auth::user(),
+                        'size' => 'w-12 h-12',
+                        'avatarSize' => 'w-10 h-10'
+                    ])
                     <div>
                         <p class="font-bold text-gray-800 text-sm">{{ Auth::user()->name }}</p>
                         <p class="text-xs text-gray-500">{{ Auth::user()->email }}</p>
@@ -362,11 +424,11 @@
             @else
                 <div class="space-y-2">
                     <a href="{{ route('login') }}"
-                        class="block text-center px-4 py-2.5 border-2 border-brand-green text-brand-green rounded-lg font-bold hover:bg-brand-green hover:text-white transition">Đăng
-                        Nhập</a>
+                        class="block text-center px-4 py-2.5 bg-brand-green text-white rounded-lg font-bold hover:bg-[#16271f] transition shadow-md">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Đăng Nhập</a>
                     <a href="{{ route('register') }}"
-                        class="block text-center px-4 py-2.5 bg-brand-green text-white rounded-lg font-bold">Đăng Ký Miễn
-                        Phí</a>
+                        class="block text-center px-4 py-2.5 border-2 border-gray-200 text-gray-600 rounded-lg font-bold hover:border-brand-green hover:text-brand-green transition">
+                        <i class="fas fa-user-plus mr-2"></i>Đăng Ký Miễn Phí</a>
                 </div>
             @endauth
         </div>
@@ -646,16 +708,6 @@
                         </li>
                     `;
                     });
-
-                    // Link xem tất cả
-                    html += `
-                    <li class="bg-gradient-to-r from-gray-50 to-white text-center p-3 border-t border-gray-100">
-                        <a href="/danh-sach-sach?keyword=${encodeURIComponent(keyword)}" class="text-sm font-bold text-brand-green hover:text-brand-accent transition flex items-center justify-center gap-2">
-                            <span>Xem tất cả kết quả</span>
-                            <i class="fas fa-arrow-right text-xs"></i>
-                        </a>
-                    </li>
-                `;
 
                     html += '</ul>';
                     resultsBox.innerHTML = html;

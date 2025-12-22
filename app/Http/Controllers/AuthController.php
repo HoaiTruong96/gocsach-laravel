@@ -143,14 +143,16 @@ class AuthController extends Controller
     }
 
 
+    // --- 6. QUÊN MẬT KHẨU (QUA EMAIL) ---
 
-    // --- 6. QUÊN MẬT KHẨU (QUA MÃ OTP) ---
-    
     // Hiển thị form nhập email
+
     public function showForgotPasswordForm()
     {
         return view('auth.forgot-password');
     }
+
+    // Gửi link reset password qua email
 
     // Gửi mã OTP qua email
     public function sendResetCode(Request $request)
@@ -185,8 +187,8 @@ class AuthController extends Controller
         // Gửi email chứa mã OTP
         Mail::send([], [], function ($message) use ($request, $code, $user) {
             $message->to($request->email)
-                    ->subject('Mã xác thực đặt lại mật khẩu - Góc Sách')
-                    ->html("
+                ->subject('Mã xác thực đặt lại mật khẩu - Góc Sách')
+                ->html("
                         <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;'>
                             <h2 style='color: #3E5F4E; text-align: center;'>📚 Góc Sách</h2>
                             <p>Xin chào <strong>{$user->name}</strong>,</p>
@@ -245,7 +247,7 @@ class AuthController extends Controller
     public function resendCode(Request $request)
     {
         $request->validate(['email' => 'required|email']);
-        
+
         // Gọi lại hàm sendResetCode
         return $this->sendResetCode($request);
     }

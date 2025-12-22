@@ -1,18 +1,21 @@
 @if(isset($latestReviews) && $latestReviews->count() > 0)
-    <div class="grid grid-cols-1 gap-6">
+    <div class="grid grid-cols-1 gap-4 sm:gap-6">
         @foreach($latestReviews as $comment)
             @php
                 $book = $comment->post->book ?? null;
             @endphp
             {{-- ITEM BÌNH LUẬN (COMMENT) --}}
-            <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+            <div class="bg-white rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
 
                 {{-- 1. HEADER --}}
                 <div class="flex justify-between items-start mb-3">
                     <div class="flex items-center gap-3">
                         <a href="{{ route('public.profile', $comment->user->id) }}" class="flex-shrink-0">
-                            <img src="{{ $comment->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($comment->user->name) . '&background=random' }}"
-                                class="w-10 h-10 rounded-full object-cover border border-gray-200 hover:ring-2 hover:ring-brand-green transition">
+                            @include('partials.user-avatar-with-frame', [
+                                'user' => $comment->user,
+                                'size' => 'w-12 h-12',
+                                'avatarSize' => 'w-10 h-10'
+                            ])
                         </a>
                         <div>
                             <a href="{{ route('public.profile', $comment->user->id) }}"
@@ -53,22 +56,33 @@
 
                 {{-- 3. ACTIONS FOOTER --}}
                 <div class="flex items-center justify-between pt-2 border-t border-gray-50">
-                    <div class="flex gap-4">
+                    <div class="flex gap-3 md:gap-4">
                         <button onclick="handleLike({{ $comment->id }}, 'comment')" id="like-btn-comment-{{ $comment->id }}"
-                            class="flex items-center gap-1 text-xs font-bold {{ Auth::check() && $comment->likes->contains('user_id', Auth::id()) ? 'text-red-500' : 'text-gray-500 hover:text-red-500' }} transition">
+                            class="flex items-center gap-1.5 md:gap-1 text-xs font-bold {{ Auth::check() && $comment->likes->contains('user_id', Auth::id()) ? 'text-red-500' : 'text-gray-500 hover:text-red-500' }} transition">
                             <i id="like-icon-comment-{{ $comment->id }}"
                                 class="{{ Auth::check() && $comment->likes->contains('user_id', Auth::id()) ? 'fas' : 'far' }} fa-heart"></i>
-                            <span>Thích</span>
+                            <span class="hidden md:inline">Thích</span>
                             <span id="like-count-comment-{{ $comment->id }}">{{ $comment->likes_count ?? 0 }}</span>
                         </button>
 
                         <button onclick="toggleReplySection({{ $comment->id }})"
-                            class="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-brand-green transition group">
+                            class="flex items-center gap-1.5 md:gap-1 text-xs font-bold text-gray-500 hover:text-brand-green transition group">
                             <i class="far fa-comment-dots group-hover:scale-110 transition-transform"></i>
-                            <span>Trả lời ({{ $comment->replies->count() }})</span>
+                            <span class="hidden md:inline">Trả lời </span><span>({{ $comment->replies->count() }})</span>
                             <i id="chevron-reply-{{ $comment->id }}"
                                 class="fas fa-chevron-down text-[10px] ml-1 transition-transform duration-300"></i>
                         </button>
+
+                        {{-- Nút Báo cáo Comment --}}
+                        @auth
+                            @if($comment->user_id !== Auth::id())
+                                <button onclick="openReportModal({{ $comment->id }}, 'comment')"
+                                    class="flex items-center gap-1 text-xs font-bold text-gray-400 hover:text-red-500 transition"
+                                    title="Báo cáo bình luận này">
+                                    <i class="far fa-flag"></i>
+                                </button>
+                            @endif
+                        @endauth
                     </div>
 
                     {{-- Link xem chi tiết sách --}}
@@ -88,8 +102,13 @@
                     <div class="space-y-4 mb-4">
                         @forelse($comment->replies as $reply)
                             <div id="comment-{{ $reply->id }}" class="flex gap-2 scroll-mt-24 transition-all duration-500">
-                                <img src="{{ $reply->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($reply->user->name) . '&background=random' }}"
-                                    class="w-7 h-7 rounded-full flex-shrink-0">
+                                <a href="{{ route('public.profile', $reply->user->id) }}" class="flex-shrink-0">
+                                    @include('partials.user-avatar-with-frame', [
+                                        'user' => $reply->user,
+                                        'size' => 'w-9 h-9',
+                                        'avatarSize' => 'w-7 h-7'
+                                    ])
+                                </a>
                                 <div class="flex-1">
                                     <div class="bg-white p-2 rounded-xl rounded-tl-none border border-gray-100 shadow-sm">
                                         <div class="flex justify-between items-center mb-1">
@@ -102,12 +121,24 @@
                                         <p class="text-[11px] text-gray-600">{{ $reply->content }}</p>
                                     </div>
                                     {{-- Like cho reply --}}
-                                    <button onclick="handleLike({{ $reply->id }}, 'comment')" id="like-btn-comment-{{ $reply->id }}"
-                                        class="text-[9px] font-bold ml-2 mt-1 flex items-center gap-1 {{ Auth::check() && $reply->likes->contains('user_id', Auth::id()) ? 'text-red-500' : 'text-gray-400' }}">
-                                        <i id="like-icon-comment-{{ $reply->id }}"
-                                            class="{{ Auth::check() && $reply->likes->contains('user_id', Auth::id()) ? 'fas' : 'far' }} fa-heart"></i>
-                                        <span id="like-count-comment-{{ $reply->id }}">{{ $reply->likes->count() }}</span>
-                                    </button>
+                                    <div class="flex items-center gap-2 ml-2 mt-1">
+                                        <button onclick="handleLike({{ $reply->id }}, 'comment')" id="like-btn-comment-{{ $reply->id }}"
+                                            class="text-[9px] font-bold flex items-center gap-1 {{ Auth::check() && $reply->likes->contains('user_id', Auth::id()) ? 'text-red-500' : 'text-gray-400' }}">
+                                            <i id="like-icon-comment-{{ $reply->id }}"
+                                                class="{{ Auth::check() && $reply->likes->contains('user_id', Auth::id()) ? 'fas' : 'far' }} fa-heart"></i>
+                                            <span id="like-count-comment-{{ $reply->id }}">{{ $reply->likes->count() }}</span>
+                                        </button>
+                                        {{-- Nút Báo cáo Reply --}}
+                                        @auth
+                                            @if($reply->user_id !== Auth::id())
+                                                <button onclick="openReportModal({{ $reply->id }}, 'comment')"
+                                                    class="text-[9px] font-bold text-gray-400 hover:text-red-500 transition"
+                                                    title="Báo cáo">
+                                                    <i class="far fa-flag"></i>
+                                                </button>
+                                            @endif
+                                        @endauth
+                                    </div>
                                 </div>
                             </div>
                         @empty
@@ -118,8 +149,11 @@
                     {{-- Ô NHẬP REPLY --}}
                     @auth
                         <div class="flex gap-2 items-start">
-                            <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&background=random' }}"
-                                class="w-7 h-7 rounded-full flex-shrink-0">
+                            @include('partials.user-avatar-with-frame', [
+                                'user' => Auth::user(),
+                                'size' => 'w-9 h-9',
+                                'avatarSize' => 'w-7 h-7'
+                            ])
                             <div class="flex-1 relative">
                                 <textarea id="reply-input-{{ $comment->id }}" rows="1"
                                     class="w-full text-xs p-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green resize-none pr-16 shadow-sm"
