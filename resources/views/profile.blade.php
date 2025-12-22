@@ -278,142 +278,179 @@
             <div class="lg:col-span-3">
 
                 {{-- ================================================================= --}}
-                {{-- PHẦN 1: SÁCH TÔI ĐỀ XUẤT --}}
+                {{-- TABS NAVIGATION - 4 TABS --}}
                 {{-- ================================================================= --}}
-                @if(Auth::check() && Auth::id() == $user->id)
-                    <div
-                        class="bg-white rounded-xl shadow-soft p-4 mb-8 border border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <h3 class="text-lg font-bold text-brand-green font-serif border-l-4 border-brand-accent pl-3">
-                            Sách Tôi Đề Xuất
-                        </h3>
-
-                        {{-- Nút bấm Đề xuất --}}
-                        <a href="{{ route('books.suggest') }}"
-                            class="text-xs font-bold text-white bg-brand-accent hover:bg-[#c29263] px-4 py-2 rounded-full shadow-sm transition flex items-center gap-2 transform hover:-translate-y-0.5">
-                            <i class="fas fa-plus-circle"></i> Đề xuất sách mới
-                        </a>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                        @if(isset($suggestedBooks) && count($suggestedBooks) > 0)
-                            @foreach($suggestedBooks as $book)
-                                <div
-                                    class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-card hover:-translate-y-1 transition-all duration-300 flex flex-row h-44 relative group">
-
-                                    <div class="w-28 relative flex-shrink-0 bg-gray-200">
-                                        @if($book->is_approved)
-                                            <a href="{{ route('book.show', $book->slug) }}">
-                                        @endif
-                                            @php
-                                                $cover = $book->cover_image ?? null;
-                                                $coverUrl = $cover
-                                                    ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover))
-                                                    : 'https://via.placeholder.com/150x225?text=' . urlencode(Str::limit($book->title, 10));
-                                            @endphp
-                                            <img src="{{ $coverUrl }}"
-                                                class="w-full h-full object-cover transition group-hover:opacity-90">
-                                            @if($book->is_approved)
-                                                </a>
-                                            @endif
-                                    </div>
-                                    <div class="p-3 flex flex-col justify-between flex-grow min-w-0">
-                                        <div>
-                                            <h4 class="font-bold font-serif text-gray-800 text-sm mb-1 leading-tight line-clamp-2">
-                                                @if($book->is_approved)
-                                                    <a href="{{ route('book.show', $book->slug) }}"
-                                                        class="hover:text-brand-green transition">
-                                                        {{ $book->title }}
-                                                    </a>
-                                                @else
-                                                    {{ $book->title }}
-                                                @endif
-                                            </h4>
-                                            <p class="text-xs text-gray-500 truncate">
-                                                {{ $book->author_name ?? 'Tác giả' }}
-                                            </p>
-                                            <p class="text-[10px] text-gray-400 mt-1">
-                                                <i class="far fa-calendar-alt mr-1"></i> Gửi: {{ $book->created_at->format('d/m/Y') }}
-                                            </p>
-                                        </div>
-
-                                        {{-- BADGE TRẠNG THÁI Ở CUỐI CARD --}}
-                                        <div class="mt-auto pt-2">
-                                            @if($book->is_approved)
-                                                <a href="{{ route('book.show', $book->slug) }}"
-                                                    class="inline-flex items-center gap-1 text-brand-green border border-brand-green/30 bg-brand-green/5 px-2.5 py-1 rounded text-[10px] font-bold hover:bg-brand-green hover:text-white transition">
-                                                    <i class="fas fa-check-circle"></i> ĐÃ DUYỆT
-                                                </a>
-                                            @else
-                                                <span
-                                                    class="inline-flex items-center gap-1 bg-yellow-50 text-yellow-700 border border-yellow-200 text-[10px] font-bold px-2.5 py-1 rounded">
-                                                    <i class="fas fa-clock"></i> CHỜ DUYỆT
-                                                </span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        @else
-                            <div class="col-span-full text-center py-10 bg-white rounded-xl border border-dashed border-gray-300">
-                                <div
-                                    class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400">
-                                    <i class="fas fa-book-medical text-2xl"></i>
-                                </div>
-                                <p class="text-gray-500 text-sm font-medium">Bạn chưa đề xuất cuốn sách nào.</p>
-                                <p class="text-gray-400 text-xs mt-1 mb-3">Hãy đóng góp sách mới cho cộng đồng nhé!</p>
-                                <a href="{{ route('books.suggest') }}" class="text-brand-accent text-sm font-bold hover:underline">
-                                    + Đề xuất sách ngay
-                                </a>
-                            </div>
-                        @endif
-                    </div>
-                @endif
-
-
-                {{-- ================================================================= --}}
-                {{-- TABS: BÀI REVIEW ĐÃ ĐĂNG / BÀI VIẾT ĐÃ LƯU --}}
-                {{-- ================================================================= --}}
-
-                {{-- Tab Navigation (chỉ hiển thị cho chủ profile) --}}
                 @if(isset($isOwnProfile) && $isOwnProfile)
-                    <div class="flex gap-1 mb-6 border-b border-gray-200">
-                        <button onclick="showProfileTab('reviews')" id="tab-btn-reviews"
-                            class="px-4 py-3 text-sm font-bold transition-all border-b-2 border-brand-green text-brand-green">
-                            <i class="fas fa-pen-nib mr-2"></i>Bài Review Đã Đăng
-                            <span
-                                class="ml-1 bg-brand-green/10 text-brand-green text-xs px-2 py-0.5 rounded-full">{{ $reviews->total() }}</span>
-                        </button>
-                        <button onclick="showProfileTab('saved')" id="tab-btn-saved"
-                            class="px-4 py-3 text-sm font-bold transition-all border-b-2 border-transparent text-gray-500 hover:text-yellow-600">
-                            <i class="fas fa-bookmark mr-2"></i>Bài Viết Đã Lưu
-                            <span
-                                class="ml-1 bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded-full">{{ $savedPosts->count() }}</span>
-                        </button>
+                    <div class="bg-white rounded-xl shadow-soft border border-gray-100 mb-6 overflow-hidden">
+                        <div class="flex flex-wrap border-b border-gray-100">
+                            {{-- Tab 1: Tổng quan --}}
+                            <button onclick="showProfileTab('overview')" id="tab-btn-overview"
+                                class="flex-1 min-w-[120px] px-4 py-4 text-sm font-bold transition-all border-b-2 border-brand-green text-brand-green bg-brand-green/5">
+                                <i class="fas fa-th-large mr-2"></i>Tổng quan
+                            </button>
+                            
+                            {{-- Tab 2: Bài Review --}}
+                            <button onclick="showProfileTab('reviews')" id="tab-btn-reviews"
+                                class="flex-1 min-w-[120px] px-4 py-4 text-sm font-bold transition-all border-b-2 border-transparent text-gray-500 hover:text-brand-green hover:bg-gray-50">
+                                <i class="fas fa-pen-nib mr-2"></i>Bài Review
+                                <span class="ml-1 bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">{{ $totalReviews }}</span>
+                            </button>
+                            
+                            {{-- Tab 3: Sách Đề Xuất --}}
+                            <button onclick="showProfileTab('books')" id="tab-btn-books"
+                                class="flex-1 min-w-[120px] px-4 py-4 text-sm font-bold transition-all border-b-2 border-transparent text-gray-500 hover:text-brand-accent hover:bg-gray-50">
+                                <i class="fas fa-book-medical mr-2"></i>Sách Đề Xuất
+                                <span class="ml-1 bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">{{ $totalSuggestedBooks }}</span>
+                            </button>
+                            
+                            {{-- Tab 4: Bài Đã Lưu --}}
+                            <button onclick="showProfileTab('saved')" id="tab-btn-saved"
+                                class="flex-1 min-w-[120px] px-4 py-4 text-sm font-bold transition-all border-b-2 border-transparent text-gray-500 hover:text-yellow-600 hover:bg-gray-50">
+                                <i class="fas fa-bookmark mr-2"></i>Bài Đã Lưu
+                                <span class="ml-1 bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">{{ $savedPosts->count() }}</span>
+                            </button>
+                        </div>
                     </div>
                 @endif
 
-                {{-- TAB 1: BÀI REVIEW ĐÃ ĐĂNG --}}
-                <div id="tab-content-reviews" class="tab-content">
+                {{-- ================================================================= --}}
+                {{-- TAB 1: TỔNG QUAN (OVERVIEW) --}}
+                {{-- ================================================================= --}}
+                <div id="tab-content-overview" class="tab-content">
+                    {{-- Thống kê nhanh --}}
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+                        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm text-center hover:shadow-md transition">
+                            <div class="text-3xl font-bold text-brand-green mb-1">{{ $totalReviews }}</div>
+                            <div class="text-xs text-gray-500 uppercase font-bold tracking-wide">Bài Review</div>
+                        </div>
+                        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm text-center hover:shadow-md transition">
+                            <div class="text-3xl font-bold text-brand-accent mb-1">{{ $totalSuggestedBooks }}</div>
+                            <div class="text-xs text-gray-500 uppercase font-bold tracking-wide">Sách Đề Xuất</div>
+                        </div>
+                        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm text-center hover:shadow-md transition">
+                            <div class="text-3xl font-bold text-blue-500 mb-1">{{ $totalFollowing ?? 0 }}</div>
+                            <div class="text-xs text-gray-500 uppercase font-bold tracking-wide">Đang Theo Dõi</div>
+                        </div>
+                        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm text-center hover:shadow-md transition">
+                            <div class="text-3xl font-bold text-purple-500 mb-1">{{ $totalFollowers ?? 0 }}</div>
+                            <div class="text-xs text-gray-500 uppercase font-bold tracking-wide">Người Theo Dõi</div>
+                        </div>
+                    </div>
 
-                    {{-- PHẦN 2: DANH SÁCH REVIEW (ĐÃ FIX HIỂN THỊ TIÊU ĐỀ) --}}
-
-                    <div class="flex items-center justify-between mb-6 border-b border-gray-200 pb-4">
-                        <div class="flex items-center gap-3">
-                            <h3 class="text-xl font-bold text-gray-800 font-serif border-l-4 border-brand-green pl-3">
-                                {{ isset($reviews) && $reviews->total() > 0 ? 'Bài Review Đã Đăng' : 'Chưa có bài viết nào' }}
+                    {{-- Bài Review Gần Đây (3 bài) --}}
+                    <div class="bg-white rounded-xl shadow-soft border border-gray-100 p-6 mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
+                                <i class="fas fa-pen-nib text-brand-green"></i> Bài Review Gần Đây
                             </h3>
-
-                            @if(Auth::check() && Auth::id() == $user->id)
-                                <a href="{{ route('reviews.create') }}"
-                                    class="inline-flex items-center gap-1.5 bg-brand-accent hover:bg-[#c29263] text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm transition transform hover:-translate-y-0.5">
-                                    <i class="fas fa-pen-nib"></i> Viết Review
-                                </a>
+                            @if($totalReviews > 0)
+                                <button onclick="showProfileTab('reviews')" class="text-sm text-brand-green font-bold hover:underline">
+                                    Xem tất cả <i class="fas fa-arrow-right"></i>
+                                </button>
                             @endif
                         </div>
 
-                        @if(isset($reviews) && $reviews->total() > 0)
-                            <span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">Tổng:
-                                {{ $reviews->total() }}</span>
+                        @if(count($reviews) > 0)
+                            <div class="space-y-4">
+                                @foreach($reviews->take(3) as $post)
+                                    <div class="flex gap-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition group">
+                                        @php
+                                            $cover = $post->book->cover_image ?? null;
+                                            $coverUrl = $cover ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover)) : 'https://via.placeholder.com/50';
+                                        @endphp
+                                        <img src="{{ $coverUrl }}" class="w-12 h-16 object-cover rounded shadow-sm flex-shrink-0">
+                                        <div class="flex-1 min-w-0">
+                                            <h4 class="font-bold text-gray-800 text-sm line-clamp-1 group-hover:text-brand-green transition">{{ $post->title }}</h4>
+                                            <p class="text-xs text-gray-500 mt-0.5">{{ $post->book->title ?? 'Sách đã xóa' }}</p>
+                                            <div class="flex items-center gap-2 mt-1">
+                                                <div class="flex text-yellow-400 text-[10px]">
+                                                    @for($i = 1; $i <= 5; $i++)
+                                                        <i class="fas fa-star {{ $i <= ($post->rating ?? 0) ? '' : 'text-gray-300' }}"></i>
+                                                    @endfor
+                                                </div>
+                                                <span class="text-[10px] text-gray-400">• {{ $post->created_at->diffForHumans() }}</span>
+                                                @if($post->status == 'pending')
+                                                    <span class="text-[10px] text-yellow-600 bg-yellow-50 px-1.5 py-0.5 rounded font-bold">Chờ duyệt</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <a href="{{ route('reviews.edit', $post->id) }}" class="text-blue-500 hover:text-blue-700 self-center opacity-0 group-hover:opacity-100 transition">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="text-center py-6 text-gray-400">
+                                <i class="fas fa-pen-nib text-2xl mb-2"></i>
+                                <p class="text-sm">Chưa có bài review nào</p>
+                                <a href="{{ route('reviews.create') }}" class="text-brand-accent text-sm font-bold hover:underline mt-2 inline-block">+ Viết bài đầu tiên</a>
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- Sách Đề Xuất Gần Đây (3 sách) --}}
+                    <div class="bg-white rounded-xl shadow-soft border border-gray-100 p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
+                                <i class="fas fa-book-medical text-brand-accent"></i> Sách Đề Xuất Gần Đây
+                            </h3>
+                            @if($totalSuggestedBooks > 0)
+                                <button onclick="showProfileTab('books')" class="text-sm text-brand-accent font-bold hover:underline">
+                                    Xem tất cả <i class="fas fa-arrow-right"></i>
+                                </button>
+                            @endif
+                        </div>
+
+                        @if(count($suggestedBooks) > 0)
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                @foreach($suggestedBooks->take(3) as $book)
+                                    <div class="flex gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition group">
+                                        @php
+                                            $cover = $book->cover_image ?? null;
+                                            $coverUrl = $cover ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover)) : 'https://via.placeholder.com/50x75';
+                                        @endphp
+                                        <img src="{{ $coverUrl }}" class="w-12 h-16 object-cover rounded shadow-sm flex-shrink-0">
+                                        <div class="flex-1 min-w-0">
+                                            <h4 class="font-bold text-gray-800 text-sm line-clamp-2 group-hover:text-brand-accent transition">{{ $book->title }}</h4>
+                                            <p class="text-xs text-gray-500 mt-0.5 truncate">{{ $book->author_name ?? 'Tác giả' }}</p>
+                                            @if($book->is_approved)
+                                                <span class="text-[10px] text-green-600 font-bold"><i class="fas fa-check-circle"></i> Đã duyệt</span>
+                                            @else
+                                                <span class="text-[10px] text-yellow-600 font-bold"><i class="fas fa-clock"></i> Chờ duyệt</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="text-center py-6 text-gray-400">
+                                <i class="fas fa-book-medical text-2xl mb-2"></i>
+                                <p class="text-sm">Chưa đề xuất sách nào</p>
+                                <a href="{{ route('books.suggest') }}" class="text-brand-accent text-sm font-bold hover:underline mt-2 inline-block">+ Đề xuất sách mới</a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- ================================================================= --}}
+                {{-- TAB 2: BÀI REVIEW ĐÃ ĐĂNG (ĐẦY ĐỦ) --}}
+                {{-- ================================================================= --}}
+                <div id="tab-content-reviews" class="tab-content hidden">
+
+                    <div class="flex items-center justify-between mb-6 bg-white rounded-xl shadow-soft border border-gray-100 p-4">
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-xl font-bold text-gray-800 font-serif border-l-4 border-brand-green pl-3">
+                                {{ $totalReviews > 0 ? 'Bài Review Đã Đăng' : 'Chưa có bài viết nào' }}
+                            </h3>
+                            <span class="bg-brand-green/10 text-brand-green text-sm px-3 py-1 rounded-full font-bold">{{ $totalReviews }}</span>
+                        </div>
+
+                        @if(Auth::check() && Auth::id() == $user->id)
+                            <a href="{{ route('reviews.create') }}"
+                                class="inline-flex items-center gap-1.5 bg-brand-accent hover:bg-[#c29263] text-white text-xs font-bold px-4 py-2 rounded-full shadow-sm transition transform hover:-translate-y-0.5">
+                                <i class="fas fa-pen-nib"></i> Viết Review mới
+                            </a>
                         @endif
                     </div>
 
@@ -495,10 +532,20 @@
                                         <i class="far fa-clock"></i> {{ $post->created_at->diffForHumans() }}
                                     </span>
 
-                                    <a href="{{ route('book.reviews', $post->book->slug ?? $post->book_id) }}"
-                                        class="text-brand-green font-bold hover:underline text-xs uppercase tracking-wide flex items-center gap-1">
-                                        Xem chi tiết <i class="fas fa-arrow-right"></i>
-                                    </a>
+                                    <div class="flex items-center gap-3">
+                                        {{-- Nút Sửa (chỉ hiện với chủ bài viết) --}}
+                                        @if(Auth::check() && Auth::id() == $post->user_id)
+                                            <a href="{{ route('reviews.edit', $post->id) }}"
+                                                class="text-blue-500 hover:text-blue-700 font-bold hover:underline text-xs uppercase tracking-wide flex items-center gap-1 transition">
+                                                <i class="fas fa-edit"></i> Sửa
+                                            </a>
+                                        @endif
+
+                                        <a href="{{ route('book.reviews', $post->book->slug ?? $post->book_id) }}"
+                                            class="text-brand-green font-bold hover:underline text-xs uppercase tracking-wide flex items-center gap-1">
+                                            Xem chi tiết <i class="fas fa-arrow-right"></i>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         @empty
@@ -518,14 +565,111 @@
                         @endforelse
                     </div>
 
-                    <div class="mt-8">
-                        {{ $reviews->links() }}
-                    </div>
+                    {{-- Phân trang Reviews --}}
+                    @if($reviews->hasPages())
+                        <div class="mt-6">
+                            {{ $reviews->links() }}
+                        </div>
+                    @endif
 
                 </div>{{-- End tab-content-reviews --}}
 
                 {{-- ================================================================= --}}
-                {{-- TAB 2: BÀI VIẾT ĐÃ LƯU (SAVED POSTS) --}}
+                {{-- TAB 3: SÁCH ĐỀ XUẤT (ĐẦY ĐỦ) --}}
+                {{-- ================================================================= --}}
+                <div id="tab-content-books" class="tab-content hidden">
+                    <div class="flex items-center justify-between mb-6 bg-white rounded-xl shadow-soft border border-gray-100 p-4">
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-xl font-bold text-gray-800 font-serif border-l-4 border-brand-accent pl-3">
+                                {{ $totalSuggestedBooks > 0 ? 'Sách Tôi Đề Xuất' : 'Chưa có sách đề xuất' }}
+                            </h3>
+                            <span class="bg-brand-accent/10 text-brand-accent text-sm px-3 py-1 rounded-full font-bold">{{ $totalSuggestedBooks }}</span>
+                        </div>
+
+                        <a href="{{ route('books.suggest') }}"
+                            class="inline-flex items-center gap-1.5 bg-brand-accent hover:bg-[#c29263] text-white text-xs font-bold px-4 py-2 rounded-full shadow-sm transition transform hover:-translate-y-0.5">
+                            <i class="fas fa-plus-circle"></i> Đề xuất sách mới
+                        </a>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        @forelse($suggestedBooks as $book)
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-card hover:-translate-y-1 transition-all duration-300 flex flex-row h-44 relative group">
+
+                                <div class="w-28 relative flex-shrink-0 bg-gray-200">
+                                    @if($book->is_approved)
+                                        <a href="{{ route('book.show', $book->slug) }}">
+                                    @endif
+                                        @php
+                                            $cover = $book->cover_image ?? null;
+                                            $coverUrl = $cover
+                                                ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover))
+                                                : 'https://via.placeholder.com/150x225?text=' . urlencode(Str::limit($book->title, 10));
+                                        @endphp
+                                        <img src="{{ $coverUrl }}" class="w-full h-full object-cover transition group-hover:opacity-90">
+                                        @if($book->is_approved)
+                                            </a>
+                                        @endif
+                                </div>
+                                <div class="p-3 flex flex-col justify-between flex-grow min-w-0">
+                                    <div>
+                                        <h4 class="font-bold font-serif text-gray-800 text-sm mb-1 leading-tight line-clamp-2">
+                                            @if($book->is_approved)
+                                                <a href="{{ route('book.show', $book->slug) }}" class="hover:text-brand-green transition">
+                                                    {{ $book->title }}
+                                                </a>
+                                            @else
+                                                {{ $book->title }}
+                                            @endif
+                                        </h4>
+                                        <p class="text-xs text-gray-500 truncate">
+                                            {{ $book->author_name ?? 'Tác giả' }}
+                                        </p>
+                                        <p class="text-[10px] text-gray-400 mt-1">
+                                            <i class="far fa-calendar-alt mr-1"></i> Gửi: {{ $book->created_at->format('d/m/Y') }}
+                                        </p>
+                                    </div>
+
+                                    {{-- BADGE TRẠNG THÁI --}}
+                                    <div class="mt-auto pt-2">
+                                        @if($book->is_approved)
+                                            <a href="{{ route('book.show', $book->slug) }}"
+                                                class="inline-flex items-center gap-1 text-brand-green border border-brand-green/30 bg-brand-green/5 px-2.5 py-1 rounded text-[10px] font-bold hover:bg-brand-green hover:text-white transition">
+                                                <i class="fas fa-check-circle"></i> ĐÃ DUYỆT
+                                            </a>
+                                        @else
+                                            <span class="inline-flex items-center gap-1 bg-yellow-50 text-yellow-700 border border-yellow-200 text-[10px] font-bold px-2.5 py-1 rounded">
+                                                <i class="fas fa-clock"></i> CHỜ DUYỆT
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="col-span-full text-center py-10 bg-white rounded-xl border border-dashed border-gray-300">
+                                <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400">
+                                    <i class="fas fa-book-medical text-2xl"></i>
+                                </div>
+                                <p class="text-gray-500 text-sm font-medium">Bạn chưa đề xuất cuốn sách nào.</p>
+                                <p class="text-gray-400 text-xs mt-1 mb-3">Hãy đóng góp sách mới cho cộng đồng nhé!</p>
+                                <a href="{{ route('books.suggest') }}" class="text-brand-accent text-sm font-bold hover:underline">
+                                    + Đề xuất sách ngay
+                                </a>
+                            </div>
+                        @endforelse
+                    </div>
+
+                    {{-- Phân trang Sách --}}
+                    @if($suggestedBooks instanceof \Illuminate\Pagination\LengthAwarePaginator && $suggestedBooks->hasPages())
+                        <div class="mt-6">
+                            {{ $suggestedBooks->links() }}
+                        </div>
+                    @endif
+
+                </div>{{-- End tab-content-books --}}
+
+                {{-- ================================================================= --}}
+                {{-- TAB 4: BÀI VIẾT ĐÃ LƯU (SAVED POSTS) --}}
                 {{-- ================================================================= --}}
                 @if(isset($isOwnProfile) && $isOwnProfile)
                     <div id="tab-content-saved" class="tab-content hidden">
@@ -700,6 +844,61 @@
     </main>
 
     <script>
+        // --- 0. Xử lý chuyển đổi Tab Profile ---
+        function showProfileTab(tabName) {
+            // Danh sách các tab
+            const tabs = ['overview', 'reviews', 'books', 'saved'];
+            
+            // Ẩn tất cả nội dung tab
+            tabs.forEach(tab => {
+                const content = document.getElementById(`tab-content-${tab}`);
+                const btn = document.getElementById(`tab-btn-${tab}`);
+                
+                if (content) {
+                    content.classList.add('hidden');
+                }
+                
+                if (btn) {
+                    btn.classList.remove('border-brand-green', 'text-brand-green', 'bg-brand-green/5');
+                    btn.classList.remove('border-brand-accent', 'text-brand-accent', 'bg-brand-accent/5');
+                    btn.classList.remove('border-yellow-500', 'text-yellow-600', 'bg-yellow-50');
+                    btn.classList.add('border-transparent', 'text-gray-500');
+                }
+            });
+            
+            // Hiển thị tab được chọn
+            const activeContent = document.getElementById(`tab-content-${tabName}`);
+            const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+            
+            if (activeContent) {
+                activeContent.classList.remove('hidden');
+            }
+            
+            if (activeBtn) {
+                activeBtn.classList.remove('border-transparent', 'text-gray-500');
+                
+                // Màu sắc khác nhau cho mỗi tab
+                if (tabName === 'overview' || tabName === 'reviews') {
+                    activeBtn.classList.add('border-brand-green', 'text-brand-green', 'bg-brand-green/5');
+                } else if (tabName === 'books') {
+                    activeBtn.classList.add('border-brand-accent', 'text-brand-accent', 'bg-brand-accent/5');
+                } else if (tabName === 'saved') {
+                    activeBtn.classList.add('border-yellow-500', 'text-yellow-600', 'bg-yellow-50');
+                }
+            }
+        }
+
+        // Auto-switch tab dựa trên URL parameters (khi phân trang)
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            if (urlParams.has('review_page')) {
+                showProfileTab('reviews');
+            } else if (urlParams.has('book_page')) {
+                showProfileTab('books');
+            }
+        });
+
         // --- 1. Xử lý Nút Toggle Follow (Một hàm duy nhất) ---
         function toggleFollow(userId) {
             fetch('{{ route('follow.toggle') }}', {

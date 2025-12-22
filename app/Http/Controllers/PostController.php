@@ -202,4 +202,74 @@ class PostController extends Controller
             'created_at' => 'Vừa xong'
         ]);
     }
+
+    // Hiển thị form chỉnh sửa bài review
+    public function edit($id)
+    {
+        $user = Auth::user();
+        $post = Post::with('book')->findOrFail($id);
+
+        // Chỉ cho phép chủ bài viết sửa
+        if ($post->user_id !== $user->id) {
+            abort(403, 'Bạn không có quyền sửa bài viết này.');
+        }
+
+        return view('edit-review', compact('user', 'post'));
+    }
+
+    // Cập nhật bài review
+    public function update(Request $request, $id)
+    {
+        $user = Auth::user();
+        $post = Post::findOrFail($id);
+
+        // Chỉ cho phép chủ bài viết sửa
+        if ($post->user_id !== $user->id) {
+            abort(403, 'Bạn không có quyền sửa bài viết này.');
+        }
+
+        // Validate dữ liệu
+        $request->validate([
+            'rating' => 'required|numeric|min:1|max:5',
+            'title' => 'required|string|max:255',
+            'content' => 'required|min:10',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
+            'thumbnail_url' => 'nullable|url|max:500',
+        ], [
+            'title.required' => 'Bạn chưa nhập tiêu đề bài viết.',
+            'content.min' => 'Nội dung review quá ngắn.',
+            'thumbnail.image' => 'File tải lên phải là hình ảnh.',
+            'thumbnail.max' => 'Ảnh không được lớn hơn 2MB.',
+            'thumbnail_url.url' => 'Đường dẫn ảnh không hợp lệ.',
+        ]);
+
+        // Xử lý upload thumbnail (ưu tiên file, sau đó là URL)
+        $thumbnailPath = $post->thumbnail; // Giữ ảnh cũ nếu không thay đổi
+        if ($request->hasFile('thumbnail')) {
+            $thumbnailPath = $request->file('thumbnail')->store('posts/thumbnails', 'public');
+        } elseif ($request->filled('thumbnail_url')) {
+            $thumbnailPath = $request->thumbnail_url;
+        }
+
+        // Xác định trạng thái: Admin = tự động duyệt, User = chờ duyệt lại
+        $isAdmin = $user->role === 'admin';
+        $status = $isAdmin ? 'published' : 'pending';
+
+        // Cập nhật bài viết
+        $post->update([
+            'title' => $request->input('title'),
+            'rating' => $request->input('rating'),
+            'content' => $request->input('content'),
+            'thumbnail' => $thumbnailPath,
+            'status' => $status,
+        ]);
+
+        // Thông báo phù hợp với trạng thái
+        $message = $isAdmin
+            ? 'Bài viết đã được cập nhật thành công!'
+            : 'Bài viết đã được cập nhật! Vui lòng chờ Admin phê duyệt lại.';
+
+        return redirect()->route('profile', $user->id)
+            ->with('success', $message);
+    }
 }
