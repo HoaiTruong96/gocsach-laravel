@@ -116,19 +116,82 @@
                         </div>
                     </div>
                     {{-- [MỚI] KHUNG HIỂN THỊ DANH HIỆU (BADGES) --}}
-                    @if($user->activeBadges && $user->activeBadges->count() > 0)
+                    @if(isset($isOwnProfile) && $isOwnProfile)
                         <div class="mb-6 border-t border-b border-gray-100 py-4">
                             <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">
                                 <i class="fas fa-medal mr-1"></i> Danh Hiệu
                             </h4>
 
+                            @if($user->activeBadges && $user->activeBadges->count() > 0)
+                                <div class="flex justify-center flex-wrap gap-3">
+                                    @foreach($user->activeBadges as $badge)
+                                        @php
+                                            $icon = $badge->icon;
+                                            // Kiểm tra xem icon có phải là URL hay không
+                                            $isUrl = $icon && (Str::startsWith($icon, 'http') || Str::startsWith($icon, '/'));
+                                            // Nếu là URL thì xử lý đường dẫn
+                                            $iconUrl = $isUrl
+                                                ? (Str::startsWith($icon, 'http') ? $icon : asset('storage/' . $icon))
+                                                : null;
+                                        @endphp
+
+                                        <div class="group relative cursor-help">
+                                            @if($iconUrl)
+                                                {{-- Hiển thị ảnh nếu là URL hợp lệ --}}
+                                                <img src="{{ $iconUrl }}" alt="{{ $badge->name }}"
+                                                    class="w-12 h-12 object-contain drop-shadow-sm transform group-hover:scale-110 transition duration-300"
+                                                    onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md\'>🏆</div>';">
+                                            @elseif($icon && mb_strlen($icon) <= 4)
+                                                {{-- Hiển thị emoji nếu icon là emoji (ký tự ngắn) --}}
+                                                <div
+                                                    class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-2xl shadow-md transform group-hover:scale-110 transition duration-300">
+                                                    {{ $icon }}
+                                                </div>
+                                            @else
+                                                {{-- Fallback: Hiển thị icon mặc định nếu không có --}}
+                                                <div
+                                                    class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white shadow-md transform group-hover:scale-110 transition duration-300">
+                                                    <i class="fas fa-medal text-xl"></i>
+                                                </div>
+                                            @endif
+
+                                            {{-- Tooltip hiển thị tên khi di chuột vào --}}
+                                            <div
+                                                class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-max">
+                                                <div class="bg-gray-800 text-white text-xs rounded py-1 px-3 shadow-lg text-center">
+                                                    <div class="font-bold">{{ $badge->name }}</div>
+                                                    @if($badge->description)
+                                                        <div class="text-[10px] text-gray-300 font-normal">{{ $badge->description }}</div>
+                                                    @endif
+                                                </div>
+                                                {{-- Mũi tên nhỏ của tooltip --}}
+                                                <div
+                                                    class="w-2 h-2 bg-gray-800 transform rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                {{-- Empty State: Chưa có danh hiệu nào --}}
+                                <div class="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                                    <i class="fas fa-medal text-3xl text-gray-300 mb-2"></i>
+                                    <p class="text-xs text-gray-400">Bạn chưa có danh hiệu nào</p>
+                                    <p class="text-[10px] text-gray-300 mt-1">Hoàn thành thử thách để nhận danh hiệu!</p>
+                                </div>
+                            @endif
+                        </div>
+                    @elseif($user->activeBadges && $user->activeBadges->count() > 0)
+                        {{-- Hiển thị cho người xem (không phải chủ profile) - chỉ khi có badges --}}
+                        <div class="mb-6 border-t border-b border-gray-100 py-4">
+                            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">
+                                <i class="fas fa-medal mr-1"></i> Danh Hiệu
+                            </h4>
                             <div class="flex justify-center flex-wrap gap-3">
                                 @foreach($user->activeBadges as $badge)
                                     @php
                                         $icon = $badge->icon;
-                                        // Kiểm tra xem icon có phải là URL hay không
                                         $isUrl = $icon && (Str::startsWith($icon, 'http') || Str::startsWith($icon, '/'));
-                                        // Nếu là URL thì xử lý đường dẫn
                                         $iconUrl = $isUrl
                                             ? (Str::startsWith($icon, 'http') ? $icon : asset('storage/' . $icon))
                                             : null;
@@ -136,37 +199,26 @@
 
                                     <div class="group relative cursor-help">
                                         @if($iconUrl)
-                                            {{-- Hiển thị ảnh nếu là URL hợp lệ --}}
                                             <img src="{{ $iconUrl }}" alt="{{ $badge->name }}"
-                                                class="w-12 h-12 object-contain drop-shadow-sm transform group-hover:scale-110 transition duration-300"
-                                                onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md\'>🏆</div>';">
+                                                class="w-12 h-12 object-contain drop-shadow-sm transform group-hover:scale-110 transition duration-300">
                                         @elseif($icon && mb_strlen($icon) <= 4)
-                                            {{-- Hiển thị emoji nếu icon là emoji (ký tự ngắn) --}}
-                                            <div
-                                                class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-2xl shadow-md transform group-hover:scale-110 transition duration-300">
+                                            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-2xl shadow-md transform group-hover:scale-110 transition duration-300">
                                                 {{ $icon }}
                                             </div>
                                         @else
-                                            {{-- Fallback: Hiển thị icon mặc định nếu không có --}}
-                                            <div
-                                                class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white shadow-md transform group-hover:scale-110 transition duration-300">
+                                            <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white shadow-md transform group-hover:scale-110 transition duration-300">
                                                 <i class="fas fa-medal text-xl"></i>
                                             </div>
                                         @endif
 
-                                        {{-- Tooltip hiển thị tên khi di chuột vào --}}
-                                        <div
-                                            class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-max">
+                                        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-max">
                                             <div class="bg-gray-800 text-white text-xs rounded py-1 px-3 shadow-lg text-center">
                                                 <div class="font-bold">{{ $badge->name }}</div>
                                                 @if($badge->description)
                                                     <div class="text-[10px] text-gray-300 font-normal">{{ $badge->description }}</div>
                                                 @endif
                                             </div>
-                                            {{-- Mũi tên nhỏ của tooltip --}}
-                                            <div
-                                                class="w-2 h-2 bg-gray-800 transform rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2">
-                                            </div>
+                                            <div class="w-2 h-2 bg-gray-800 transform rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2"></div>
                                         </div>
                                     </div>
                                 @endforeach
@@ -1337,32 +1389,6 @@
                                 btnElement.innerHTML = '<i class="fas fa-bookmark"></i>';
                                 btnElement.disabled = false;
                             });
-                        }
-
-                        // Tab Switching Function
-                        function showProfileTab(tabName) {
-                            // Hide all tab contents
-                            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-
-                            // Show selected tab content
-                            const selectedContent = document.getElementById(`tab-content-${tabName}`);
-                            if (selectedContent) selectedContent.classList.remove('hidden');
-
-                            // Update tab button styles
-                            const reviewsBtn = document.getElementById('tab-btn-reviews');
-                            const savedBtn = document.getElementById('tab-btn-saved');
-
-                            if (tabName === 'reviews') {
-                                reviewsBtn.classList.add('border-brand-green', 'text-brand-green');
-                                reviewsBtn.classList.remove('border-transparent', 'text-gray-500');
-                                savedBtn.classList.remove('border-yellow-500', 'text-yellow-600');
-                                savedBtn.classList.add('border-transparent', 'text-gray-500');
-                            } else {
-                                savedBtn.classList.add('border-yellow-500', 'text-yellow-600');
-                                savedBtn.classList.remove('border-transparent', 'text-gray-500');
-                                reviewsBtn.classList.remove('border-brand-green', 'text-brand-green');
-                                reviewsBtn.classList.add('border-transparent', 'text-gray-500');
-                            }
                         }
 
                         // Toggle Comment Box for Saved Posts
