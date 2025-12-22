@@ -11,6 +11,10 @@ use Illuminate\Support\Str;
 use App\Notifications\NewLikeNotification;
 use App\Notifications\PostCommentedNotification;
 use App\Notifications\CommentLikedNotification;
+use App\Notifications\NewPostNotification;
+use App\Notifications\AdminNewPostNotification;
+use Illuminate\Support\Facades\Notification;
+use App\Models\User;
 
 class PostController extends Controller
 {
@@ -19,15 +23,21 @@ class PostController extends Controller
         // 1. Validate dữ liệu
         $request->validate([
             'book_id' => 'required|exists:books,id',
-            'rating' => 'required|integer|min:1|max:5',
+            'rating' => 'required|numeric|min:1|max:5',
             'title' => 'required|string|max:255',
             'content' => 'required|min:10',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
             'thumbnail_url' => 'nullable|url|max:500',
         ], [
+            'book_id.required' => 'Vui lòng chọn một cuốn sách để review.',
             'book_id.exists' => 'Vui lòng chọn một cuốn sách hợp lệ.',
+            'rating.required' => 'Vui lòng chọn số sao đánh giá.',
+            'rating.numeric' => 'Điểm đánh giá phải là số từ 1 đến 5.',
+            'rating.min' => 'Điểm đánh giá phải từ 1 sao trở lên.',
+            'rating.max' => 'Điểm đánh giá không được quá 5 sao.',
             'title.required' => 'Bạn chưa nhập tiêu đề bài viết.',
-            'content.min' => 'Nội dung review quá ngắn.',
+            'content.required' => 'Bạn chưa nhập nội dung bài review.',
+            'content.min' => 'Nội dung review quá ngắn (tối thiểu 10 ký tự).',
             'thumbnail.image' => 'File tải lên phải là hình ảnh.',
             'thumbnail.max' => 'Ảnh không được lớn hơn 2MB.',
             'thumbnail_url.url' => 'Đường dẫn ảnh không hợp lệ.',
@@ -50,6 +60,7 @@ class PostController extends Controller
 
         // 5. Lưu vào Database
         $post = Post::create([
+
             'user_id' => Auth::id(),
             'book_id' => $request->input('book_id'),
             'title' => $request->input('title'),
@@ -69,6 +80,38 @@ class PostController extends Controller
         $message = $isAdmin
             ? 'Bài viết đã được đăng thành công!'
             : 'Đã gửi bài viết! Vui lòng chờ Admin phê duyệt.';
+
+        // 8. Gửi thông báo cho Followers (Nếu bài viết được published ngay)
+        if ($post->status == 'published') {
+            try {
+                $followers = Auth::user()->followers;
+                // Có thể lọc những người đã tắt thông báo nếu có tính năng đó
+                Notification::send($followers, new NewPostNotification([
+                    'author_name' => Auth::user()->name,
+                    'post_title' => $post->title,
+                    'link' => route('detail', $post->book->slug), // Link đến sách
+                    'avatar' => Auth::user()->avatar
+                ]));
+            } catch (\Exception $e) {
+                \Log::error("Failed to send follower notification: " . $e->getMessage());
+            }
+        }
+
+        // 9. Gửi cảnh báo cho Admin (New Post Alert)
+        try {
+            $admins = User::where('role', 'admin')->get();
+            // Thêm trạng thái vào tiêu đề
+            $statusMsg = $post->status == 'pending' ? ' (Chờ duyệt)' : '';
+
+            Notification::send($admins, new AdminNewPostNotification([
+                'author_name' => Auth::user()->name,
+                'post_title' => $post->title . $statusMsg,
+                'link' => route('detail', $post->book->slug),
+                'avatar' => Auth::user()->avatar
+            ]));
+        } catch (\Exception $e) {
+            \Log::error("Failed to send admin notification: " . $e->getMessage());
+        }
 
         return redirect()->route('profile', Auth::id())
             ->with('success', $message);
@@ -137,6 +180,14 @@ class PostController extends Controller
             $post->user->notify(new PostCommentedNotification($user, $post));
         }
 
+        $equippedFrame = $user->equippedFrame();
+        $frameUrl = null;
+        if ($equippedFrame) {
+            $frameUrl = \Illuminate\Support\Str::startsWith($equippedFrame->frame_image, 'http')
+                ? $equippedFrame->frame_image
+                : asset('storage/' . $equippedFrame->frame_image);
+        }
+
         // Đếm lại số comment
         $commentCount = Comment::where('post_id', $id)->count();
 
@@ -145,6 +196,7 @@ class PostController extends Controller
             'comment_id' => $comment->id,
             'user_name' => $user->name,
             'user_avatar' => $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random',
+            'user_frame' => $frameUrl,
             'content' => $comment->content,
             'count' => $commentCount,
             'created_at' => 'Vừa xong'

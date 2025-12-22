@@ -200,6 +200,15 @@ class BookController extends Controller
             $query->having('posts_avg_rating', '>=', $rating);
         }
 
+        // --- MỚI: Xử lý tìm kiếm theo từ khóa (Keyword) ---
+        if ($request->has('keyword') && $request->keyword != '') {
+            $keyword = $request->keyword;
+            $query->where(function ($q) use ($keyword) {
+                $q->where('title', 'like', "%{$keyword}%")
+                    ->orWhere('author_name', 'like', "%{$keyword}%");
+            });
+        }
+
         // ... (Giữ nguyên logic sort) ...
         // 4. Sắp xếp (Sorting)
         $sort = $request->get('sort', 'newest'); // Mặc định là mới nhất
