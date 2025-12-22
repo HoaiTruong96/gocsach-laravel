@@ -420,6 +420,16 @@
                         <i
                             class="fas fa-book w-5 text-center {{ request()->routeIs('admin.books.*') ? 'text-white' : 'text-slate-400 group-hover:text-emerald-400' }}"></i>
                         <span class="font-medium text-sm">Quản Lý Sách</span>
+                        {{-- Badge sách chờ duyệt --}}
+                        @php
+                            $pendingBooksCount = \App\Models\Book::where('is_approved', false)->count();
+                        @endphp
+                        @if($pendingBooksCount > 0)
+                            <span
+                                class="ml-auto bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md animate-pulse">
+                                {{ $pendingBooksCount }}
+                            </span>
+                        @endif
                     </a>
 
                     {{-- Quản lý Tác giả --}}
@@ -468,6 +478,24 @@
                             <span
                                 class="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md animate-pulse">
                                 {{ $pendingReportsCount }}
+                            </span>
+                        @endif
+                    </a>
+
+                    {{-- Báo Cáo Bài Viết --}}
+                    <a href="{{ route('admin.post-reports.index') }}"
+                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.post-reports.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
+                        <i
+                            class="fas fa-file-exclamation w-5 text-center {{ request()->routeIs('admin.post-reports.*') ? 'text-white' : 'text-slate-400 group-hover:text-purple-400' }}"></i>
+                        <span class="font-medium text-sm">Báo Cáo Bài Viết</span>
+                        {{-- Badge số lượng báo cáo chờ xử lý --}}
+                        @php
+                            $pendingPostReportsCount = \App\Models\PostReport::where('status', 'pending')->count();
+                        @endphp
+                        @if($pendingPostReportsCount > 0)
+                            <span
+                                class="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md animate-pulse">
+                                {{ $pendingPostReportsCount }}
                             </span>
                         @endif
                     </a>

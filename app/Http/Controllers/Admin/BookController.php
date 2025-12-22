@@ -247,6 +247,32 @@ class BookController extends Controller
             $book->fresh()->toArray()
         );
 
+        // --- GỬI THÔNG BÁO ---
+        try {
+            // 1. Thông báo cho người đề xuất (Requester)
+            $requester = $book->creator;
+            if ($requester) {
+                // Noti cho Requester
+                $requester->notify(new \App\Notifications\BookApprovedNotification([
+                    'book_title' => $book->title,
+                    'link' => route('detail', $book->slug)
+                ]));
+
+                // 2. Thông báo cho Followers của Requester
+                $followers = $requester->followers;
+                if ($followers->count() > 0) {
+                    \Illuminate\Support\Facades\Notification::send($followers, new \App\Notifications\NewBookNotification([
+                        'uploader_name' => $requester->name,
+                        'book_title' => $book->title,
+                        'link' => route('detail', $book->slug),
+                        'avatar' => $requester->avatar
+                    ]));
+                }
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Notification Error: " . $e->getMessage());
+        }
+
         return redirect()->route('admin.books.index')->with('success', "Đã duyệt sách \"{$book->title}\" thành công!");
     }
 }

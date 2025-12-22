@@ -64,6 +64,11 @@ class Post extends Model
         return $query->where('status', 'published');
     }
 
+    public function reports()
+    {
+        return $this->hasMany(PostReport::class);
+    }
+
     public function scopeMostLiked($query)
     {
         return $query->withCount('likes')->orderByDesc('likes_count');
