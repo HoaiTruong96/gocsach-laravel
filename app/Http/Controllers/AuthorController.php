@@ -217,6 +217,15 @@ class AuthorController extends Controller
             $allAuthors = $authorsFromTable->concat($authorsFromBooks)->sortBy('name');
         }
 
+        // Lọc theo từ khóa tìm kiếm
+        $q = $request->get('q');
+        if ($q) {
+            $q = mb_strtolower(trim($q));
+            $allAuthors = $allAuthors->filter(function ($author) use ($q) {
+                return str_contains(mb_strtolower($author->name), $q);
+            });
+        }
+
         // Phân trang thủ công
         $page = $request->get('page', 1);
         $perPage = 20;
@@ -236,7 +245,7 @@ class AuthorController extends Controller
             'unregistered' => $authorsFromBooks->count(),
         ];
 
-        return view('admin.authors.index', compact('authors', 'tab', 'stats'));
+        return view('admin.authors.index', compact('authors', 'tab', 'stats', 'q'));
     }
 
     /**
@@ -265,7 +274,7 @@ class AuthorController extends Controller
 
         Author::create($validated);
 
-        return redirect()->route('admin.authors.index', ['tab' => 'unregistered'])
+        return redirect()->route('admin.authors.index', ['tab' => 'registered'])
             ->with('success', 'Đã thêm tác giả thành công!');
     }
 

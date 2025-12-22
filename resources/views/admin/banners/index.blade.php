@@ -51,9 +51,10 @@
                         <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 transition banner-row"
                             data-order="{{ $banner->order }}"
                             data-title="{{ strtolower($banner->title) }}">
-                            <td class="px-4 py-4 font-medium text-gray-500 dark:text-slate-400 text-center">{{ $banner->order }}</td>
+                            <td class="px-4 py-4 font-medium text-gray-500 dark:text-slate-400 text-center">{{ $loop->iteration }}</td>
                             <td class="px-4 py-4">
-                                <img src="{{ Str::startsWith($banner->image, 'http') ? $banner->image : asset('storage/' . $banner->image) }}"
+                                @php $bImg = trim($banner->image); @endphp
+                                <img src="{{ Str::startsWith($bImg, 'http') ? $bImg : asset('storage/' . $bImg) }}"
                                     class="h-14 w-20 object-cover rounded-lg border border-gray-200 dark:border-slate-600 shadow-sm"
                                     alt="Banner Img">
                             </td>

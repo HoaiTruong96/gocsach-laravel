@@ -52,7 +52,7 @@
                         <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 transition" data-order="{{ $quote->order }}"
                             data-author="{{ strtolower($quote->author) }}">
                             <td class="px-4 py-4 text-center font-medium text-gray-500 dark:text-slate-400">
-                                {{ $quote->order }}
+                                {{ ($quotes->currentPage() - 1) * $quotes->perPage() + $loop->iteration }}
                             </td>
                             <td class="px-4 py-4">
                                 <div class="text-gray-800 dark:text-white line-clamp-2 italic">

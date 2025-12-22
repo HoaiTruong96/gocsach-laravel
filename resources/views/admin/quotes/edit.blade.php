@@ -22,8 +22,8 @@
                     <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">
                         Nội dung <span class="text-red-500">*</span>
                     </label>
-                    <textarea name="content" rows="4" required
-                        class="w-full px-4 py-2 border border-gray-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:text-white transition resize-y min-h-[80px] placeholder:italic"
+                    <textarea name="content" rows="5" required
+                        class="w-full px-4 py-2 border border-gray-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:text-white transition resize-y min-h-[120px] placeholder:italic"
                         placeholder="Nhập nội dung câu châm ngôn...">{{ old('content', $quote->content) }}</textarea>
                     @error('content')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -58,8 +58,14 @@
                     <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">
                         Thứ tự hiển thị
                     </label>
-                    <input type="number" name="order" value="{{ old('order', $quote->order) }}" min="0"
-                        class="w-full px-4 py-2 border border-gray-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:text-white transition">
+                    @include('admin.partials.custom-pickers', [
+                        'type' => 'scroll',
+                        'name' => 'order',
+                        'value' => old('order', $quote->order),
+                        'min' => 0,
+                        'max' => 99,
+                        'autoText' => 'Auto'
+                    ])
                 </div>
 
                 {{-- Trạng thái Hiển thị --}}

@@ -354,8 +354,8 @@
                         <label class="block text-sm font-bold text-gray-700 dark:text-slate-200 mb-2">
                             Ghi chú (tùy chọn):
                         </label>
-                        <textarea name="admin_note" rows="3"
-                            class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-slate-700 dark:text-white text-sm"
+                        <textarea name="admin_note" rows="5"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-slate-700 dark:text-white text-sm resize-y min-h-[120px]"
                             placeholder="Nhập ghi chú..."></textarea>
                     </div>
 
@@ -401,8 +401,8 @@
                         <label class="block text-sm font-bold text-gray-700 dark:text-slate-200 mb-2">
                             Lý do từ chối (tùy chọn):
                         </label>
-                        <textarea name="admin_note" rows="3"
-                            class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 dark:bg-slate-700 dark:text-white text-sm"
+                        <textarea name="admin_note" rows="5"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 dark:bg-slate-700 dark:text-white text-sm resize-y min-h-[120px]"
                             placeholder="Nhập lý do từ chối..."></textarea>
                     </div>
 
