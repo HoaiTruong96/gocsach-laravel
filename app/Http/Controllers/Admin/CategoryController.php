@@ -32,7 +32,6 @@ class CategoryController extends Controller
             'description' => $request->description
         ]);
 
-        // Ghi log
         AdminActivityLog::log(
             'create',
             "Thêm danh mục mới: {$category->name}",
@@ -42,20 +41,22 @@ class CategoryController extends Controller
             $category->toArray()
         );
 
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'category' => $category]);
+        }
         return back()->with('success', 'Thêm danh mục thành công!');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Category $category)
+    public function destroy(Request $request, Category $category)
     {
         $categoryData = $category->toArray();
         $categoryName = $category->name;
 
         $category->delete();
 
-        // Ghi log
         AdminActivityLog::log(
             'delete',
             "Xóa danh mục: {$categoryName}",
@@ -65,6 +66,9 @@ class CategoryController extends Controller
             null
         );
 
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
         return back()->with('success', 'Đã xóa danh mục!');
     }
 }
