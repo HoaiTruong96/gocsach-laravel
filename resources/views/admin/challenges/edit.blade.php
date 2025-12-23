@@ -45,9 +45,13 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Số bài review cần
                             viết <span class="text-red-500">*</span></label>
-                        <input type="number" name="target_count" value="{{ old('target_count', $challenge->target_count) }}"
-                            min="1" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                            class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white">
+                        @include('admin.partials.custom-pickers', [
+                            'type' => 'scroll',
+                            'name' => 'target_count',
+                            'value' => old('target_count', $challenge->target_count),
+                            'min' => 1,
+                            'max' => 50
+                        ])
                         @error('target_count') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div class="grid grid-cols-2 gap-3">
@@ -70,8 +74,8 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Mô tả</label>
-                        <textarea name="description" rows="3"
-                            class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white">{{ old('description', $challenge->description) }}</textarea>
+                        <textarea name="description" rows="5"
+                            class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white resize-y min-h-[120px]">{{ old('description', $challenge->description) }}</textarea>
                     </div>
                     <div class="flex items-center">
                         <input type="checkbox" name="is_active" id="is_active" {{ $challenge->is_active ? 'checked' : '' }}

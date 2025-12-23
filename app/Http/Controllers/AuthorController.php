@@ -217,9 +217,18 @@ class AuthorController extends Controller
             $allAuthors = $authorsFromTable->concat($authorsFromBooks)->sortBy('name');
         }
 
+        // Lọc theo từ khóa tìm kiếm
+        $q = $request->get('q');
+        if ($q) {
+            $q = mb_strtolower(trim($q));
+            $allAuthors = $allAuthors->filter(function ($author) use ($q) {
+                return str_contains(mb_strtolower($author->name), $q);
+            });
+        }
+
         // Phân trang thủ công
         $page = $request->get('page', 1);
-        $perPage = 20;
+        $perPage = 15;
         $total = $allAuthors->count();
         $authors = new \Illuminate\Pagination\LengthAwarePaginator(
             $allAuthors->forPage($page, $perPage)->values(),
@@ -236,7 +245,12 @@ class AuthorController extends Controller
             'unregistered' => $authorsFromBooks->count(),
         ];
 
-        return view('admin.authors.index', compact('authors', 'tab', 'stats'));
+        // Nếu là AJAX request, chỉ trả về table partial
+        if ($request->ajax()) {
+            return view('admin.authors.table', compact('authors', 'tab'));
+        }
+
+        return view('admin.authors.index', compact('authors', 'tab', 'stats', 'q'));
     }
 
     /**
@@ -254,18 +268,41 @@ class AuthorController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:authors,name',
-            'photo' => 'nullable|string|max:255',
+            'photo' => 'nullable|string|max:500',
+            'photo_file' => 'nullable|image|mimes:png,jpg,jpeg,gif,webp|max:2048',
+            'cropped_photo' => 'nullable|string',
             'bio' => 'nullable|string',
             'birth_year' => 'nullable|integer|min:0|max:' . date('Y'),
             'death_year' => 'nullable|integer|min:0|max:' . date('Y'),
             'nationality' => 'nullable|string|max:100',
         ]);
 
+        // Handle cropped base64 image (priority)
+        if (!empty($request->cropped_photo)) {
+            $base64 = $request->cropped_photo;
+            // Extract base64 data
+            if (preg_match('/^data:image\/(\w+);base64,/', $base64, $matches)) {
+                $ext = $matches[1];
+                $base64 = substr($base64, strpos($base64, ',') + 1);
+                $image = base64_decode($base64);
+                $filename = 'authors/' . uniqid() . '.' . $ext;
+                \Storage::disk('public')->put($filename, $image);
+                $validated['photo'] = $filename;
+            }
+        }
+        // Handle file upload
+        elseif ($request->hasFile('photo_file')) {
+            $path = $request->file('photo_file')->store('authors', 'public');
+            $validated['photo'] = $path;
+        }
+
+        unset($validated['photo_file'], $validated['cropped_photo']);
+
         $validated['slug'] = Str::slug($validated['name']);
 
         Author::create($validated);
 
-        return redirect()->route('admin.authors.index', ['tab' => 'unregistered'])
+        return redirect()->route('admin.authors.index', ['tab' => 'registered'])
             ->with('success', 'Đã thêm tác giả thành công!');
     }
 
@@ -287,12 +324,43 @@ class AuthorController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:authors,name,' . $id,
-            'photo' => 'nullable|string|max:255',
+            'photo' => 'nullable|string|max:500',
+            'photo_file' => 'nullable|image|mimes:png,jpg,jpeg,gif,webp|max:2048',
+            'cropped_photo' => 'nullable|string',
             'bio' => 'nullable|string',
             'birth_year' => 'nullable|integer|min:0|max:' . date('Y'),
             'death_year' => 'nullable|integer|min:0|max:' . date('Y'),
             'nationality' => 'nullable|string|max:100',
         ]);
+
+        // Delete old file helper
+        $deleteOldPhoto = function () use ($author) {
+            if ($author->photo && !str_starts_with($author->photo, 'http')) {
+                \Storage::disk('public')->delete($author->photo);
+            }
+        };
+
+        // Handle cropped base64 image (priority)
+        if (!empty($request->cropped_photo)) {
+            $base64 = $request->cropped_photo;
+            if (preg_match('/^data:image\/(\w+);base64,/', $base64, $matches)) {
+                $deleteOldPhoto();
+                $ext = $matches[1];
+                $base64 = substr($base64, strpos($base64, ',') + 1);
+                $image = base64_decode($base64);
+                $filename = 'authors/' . uniqid() . '.' . $ext;
+                \Storage::disk('public')->put($filename, $image);
+                $validated['photo'] = $filename;
+            }
+        }
+        // Handle file upload
+        elseif ($request->hasFile('photo_file')) {
+            $deleteOldPhoto();
+            $path = $request->file('photo_file')->store('authors', 'public');
+            $validated['photo'] = $path;
+        }
+
+        unset($validated['photo_file'], $validated['cropped_photo']);
 
         $validated['slug'] = Str::slug($validated['name']);
 
