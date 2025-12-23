@@ -78,7 +78,7 @@
                             <td class="px-4 py-4 text-center">
                                 <div class="flex justify-center gap-2">
                                     <a href="{{ route('admin.banners.edit', $banner->id) }}"
-                                        class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white transition"
+                                        class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 hover:bg-blue-500 dark:hover:bg-blue-600 hover:text-white transition"
                                         title="Sửa">
                                         <i class="fas fa-pen text-xs"></i>
                                     </a>
@@ -86,7 +86,7 @@
                                         onsubmit="return confirm('Bạn có chắc chắn muốn xóa banner này?');">
                                         @csrf @method('DELETE')
                                         <button type="submit"
-                                            class="w-8 h-8 flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white transition"
+                                            class="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 hover:bg-red-500 dark:hover:bg-red-600 hover:text-white transition"
                                             title="Xóa">
                                             <i class="fas fa-trash text-xs"></i>
                                         </button>

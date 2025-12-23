@@ -437,14 +437,14 @@
                         class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.authors.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                         <i
                             class="fas fa-user-pen w-5 text-center {{ request()->routeIs('admin.authors.*') ? 'text-white' : 'text-slate-400 group-hover:text-cyan-400' }}"></i>
-                        <span class="font-medium text-sm">Tác Giả</span>
+                        <span class="font-medium text-sm">Quản Lý Tác Giả</span>
                     </a>
 
                     <a href="{{ route('admin.categories.index') }}"
                         class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.categories.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                         <i
                             class="fas fa-tags w-5 text-center {{ request()->routeIs('admin.categories.*') ? 'text-white' : 'text-slate-400 group-hover:text-orange-400' }}"></i>
-                        <span class="font-medium text-sm">Danh Mục</span>
+                        <span class="font-medium text-sm">Quản Lý Danh Mục</span>
                     </a>
 
                     <a href="{{ route('admin.posts.index') }}"
@@ -486,7 +486,7 @@
                     <a href="{{ route('admin.post-reports.index') }}"
                         class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.post-reports.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                         <i
-                            class="fas fa-file-exclamation w-5 text-center {{ request()->routeIs('admin.post-reports.*') ? 'text-white' : 'text-slate-400 group-hover:text-purple-400' }}"></i>
+                            class="fas fa-file-alt w-5 text-center {{ request()->routeIs('admin.post-reports.*') ? 'text-white' : 'text-slate-400 group-hover:text-purple-400' }}"></i>
                         <span class="font-medium text-sm">Báo Cáo Bài Viết</span>
                         {{-- Badge số lượng báo cáo chờ xử lý --}}
                         @php

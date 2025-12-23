@@ -193,39 +193,37 @@
                             </td>
 
                             {{-- Hành động --}}
-                            <td class="px-6 py-4 text-right align-top">
-                                <div class="flex flex-col gap-2 items-end">
+                            <td class="px-6 py-4 text-center align-top">
+                                <div class="flex justify-center gap-1.5">
                                     @if($report->status == 'pending' && $report->comment)
-                                        {{-- Nút Chấp thuận --}}
+                                        {{-- Chấp thuận --}}
                                         <button type="button"
                                             onclick="openApproveModal({{ $report->id }}, '{{ addslashes($report->comment->user->name ?? 'Người dùng') }}')"
-                                            class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-green-700 transition w-28 font-medium">
-                                            <i class="fas fa-check mr-1"></i> Chấp thuận
+                                            class="w-8 h-8 flex items-center justify-center rounded-full bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-300 hover:bg-green-500 dark:hover:bg-green-600 hover:text-white transition"
+                                            title="Chấp thuận">
+                                            <i class="fas fa-check text-xs"></i>
                                         </button>
-
-                                        {{-- Nút Từ chối --}}
+                                        {{-- Từ chối --}}
                                         <button type="button" onclick="openRejectModal({{ $report->id }})"
-                                            class="bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-slate-200 px-3 py-1.5 rounded-lg text-xs hover:bg-gray-300 dark:hover:bg-slate-500 transition w-28 font-medium">
-                                            <i class="fas fa-ban mr-1"></i> Từ chối
+                                            class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-slate-600 text-gray-500 dark:text-slate-400 hover:bg-gray-500 hover:text-white transition"
+                                            title="Từ chối">
+                                            <i class="fas fa-ban text-xs"></i>
                                         </button>
                                     @elseif($report->status != 'pending')
-                                        {{-- Hiển thị thông tin người xử lý --}}
                                         @if($report->resolvedBy)
-                                            <span class="text-xs text-gray-500 dark:text-slate-400">
-                                                <i class="fas fa-user-check mr-1"></i> {{ $report->resolvedBy->name }}
+                                            <span class="text-xs text-gray-500 dark:text-slate-400 italic">
+                                                <i class="fas fa-user-check mr-1"></i>{{ $report->resolvedBy->name }}
                                             </span>
-                                            <span class="text-xs text-gray-400 dark:text-slate-500">
-                                                {{ $report->resolved_at->format('d/m/Y H:i') }}
-                                            </span>
+                                            <span
+                                                class="text-xs text-gray-400 dark:text-slate-500 italic">{{ $report->resolved_at->format('d/m H:i') }}</span>
                                         @endif
-
-                                        {{-- Nút xóa --}}
                                         <form action="{{ route('admin.comment-reports.destroy', $report->id) }}" method="POST"
                                             onsubmit="return confirm('Xóa báo cáo này?');">
                                             @csrf @method('DELETE')
                                             <button
-                                                class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 px-3 py-1 rounded text-xs transition">
-                                                <i class="fas fa-trash mr-1"></i> Xóa
+                                                class="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 hover:bg-red-500 dark:hover:bg-red-600 hover:text-white transition"
+                                                title="Xóa">
+                                                <i class="fas fa-trash text-xs"></i>
                                             </button>
                                         </form>
                                     @else

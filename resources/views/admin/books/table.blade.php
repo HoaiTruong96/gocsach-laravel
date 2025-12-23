@@ -107,14 +107,14 @@
                                 <form action="{{ route('admin.books.approve', $book) }}" method="POST" class="inline">
                                     @csrf
                                     <button
-                                        class="w-8 h-8 flex items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400 hover:bg-green-500 hover:text-white transition"
+                                        class="w-8 h-8 flex items-center justify-center rounded-full bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-300 hover:bg-green-500 dark:hover:bg-green-600 hover:text-white transition"
                                         title="Duyệt sách này">
                                         <i class="fas fa-check text-xs"></i>
                                     </button>
                                 </form>
                             @endif
                             <a href="{{ route('admin.books.edit', $book) }}"
-                                class="h-8 w-8 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white transition flex items-center justify-center"
+                                class="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 hover:bg-blue-500 dark:hover:bg-blue-600 hover:text-white transition flex items-center justify-center"
                                 title="Sửa">
                                 <i class="fas fa-pen text-xs"></i>
                             </a>
@@ -122,7 +122,7 @@
                                 onsubmit="return confirm('Bạn có chắc chắn muốn xóa cuốn sách này không?');">
                                 @csrf @method('DELETE')
                                 <button
-                                    class="w-8 h-8 flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white transition"
+                                    class="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 hover:bg-red-500 dark:hover:bg-red-600 hover:text-white transition"
                                     title="Xóa">
                                     <i class="fas fa-trash text-xs"></i>
                                 </button>
