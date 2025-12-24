@@ -285,6 +285,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('articles', ArticleController::class);
     Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class);
     Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->only(['index', 'update', 'destroy']);
+    Route::post('posts/{id}/approve-delete', [\App\Http\Controllers\Admin\PostController::class, 'approveDelete'])->name('posts.approve-delete');
+    Route::post('posts/{id}/reject-delete', [\App\Http\Controllers\Admin\PostController::class, 'rejectDelete'])->name('posts.reject-delete');
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
     Route::resource('banners', BannerController::class);
     Route::resource('badges', \App\Http\Controllers\Admin\BadgeController::class);

@@ -66,6 +66,14 @@ class BadgeController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Tạo danh hiệu thành công!',
+                'badge' => $badge
+            ]);
+        }
+
         return redirect()->route('admin.game.index')
             ->with('success', 'Tạo danh hiệu thành công!');
     }
@@ -132,6 +140,13 @@ class BadgeController extends Controller
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Xóa danh hiệu thành công!'
+            ]);
+        }
 
         return redirect()->route('admin.game.index')
             ->with('success', 'Xóa danh hiệu thành công!');

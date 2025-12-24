@@ -1,6 +1,6 @@
 @extends('layouts.admin')
-@section('title', 'Thử Thách, Danh Hiệu & Khung Avatar')
-@section('header', 'Quản lý Game & Phần Thưởng')
+@section('title', 'Quản Lý Thử Thách & Phần Thưởng')
+@section('header', 'Quản Lý Thử Thách & Phần Thưởng')
 
 @section('content')
     @php
