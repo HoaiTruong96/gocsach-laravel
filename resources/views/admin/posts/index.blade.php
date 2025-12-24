@@ -129,6 +129,11 @@
 
                             <td class="px-5 py-4 text-center align-top">
                                 <div class="flex justify-center gap-1.5">
+                                    {{-- Nút Sửa (luôn hiển thị) --}}
+                                    <a href="{{ route('admin.posts.edit', $review->id) }}"
+                                        class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 hover:bg-blue-500 dark:hover:bg-blue-600 hover:text-white transition" title="Sửa">
+                                        <i class="fas fa-edit text-xs"></i>
+                                    </a>
                                     @if($review->status == 'pending')
                                         {{-- Duyệt --}}
                                         <form action="{{ route('admin.posts.update', $review->id) }}" method="POST">

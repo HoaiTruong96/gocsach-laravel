@@ -202,44 +202,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/reviews/{id}/chinh-sua', [PostController::class, 'edit'])->name('reviews.edit');
     Route::put('/reviews/{id}/update', [PostController::class, 'update'])->name('reviews.update');
 
-    // API lấy thông báo realtime (cho polling)
-    Route::get('/api/notifications', [HomeController::class, 'getNotifications'])->name('api.notifications');
-
-    // --- REVIEW / POST ---
-    Route::get('/reviews/viet-bai', function (Illuminate\Http\Request $request) {
-        $user = Auth::user();
-        $preselectedBook = null;
-
-        // Nếu có book_id, lấy thông tin sách để tự động chọn
-        if ($request->has('book_id')) {
-            $preselectedBook = Book::find($request->book_id);
-        }
-
-        return view('create-review', compact('user', 'preselectedBook'));
-    })->name('reviews.create');
-
-    // Lưu bài viết mới
-    Route::post('/posts/store', [PostController::class, 'store'])->name('posts.store');
-
-    // API lấy thông báo realtime (cho polling)
-    Route::get('/api/notifications', [HomeController::class, 'getNotifications'])->name('api.notifications');
-
-    // --- REVIEW / POST ---
-    Route::get('/reviews/viet-bai', function (Illuminate\Http\Request $request) {
-        $user = Auth::user();
-        $preselectedBook = null;
-
-        // Nếu có book_id, lấy thông tin sách để tự động chọn
-        if ($request->has('book_id')) {
-            $preselectedBook = Book::find($request->book_id);
-        }
-
-        return view('create-review', compact('user', 'preselectedBook'));
-    })->name('reviews.create');
-
-    // Lưu bài viết mới
-    Route::post('/posts/store', [PostController::class, 'store'])->name('posts.store');
-
     // --- API NỘI BỘ (Cho JS tìm sách khi viết review) ---
     Route::get('/api/books/search', function (Illuminate\Http\Request $request) {
         $query = $request->get('q');
@@ -284,7 +246,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('books/{book}/approve', [AdminBookController::class, 'approve'])->name('books.approve');
     Route::resource('articles', ArticleController::class);
     Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class);
-    Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->only(['index', 'update', 'destroy']);
+    Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->only(['index', 'edit', 'update', 'destroy']);
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
     Route::resource('banners', BannerController::class);
     Route::resource('badges', \App\Http\Controllers\Admin\BadgeController::class);
