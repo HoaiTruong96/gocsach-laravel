@@ -177,6 +177,10 @@
                         <i class="fas fa-trash text-xs"></i>Thùng rác
                     </a>
                 </div>
+                <a href="{{ route('admin.activity-logs.trash') }}"
+                    class="inline-flex items-center gap-2 px-3 py-1.5 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 font-medium text-sm rounded-lg hover:bg-red-200 dark:hover:bg-red-900/60 transition">
+                    <i class="fas fa-trash text-xs"></i>Thùng rác
+                </a>
             </div>
         </div>
 

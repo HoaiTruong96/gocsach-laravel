@@ -141,33 +141,135 @@
                 </article>
             </div>
 
-            {{-- [CỘT PHẢI - 4 PHẦN] SIDEBAR --}}
-            <div class="lg:col-span-4 space-y-8">
-                
-                {{-- Widget: Giới thiệu --}}
-                <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                    <h3 class="font-serif font-bold text-lg text-gray-800 mb-4">Về Tạp Chí</h3>
-                    <p class="text-sm text-gray-600 leading-relaxed mb-4">
-                        Góc Sách Magazine là nơi chia sẻ những câu chuyện thú vị xoay quanh văn hóa đọc, phỏng vấn tác giả và những tips hay ho cho mọt sách.
-                    </p>
-                    <a href="{{ route('home') }}" class="text-brand-green text-sm font-bold hover:underline">Xem thêm bài viết &rarr;</a>
-                </div>
-
-                {{-- Widget: Mua Sách (Tái sử dụng từ Home) --}}
-                <div class="bg-brand-beige/20 p-6 rounded-xl border border-brand-beige sticky top-24">
-                    <h3 class="font-serif font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
-                        <span class="text-brand-accent">🛒</span> Mua Sách Online
-                    </h3>
-                    <div class="space-y-3">
-                        <a href="#" class="block bg-white p-3 rounded-lg text-sm font-bold text-gray-700 hover:text-blue-600 hover:shadow-md transition text-center border border-gray-200">
-                            Mua trên Tiki
-                        </a>
-                        <a href="#" class="block bg-white p-3 rounded-lg text-sm font-bold text-gray-700 hover:text-orange-600 hover:shadow-md transition text-center border border-gray-200">
-                            Mua trên Shopee
+            {{-- [CỘT PHẢI - 4 PHẦN] SIDEBAR - STICKY --}}
+            <div class="lg:col-span-4">
+                <div class="sticky top-24 space-y-6">
+                    
+                    {{-- Widget: Giới thiệu Tạp Chí - Redesigned --}}
+                    <div class="relative bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-2xl p-6 border border-emerald-100 shadow-lg overflow-hidden group">
+                        {{-- Decorative Elements --}}
+                        <div class="absolute -top-10 -right-10 w-32 h-32 bg-emerald-200/30 rounded-full blur-3xl pointer-events-none"></div>
+                        <div class="absolute -bottom-8 -left-8 w-24 h-24 bg-teal-200/30 rounded-full blur-2xl pointer-events-none"></div>
+                        
+                        {{-- Icon Header --}}
+                        <div class="flex items-center gap-3 mb-4 relative">
+                            <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                                <i class="fas fa-book-open text-white text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-serif font-bold text-gray-800 text-lg leading-tight">Về Tạp Chí</h3>
+                                <span class="text-xs text-emerald-600 font-medium">Góc Sách Magazine</span>
+                            </div>
+                        </div>
+                        
+                        {{-- Content --}}
+                        <p class="text-sm text-gray-600 leading-relaxed mb-5 relative">
+                            Góc Sách Magazine là nơi chia sẻ những câu chuyện thú vị xoay quanh <span class="text-emerald-600 font-semibold">văn hóa đọc</span>, phỏng vấn tác giả và những tips hay ho cho mọt sách.
+                        </p>
+                        
+                        {{-- Stats --}}
+                        <div class="grid grid-cols-2 gap-3 mb-5">
+                            <div class="bg-white/60 backdrop-blur-sm rounded-xl p-3 text-center border border-white/80">
+                                <span class="block text-lg font-bold text-emerald-600">50+</span>
+                                <span class="text-[10px] text-gray-500 uppercase tracking-wide">Bài viết</span>
+                            </div>
+                            <div class="bg-white/60 backdrop-blur-sm rounded-xl p-3 text-center border border-white/80">
+                                <span class="block text-lg font-bold text-teal-600">10K+</span>
+                                <span class="text-[10px] text-gray-500 uppercase tracking-wide">Lượt xem</span>
+                            </div>
+                        </div>
+                        
+                        {{-- CTA Button --}}
+                        <a href="{{ route('home') }}" class="flex items-center justify-center gap-2 w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-sm rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 group/btn">
+                            <span>Khám phá thêm</span>
+                            <i class="fas fa-arrow-right text-xs group-hover/btn:translate-x-1 transition-transform"></i>
                         </a>
                     </div>
-                </div>
 
+                    {{-- Widget: Mua Sách - Redesigned --}}
+                    <div class="relative bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 rounded-2xl p-6 border border-amber-100 shadow-lg overflow-hidden">
+                        {{-- Decorative --}}
+                        <div class="absolute -top-8 -right-8 w-24 h-24 bg-amber-200/40 rounded-full blur-2xl pointer-events-none animate-pulse"></div>
+                        <div class="absolute -bottom-6 -left-6 w-20 h-20 bg-orange-200/30 rounded-full blur-xl pointer-events-none"></div>
+
+                        {{-- Header --}}
+                        <div class="flex items-center gap-3 mb-5 relative">
+                            <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                                <i class="fas fa-shopping-bag text-white text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-serif font-bold text-gray-800 text-lg leading-tight">Mua Sách Giá Tốt</h3>
+                                <span class="text-xs text-amber-600 font-medium flex items-center gap-1">
+                                    <i class="fas fa-shield-alt text-[10px]"></i> Đối tác uy tín
+                                </span>
+                            </div>
+                        </div>
+
+                        {{-- Partner Links --}}
+                        <div class="space-y-3 relative">
+                            {{-- Tiki --}}
+                            <a href="https://tiki.vn/nha-sach-tiki/c8322" target="_blank" rel="noopener noreferrer" 
+                               class="flex items-center justify-between p-4 rounded-xl bg-white/80 backdrop-blur-sm border-2 border-transparent hover:border-blue-400 hover:bg-blue-50 hover:shadow-lg transition-all duration-300 group">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center p-1.5">
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/4/43/Logo_Tiki_2023.png" class="w-full h-full object-contain" alt="Tiki">
+                                    </div>
+                                    <div>
+                                        <span class="font-bold text-sm text-gray-800 group-hover:text-blue-600 block transition-colors">Tiki Trading</span>
+                                        <span class="text-xs text-green-600 font-bold flex items-center gap-1">
+                                            <span class="inline-block animate-bounce">🔥</span> Giảm tới 35%
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-500 transition-colors">
+                                    <i class="fas fa-arrow-right text-xs text-blue-500 group-hover:text-white group-hover:translate-x-0.5 transition-all"></i>
+                                </div>
+                            </a>
+
+                            {{-- Shopee --}}
+                            <a href="https://shopee.vn/nhasachphuongnam" target="_blank" rel="noopener noreferrer" 
+                               class="flex items-center justify-between p-4 rounded-xl bg-white/80 backdrop-blur-sm border-2 border-transparent hover:border-orange-400 hover:bg-orange-50 hover:shadow-lg transition-all duration-300 group">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center p-1.5">
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg" class="w-full h-full object-contain" alt="Shopee">
+                                    </div>
+                                    <div>
+                                        <span class="font-bold text-sm text-gray-800 group-hover:text-orange-600 block transition-colors">Shopee Mall</span>
+                                        <span class="text-xs text-orange-500 font-bold flex items-center gap-1">
+                                            <span>🚚</span> Freeship Extra
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center group-hover:bg-orange-500 transition-colors">
+                                    <i class="fas fa-arrow-right text-xs text-orange-500 group-hover:text-white group-hover:translate-x-0.5 transition-all"></i>
+                                </div>
+                            </a>
+
+                            {{-- Fahasa --}}
+                            <a href="https://www.fahasa.com/" target="_blank" rel="noopener noreferrer" 
+                               class="flex items-center justify-between p-4 rounded-xl bg-white/80 backdrop-blur-sm border-2 border-transparent hover:border-red-400 hover:bg-red-50 hover:shadow-lg transition-all duration-300 group">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">F</div>
+                                    <div>
+                                        <span class="font-bold text-sm text-gray-800 group-hover:text-red-600 block transition-colors">Fahasa.com</span>
+                                        <span class="text-xs text-gray-500 font-medium flex items-center gap-1">
+                                            <i class="fas fa-check-circle text-green-500 text-[10px]"></i> Sách chính hãng
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center group-hover:bg-red-500 transition-colors">
+                                    <i class="fas fa-arrow-right text-xs text-red-500 group-hover:text-white group-hover:translate-x-0.5 transition-all"></i>
+                                </div>
+                            </a>
+                        </div>
+
+                        {{-- Footer Note --}}
+                        <p class="text-[10px] text-center text-gray-400 mt-4 italic">
+                            <i class="fas fa-heart text-red-400 mr-1"></i> Ủng hộ Góc Sách khi mua qua link
+                        </p>
+                    </div>
+
+                </div>
             </div>
         </div>
     </main>
