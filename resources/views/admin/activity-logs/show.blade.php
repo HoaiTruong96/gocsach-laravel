@@ -83,7 +83,7 @@
                                 onsubmit="return confirm('Bạn có chắc muốn khôi phục mục này?')">
                                 @csrf
                                 <button type="submit"
-                                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-lg shadow-lg hover:from-green-600 hover:to-emerald-700 transition-all transform hover:scale-105">
+                                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white font-bold rounded-lg shadow-md hover:bg-green-700 transition-all">
                                     <i class="fas fa-undo"></i>Khôi phục mục này
                                 </button>
                             </form>

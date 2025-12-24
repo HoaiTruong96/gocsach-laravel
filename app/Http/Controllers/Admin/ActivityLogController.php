@@ -50,6 +50,20 @@ class ActivityLogController extends Controller
         // Các loại action unique
         $actions = AdminActivityLog::distinct()->pluck('action');
 
+        // AJAX request - return JSON
+        if ($request->ajax() || $request->has('ajax')) {
+            $paginationHtml = '';
+            if ($logs->hasPages()) {
+                $paginationHtml = '<div class="p-4 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-700">'
+                    . $logs->links('vendor.pagination.admin')->toHtml()
+                    . '</div>';
+            }
+            return response()->json([
+                'table' => view('admin.activity-logs._table', compact('logs'))->render(),
+                'pagination' => $paginationHtml
+            ]);
+        }
+
         return view('admin.activity-logs.index', compact('logs', 'admins', 'actions'));
     }
 
