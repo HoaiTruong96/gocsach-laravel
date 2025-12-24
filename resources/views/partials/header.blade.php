@@ -112,16 +112,16 @@
             <div class="flex items-center gap-3 md:gap-5">
                 @auth
                     {{-- Notification Bell --}}
-                    <div class="relative group pb-4 -mb-4">
-                        <button class="text-gray-500 hover:text-brand-green transition relative p-2 focus:outline-none">
+                    <div id="notification-wrapper" class="relative pb-4 -mb-4">
+                        <button id="notification-bell-btn" class="text-gray-500 hover:text-brand-green transition relative p-2 focus:outline-none">
                             <i class="far fa-bell text-xl"></i>
                             <span id="notification-badge"
                                 class="{{ Auth::user()->unreadNotifications->count() > 0 ? '' : 'hidden' }} absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white animate-bounce">
                                 <span id="notification-count">{{ Auth::user()->unreadNotifications->count() }}</span>
                             </span>
                         </button>
-                        <div
-                            class="dropdown-menu dropdown-bridge absolute right-0 top-full mt-0 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in z-50 origin-top-right">
+                        <div id="notification-dropdown"
+                            class="hidden dropdown-bridge absolute right-0 top-full mt-0 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in z-50 origin-top-right">
                             <div class="px-4 py-3 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
                                 <span class="text-sm font-bold text-gray-700">Thông báo</span>
                                 <a href="{{ route('notification.readAll') }}" id="mark-all-read-btn"
@@ -847,6 +847,54 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Fetch ngay khi trang load (sau 2 giây để tránh lag)
     setTimeout(fetchNotifications, 2000);
+    
+    // ====== NOTIFICATION BELL CLICK HANDLER ======
+    const bellBtn = document.getElementById('notification-bell-btn');
+    const dropdown = document.getElementById('notification-dropdown');
+    const badge = document.getElementById('notification-badge');
+    const wrapper = document.getElementById('notification-wrapper');
+    
+    if (bellBtn && dropdown) {
+        // Khi click vào chuông thông báo
+        bellBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            // Toggle dropdown
+            const isHidden = dropdown.classList.contains('hidden');
+            dropdown.classList.toggle('hidden');
+            
+            // Nếu mở dropdown và có thông báo chưa đọc -> ẩn badge
+            if (isHidden && badge && !badge.classList.contains('hidden')) {
+                // Gọi API đánh dấu đã đọc tất cả
+                fetch('{{ route("notification.readAll") }}', {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                }).then(response => {
+                    // Ẩn badge sau khi gọi API
+                    badge.classList.add('hidden');
+                    const markAllBtn = document.getElementById('mark-all-read-btn');
+                    if (markAllBtn) markAllBtn.classList.add('hidden');
+                }).catch(err => console.log('Mark read error:', err));
+            }
+        });
+        
+        // Click ra ngoài thì đóng dropdown
+        document.addEventListener('click', function(e) {
+            if (wrapper && !wrapper.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+        
+        // Nhấn ESC để đóng dropdown
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                dropdown.classList.add('hidden');
+            }
+        });
+    }
 });
 </script>
 @endauth
