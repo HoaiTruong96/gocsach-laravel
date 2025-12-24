@@ -382,14 +382,14 @@
                     suggestionsGrid.innerHTML = books.map(b => {
                         const cover = b.cover_image 
                             ? (b.cover_image.startsWith('http') ? b.cover_image : '/storage/' + b.cover_image)
-                            : 'https://placehold.co/80x120?text=' + encodeURIComponent(b.title.substring(0, 10));
+                            : 'https://via.placeholder.com/80x120?text=' + encodeURIComponent(b.title.substring(0, 10));
                         
                         return `
                             <div onclick='selectBook(${JSON.stringify(b).replace(/'/g, "&#39;")})' 
                                  class="flex gap-3 p-3 bg-gray-50 hover:bg-brand-green/5 border border-gray-100 hover:border-brand-green/30 rounded-xl cursor-pointer transition group">
                                 <img src="${cover}" 
                                      class="w-12 h-16 object-cover rounded shadow-sm border border-gray-200 flex-shrink-0"
-                                     onerror="this.src='https://placehold.co/80x120?text=Book'">
+                                     onerror="this.src='https://via.placeholder.com/80x120?text=Book'">
                                 <div class="flex-1 min-w-0">
                                     <h4 class="font-bold text-sm text-gray-800 line-clamp-2 group-hover:text-brand-green transition">${b.title}</h4>
                                     <p class="text-xs text-gray-500 mt-1 truncate">${b.author_name || 'Chưa rõ tác giả'}</p>
@@ -453,7 +453,7 @@
             } else {
                 dropdown.innerHTML = books.map(b => `
                     <div onclick='selectBook(${JSON.stringify(b)})' class="flex gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-0 transition">
-                        <img src="${b.cover_image || 'https://placehold.co/50x75'}" class="w-10 h-14 object-cover rounded shadow-sm border border-gray-200">
+                        <img src="${b.cover_image || 'https://via.placeholder.com/50x75'}" class="w-10 h-14 object-cover rounded shadow-sm border border-gray-200">
                         <div>
                             <h4 class="font-bold text-sm text-gray-800 line-clamp-1">${b.title}</h4>
                             <p class="text-xs text-gray-500">${b.author_name || 'Không rõ tác giả'} • ${b.published_year || 'N/A'}</p>
@@ -466,7 +466,7 @@
 
         function selectBook(book) {
             document.getElementById('selected-book-id').value = book.id;
-            document.getElementById('display-book-img').src = book.cover_image || 'https://placehold.co/150x200';
+            document.getElementById('display-book-img').src = book.cover_image || 'https://via.placeholder.com/150x200';
             document.getElementById('display-book-title').innerText = book.title;
             document.getElementById('display-book-author').innerText = book.author_name;
             document.getElementById('display-book-year').innerText = book.published_year || '';
@@ -529,7 +529,7 @@
                 title: @json($preselectedBook->title),
                 author_name: @json($preselectedBook->author_name ?? 'Không rõ'),
                 published_year: @json($preselectedBook->published_year ?? ''),
-                cover_image: @json($preselectedBook->cover_image ? (Str::startsWith($preselectedBook->cover_image, 'http') ? $preselectedBook->cover_image : asset('storage/' . $preselectedBook->cover_image)) : 'https://placehold.co/150x200')
+                cover_image: @json($preselectedBook->cover_image ? (Str::startsWith($preselectedBook->cover_image, 'http') ? $preselectedBook->cover_image : asset('storage/' . $preselectedBook->cover_image)) : 'https://via.placeholder.com/150x200')
             });
         });
         @endif

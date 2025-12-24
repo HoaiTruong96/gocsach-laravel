@@ -99,7 +99,7 @@
                                             $cover = $post->book->cover_image ?? null;
                                             $coverUrl = $cover
                                                 ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover))
-                                                : 'https://placehold.co/50';
+                                                : 'https://via.placeholder.com/50';
                                         @endphp
                                         <img src="{{ $coverUrl }}" class="w-12 h-16 object-cover rounded shadow-sm border border-gray-200">
                                     </a>

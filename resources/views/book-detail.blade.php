@@ -45,12 +45,12 @@
                             $cover = $book->cover_image ?? null;
                             $coverUrl = $cover 
                                 ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover))
-                                : 'https://placehold.co/300x450?text=No+Image';
+                                : 'https://via.placeholder.com/300x450?text=No+Image';
                         @endphp
                         <img src="{{ $coverUrl }}" 
                              alt="{{ $book->title }}" 
                              class="w-full h-full object-cover rounded-r-lg rounded-l-sm border-l-4 border-gray-200"
-                             onerror="this.onerror=null; this.src='https://placehold.co/300x450?text=No+Image'">
+                             onerror="this.onerror=null; this.src='https://via.placeholder.com/300x450?text=No+Image'">
                     </div>
                 </div>
 
@@ -500,12 +500,13 @@
                                                     <span id="like-count-comment-{{ $comment->id }}">{{ $comment->likes->count() }}</span> Thích
                                                 </button>
 
+                                                {{-- Nút Toggle Reply (GIỐNG TRANG HOME) --}}
                                                 <button 
                                                     type="button"
                                                     onclick="toggleReplySection({{ $comment->id }})" 
                                                     class="flex items-center gap-1.5 text-xs font-bold text-gray-400 hover:text-brand-green transition group">
                                                     <i class="far fa-comment-dots group-hover:scale-110 transition-transform"></i>
-                                                    <span>Trả lời</span> <span id="reply-count-{{ $comment->id }}">({{ $replies->count() }})</span>
+                                                    <span>Trả lời ({{ $replies->count() }})</span>
                                                     <i id="chevron-reply-{{ $comment->id }}" class="fas fa-chevron-down text-[10px] ml-1 transition-transform duration-300"></i>
                                                 </button>
 
@@ -680,7 +681,7 @@
                                     $cover = $related->cover_image;
                                     $imgSrc = !empty($cover) 
                                         ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover)) 
-                                        : 'https://placehold.co/50x75?text=No+Image';
+                                        : 'https://via.placeholder.com/50x75?text=No+Image';
                                 @endphp
 
                                 <a href="{{ route('detail', $related->slug) }}" class="flex gap-3 items-center group cursor-pointer">
@@ -953,11 +954,11 @@
                     }
                 }
                 
-                // Cập nhật số lượng reply sử dụng ID cụ thể
-                const replyCountSpan = document.getElementById(`reply-count-${commentId}`);
-                if (replyCountSpan) {
-                    const currentCount = parseInt(replyCountSpan.innerText.match(/\d+/) || 0);
-                    replyCountSpan.innerText = `(${currentCount + 1})`;
+                // Cập nhật số lượng reply trên nút "Trả lời"
+                const replyBtn = document.querySelector(`button[onclick="toggleReplySection(${commentId})"] span`);
+                if (replyBtn) {
+                    const currentCount = parseInt(replyBtn.innerText.match(/\d+/) || 0);
+                    replyBtn.innerText = `Trả lời (${currentCount + 1})`;
                 }
             }
         })

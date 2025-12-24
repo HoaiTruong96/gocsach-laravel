@@ -1,6 +1,6 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
-@section('title', 'Trang Ch? - G�c S�ch')
+@section('title', 'Trang Chủ - Góc Sách')
 
 @section('content')
     <section id="hero-carousel" class="relative text-white py-8 sm:py-12 lg:py-16 overflow-hidden bg-[#2A483A] group">
@@ -14,16 +14,16 @@
         <div class="hero-slider-wrapper flex w-full transition-transform duration-700 ease-in-out" id="sliderWrapper">
             @foreach($heroSlides as $index => $slide)
                 <div class="w-full flex-shrink-0 px-4 relative group/edit">
-                    {{-- [ADMIN TOOL] N�t S?a Banner --}}
+                    {{-- [ADMIN TOOL] Nút Sửa Banner --}}
                     @if(Auth::check() && Auth::user()->isAdmin() && isset($slide->id))
                         <a href="{{ route('admin.banners.edit', $slide->id) }}"
                             class="absolute top-0 right-10 z-50 bg-white/90 text-blue-600 px-4 py-2 rounded-full shadow-lg hover:bg-blue-600 hover:text-white transition font-bold flex items-center gap-2 opacity-0 group-hover/edit:opacity-100 backdrop-blur-sm cursor-pointer">
-                            <i class="fas fa-cog"></i> S?a Banner
+                            <i class="fas fa-cog"></i> Sửa Banner
                         </a>
                     @endif
 
                     <div class="container mx-auto flex flex-col md:flex-row items-center gap-12 justify-center">
-                        {{-- 1. ?nh B�a S�ch --}}
+                        {{-- 1. Ảnh Bìa Sách --}}
                         <div class="w-full md:w-5/12 flex justify-center md:justify-end perspective-1000">
                             <div
                                 class="relative w-36 h-52 sm:w-48 sm:h-72 md:w-56 md:h-80 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-r-lg rounded-l-sm transform rotate-y-12 hover:rotate-y-0 hover:scale-105 transition-all duration-700 cursor-pointer group/book">
@@ -43,7 +43,7 @@
                         </div>
 
 
-                        {{-- 2. N?i Dung Banner --}}
+                        {{-- 2. Nội Dung Banner --}}
                         <div class="w-full md:w-7/12 text-center md:text-left space-y-6">
                             <div
                                 class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm">
@@ -53,7 +53,7 @@
                                     <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                                 </span>
                                 <span class="text-xs font-bold uppercase tracking-widest text-brand-beige">
-                                    {{ is_object($slide) ? ($slide->tag ?? 'N?i B?t') : $slide['tag'] }}
+                                    {{ is_object($slide) ? ($slide->tag ?? 'Nổi Bật') : $slide['tag'] }}
                                 </span>
                             </div>
 
@@ -96,7 +96,7 @@
                                 @endphp
                                 <a href="{{ $link }}"
                                     class="inline-flex items-center justify-center gap-2 bg-brand-accent text-white font-bold px-6 py-3 rounded-full shadow-lg hover:bg-[#c29263] transition-all transform hover:-translate-y-1">
-                                    <span>�?c review</span> <i class="fas fa-arrow-right text-sm"></i>
+                                    <span>Đọc review</span> <i class="fas fa-arrow-right text-sm"></i>
                                 </a>
                             </div>
                         </div>
@@ -105,7 +105,7 @@
             @endforeach
         </div>
 
-        {{-- N�t �i?u Hu?ng --}}
+        {{-- Nút Điều Hướng --}}
         <button id="heroNextBtn"
             class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/20 hover:bg-brand-accent/80 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 hover:scale-110 z-20 cursor-pointer">
             <i class="fas fa-chevron-right text-xl"></i>
@@ -125,10 +125,10 @@
     <main class="container mx-auto px-4 py-12">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
 
-            {{-- [C?T TR�I - CHI?M 8 PH?N] --}}
+            {{-- [CỘT TRÁI - CHIẾM 8 PHẦN] --}}
             <div class="lg:col-span-8 space-y-16">
 
-                {{-- 1. T?P CH� �?C --}}
+                {{-- 1. TẠP CHÍ ĐỌC --}}
                 <section class="relative">
                     {{-- Decorative --}}
                     <div
@@ -144,16 +144,16 @@
                             <div>
                                 <h2
                                     class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 font-serif flex items-center gap-2 sm:gap-3">
-                                    T?p Ch� �?c
+                                    Tạp Chí Đọc
                                     <span
                                         class="text-xs bg-brand-green/10 text-brand-green px-2.5 py-1 rounded-full font-bold">FEATURED</span>
                                 </h2>
-                                <p class="text-sm text-gray-500 mt-1">G�c nh�n s�u s?c v? s�ch v� cu?c s?ng</p>
+                                <p class="text-sm text-gray-500 mt-1">Góc nhìn sâu sắc về sách và cuộc sống</p>
                             </div>
                         </div>
                         <a href="#"
                             class="hidden md:flex items-center gap-2 text-sm font-bold text-brand-green hover:text-brand-accent transition group">
-                            <span>Xem t?t c?</span>
+                            <span>Xem tất cả</span>
                             <i
                                 class="fas fa-arrow-right text-xs transform group-hover:translate-x-1 transition-transform"></i>
                         </a>
@@ -164,7 +164,7 @@
                             <article class="md:col-span-3 group cursor-pointer relative"
                                 onclick="window.location.href='{{ route('articles.show', $featuredArticle->slug ?? $featuredArticle->id) }}'">
                                 @if(Auth::check() && Auth::user()->isAdmin())
-                                    {{-- N�t s?a (Ngan ch?n click bong b�ng d? kh�ng nh?y trang) --}}
+                                    {{-- Nút sửa (Ngăn chặn click bong bóng để không nhảy trang) --}}
                                     <a href="{{ route('admin.articles.edit', $featuredArticle->id) }}"
                                         onclick="event.stopPropagation()"
                                         class="absolute top-4 right-4 z-20 bg-white/90 text-blue-600 p-2 rounded-full shadow-lg hover:bg-blue-600 hover:text-white transition opacity-0 group-hover:opacity-100">
@@ -178,11 +178,11 @@
                                     </div>
                                     <span
                                         class="absolute top-4 left-4 bg-brand-accent text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                                        {{ $featuredArticle->tag ?? 'Ti�u �i?m' }}
+                                        {{ $featuredArticle->tag ?? 'Tiêu Điểm' }}
                                     </span>
                                     <div class="absolute bottom-4 left-4 right-4 text-white">
                                         <div class="text-xs opacity-80 mb-2"><i class="far fa-calendar-alt mr-1"></i>
-                                            {{ $featuredArticle->created_at->format('d/m/Y') }} � B?i
+                                            {{ $featuredArticle->created_at->format('d/m/Y') }} • Bởi
                                             {{ $featuredArticle->user->name }}
                                         </div>
                                         <h3
@@ -214,7 +214,7 @@
                                         </div>
                                         <div>
                                             <span
-                                                class="text-brand-green text-xs font-bold uppercase">{{ $article->tag ?? 'Tin T?c' }}</span>
+                                                class="text-brand-green text-xs font-bold uppercase">{{ $article->tag ?? 'Tin Tức' }}</span>
                                             <h3
                                                 class="font-serif font-bold text-base text-gray-800 leading-snug group-hover:text-brand-green transition mt-1">
                                                 {{ $article->title }}
@@ -227,7 +227,7 @@
                     </div>
                 </section>
 
-                {{-- 1.5. B�I REVIEW S�CH --}}
+                {{-- 1.5. BÀI REVIEW SÁCH --}}
                 @if((isset($latestPosts) && $latestPosts->count() > 0) || (isset($hotPosts) && $hotPosts->count() > 0))
                     <section id="featured-reviews"
                         class="relative group/slider bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 rounded-2xl p-4 sm:p-6 border border-rose-100 shadow-sm">
@@ -239,7 +239,7 @@
                             class="absolute -bottom-4 -left-4 w-20 h-20 bg-purple-200/30 rounded-full blur-xl pointer-events-none">
                         </div>
 
-                        {{-- Header v?i Tabs --}}
+                        {{-- Header với Tabs --}}
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 relative gap-3">
                             <div class="flex items-center gap-3">
                                 <div
@@ -248,33 +248,33 @@
                                 </div>
                                 <div>
                                     <h2 class="text-lg sm:text-xl font-bold text-gray-800 font-serif">
-                                        B�i Review S�ch
+                                        Bài Review Sách
                                     </h2>
-                                    <p class="text-xs text-gray-500">Nh?ng b�i review hay nh?t t? c?ng d?ng</p>
+                                    <p class="text-xs text-gray-500">Những bài review hay nhất từ cộng đồng</p>
                                 </div>
                             </div>
 
-                            {{-- Tabs + Xem t?t c? --}}
+                            {{-- Tabs + Xem tất cả --}}
                             <div class="flex items-center gap-3">
                                 <div class="bg-rose-100 rounded-full p-1 flex text-xs font-bold">
                                     <button onclick="switchReviewTab('latest')" id="tab-review-latest"
                                         class="px-3 sm:px-4 py-1.5 rounded-full transition-all duration-300 bg-white text-rose-600 shadow-sm">
-                                        <i class="fas fa-clock mr-1"></i>M?i nh?t
+                                        <i class="fas fa-clock mr-1"></i>Mới nhất
                                     </button>
                                     <button onclick="switchReviewTab('hot')" id="tab-review-hot"
                                         class="px-3 sm:px-4 py-1.5 rounded-full transition-all duration-300 text-gray-500 hover:text-rose-500">
-                                        <i class="fas fa-fire mr-1"></i>Hot nh?t
+                                        <i class="fas fa-fire mr-1"></i>Hot nhất
                                     </button>
                                 </div>
                                 <a href="{{ route('books.search') }}"
                                     class="text-xs font-bold px-3 py-1.5 bg-rose-500 text-white hover:bg-rose-600 rounded-full transition shadow-md flex items-center gap-1">
-                                    <span class="hidden sm:inline">Xem t?t c?</span>
+                                    <span class="hidden sm:inline">Xem tất cả</span>
                                     <i class="fas fa-arrow-right text-[10px]"></i>
                                 </a>
                             </div>
                         </div>
 
-                        {{-- Slider Container cho M?I NH?T --}}
+                        {{-- Slider Container cho MỚI NHẤT --}}
                         <div id="reviews-latest-container" class="relative px-2 group/slider">
                             {{-- Prev Button --}}
                             <button
@@ -289,12 +289,12 @@
                                             ? (str_starts_with($post->thumbnail, 'http') ? $post->thumbnail : asset('storage/' . $post->thumbnail))
                                             : ($post->book && $post->book->cover_image
                                                 ? (str_starts_with($post->book->cover_image, 'http') ? $post->book->cover_image : asset('storage/' . $post->book->cover_image))
-                                                : 'https://placehold.co/300x200?text=No+Image');
+                                                : 'https://via.placeholder.com/300x200?text=No+Image');
                                         $rating = $post->rating ?? 0;
                                         $fullStars = floor($rating);
                                         $hasHalfStar = ($rating - $fullStars) >= 0.5;
                                         $emptyStars = 5 - $fullStars - ($hasHalfStar ? 1 : 0);
-                                        $isNew = $index < 3; // 3 b�i d?u hi?n NEW
+                                        $isNew = $index < 3; // 3 bài đầu hiện NEW
                                     @endphp
 
                                     <div class="w-64 sm:w-72 md:w-80 flex-shrink-0 group">
@@ -304,7 +304,7 @@
                                                 class="relative w-full aspect-[16/10] rounded-xl overflow-hidden shadow-lg mb-3 bg-gradient-to-br from-gray-100 to-gray-200 transform transition-all duration-500 group-hover:scale-[1.02] group-hover:shadow-xl">
                                                 <img src="{{ $thumbnailUrl }}" alt="{{ $post->title }}"
                                                     class="w-full h-full object-cover transition duration-700 group-hover:brightness-110"
-                                                    onerror="this.src='https://placehold.co/300x200?text=No+Image'">
+                                                    onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
                                                 <div
                                                     class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent">
                                                 </div>
@@ -348,7 +348,7 @@
                                                         <img src="{{ $post->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($post->user->name ?? 'User') }}"
                                                             class="w-5 h-5 rounded-full border border-white/50 object-cover">
                                                         <span
-                                                            class="text-white/80 text-[10px] font-medium truncate">{{ $post->user->name ?? '?n danh' }}</span>
+                                                            class="text-white/80 text-[10px] font-medium truncate">{{ $post->user->name ?? 'Ẩn danh' }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -372,7 +372,7 @@
                             </button>
                         </div>
 
-                        {{-- Slider Container cho HOT NH?T (?n ban d?u) --}}
+                        {{-- Slider Container cho HOT NHẤT (ẩn ban đầu) --}}
                         <div id="reviews-hot-container" class="relative px-2 group/slider hidden">
                             <button
                                 class="btn-prev-reviews absolute left-0 top-1/2 -translate-y-1/2 -ml-1 sm:-ml-3 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center text-gray-600 hover:text-white hover:bg-rose-500 hover:scale-110 transition-all opacity-100 sm:opacity-0 group-hover/slider:opacity-100 duration-300">
@@ -386,12 +386,12 @@
                                             ? (str_starts_with($post->thumbnail, 'http') ? $post->thumbnail : asset('storage/' . $post->thumbnail))
                                             : ($post->book && $post->book->cover_image
                                                 ? (str_starts_with($post->book->cover_image, 'http') ? $post->book->cover_image : asset('storage/' . $post->book->cover_image))
-                                                : 'https://placehold.co/300x200?text=No+Image');
+                                                : 'https://via.placeholder.com/300x200?text=No+Image');
                                         $rating = $post->rating ?? 0;
                                         $fullStars = floor($rating);
                                         $hasHalfStar = ($rating - $fullStars) >= 0.5;
                                         $emptyStars = 5 - $fullStars - ($hasHalfStar ? 1 : 0);
-                                        $isHot = $index < 3; // 3 b�i d?u hi?n HOT
+                                        $isHot = $index < 3; // 3 bài đầu hiện HOT
                                     @endphp
 
                                     <div class="w-64 sm:w-72 md:w-80 flex-shrink-0 group">
@@ -401,7 +401,7 @@
                                                 class="relative w-full aspect-[16/10] rounded-xl overflow-hidden shadow-lg mb-3 bg-gradient-to-br from-gray-100 to-gray-200 transform transition-all duration-500 group-hover:scale-[1.02] group-hover:shadow-xl">
                                                 <img src="{{ $thumbnailUrl }}" alt="{{ $post->title }}"
                                                     class="w-full h-full object-cover transition duration-700 group-hover:brightness-110"
-                                                    onerror="this.src='https://placehold.co/300x200?text=No+Image'">
+                                                    onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
                                                 <div
                                                     class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent">
                                                 </div>
@@ -445,7 +445,7 @@
                                                         <img src="{{ $post->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($post->user->name ?? 'User') }}"
                                                             class="w-5 h-5 rounded-full border border-white/50 object-cover">
                                                         <span
-                                                            class="text-white/80 text-[10px] font-medium truncate">{{ $post->user->name ?? '?n danh' }}</span>
+                                                            class="text-white/80 text-[10px] font-medium truncate">{{ $post->user->name ?? 'Ẩn danh' }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -471,7 +471,7 @@
                     </section>
                 @endif
 
-                {{-- 2. S�CH M?I C?P NH?T --}}
+                {{-- 2. SÁCH MỚI CẬP NHẬT --}}
                 <section id="new-books"
                     class="relative group/slider bg-gradient-to-br from-brand-green/5 via-white to-brand-beige/20 rounded-2xl p-6 border border-gray-100 shadow-sm">
                     {{-- Header --}}
@@ -482,16 +482,16 @@
                             </div>
                             <div>
                                 <h2 class="text-lg sm:text-xl font-bold text-gray-800 font-serif flex items-center gap-2">
-                                    S�ch M?i C?p Nh?t
+                                    Sách Mới Cập Nhật
                                     <span
-                                        class="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-bold animate-pulse">M?I</span>
+                                        class="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-bold animate-pulse">MỚI</span>
                                 </h2>
-                                <p class="text-xs text-gray-500">Nh?ng t?a s�ch m?i nh?t trong thu vi?n</p>
+                                <p class="text-xs text-gray-500">Những tựa sách mới nhất trong thư viện</p>
                             </div>
                         </div>
                         <a href="{{ route('books.list') }}"
                             class="text-xs font-bold px-4 py-2 bg-brand-green text-white hover:bg-brand-accent rounded-full transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2">
-                            <span>Xem kho s�ch</span>
+                            <span>Xem kho sách</span>
                             <i class="fas fa-arrow-right text-[10px]"></i>
                         </a>
                     </div>
@@ -513,7 +513,7 @@
                                     @php
                                         $coverUrl = !empty($book->cover_image)
                                             ? (str_starts_with($book->cover_image, 'http') ? $book->cover_image : asset('storage/' . $book->cover_image))
-                                            : 'https://placehold.co/150x225?text=No+Image';
+                                            : 'https://via.placeholder.com/150x225?text=No+Image';
                                         $rating = $book->avg_rating ?? rand(35, 50) / 10;
                                     @endphp
 
@@ -525,7 +525,7 @@
                                             <a href="{{ route('detail', $book->slug) }}" class="block w-full h-full">
                                                 <img src="{{ $coverUrl }}" alt="{{ $book->title }}"
                                                     class="w-full h-full object-cover transition duration-700 group-hover:brightness-110"
-                                                    onerror="this.src='https://placehold.co/150x225?text=No+Image'">
+                                                    onerror="this.src='https://via.placeholder.com/150x225?text=No+Image'">
                                             </a>
 
 
@@ -538,7 +538,7 @@
                                             @if($loop->index < 3)
                                                 <div
                                                     class="absolute top-2 left-2 bg-gradient-to-r from-red-500 to-orange-400 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1 animate-pulse">
-                                                    <i class="fas fa-fire text-[8px]"></i> M?I
+                                                    <i class="fas fa-fire text-[8px]"></i> MỚI
                                                 </div>
                                             @endif
 
@@ -556,7 +556,7 @@
                                                 class="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
                                                 <a href="{{ route('detail', $book->slug) }}"
                                                     class="w-full bg-white text-brand-green font-bold text-xs py-2 rounded-lg flex items-center justify-center gap-2 shadow-lg hover:bg-brand-green hover:text-white transition">
-                                                    <i class="fas fa-eye"></i> Xem chi ti?t
+                                                    <i class="fas fa-eye"></i> Xem chi tiết
                                                 </a>
                                             </div>
                                         </div>
@@ -571,7 +571,7 @@
                                             </h3>
                                             <p class="text-[11px] text-gray-500 truncate flex items-center gap-1">
                                                 <i class="fas fa-user-edit text-[9px] text-gray-400"></i>
-                                                {{ $book->author_name ?? '?n danh' }}
+                                                {{ $book->author_name ?? 'Ẩn danh' }}
                                             </p>
                                         </div>
                                     </div>
@@ -580,10 +580,10 @@
                                 <div
                                     class="w-full py-12 text-center text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200">
                                     <i class="fas fa-books text-4xl mb-3 block text-gray-300"></i>
-                                    <p class="font-medium">Chua c� s�ch m?i trong thu vi?n.</p>
+                                    <p class="font-medium">Chưa có sách mới trong thư viện.</p>
                                     <a href="{{ route('books.list') }}"
-                                        class="text-brand-green text-sm font-bold hover:underline mt-2 inline-block">Kh�m ph�
-                                        kho s�ch ?</a>
+                                        class="text-brand-green text-sm font-bold hover:underline mt-2 inline-block">Khám phá
+                                        kho sách →</a>
                                 </div>
                             @endif
                         </div>
@@ -611,7 +611,7 @@
                     </div>
                 </section>
 
-                {{-- 3. C?NG �?NG REVIEW --}}
+                {{-- 3. CỘNG ĐỒNG REVIEW --}}
                 <section id="community-posts" class="mb-16 scroll-mt-24">
                     <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
                         <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
@@ -620,34 +620,34 @@
                                 <div>
                                     <h2
                                         class="text-2xl font-bold text-gray-800 font-serif leading-none flex items-center gap-3">
-                                        C?ng �?ng Review
-                                        {{-- D? li?u t? b?ng comments --}}
+                                        Cộng Đồng Review
+                                        {{-- Dữ liệu từ bảng comments --}}
                                         <span
                                             class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-semibold">{{ $communityStats['comments'] ?? 0 }}
-                                            b�nh lu?n</span>
+                                            bình luận</span>
                                     </h2>
-                                    <p class="text-sm text-gray-500 mt-1">G�c chia s? c?m nh?n t? d?c gi?</p>
+                                    <p class="text-sm text-gray-500 mt-1">Góc chia sẻ cảm nhận từ độc giả</p>
                                 </div>
                             </div>
 
-                            {{-- B? l?c Review --}}
+                            {{-- Bộ lọc Review --}}
                             <div class="flex items-center gap-3">
                                 <div class="bg-brand-green/10 rounded-full p-1.5 flex text-xs font-bold">
                                     <button onclick="loadComments('latest')" id="tab-latest"
                                         class="px-4 py-1.5 rounded-full transition-all duration-300 bg-white text-brand-green shadow-sm">
-                                        M?i nh?t
+                                        Mới nhất
                                     </button>
                                     <button onclick="loadComments('popular')" id="tab-popular"
                                         class="px-4 py-1.5 rounded-full transition-all duration-300 text-gray-500 hover:bg-gray-50">
-                                        N?i b?t
+                                        Nổi bật
                                     </button>
                                 </div>
                                 <a href="{{ route('books.search') }}"
-                                    class="text-xs text-gray-400 hover:text-gray-600 ml-3">Xem t?t c?</a>
+                                    class="text-xs text-gray-400 hover:text-gray-600 ml-3">Xem tất cả</a>
                             </div>
                         </div>
 
-                        {{-- Container ch?a danh s�ch --}}
+                        {{-- Container chứa danh sách --}}
                         <div id="comments-container"
                             class="relative min-h-[200px] bg-gray-50 rounded-2xl p-4 border border-gray-100">
                             {{-- Loading Spinner --}}
@@ -658,16 +658,16 @@
                                 </div>
                             </div>
 
-                            {{-- N?I DUNG AJAX S? �? V�O ��Y --}}
+                            {{-- NỘI DUNG AJAX SẼ ĐỔ VÀO ĐÂY --}}
                             <div id="comments-content-wrapper">
-                                {{-- [�� S?A]: Truy?n bi?n latestReviews --}}
+                                {{-- [ĐÃ SỬA]: Truyền biến latestReviews --}}
                                 @include('partials.home_comments', ['latestReviews' => $latestReviews])
                             </div>
                         </div>
                     </div>
                 </section>
 
-                {{-- Banner S? Ki?n - PREMIUM --}}
+                {{-- Banner Sự Kiện - PREMIUM --}}
                 <div
                     class="bg-gradient-to-br from-[#2A483A] via-[#1e3a2f] to-[#0f1f17] rounded-2xl p-8 relative overflow-hidden shadow-xl text-white group hover:shadow-2xl transition-all duration-500">
                     {{-- Decorative Elements --}}
@@ -697,14 +697,14 @@
                                 <span
                                     class="inline-flex items-center gap-2 text-brand-accent text-xs font-bold uppercase tracking-wider border border-brand-accent/40 bg-brand-accent/10 px-3 py-1 rounded-full mb-2">
                                     <span class="w-1.5 h-1.5 bg-brand-accent rounded-full animate-pulse"></span>
-                                    S? ki?n HOT
+                                    Sự kiện HOT
                                 </span>
-                                <h3 class="text-2xl md:text-3xl font-serif font-bold mb-2 text-brand-beige">Th? Th�ch �?c
-                                    S�ch 2025</h3>
+                                <h3 class="text-2xl md:text-3xl font-serif font-bold mb-2 text-brand-beige">Thử Thách Đọc
+                                    Sách 2025</h3>
                                 <p class="text-white/70 text-sm font-light max-w-md leading-relaxed">
                                     <i class="fas fa-medal text-yellow-400 mr-1"></i>
-                                    Ho�n th�nh <span class="text-brand-accent font-bold">3 cu?n s�ch</span> d? nh?n huy hi?u
-                                    "M?t S�ch C?n C�" v� nhi?u ph?n thu?ng h?p d?n!
+                                    Hoàn thành <span class="text-brand-accent font-bold">3 cuốn sách</span> để nhận huy hiệu
+                                    "Mọt Sách Cần Cù" và nhiều phần thưởng hấp dẫn!
                                 </p>
                             </div>
                         </div>
@@ -716,12 +716,12 @@
                         </a>
                     </div>
                 </div>
-            </div> {{-- END C?T 8 --}}
+            </div> {{-- END CỘT 8 --}}
 
-            {{-- [C?T PH?I - 4 PH?N] --}}
+            {{-- [CỘT PHẢI - 4 PHẦN] --}}
             <div class="lg:col-span-4">
                 <div class="space-y-6 sm:space-y-8">
-                    {{-- Widget 0: Ch�m Ng�n H�m Nay --}}
+                    {{-- Widget 0: Châm Ngôn Hôm Nay --}}
                     @if(isset($dailyQuote) && $dailyQuote)
                         <div
                             class="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 rounded-2xl p-7 border border-amber-100 shadow-lg relative overflow-hidden group hover:shadow-xl transition-shadow duration-300">
@@ -740,7 +740,7 @@
                                     <i class="fas fa-quote-left text-white text-sm"></i>
                                 </div>
                                 <div>
-                                    <h3 class="font-serif font-bold text-gray-800 text-lg leading-none">Ch�m Ng�n H�m Nay</h3>
+                                    <h3 class="font-serif font-bold text-gray-800 text-lg leading-none">Châm Ngôn Hôm Nay</h3>
                                     <span class="text-[10px] text-gray-400 font-medium">{{ now()->format('d/m/Y') }}</span>
                                 </div>
                             </div>
@@ -768,7 +768,7 @@
                         </div>
                     @endif
 
-                    {{-- Widget: H�m nay d?c g�? --}}
+                    {{-- Widget: Hôm nay đọc gì? --}}
                     @if(isset($randomBook) && $randomBook)
                         <div
                             class="bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 rounded-2xl p-7 border border-purple-100 shadow-lg relative overflow-hidden group hover:shadow-xl transition-all duration-300">
@@ -788,14 +788,14 @@
                                         <i class="fas fa-dice text-white text-lg"></i>
                                     </div>
                                     <div>
-                                        <h3 class="font-serif font-bold text-gray-800 text-base leading-none">H�m nay d?c g�?
+                                        <h3 class="font-serif font-bold text-gray-800 text-base leading-none">Hôm nay đọc gì?
                                         </h3>
-                                        <span class="text-xs text-gray-400">G?i � cho b?n</span>
+                                        <span class="text-xs text-gray-400">Gợi ý cho bạn</span>
                                     </div>
                                 </div>
                                 <a href="{{ route('home') }}"
                                     class="text-xs text-purple-500 hover:text-purple-700 font-bold flex items-center gap-1"
-                                    title="�?i s�ch kh�c v�o ng�y mai">
+                                    title="Đổi sách khác vào ngày mai">
                                     <i class="fas fa-sync-alt"></i>
                                 </a>
                             </div>
@@ -809,7 +809,7 @@
                                         @php
                                             $coverUrl = !empty($randomBook->cover_image)
                                                 ? (str_starts_with($randomBook->cover_image, 'http') ? $randomBook->cover_image : asset('storage/' . $randomBook->cover_image))
-                                                : 'https://placehold.co/112x160?text=No+Image';
+                                                : 'https://via.placeholder.com/112x160?text=No+Image';
                                         @endphp
                                         <img src="{{ $coverUrl }}" alt="{{ $randomBook->title }}"
                                             class="w-full h-full object-cover">
@@ -823,7 +823,7 @@
                                         </h4>
                                         <p class="text-sm text-gray-500 mt-2 flex items-center gap-1.5">
                                             <i class="fas fa-user-edit text-xs text-gray-400"></i>
-                                            {{ $randomBook->author_name ?? '?n danh' }}
+                                            {{ $randomBook->author_name ?? 'Ẩn danh' }}
                                         </p>
 
                                         {{-- Rating --}}
@@ -836,14 +836,14 @@
                                             </div>
                                             <span
                                                 class="text-xs text-gray-400">({{ number_format($randomBook->view_count ?? 0) }}
-                                                lu?t xem)</span>
+                                                lượt xem)</span>
                                         </div>
 
                                         {{-- CTA Button --}}
                                         <div class="mt-4">
                                             <span
                                                 class="inline-flex items-center gap-1.5 px-4 py-2 bg-purple-600 text-white text-sm font-bold rounded-full group-hover/book:bg-purple-700 transition shadow-md">
-                                                Kh�m ph� ngay <i
+                                                Khám phá ngay <i
                                                     class="fas fa-arrow-right text-xs group-hover/book:translate-x-1 transition-transform"></i>
                                             </span>
                                         </div>
@@ -853,7 +853,7 @@
                         </div>
                     @endif
 
-                    {{-- Widget 1: Top Th?nh H�nh - Redesigned --}}
+                    {{-- Widget 1: Top Thịnh Hành - Redesigned --}}
                     <div
                         class="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 rounded-2xl p-7 border border-orange-100 shadow-lg relative overflow-hidden group/widget hover:shadow-xl transition-shadow duration-300">
                         {{-- Decorative Elements --}}
@@ -875,13 +875,13 @@
                                     <i class="fas fa-fire-alt text-white text-xl"></i>
                                 </div>
                                 <div>
-                                    <h3 class="font-serif font-bold text-lg text-gray-800 leading-none">Top Th?nh H�nh</h3>
-                                    <span class="text-xs text-orange-600 font-medium">?? �u?c d?c nhi?u nh?t</span>
+                                    <h3 class="font-serif font-bold text-lg text-gray-800 leading-none">Top Thịnh Hành</h3>
+                                    <span class="text-xs text-orange-600 font-medium">🔥 Được đọc nhiều nhất</span>
                                 </div>
                             </div>
                             <a href="{{ route('books.list', ['sort' => 'views']) }}"
                                 class="text-xs text-orange-500 hover:text-orange-700 font-bold flex items-center gap-1 transition">
-                                Xem t?t c? <i class="fas fa-chevron-right text-[10px]"></i>
+                                Xem tất cả <i class="fas fa-chevron-right text-[10px]"></i>
                             </a>
                         </div>
 
@@ -893,7 +893,7 @@
                                     @php
                                         $coverUrl = !empty($book->cover_image)
                                             ? (str_starts_with($book->cover_image, 'http') ? $book->cover_image : asset('storage/' . $book->cover_image))
-                                            : 'https://placehold.co/150x225?text=No+Image';
+                                            : 'https://via.placeholder.com/150x225?text=No+Image';
 
                                         // Medal colors for top 3
                                         $medalColors = [
@@ -934,7 +934,7 @@
                                                 {{ $book->title }}
                                             </h4>
                                             <p class="text-xs text-gray-500 mt-1 line-clamp-1">
-                                                {{ $book->author_name ?? '?n danh' }}
+                                                {{ $book->author_name ?? 'Ẩn danh' }}
                                             </p>
 
                                             <div class="flex items-center gap-3 text-xs mt-2">
@@ -948,7 +948,7 @@
                                                 {{-- Views --}}
                                                 <span
                                                     class="flex items-center gap-1 text-orange-600 font-bold bg-orange-50 px-2 py-0.5 rounded-full"
-                                                    title="Lu?t d?c">
+                                                    title="Lượt đọc">
                                                     <i class="far fa-eye text-[10px]"></i>
                                                     {{ number_format($book->view_count) }}
                                                 </span>
@@ -963,13 +963,13 @@
                             @else
                                 <div class="text-center text-sm text-gray-400 py-8 italic">
                                     <i class="fas fa-book-open text-2xl text-gray-300 mb-2 block"></i>
-                                    D? li?u dang c?p nh?t...
+                                    Dữ liệu đang cập nhật...
                                 </div>
                             @endif
                         </div>
                     </div>
 
-                    {{-- Widget 2: Th? Lo?i - Redesigned --}}
+                    {{-- Widget 2: Thể Loại - Redesigned --}}
                     <div
                         class="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-2xl p-6 border border-emerald-100 shadow-lg relative overflow-hidden">
                         {{-- Decorative --}}
@@ -986,8 +986,8 @@
                                 <i class="fas fa-layer-group text-white"></i>
                             </div>
                             <div>
-                                <h3 class="font-serif font-bold text-gray-800 leading-none">Th? Lo?i S�ch</h3>
-                                <span class="text-[10px] text-gray-400">Kh�m ph� theo s? th�ch</span>
+                                <h3 class="font-serif font-bold text-gray-800 leading-none">Thể Loại Sách</h3>
+                                <span class="text-[10px] text-gray-400">Khám phá theo sở thích</span>
                             </div>
                         </div>
 
@@ -1005,7 +1005,7 @@
                                     </a>
                                 @endforeach
                             @else
-                                <span class="text-sm text-gray-400 italic">�ang c?p nh?t...</span>
+                                <span class="text-sm text-gray-400 italic">Đang cập nhật...</span>
                             @endif
                         </div>
 
@@ -1013,13 +1013,13 @@
                             <div class="mt-4 text-center relative">
                                 <a href="{{ route('books.list') }}"
                                     class="inline-flex items-center gap-1 text-xs text-emerald-600 font-bold hover:text-emerald-700 transition">
-                                    Xem t?t c? <i class="fas fa-arrow-right text-[10px]"></i>
+                                    Xem tất cả <i class="fas fa-arrow-right text-[10px]"></i>
                                 </a>
                             </div>
                         @endif
                     </div>
 
-                    {{-- Widget 3: Li�n K?t Mua S�ch - Redesigned --}}
+                    {{-- Widget 3: Liên Kết Mua Sách - Redesigned --}}
                     <div
                         class="bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 rounded-2xl p-6 border border-amber-100 shadow-lg relative overflow-hidden">
                         {{-- Decorative --}}
@@ -1033,9 +1033,9 @@
                                 <i class="fas fa-shopping-bag text-white"></i>
                             </div>
                             <div>
-                                <h3 class="font-serif font-bold text-gray-800 leading-none">Mua S�ch Gi� T?t
+                                <h3 class="font-serif font-bold text-gray-800 leading-none">Mua Sách Giá Tốt
                                 </h3>
-                                <span class="text-[10px] text-gray-400">�?i t�c uy t�n</span>
+                                <span class="text-[10px] text-gray-400">Đối tác uy tín</span>
                             </div>
                         </div>
 
@@ -1049,7 +1049,7 @@
                                     <div>
                                         <span class="font-bold text-sm text-gray-700 group-hover:text-blue-600 block">Tiki
                                             Trading</span>
-                                        <span class="text-[10px] text-green-600 font-bold">?? Gi?m t?i 35%</span>
+                                        <span class="text-[10px] text-green-600 font-bold">🔥 Giảm tới 35%</span>
                                     </div>
                                 </div>
                                 <i
@@ -1065,7 +1065,7 @@
                                         <span
                                             class="font-bold text-sm text-gray-700 group-hover:text-orange-600 block">Shopee
                                             Mall</span>
-                                        <span class="text-[10px] text-orange-500 font-bold">?? Freeship Extra</span>
+                                        <span class="text-[10px] text-orange-500 font-bold">🚚 Freeship Extra</span>
                                     </div>
                                 </div>
                                 <i
@@ -1081,7 +1081,7 @@
                                     <div>
                                         <span
                                             class="font-bold text-sm text-gray-700 group-hover:text-red-600 block">Fahasa.com</span>
-                                        <span class="text-[10px] text-gray-500">? S�ch ch�nh h�ng</span>
+                                        <span class="text-[10px] text-gray-500">✓ Sách chính hãng</span>
                                     </div>
                                 </div>
                                 <i
@@ -1090,7 +1090,7 @@
                         </div>
                     </div>
 
-                    {{-- Widget: Th?ng K� C?ng �?ng - Light Style --}}
+                    {{-- Widget: Thống Kê Cộng Đồng - Light Style --}}
                     @if(isset($communityStats))
                         <div
                             class="bg-gradient-to-br from-blue-50 via-indigo-50 to-violet-50 rounded-2xl p-6 border border-blue-100 shadow-lg relative overflow-hidden">
@@ -1108,8 +1108,8 @@
                                     <i class="fas fa-chart-pie text-white"></i>
                                 </div>
                                 <div>
-                                    <h3 class="font-serif font-bold text-gray-800 leading-none">Th?ng K�</h3>
-                                    <span class="text-[10px] text-gray-400">S? li?u c?a G�c S�ch</span>
+                                    <h3 class="font-serif font-bold text-gray-800 leading-none">Thống Kê</h3>
+                                    <span class="text-[10px] text-gray-400">Số liệu của Góc Sách</span>
                                 </div>
                             </div>
 
@@ -1119,28 +1119,28 @@
                                     <div class="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition">
                                         {{ number_format($communityStats['books']) }}
                                     </div>
-                                    <div class="text-[10px] text-gray-500 uppercase font-medium">Cu?n s�ch</div>
+                                    <div class="text-[10px] text-gray-500 uppercase font-medium">Cuốn sách</div>
                                 </div>
                                 <div
                                     class="bg-white/80 backdrop-blur-sm rounded-xl p-3 text-center border border-white hover:border-blue-200 hover:shadow-md transition-all group">
                                     <div class="text-xl font-bold text-gray-800 group-hover:text-indigo-600 transition">
                                         {{ number_format($communityStats['members']) }}
                                     </div>
-                                    <div class="text-[10px] text-gray-500 uppercase font-medium">Th�nh vi�n</div>
+                                    <div class="text-[10px] text-gray-500 uppercase font-medium">Thành viên</div>
                                 </div>
                                 <div
                                     class="bg-white/80 backdrop-blur-sm rounded-xl p-3 text-center border border-white hover:border-blue-200 hover:shadow-md transition-all group">
                                     <div class="text-xl font-bold text-gray-800 group-hover:text-violet-600 transition">
                                         {{ number_format($communityStats['reviews']) }}
                                     </div>
-                                    <div class="text-[10px] text-gray-500 uppercase font-medium">��nh gi�</div>
+                                    <div class="text-[10px] text-gray-500 uppercase font-medium">Đánh giá</div>
                                 </div>
                                 <div
                                     class="bg-white/80 backdrop-blur-sm rounded-xl p-3 text-center border border-white hover:border-blue-200 hover:shadow-md transition-all group">
                                     <div class="text-xl font-bold text-gray-800 group-hover:text-purple-600 transition">
                                         {{ number_format($communityStats['comments']) }}
                                     </div>
-                                    <div class="text-[10px] text-gray-500 uppercase font-medium">B�nh lu?n</div>
+                                    <div class="text-[10px] text-gray-500 uppercase font-medium">Bình luận</div>
                                 </div>
                             </div>
                         </div>
@@ -1149,25 +1149,25 @@
                 </div> {{-- END DIV STICKY GROUP --}}
 
             </div>
-        </div> {{-- END C?T 4 --}}
+        </div> {{-- END CỘT 4 --}}
         </div>
     </main>
     </div>
     </main>
 
-    {{-- �� chuy?n Th?ng k� c?ng d?ng l�n sidebar --}}
-    {{-- �� chuy?n Th?ng k� c?ng d?ng l�n sidebar --}}
+    {{-- Đã chuyển Thống kê cộng đồng lên sidebar --}}
+    {{-- Đã chuyển Thống kê cộng đồng lên sidebar --}}
 
-    {{-- B? MODAL POPUP CU --}}
-    {{-- B? MODAL POPUP CU --}}
+    {{-- BỎ MODAL POPUP CŨ --}}
+    {{-- BỎ MODAL POPUP CŨ --}}
 @endsection
 
 @push('scripts')
     <script>
-        // --- BI?N TO�N C?C ---
+        // --- BIẾN TOÀN CỤC ---
         const currentUserId = "{{ Auth::id() }}";
 
-        // --- 1. KH?I T?O KHI TRANG LOAD ---
+        // --- 1. KHỞI TẠO KHI TRANG LOAD ---
         document.addEventListener('DOMContentLoaded', function () {
             // Hero Slider
             const sliderWrapper = document.getElementById('sliderWrapper');
@@ -1216,7 +1216,7 @@
             const initialSort = new URLSearchParams(window.location.search).get('sort_review') || 'latest';
             updateTabUI(initialSort);
 
-            // --- LOGIC CU?N XU?NG V� HIGHLIGHT COMMENT/REPLY T? TH�NG B�O ---
+            // --- LOGIC CUỘN XUỐNG VÀ HIGHLIGHT COMMENT/REPLY TỪ THÔNG BÁO ---
             if (window.location.hash) {
                 const targetId = window.location.hash.substring(1);
                 const targetElement = document.getElementById(targetId);
@@ -1248,7 +1248,7 @@
             }
         });
 
-        // --- 2. H�M �I?U KHI?N GIAO DI?N (TOGGLE) ---
+        // --- 2. HÀM ĐIỀU KHIỂN GIAO DIỆN (TOGGLE) ---
 
         function togglePostComments(postId) {
             const list = document.getElementById(`comments-list-${postId}`);
@@ -1281,7 +1281,7 @@
             textarea.style.height = textarea.scrollHeight + 'px';
         }
 
-        // --- 3. H�M X? L� D? LI?U (AJAX & FETCH) ---
+        // --- 3. HÀM XỬ LÝ DỮ LIỆU (AJAX & FETCH) ---
 
         function loadComments(urlOrSortType) {
             // Xác định sortType từ url hoặc tham số
@@ -1320,7 +1320,7 @@
 
         function submitComment(postId, parentId = null, event) {
             if (event) event.preventDefault();
-            if (!currentUserId) { alert("Vui l�ng dang nh?p!"); window.location.href = "/login"; return; }
+            if (!currentUserId) { alert("Vui lòng đăng nhập!"); window.location.href = "/login"; return; }
 
             const elementBox = parentId
                 ? document.getElementById(`post-comment-input-${parentId}`)
@@ -1330,7 +1330,7 @@
 
             const valueContent = elementBox.value.trim();
             if (!valueContent) {
-                alert("Vui l�ng nh?p n?i dung!");
+                alert("Vui lòng nhập nội dung!");
                 return;
             }
 
@@ -1352,7 +1352,7 @@
             })
                 .then(async r => {
                     const d = await r.json();
-                    if (!r.ok) throw new Error(d.message || "L?i server");
+                    if (!r.ok) throw new Error(d.message || "Lỗi server");
                     return d;
                 })
                 .then(data => {
@@ -1362,65 +1362,65 @@
 
                         const countLabels = document.querySelectorAll(`.comment-count-${postId}`);
                         countLabels.forEach(el => {
-                            el.innerText = `B�nh lu?n (${data.new_count})`;
+                            el.innerText = `Bình luận (${data.new_count})`;
                         });
 
                         let avatarHtml = '';
                         if (data.comment.user_frame) {
                             avatarHtml = `
-                                            <div class="relative w-10 h-10 inline-block flex-shrink-0">
-                                                <img src="${data.comment.user_frame}" class="absolute inset-0 w-full h-full object-contain pointer-events-none z-10">
-                                                <div class="absolute inset-0 flex items-center justify-center z-0">
-                                                    <img src="${data.comment.user_avatar}" class="w-8 h-8 rounded-full object-cover border-2 border-gray-200">
-                                                </div>
+                                        <div class="relative w-10 h-10 inline-block flex-shrink-0">
+                                            <img src="${data.comment.user_frame}" class="absolute inset-0 w-full h-full object-contain pointer-events-none z-10">
+                                            <div class="absolute inset-0 flex items-center justify-center z-0">
+                                                <img src="${data.comment.user_avatar}" class="w-8 h-8 rounded-full object-cover border-2 border-gray-200">
                                             </div>
-                                        `;
+                                        </div>
+                                    `;
                         } else {
                             avatarHtml = `<img src="${data.comment.user_avatar}" class="w-9 h-9 rounded-full border border-white shadow-sm flex-shrink-0">`;
                         }
 
                         const newCommentHtml = `
-                                    <div class="flex gap-3 animate-fade-in mb-6">
-                                        ${avatarHtml}
-                                        <div class="flex-1">
-                                            <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-gray-100 shadow-sm">
-                                                <div class="flex justify-between items-center mb-1">
-                                                    <h5 class="font-bold text-xs text-gray-800">${data.comment.user_name}</h5>
-                                                    <span class="text-[10px] text-gray-400">${data.comment.created_at}</span>
-                                                </div>
-                                                <p class="text-xs text-gray-600">${data.comment.content}</p>
+                                <div class="flex gap-3 animate-fade-in mb-6">
+                                    ${avatarHtml}
+                                    <div class="flex-1">
+                                        <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-gray-100 shadow-sm">
+                                            <div class="flex justify-between items-center mb-1">
+                                                <h5 class="font-bold text-xs text-gray-800">${data.comment.user_name}</h5>
+                                                <span class="text-[10px] text-gray-400">${data.comment.created_at}</span>
                                             </div>
-                                            ${!parentId ? `
-                                            <div class="flex gap-3 mt-1 ml-2">
-                                                <button onclick="handleLike(${data.comment.id}, 'comment')" 
-                                                        id="like-btn-comment-${data.comment.id}"
-                                                        class="text-[10px] font-bold flex items-center gap-1 text-gray-400 hover:text-red-500">
-                                                    <i id="like-icon-comment-${data.comment.id}" class="far fa-heart text-xs"></i>
-                                                    <span id="like-count-comment-${data.comment.id}">0</span>
-                                                </button>
-                                                <button onclick="toggleReplySection(${data.comment.id})" class="text-[10px] font-bold text-gray-400 hover:text-blue-500 transition">
-                                                    Tr? l?i (0)
-                                                </button>
-                                            </div>
-                                            <div id="reply-section-${data.comment.id}" class="hidden mt-3 space-y-4 border-l-2 border-gray-100 pl-4 animate-fade-in">
-                                                <div class="flex gap-2 relative mt-2">
-                                                    <textarea id="reply-input-${data.comment.id}" rows="1" 
-                                                              class="w-full text-xs p-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green resize-none shadow-sm" 
-                                                              placeholder="Nh?p c�u tr? l?i..."></textarea>
-                                                    <button type="button" onclick="submitComment(${postId}, ${data.comment.id}, event)" 
-                                                            class="text-brand-green px-3 py-1 bg-brand-green/10 rounded-lg text-xs font-bold hover:bg-brand-green hover:text-white transition">G?i</button>
-                                                </div>
-                                            </div>
-                                            ` : `
+                                            <p class="text-xs text-gray-600">${data.comment.content}</p>
+                                        </div>
+                                        ${!parentId ? `
+                                        <div class="flex gap-3 mt-1 ml-2">
                                             <button onclick="handleLike(${data.comment.id}, 'comment')" 
                                                     id="like-btn-comment-${data.comment.id}"
-                                                    class="text-[9px] font-bold ml-2 mt-1 flex items-center gap-1 text-gray-400">
-                                                <i id="like-icon-comment-${data.comment.id}" class="far fa-heart"></i>
+                                                    class="text-[10px] font-bold flex items-center gap-1 text-gray-400 hover:text-red-500">
+                                                <i id="like-icon-comment-${data.comment.id}" class="far fa-heart text-xs"></i>
                                                 <span id="like-count-comment-${data.comment.id}">0</span>
                                             </button>
-                                            `}
+                                            <button onclick="toggleReplySection(${data.comment.id})" class="text-[10px] font-bold text-gray-400 hover:text-blue-500 transition">
+                                                Trả lời (0)
+                                            </button>
                                         </div>
-                                    </div>`;
+                                        <div id="reply-section-${data.comment.id}" class="hidden mt-3 space-y-4 border-l-2 border-gray-100 pl-4 animate-fade-in">
+                                            <div class="flex gap-2 relative mt-2">
+                                                <textarea id="reply-input-${data.comment.id}" rows="1" 
+                                                          class="w-full text-xs p-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green resize-none shadow-sm" 
+                                                          placeholder="Nhập câu trả lời..."></textarea>
+                                                <button type="button" onclick="submitComment(${postId}, ${data.comment.id}, event)" 
+                                                        class="text-brand-green px-3 py-1 bg-brand-green/10 rounded-lg text-xs font-bold hover:bg-brand-green hover:text-white transition">Gửi</button>
+                                            </div>
+                                        </div>
+                                        ` : `
+                                        <button onclick="handleLike(${data.comment.id}, 'comment')" 
+                                                id="like-btn-comment-${data.comment.id}"
+                                                class="text-[9px] font-bold ml-2 mt-1 flex items-center gap-1 text-gray-400">
+                                            <i id="like-icon-comment-${data.comment.id}" class="far fa-heart"></i>
+                                            <span id="like-count-comment-${data.comment.id}">0</span>
+                                        </button>
+                                        `}
+                                    </div>
+                                </div>`;
 
                         if (parentId) {
                             const replySection = document.getElementById(`reply-section-${parentId}`);
@@ -1440,7 +1440,7 @@
                     }
                 })
                 .catch(e => {
-                    alert("L?i: " + e.message);
+                    alert("Lỗi: " + e.message);
                     if (btnAction) {
                         btnAction.disabled = false;
                         btnAction.innerHTML = oldHtml;
@@ -1456,7 +1456,7 @@
         }
 
         function handleLike(id, type) {
-            if (!currentUserId) { alert("Vui l�ng dang nh?p!"); window.location.href = "/login"; return; }
+            if (!currentUserId) { alert("Vui lòng đăng nhập!"); window.location.href = "/login"; return; }
             const btn = document.getElementById(`like-btn-${type}-${id}`);
             const icon = document.getElementById(`like-icon-${type}-${id}`);
             const countSpan = document.getElementById(`like-count-${type}-${id}`);
@@ -1488,7 +1488,7 @@
 
             const content = input.value.trim();
             if (!content) {
-                alert("Vui l�ng nh?p n?i dung!");
+                alert("Vui lòng nhập nội dung!");
                 return;
             }
 
@@ -1510,7 +1510,7 @@
             })
                 .then(async r => {
                     const d = await r.json();
-                    if (!r.ok) throw new Error(d.message || "L?i server");
+                    if (!r.ok) throw new Error(d.message || "Lỗi server");
                     return d;
                 })
                 .then(data => {
@@ -1521,37 +1521,37 @@
                         let avatarHtml = '';
                         if (data.user_frame) {
                             avatarHtml = `
-                                            <div class="relative w-8 h-8 inline-block flex-shrink-0">
-                                                <img src="${data.user_frame}" class="absolute inset-0 w-full h-full object-contain pointer-events-none z-10">
-                                                <div class="absolute inset-0 flex items-center justify-center z-0">
-                                                    <img src="${data.user_avatar}" class="w-6 h-6 rounded-full object-cover">
-                                                </div>
+                                        <div class="relative w-8 h-8 inline-block flex-shrink-0">
+                                            <img src="${data.user_frame}" class="absolute inset-0 w-full h-full object-contain pointer-events-none z-10">
+                                            <div class="absolute inset-0 flex items-center justify-center z-0">
+                                                <img src="${data.user_avatar}" class="w-6 h-6 rounded-full object-cover">
                                             </div>
-                                        `;
+                                        </div>
+                                    `;
                         } else {
                             avatarHtml = `<img src="${data.user_avatar}" class="w-7 h-7 rounded-full flex-shrink-0">`;
                         }
 
                         const replyHtml = `
-                                    <div class="flex gap-2 animate-fade-in">
-                                        ${avatarHtml}
-                                        <div class="flex-1">
-                                            <div class="bg-white p-2 rounded-xl rounded-tl-none border border-gray-100 shadow-sm">
-                                                <div class="flex justify-between items-center mb-1">
-                                                    <h6 class="font-bold text-[10px] text-gray-700">${data.user_name}</h6>
-                                                    <span class="text-[9px] text-gray-400">${data.time}</span>
-                                                </div>
-                                                <p class="text-[11px] text-gray-600">${data.content}</p>
+                                <div class="flex gap-2 animate-fade-in">
+                                    ${avatarHtml}
+                                    <div class="flex-1">
+                                        <div class="bg-white p-2 rounded-xl rounded-tl-none border border-gray-100 shadow-sm">
+                                            <div class="flex justify-between items-center mb-1">
+                                                <h6 class="font-bold text-[10px] text-gray-700">${data.user_name}</h6>
+                                                <span class="text-[9px] text-gray-400">${data.time}</span>
                                             </div>
-                                            <button onclick="handleLike(${data.reply_id}, 'comment')"
-                                                id="like-btn-comment-${data.reply_id}"
-                                                class="text-[9px] font-bold ml-2 mt-1 flex items-center gap-1 text-gray-400 hover:text-red-500 transition">
-                                                <i id="like-icon-comment-${data.reply_id}" class="far fa-heart"></i>
-                                                <span id="like-count-comment-${data.reply_id}">0</span>
-                                            </button>
+                                            <p class="text-[11px] text-gray-600">${data.content}</p>
                                         </div>
+                                        <button onclick="handleLike(${data.reply_id}, 'comment')"
+                                            id="like-btn-comment-${data.reply_id}"
+                                            class="text-[9px] font-bold ml-2 mt-1 flex items-center gap-1 text-gray-400 hover:text-red-500 transition">
+                                            <i id="like-icon-comment-${data.reply_id}" class="far fa-heart"></i>
+                                            <span id="like-count-comment-${data.reply_id}">0</span>
+                                        </button>
                                     </div>
-                                    `;
+                                </div>
+                                `;
 
                         const replySection = document.getElementById(`reply-section-${commentId}`);
                         const replyList = replySection.querySelector('.space-y-4');
@@ -1559,16 +1559,15 @@
                         if (emptyMsg) emptyMsg.remove();
                         replyList.insertAdjacentHTML('beforeend', replyHtml);
 
-                        // C?p nh?t s? lu?ng reply s? d?ng ID c? th?
-                        const replyCountSpan = document.getElementById(`reply-count-${commentId}`);
-                        if (replyCountSpan) {
-                            const currentCount = parseInt(replyCountSpan.innerText.match(/\d+/) || 0);
-                            replyCountSpan.innerText = `(${currentCount + 1})`;
+                        const replyBtn = document.querySelector(`button[onclick="toggleReplySection(${commentId})"] span`);
+                        if (replyBtn) {
+                            const currentCount = parseInt(replyBtn.innerText.match(/\d+/) || 0);
+                            replyBtn.innerText = `Trả lời (${currentCount + 1})`;
                         }
                     }
                 })
                 .catch(e => {
-                    alert("L?i: " + e.message);
+                    alert("Lỗi: " + e.message);
                 })
                 .finally(() => {
                     if (btn) {
@@ -1578,74 +1577,74 @@
                 });
         }
 
-        // --- 4. H�M �I?U KHI?N B�I REVIEW S�CH ---
-        function switchReviewTab(tabType) {
-            const latestContainer = document.getElementById('reviews-latest-container');
-            const hotContainer = document.getElementById('reviews-hot-container');
-            const tabLatest = document.getElementById('tab-review-latest');
-            const tabHot = document.getElementById('tab-review-hot');
+        // --- 4. HÀM ĐIỀU KHIỂN BÀI REVIEW SÁCH ---
+            function switchReviewTab(tabType) {
+                const latestContainer = document.getElementById('reviews-latest-container');
+                const hotContainer = document.getElementById('reviews-hot-container');
+                const tabLatest = document.getElementById('tab-review-latest');
+                const tabHot = document.getElementById('tab-review-hot');
 
-            if (!tabLatest || !tabHot) return;
+                if (!tabLatest || !tabHot) return;
 
-            const activeClasses = ['bg-white', 'text-rose-600', 'shadow-sm'];
-            const inactiveClasses = ['text-gray-500', 'hover:text-rose-500'];
+                const activeClasses = ['bg-white', 'text-rose-600', 'shadow-sm'];
+                const inactiveClasses = ['text-gray-500', 'hover:text-rose-500'];
 
-            if (tabType === 'latest') {
-                if (latestContainer) latestContainer.classList.remove('hidden');
-                if (hotContainer) hotContainer.classList.add('hidden');
-                tabLatest.classList.remove(...inactiveClasses);
-                tabLatest.classList.add(...activeClasses);
-                tabHot.classList.remove(...activeClasses);
-                tabHot.classList.add(...inactiveClasses);
-            } else {
-                if (latestContainer) latestContainer.classList.add('hidden');
-                if (hotContainer) hotContainer.classList.remove('hidden');
-                tabLatest.classList.remove(...activeClasses);
-                tabLatest.classList.add(...inactiveClasses);
-                tabHot.classList.remove(...inactiveClasses);
-                tabHot.classList.add(...activeClasses);
+                if (tabType === 'latest') {
+                    if (latestContainer) latestContainer.classList.remove('hidden');
+                    if (hotContainer) hotContainer.classList.add('hidden');
+                    tabLatest.classList.remove(...inactiveClasses);
+                    tabLatest.classList.add(...activeClasses);
+                    tabHot.classList.remove(...activeClasses);
+                    tabHot.classList.add(...inactiveClasses);
+                } else {
+                    if (latestContainer) latestContainer.classList.add('hidden');
+                    if (hotContainer) hotContainer.classList.remove('hidden');
+                    tabLatest.classList.remove(...activeClasses);
+                    tabLatest.classList.add(...inactiveClasses);
+                    tabHot.classList.remove(...inactiveClasses);
+                    tabHot.classList.add(...activeClasses);
+                }
             }
-        }
 
-        // --- Slider controls for reviews ---
-        document.addEventListener('DOMContentLoaded', function () {
-            const sliderContainers = document.querySelectorAll('.slider-reviews');
-            sliderContainers.forEach(slider => {
-                const parent = slider.parentElement;
-                const prevBtn = parent.querySelector('.btn-prev-reviews');
-                const nextBtn = parent.querySelector('.btn-next-reviews');
-                if (prevBtn) prevBtn.addEventListener('click', () => slider.scrollBy({ left: -300, behavior: 'smooth' }));
-                if (nextBtn) nextBtn.addEventListener('click', () => slider.scrollBy({ left: 300, behavior: 'smooth' }));
+            // --- Slider controls for reviews ---
+            document.addEventListener('DOMContentLoaded', function() {
+                const sliderContainers = document.querySelectorAll('.slider-reviews');
+                sliderContainers.forEach(slider => {
+                    const parent = slider.parentElement;
+                    const prevBtn = parent.querySelector('.btn-prev-reviews');
+                    const nextBtn = parent.querySelector('.btn-next-reviews');
+                    if (prevBtn) prevBtn.addEventListener('click', () => slider.scrollBy({ left: -300, behavior: 'smooth' }));
+                    if (nextBtn) nextBtn.addEventListener('click', () => slider.scrollBy({ left: 300, behavior: 'smooth' }));
+                });
             });
-        });
 
-        function attachPaginationEvents() {
-            document.querySelectorAll('.ajax-pagination-link').forEach(link => {
-                link.onclick = function (e) { e.preventDefault(); loadComments(this.getAttribute('href')); };
-            });
-        }
+            function attachPaginationEvents() {
+                document.querySelectorAll('.ajax-pagination-link').forEach(link => {
+                    link.onclick = function (e) { e.preventDefault(); loadComments(this.getAttribute('href')); };
+                });
+            }
 
-        function updateTabUI(sortType) {
-            const tabLatest = document.getElementById('tab-latest');
-            const tabPopular = document.getElementById('tab-popular');
-            if (!tabLatest || !tabPopular) return;
-            const active = ['bg-white', 'text-brand-green', 'shadow-sm'];
-            const inactive = ['text-gray-500', 'hover:text-gray-700'];
+            function updateTabUI(sortType) {
+                const tabLatest = document.getElementById('tab-latest');
+                const tabPopular = document.getElementById('tab-popular');
+                if (!tabLatest || !tabPopular) return;
+                const active = ['bg-white', 'text-brand-green', 'shadow-sm'];
+                const inactive = ['text-gray-500', 'hover:text-gray-700'];
 
-            tabLatest.classList.remove(...(sortType === 'latest' ? inactive : active));
-            tabLatest.classList.add(...(sortType === 'latest' ? active : inactive));
-            tabPopular.classList.remove(...(sortType === 'popular' ? inactive : active));
-            tabPopular.classList.add(...(sortType === 'popular' ? active : inactive));
-        }
-    </script>
-    <style>
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
+                tabLatest.classList.remove(...(sortType === 'latest' ? inactive : active));
+                tabLatest.classList.add(...(sortType === 'latest' ? active : inactive));
+                tabPopular.classList.remove(...(sortType === 'popular' ? inactive : active));
+                tabPopular.classList.add(...(sortType === 'popular' ? active : inactive));
+            }
+        </script>
+        <style>
+            .no-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
 
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-    </style>
+            .no-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+        </style>
 @endpush
