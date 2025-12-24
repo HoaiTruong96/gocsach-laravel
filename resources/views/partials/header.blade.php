@@ -19,9 +19,8 @@
                 cộng đồng</button>
 
             <div class="flex gap-3 ml-4">
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="hover:text-brand-accent transition"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="hover:text-brand-accent transition"><i class="fab fa-instagram"></i></a>
-                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" class="hover:text-brand-accent transition"><i class="fab fa-youtube"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=61585413759981" target="_blank" rel="noopener noreferrer" class="hover:text-brand-accent transition"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://youtu.be/mKptA96QMZ0" target="_blank" rel="noopener noreferrer" class="hover:text-brand-accent transition"><i class="fab fa-youtube"></i></a>
             </div>
         </div>
     </div>
