@@ -205,6 +205,9 @@ Route::middleware(['auth', 'email.verified'])->group(function () {
     Route::get('/reviews/{id}/chinh-sua', [PostController::class, 'edit'])->name('reviews.edit');
     Route::put('/reviews/{id}/update', [PostController::class, 'update'])->name('reviews.update');
 
+    // Yêu cầu xóa bài review (chờ admin duyệt)
+    Route::post('/reviews/{id}/request-delete', [PostController::class, 'requestDelete'])->name('reviews.request-delete');
+
     // --- API NỘI BỘ (Cho JS tìm sách khi viết review) ---
     Route::get('/api/books/search', function (Illuminate\Http\Request $request) {
         $query = $request->get('q');

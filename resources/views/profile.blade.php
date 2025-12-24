@@ -417,6 +417,14 @@
                                             <a href="{{ route('reviews.edit', $post->id) }}" class="text-blue-500 hover:text-blue-700 self-center opacity-0 group-hover:opacity-100 transition" title="Chỉnh sửa">
                                                 <i class="fas fa-edit"></i>
                                             </a>
+                                            {{-- Nút Xóa (chờ admin duyệt) --}}
+                                            @if($post->status != 'pending_delete')
+                                                <button onclick="requestDeleteReview({{ $post->id }})" class="text-red-400 hover:text-red-600 self-center opacity-0 group-hover:opacity-100 transition" title="Yêu cầu xóa">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            @else
+                                                <span class="text-[10px] text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded font-bold self-center">Chờ xóa</span>
+                                            @endif
                                         @else
                                             {{-- Nút Xem (cho người khác) --}}
                                             <a href="{{ route('book.reviews', $post->book->slug ?? $post->book_id) }}" class="text-brand-green hover:text-brand-green/80 self-center opacity-0 group-hover:opacity-100 transition" title="Xem bài review">
@@ -589,6 +597,17 @@
                                                 class="text-blue-500 hover:text-blue-700 font-bold hover:underline text-xs uppercase tracking-wide flex items-center gap-1 transition">
                                                 <i class="fas fa-edit"></i> Sửa
                                             </a>
+                                            {{-- Nút Xóa (chờ admin duyệt) --}}
+                                            @if($post->status != 'pending_delete')
+                                                <button onclick="requestDeleteReview({{ $post->id }})"
+                                                    class="text-red-500 hover:text-red-700 font-bold hover:underline text-xs uppercase tracking-wide flex items-center gap-1 transition">
+                                                    <i class="fas fa-trash-alt"></i> Xóa
+                                                </button>
+                                            @else
+                                                <span class="text-orange-600 font-bold text-xs uppercase tracking-wide flex items-center gap-1">
+                                                    <i class="fas fa-clock"></i> Chờ xóa
+                                                </span>
+                                            @endif
                                         @endif
 
                                         <a href="{{ route('book.reviews', $post->book->slug ?? $post->book_id) }}"
@@ -1204,6 +1223,35 @@
                 .catch(error => {
                     console.error('Error:', error);
                 });
+        }
+
+        // --- 5. Yêu cầu xóa bài review (chờ admin duyệt) ---
+        function requestDeleteReview(postId) {
+            if (!confirm('Bạn có chắc muốn yêu cầu xóa bài review này?\n\nYêu cầu sẽ được gửi đến Admin để xử lý.')) {
+                return;
+            }
+
+            fetch(`/reviews/${postId}/request-delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra!');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi gửi yêu cầu xóa!');
+            });
         }
     </script>
 
