@@ -238,27 +238,40 @@ class AuthController extends Controller
     // Gửi mã OTP qua email
     public function sendResetCode(Request $request)
     {
-        $request->validate([
-            'email' => ['required', 'email', 'regex:/^[a-zA-Z0-9._%+-]+@gmail\.com$/i']
-        ], [
-            'email.required' => 'Vui lòng nhập email.',
-            'email.email' => 'Email không hợp lệ.',
-            'email.regex' => 'Chỉ hỗ trợ email @gmail.com.'
-        ]);
+        // Nếu user đã đăng nhập, chỉ cho phép gửi mã về email của chính họ
+        if (Auth::check()) {
+            $user = Auth::user();
+            $email = $user->email;
+            
+            // Kiểm tra nếu user nhập email khác với email đang đăng nhập
+            if ($request->email && $request->email !== $email) {
+                return back()->withErrors(['email' => 'Bạn chỉ có thể đặt lại mật khẩu cho tài khoản đang đăng nhập.']);
+            }
+        } else {
+            // User chưa đăng nhập - validate email và tìm user
+            $request->validate([
+                'email' => ['required', 'email', 'regex:/^[a-zA-Z0-9._%+-]+@gmail\.com$/i']
+            ], [
+                'email.required' => 'Vui lòng nhập email.',
+                'email.email' => 'Email không hợp lệ.',
+                'email.regex' => 'Chỉ hỗ trợ email @gmail.com.'
+            ]);
 
-        // Kiểm tra email có tồn tại trong hệ thống không
-        $user = User::where('email', $request->email)->first();
-        if (!$user) {
-            return back()->withErrors(['email' => 'Không tìm thấy email này trong hệ thống.']);
+            $email = $request->email;
+            $user = User::where('email', $email)->first();
+            
+            if (!$user) {
+                return back()->withErrors(['email' => 'Không tìm thấy email này trong hệ thống.']);
+            }
         }
 
         // Tạo mã 6 số ngẫu nhiên
         $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
         // Xóa mã cũ (nếu có) và lưu mã mới
-        DB::table('password_reset_codes')->where('email', $request->email)->delete();
+        DB::table('password_reset_codes')->where('email', $email)->delete();
         DB::table('password_reset_codes')->insert([
-            'email' => $request->email,
+            'email' => $email,
             'code' => $code,
             'expires_at' => Carbon::now()->addMinutes(10),
             'created_at' => Carbon::now(),
@@ -266,26 +279,26 @@ class AuthController extends Controller
         ]);
 
         // Gửi email chứa mã OTP
-        Mail::send([], [], function ($message) use ($request, $code, $user) {
-            $message->to($request->email)
+        Mail::send([], [], function ($message) use ($email, $code, $user) {
+            $message->to($email)
                 ->subject('Mã xác thực đặt lại mật khẩu - Góc Sách')
                 ->html("
-                        <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;'>
-                            <h2 style='color: #3E5F4E; text-align: center;'>📚 Góc Sách</h2>
-                            <p>Xin chào <strong>{$user->name}</strong>,</p>
-                            <p>Bạn đã yêu cầu đặt lại mật khẩu. Đây là mã xác thực của bạn:</p>
-                            <div style='background: #f5f5f5; padding: 20px; text-align: center; border-radius: 10px; margin: 20px 0;'>
-                                <span style='font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #3E5F4E;'>{$code}</span>
-                            </div>
-                            <p style='color: #888; font-size: 14px;'>Mã này sẽ hết hạn sau 10 phút.</p>
-                            <p style='color: #888; font-size: 14px;'>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>
+                    <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;'>
+                        <h2 style='color: #3E5F4E; text-align: center;'>📚 Góc Sách</h2>
+                        <p>Xin chào <strong>{$user->name}</strong>,</p>
+                        <p>Bạn đã yêu cầu đặt lại mật khẩu. Đây là mã xác thực của bạn:</p>
+                        <div style='background: #f5f5f5; padding: 20px; text-align: center; border-radius: 10px; margin: 20px 0;'>
+                            <span style='font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #3E5F4E;'>{$code}</span>
                         </div>
-                    ");
+                        <p style='color: #888; font-size: 14px;'>Mã này sẽ hết hạn sau 10 phút.</p>
+                        <p style='color: #888; font-size: 14px;'>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>
+                    </div>
+                ");
         });
 
         // Lưu email vào session và chuyển đến trang nhập mã
         return redirect()->route('password.verify.form')
-            ->with('reset_email', $request->email)
+            ->with('reset_email', $email)
             ->with('status', 'Đã gửi mã xác thực vào email của bạn!');
     }
 

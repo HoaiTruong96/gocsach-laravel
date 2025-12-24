@@ -1,11 +1,11 @@
 {{-- AI Chatbox Component --}}
-<div id="chatbox-container" class="fixed bottom-6 right-6 z-[9999]">
+<div id="chatbox-container" class="fixed bottom-6 right-6 z-[9998] sm:bottom-6 sm:right-6">
     
-    {{-- Chat Window --}}
-    <div id="chatbox-window" class="hidden absolute bottom-20 right-0 w-[360px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden transform transition-all duration-300 origin-bottom-right scale-95 opacity-0">
+    {{-- Chat Window - Responsive: compact on mobile, larger on desktop --}}
+    <div id="chatbox-window" class="hidden absolute bottom-14 right-0 w-[90vw] sm:w-[420px] max-w-[420px] h-[70vh] sm:h-auto sm:max-h-[600px] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden transform transition-all duration-300 origin-bottom-right scale-95 opacity-0 flex flex-col">
         
         {{-- Header --}}
-        <div class="bg-gradient-to-r from-brand-green to-emerald-600 text-white p-4 flex items-center justify-between">
+        <div class="bg-gradient-to-r from-brand-green to-emerald-600 text-white p-4 flex items-center justify-between flex-shrink-0">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                     <i class="fas fa-robot text-lg"></i>
@@ -17,26 +17,26 @@
                     </p>
                 </div>
             </div>
-            <button onclick="toggleChatbox()" class="w-8 h-8 rounded-full hover:bg-white/20 flex items-center justify-center transition">
-                <i class="fas fa-times"></i>
+            <button onclick="toggleChatbox()" class="w-10 h-10 sm:w-8 sm:h-8 rounded-full hover:bg-white/20 flex items-center justify-center transition">
+                <i class="fas fa-times text-lg sm:text-base"></i>
             </button>
         </div>
 
-        {{-- Messages Area --}}
-        <div id="chatbox-messages" class="h-[350px] overflow-y-auto p-4 space-y-4 bg-gray-50">
+        {{-- Messages Area - Flexible height --}}
+        <div id="chatbox-messages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 min-h-0">
             {{-- Welcome Message --}}
             <div class="flex gap-3">
                 <div class="w-8 h-8 bg-brand-green rounded-full flex items-center justify-center flex-shrink-0">
                     <i class="fas fa-robot text-white text-xs"></i>
                 </div>
-                <div class="bg-white rounded-2xl rounded-tl-none px-4 py-3 shadow-sm max-w-[80%]">
+                <div class="bg-white rounded-2xl rounded-tl-none px-4 py-3 shadow-sm max-w-[85%] sm:max-w-[80%]">
                     <p class="text-sm text-gray-700">Xin chào! 📚 Tôi là trợ lý AI của Góc Sách. Tôi có thể giúp bạn tìm sách hay, gợi ý đọc theo sở thích. Bạn cần gì nào?</p>
                 </div>
             </div>
         </div>
 
         {{-- Typing Indicator (hidden by default) --}}
-        <div id="typing-indicator" class="hidden px-4 py-2 bg-gray-50">
+        <div id="typing-indicator" class="hidden px-4 py-2 bg-gray-50 flex-shrink-0">
             <div class="flex gap-3 items-center">
                 <div class="w-8 h-8 bg-brand-green rounded-full flex items-center justify-center flex-shrink-0">
                     <i class="fas fa-robot text-white text-xs"></i>
@@ -50,15 +50,15 @@
         </div>
 
         {{-- Input Area --}}
-        <div class="p-4 bg-white border-t border-gray-100">
+        <div class="p-4 bg-white border-t border-gray-100 flex-shrink-0 safe-area-bottom">
             <form id="chatbox-form" class="flex gap-2">
                 @csrf
                 <input type="text" id="chatbox-input" 
                     placeholder="Nhập tin nhắn..." 
                     autocomplete="off"
-                    class="flex-1 px-4 py-3 bg-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-green/30 transition">
+                    class="flex-1 px-4 py-3 bg-gray-100 rounded-xl text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-green/30 transition">
                 <button type="submit" id="chatbox-send"
-                    class="w-12 h-12 bg-brand-green hover:bg-emerald-700 text-white rounded-xl flex items-center justify-center transition transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="w-12 h-12 bg-brand-green hover:bg-emerald-700 text-white rounded-xl flex items-center justify-center transition transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0">
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </form>
@@ -66,13 +66,13 @@
         </div>
     </div>
 
-    {{-- Floating Button --}}
+    {{-- Floating Button - Smaller size --}}
     <button onclick="toggleChatbox()" id="chatbox-toggle"
-        class="w-14 h-14 bg-gradient-to-br from-brand-green to-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl hover:scale-110 transition-all duration-300 group">
-        <i class="fas fa-comments text-xl group-hover:hidden"></i>
-        <i class="fas fa-times text-xl hidden group-hover:block"></i>
-        {{-- Pulse Animation --}}
-        <span class="absolute w-full h-full rounded-full bg-brand-green animate-ping opacity-30"></span>
+        class="w-11 h-11 bg-gradient-to-br from-brand-green to-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl hover:scale-110 transition-all duration-300 relative">
+        <i id="chatbox-icon-open" class="fas fa-comments text-base"></i>
+        <i id="chatbox-icon-close" class="fas fa-times text-base hidden"></i>
+        {{-- Pulse Animation - only shows when closed --}}
+        <span id="chatbox-pulse" class="absolute w-full h-full rounded-full bg-brand-green animate-ping opacity-20"></span>
     </button>
 </div>
 
@@ -83,6 +83,9 @@
     function toggleChatbox() {
         const window = document.getElementById('chatbox-window');
         const toggle = document.getElementById('chatbox-toggle');
+        const iconOpen = document.getElementById('chatbox-icon-open');
+        const iconClose = document.getElementById('chatbox-icon-close');
+        const pulse = document.getElementById('chatbox-pulse');
         isOpen = !isOpen;
 
         if (isOpen) {
@@ -92,12 +95,20 @@
                 window.classList.add('scale-100', 'opacity-100');
             }, 10);
             document.getElementById('chatbox-input').focus();
+            // Switch to X icon
+            iconOpen.classList.add('hidden');
+            iconClose.classList.remove('hidden');
+            pulse.classList.add('hidden');
         } else {
             window.classList.remove('scale-100', 'opacity-100');
             window.classList.add('scale-95', 'opacity-0');
             setTimeout(() => {
                 window.classList.add('hidden');
             }, 300);
+            // Switch back to comments icon
+            iconOpen.classList.remove('hidden');
+            iconClose.classList.add('hidden');
+            pulse.classList.remove('hidden');
         }
     }
 

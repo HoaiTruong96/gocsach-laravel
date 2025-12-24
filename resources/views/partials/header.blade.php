@@ -111,17 +111,18 @@
             {{-- User & Notification Actions --}}
             <div class="flex items-center gap-3 md:gap-5">
                 @auth
-                    {{-- Notification Bell --}}
-                    <div class="relative group pb-4 -mb-4">
-                        <button class="text-gray-500 hover:text-brand-green transition relative p-2 focus:outline-none">
+                    {{-- Notification Bell - Click to Open --}}
+                    <div class="relative" id="notification-dropdown-container">
+                        <button type="button" id="notification-dropdown-trigger"
+                            class="text-gray-500 transition relative p-2 focus:outline-none rounded-xl hover:bg-green-100 hover:text-brand-green hover:shadow-[0_0_15px_rgba(62,95,78,0.3)]">
                             <i class="far fa-bell text-xl"></i>
                             <span id="notification-badge"
                                 class="{{ Auth::user()->unreadNotifications->count() > 0 ? '' : 'hidden' }} absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white animate-bounce">
                                 <span id="notification-count">{{ Auth::user()->unreadNotifications->count() }}</span>
                             </span>
                         </button>
-                        <div
-                            class="dropdown-menu dropdown-bridge absolute right-0 top-full mt-0 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in z-50 origin-top-right">
+                        <div id="notification-dropdown-menu"
+                            class="hidden absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in z-50 origin-top-right">
                             <div class="px-4 py-3 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
                                 <span class="text-sm font-bold text-gray-700">Thông báo</span>
                                 <a href="{{ route('notification.readAll') }}" id="mark-all-read-btn"
@@ -239,6 +240,44 @@
                             </div>
                         </div>
                     </div>
+
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const notifTrigger = document.getElementById('notification-dropdown-trigger');
+                        const notifMenu = document.getElementById('notification-dropdown-menu');
+                        const notifContainer = document.getElementById('notification-dropdown-container');
+
+                        if (notifTrigger && notifMenu) {
+                            notifTrigger.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const isOpen = !notifMenu.classList.contains('hidden');
+                                
+                                // Close user dropdown if open
+                                const userMenu = document.getElementById('user-dropdown-menu');
+                                if (userMenu) userMenu.classList.add('hidden');
+                                
+                                if (isOpen) {
+                                    notifMenu.classList.add('hidden');
+                                } else {
+                                    notifMenu.classList.remove('hidden');
+                                }
+                            });
+
+                            document.addEventListener('click', function(e) {
+                                if (!notifContainer.contains(e.target)) {
+                                    notifMenu.classList.add('hidden');
+                                }
+                            });
+
+                            document.addEventListener('keydown', function(e) {
+                                if (e.key === 'Escape') {
+                                    notifMenu.classList.add('hidden');
+                                }
+                            });
+                        }
+                    });
+                    </script>
 
                     {{-- User Dropdown - Click to Open --}}
                     <div class="relative z-50" id="user-dropdown-container">
