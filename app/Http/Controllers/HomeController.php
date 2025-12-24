@@ -97,6 +97,8 @@ class HomeController extends Controller
             'categories' => Category::count(), // Số thể loại
             'post_likes' => Like::count(), // Lượt thích bài review
             'comment_likes' => CommentLike::count(), // Lượt thích bình luận
+            'online_users' => \App\Models\SiteVisit::getOnlineCount(), // Số người đang online
+            'total_visits' => \App\Models\SiteStatistic::getTotalPageViews(), // Tổng lượt truy cập
         ];
 
         // --- SÁCH NGẪU NHIÊN "HÔM NAY ĐỌC GÌ?" ---
