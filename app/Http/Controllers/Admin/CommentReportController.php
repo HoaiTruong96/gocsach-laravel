@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CommentReport;
 use App\Models\AdminActivityLog;
+use App\Notifications\ReportResolvedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -83,6 +84,17 @@ class CommentReportController extends Controller
             ['status' => 'approved']
         );
 
+        // Gửi thông báo cho người báo cáo
+        if ($commentReport->user) {
+            $commentReport->user->notify(new ReportResolvedNotification([
+                'status' => 'approved',
+                'message' => "Báo cáo bình luận của bạn đã được chấp thuận. Bình luận vi phạm đã bị xóa.",
+                'admin_note' => $request->admin_note,
+                'post_title' => 'Bình luận',
+                'link' => route('home'),
+            ]));
+        }
+
         return back()->with('success', 'Đã chấp thuận báo cáo và xóa bình luận vi phạm.');
     }
 
@@ -112,6 +124,17 @@ class CommentReportController extends Controller
             null,
             ['status' => 'rejected']
         );
+
+        // Gửi thông báo cho người báo cáo
+        if ($commentReport->user) {
+            $commentReport->user->notify(new ReportResolvedNotification([
+                'status' => 'rejected',
+                'message' => "Báo cáo bình luận của bạn đã bị từ chối.",
+                'admin_note' => $request->admin_note,
+                'post_title' => 'Bình luận',
+                'link' => route('home'),
+            ]));
+        }
 
         return back()->with('success', 'Đã từ chối báo cáo.');
     }
