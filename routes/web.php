@@ -58,6 +58,8 @@ Route::get('/ajax-search', function (Illuminate\Http\Request $request) {
 
 // Chatbot API
 Route::post('/api/chatbot', [ChatbotController::class, 'chat'])->name('chatbot.chat');
+Route::get('/api/chatbot/history', [ChatbotController::class, 'getHistory'])->name('chatbot.history');
+Route::delete('/api/chatbot/history', [ChatbotController::class, 'clearHistory'])->name('chatbot.clear');
 
 // Trang chi tiết bài viết Tạp chí
 Route::get('/tap-chi/{slug}', [ArticleController::class, 'show'])->name('articles.show');
