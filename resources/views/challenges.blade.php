@@ -72,10 +72,30 @@
                     <div class="flex-shrink-0 relative z-10 flex flex-col md:flex-row items-center gap-3">
                         <!-- Badge -->
                         <div class="flex flex-col items-center">
-                            <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 mb-1 shadow-sm border border-yellow-200">
-                                <i class="fas fa-medal text-3xl"></i>
-                            </div>
-                            <span class="text-xs font-bold text-yellow-700 uppercase tracking-wide">Danh hiệu</span>
+                            @if($challenge->badge)
+                                @php
+                                    $completedBadgeIcon = $challenge->badge->icon;
+                                    $isCompletedBadgeUrl = $completedBadgeIcon && (Str::startsWith($completedBadgeIcon, 'http') || Str::startsWith($completedBadgeIcon, 'badges/'));
+                                    $completedBadgeIconUrl = $isCompletedBadgeUrl 
+                                        ? (Str::startsWith($completedBadgeIcon, 'http') ? $completedBadgeIcon : asset('storage/' . $completedBadgeIcon))
+                                        : null;
+                                @endphp
+                                <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 mb-1 shadow-sm border border-yellow-200">
+                                    @if($completedBadgeIconUrl)
+                                        <img src="{{ $completedBadgeIconUrl }}" alt="{{ $challenge->badge->name }}" class="w-10 h-10 object-contain">
+                                    @elseif($completedBadgeIcon && mb_strlen($completedBadgeIcon) <= 4)
+                                        <span class="text-3xl">{{ $completedBadgeIcon }}</span>
+                                    @else
+                                        <i class="fas fa-medal text-3xl"></i>
+                                    @endif
+                                </div>
+                                <span class="text-xs font-bold text-yellow-700 uppercase tracking-wide">{{ $challenge->badge->name }}</span>
+                            @else
+                                <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 mb-1 shadow-sm border border-yellow-200">
+                                    <i class="fas fa-medal text-3xl"></i>
+                                </div>
+                                <span class="text-xs font-bold text-yellow-700 uppercase tracking-wide">Danh hiệu</span>
+                            @endif
                         </div>
                         
                         <!-- Avatar Frame (if exists) -->

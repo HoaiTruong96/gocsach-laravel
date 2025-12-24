@@ -47,8 +47,7 @@
                 <div class="mt-10 text-center">
                     <p class="text-sm font-bold mb-4">Theo dõi chúng tôi</p>
                     <div class="flex gap-4 justify-center">
-                        <a href="#" class="hover:text-brand-accent transition"><i class="fab fa-facebook text-xl"></i></a>
-                        <a href="#" class="hover:text-brand-accent transition"><i class="fab fa-instagram text-xl"></i></a>
+                        <a href="https://www.facebook.com/profile.php?id=61585413759981" target="_blank" class="hover:text-brand-accent transition"><i class="fab fa-facebook text-xl"></i></a>
                         <a href="https://youtu.be/mKptA96QMZ0" target="_blank" class="hover:text-brand-accent transition"><i class="fab fa-youtube text-xl"></i></a>
                     </div>
                 </div>

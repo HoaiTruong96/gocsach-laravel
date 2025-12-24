@@ -173,9 +173,9 @@
                 <div class="group bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-card hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative">
                     <div class="relative w-full aspect-[2/3] bg-gray-100 overflow-hidden">
                         <!-- Ảnh bìa sách -->
-                        <img src="{{ $book->image ?? $book->cover_image ?? 'https://via.placeholder.com/300x450' }}" alt="{{ $book->title }}" 
+                        <img src="{{ $book->image ?? $book->cover_image ?? 'https://placehold.co/300x450' }}" alt="{{ $book->title }}" 
                              class="w-full h-full object-cover transition duration-700 group-hover:scale-110" 
-                             onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
+                             onerror="this.src='https://placehold.co/300x450?text=No+Image'">
                         
                         <!-- Overlay -->
                         <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[1px]">
