@@ -6,9 +6,11 @@ use App\Models\Book;
 use App\Models\Post;
 use App\Models\Category;
 use App\Models\Author;
+use App\Models\ChatMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class ChatbotController extends Controller
 {
@@ -44,6 +46,63 @@ class ChatbotController extends Controller
     public function __construct()
     {
         $this->apiKey = config('services.gemini.api_key');
+    }
+
+    /**
+     * Lấy lịch sử chat của user hiện tại
+     */
+    public function getHistory()
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => true,
+                'messages' => []
+            ]);
+        }
+
+        $messages = ChatMessage::where('user_id', Auth::id())
+            ->orderBy('created_at', 'asc')
+            ->limit(50) // Giới hạn 50 tin nhắn gần nhất
+            ->get(['role', 'content', 'created_at']);
+
+        return response()->json([
+            'success' => true,
+            'messages' => $messages
+        ]);
+    }
+
+    /**
+     * Xóa lịch sử chat của user hiện tại
+     */
+    public function clearHistory()
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn cần đăng nhập để xóa lịch sử chat.'
+            ], 401);
+        }
+
+        ChatMessage::where('user_id', Auth::id())->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã xóa lịch sử chat.'
+        ]);
+    }
+
+    /**
+     * Lưu tin nhắn vào database
+     */
+    private function saveMessage($role, $content)
+    {
+        if (Auth::check()) {
+            ChatMessage::create([
+                'user_id' => Auth::id(),
+                'role' => $role,
+                'content' => $content,
+            ]);
+        }
     }
 
     /**
@@ -376,7 +435,9 @@ class ChatbotController extends Controller
         ]);
 
         $userMessage = $request->input('message');
-        $history = $request->input('history', []);
+
+        // Lưu tin nhắn của user vào database
+        $this->saveMessage('user', $userMessage);
 
         // Phát hiện intent
         $intents = $this->detectIntent($userMessage);
@@ -384,6 +445,8 @@ class ChatbotController extends Controller
         // Kiểm tra quick response (greeting, farewell, thanks)
         $quickResponse = $this->getQuickResponse($intents);
         if ($quickResponse) {
+            // Lưu response vào database
+            $this->saveMessage('assistant', $quickResponse);
             return response()->json([
                 'success' => true,
                 'reply' => $quickResponse
@@ -393,10 +456,28 @@ class ChatbotController extends Controller
         // Kiểm tra FAQ
         $faqResponse = $this->getFaqResponse($intents);
         if ($faqResponse) {
+            // Lưu response vào database
+            $this->saveMessage('assistant', $faqResponse);
             return response()->json([
                 'success' => true,
                 'reply' => $faqResponse
             ]);
+        }
+
+        // Lấy lịch sử chat từ database thay vì từ request
+        $history = [];
+        if (Auth::check()) {
+            $dbMessages = ChatMessage::where('user_id', Auth::id())
+                ->orderBy('created_at', 'asc')
+                ->limit(20) // Lấy 20 tin nhắn gần nhất cho context
+                ->get(['role', 'content']);
+            
+            foreach ($dbMessages as $msg) {
+                $history[] = [
+                    'role' => $msg->role,
+                    'content' => $msg->content
+                ];
+            }
         }
 
         // Tìm kiếm thông minh trong database
@@ -438,19 +519,13 @@ Bot: Góc Sách có nhiều sách của Nguyễn Nhật Ánh. Một số tác ph
             'parts' => [['text' => 'Xin chào! Tôi là trợ lý AI của Góc Sách. Tôi có thể giúp bạn tìm sách hay, gợi ý đọc theo sở thích, hoặc trả lời các câu hỏi về website. Bạn cần gì nào?']]
         ];
 
-        // Add conversation history
+        // Add conversation history from database
         foreach ($history as $msg) {
             $contents[] = [
                 'role' => $msg['role'] === 'user' ? 'user' : 'model',
                 'parts' => [['text' => $msg['content']]]
             ];
         }
-
-        // Add current user message
-        $contents[] = [
-            'role' => 'user',
-            'parts' => [['text' => $userMessage]]
-        ];
 
         try {
             $response = Http::withHeaders([
@@ -474,6 +549,9 @@ Bot: Góc Sách có nhiều sách của Nguyễn Nhật Ánh. Một số tác ph
             if ($response->successful()) {
                 $data = $response->json();
                 $reply = $data['candidates'][0]['content']['parts'][0]['text'] ?? 'Xin lỗi, tôi không thể trả lời lúc này.';
+                
+                // Lưu response của bot vào database
+                $this->saveMessage('assistant', $reply);
                 
                 return response()->json([
                     'success' => true,
