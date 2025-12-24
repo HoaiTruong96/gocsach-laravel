@@ -374,7 +374,15 @@
             </div>
 
             {{-- 2. Navigation Menu (Scrollable) --}}
-            <nav class="flex-1 overflow-y-auto sidebar-scroll py-6 px-4 space-y-8">
+            <nav id="sidebarNav" class="flex-1 overflow-y-auto sidebar-scroll py-6 px-4 space-y-8">
+                <script>
+                    // Restore scroll position immediately to prevent jank
+                    (function () {
+                        var nav = document.getElementById('sidebarNav');
+                        var saved = sessionStorage.getItem('sidebarScrollTop');
+                        if (nav && saved) nav.scrollTop = parseInt(saved);
+                    })();
+                </script>
 
                 {{-- Group: Tổng Quan --}}
                 <div>
@@ -515,8 +523,8 @@
                     <a href="{{ route('admin.activity-logs.index') }}"
                         class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.activity-logs.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                         <i
-                            class="fas fa-history w-5 text-center {{ request()->routeIs('admin.activity-logs.*') ? 'text-white' : 'text-slate-400 group-hover:text-purple-400' }}"></i>
-                        <span class="font-medium text-sm">Lịch Sử Hoạt Động</span>
+                            class="fas fa-clipboard-list w-5 text-center {{ request()->routeIs('admin.activity-logs.*') ? 'text-white' : 'text-slate-400 group-hover:text-purple-400' }}"></i>
+                        <span class="font-medium text-sm">Nhật Ký Hoạt Động</span>
                     </a>
 
                     <a href="{{ route('admin.game.index') }}"
@@ -1166,6 +1174,32 @@
                 // Initialize
                 render();
             });
+        });
+    </script>
+
+    {{-- Sidebar scroll position saving --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sidebar = document.querySelector('.sidebar-scroll');
+            if (sidebar) {
+                // Restore scroll position
+                const savedPosition = sessionStorage.getItem('sidebarScrollTop');
+                if (savedPosition) {
+                    sidebar.scrollTop = parseInt(savedPosition);
+                }
+
+                // Save scroll position before page unload
+                window.addEventListener('beforeunload', function () {
+                    sessionStorage.setItem('sidebarScrollTop', sidebar.scrollTop);
+                });
+
+                // Also save on link click (for SPA-like behavior)
+                sidebar.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', function () {
+                        sessionStorage.setItem('sidebarScrollTop', sidebar.scrollTop);
+                    });
+                });
+            }
         });
     </script>
 

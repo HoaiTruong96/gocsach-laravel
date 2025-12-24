@@ -92,6 +92,9 @@
 
     @stack('scripts')
 
+    {{-- AI Chatbox --}}
+    @include('partials.chatbox')
+
     <script>
         // Mobile Menu Toggle
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');

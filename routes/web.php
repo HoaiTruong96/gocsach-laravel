@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\BookSuggestionController;
+use App\Http\Controllers\ChatbotController;
 
 // ====================================================
 // 1. NHÓM PUBLIC (Ai cũng xem được)
@@ -54,6 +55,9 @@ Route::get('/ajax-search', function (Illuminate\Http\Request $request) {
 
     return response()->json($books);
 })->name('ajax.search');
+
+// Chatbot API
+Route::post('/api/chatbot', [ChatbotController::class, 'chat'])->name('chatbot.chat');
 
 // Trang chi tiết bài viết Tạp chí
 Route::get('/tap-chi/{slug}', [ArticleController::class, 'show'])->name('articles.show');
@@ -205,6 +209,9 @@ Route::middleware(['auth', 'email.verified'])->group(function () {
     Route::get('/reviews/{id}/chinh-sua', [PostController::class, 'edit'])->name('reviews.edit');
     Route::put('/reviews/{id}/update', [PostController::class, 'update'])->name('reviews.update');
 
+    // Yêu cầu xóa bài review (chờ admin duyệt)
+    Route::post('/reviews/{id}/request-delete', [PostController::class, 'requestDelete'])->name('reviews.request-delete');
+
     // --- API NỘI BỘ (Cho JS tìm sách khi viết review) ---
     Route::get('/api/books/search', function (Illuminate\Http\Request $request) {
         $query = $request->get('q');
@@ -250,6 +257,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('articles', ArticleController::class);
     Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class);
     Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->only(['index', 'edit', 'update', 'destroy']);
+    Route::post('posts/{id}/approve-delete', [\App\Http\Controllers\Admin\PostController::class, 'approveDelete'])->name('posts.approve-delete');
+    Route::post('posts/{id}/reject-delete', [\App\Http\Controllers\Admin\PostController::class, 'rejectDelete'])->name('posts.reject-delete');
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
     Route::resource('banners', BannerController::class);
     Route::resource('badges', \App\Http\Controllers\Admin\BadgeController::class);
