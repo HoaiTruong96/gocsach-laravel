@@ -347,6 +347,15 @@
                                 <i class="fas fa-bookmark mr-2"></i>Bài Đã Lưu
                                 <span class="ml-1 bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">{{ $savedPosts->count() }}</span>
                             </button>
+                            
+                            {{-- Tab 5: Thùng rác --}}
+                            <button onclick="showProfileTab('trash')" id="tab-btn-trash"
+                                class="flex-1 min-w-[120px] px-4 py-4 text-sm font-bold transition-all border-b-2 border-transparent text-gray-500 hover:text-red-500 hover:bg-gray-50">
+                                <i class="fas fa-trash-alt mr-2"></i>Thùng rác
+                                @if($trashedPosts->count() > 0)
+                                    <span class="ml-1 bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full">{{ $trashedPosts->count() }}</span>
+                                @endif
+                            </button>
                         </div>
                     </div>
                 @endif
@@ -423,7 +432,9 @@
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
                                             @else
-                                                <span class="text-[10px] text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded font-bold self-center">Chờ xóa</span>
+                                                <button onclick="cancelDeleteReview({{ $post->id }})" class="text-[10px] text-orange-600 bg-orange-50 hover:bg-orange-100 px-1.5 py-0.5 rounded font-bold self-center transition cursor-pointer" title="Click để hủy yêu cầu xóa">
+                                                    <i class="fas fa-undo mr-1"></i>Hủy xóa
+                                                </button>
                                             @endif
                                         @else
                                             {{-- Nút Xem (cho người khác) --}}
@@ -604,9 +615,10 @@
                                                     <i class="fas fa-trash-alt"></i> Xóa
                                                 </button>
                                             @else
-                                                <span class="text-orange-600 font-bold text-xs uppercase tracking-wide flex items-center gap-1">
-                                                    <i class="fas fa-clock"></i> Chờ xóa
-                                                </span>
+                                                <button onclick="cancelDeleteReview({{ $post->id }})"
+                                                    class="text-orange-600 hover:text-orange-800 font-bold hover:underline text-xs uppercase tracking-wide flex items-center gap-1 transition cursor-pointer">
+                                                    <i class="fas fa-undo"></i> Hủy xóa
+                                                </button>
                                             @endif
                                         @endif
 
@@ -878,6 +890,80 @@
                     </div>
                 @endif
 
+                {{-- ================================================================= --}}
+                {{-- TAB 5: THÙNG RÁC (TRASH) --}}
+                {{-- ================================================================= --}}
+                @if(isset($isOwnProfile) && $isOwnProfile)
+                    <div id="tab-content-trash" class="tab-content hidden">
+                        <div class="bg-white rounded-xl shadow-soft border border-gray-100 p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="font-bold text-lg text-gray-800">
+                                    <i class="fas fa-trash-alt text-red-400 mr-2"></i>Thùng rác
+                                </h3>
+                                <span class="text-xs text-gray-400">Bài viết đã xóa có thể khôi phục</span>
+                            </div>
+
+                            @if($trashedPosts->count() > 0)
+                                <div class="space-y-4">
+                                    @foreach($trashedPosts as $post)
+                                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-200 group hover:bg-gray-100 transition">
+                                            {{-- Ảnh bìa sách --}}
+                                            @if($post->book && $post->book->cover_image)
+                                                <img src="{{ Str::startsWith($post->book->cover_image, 'http') ? $post->book->cover_image : asset('storage/' . $post->book->cover_image) }}"
+                                                     alt="{{ $post->book->title }}"
+                                                     class="w-12 h-16 object-cover rounded shadow-sm flex-shrink-0 opacity-60">
+                                            @else
+                                                <div class="w-12 h-16 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
+                                                    <i class="fas fa-book text-gray-400"></i>
+                                                </div>
+                                            @endif
+
+                                            {{-- Thông tin bài viết --}}
+                                            <div class="flex-1 min-w-0">
+                                                <h4 class="font-bold text-gray-700 truncate line-through">{{ $post->title }}</h4>
+                                                <p class="text-xs text-gray-400 mt-1">
+                                                    <i class="fas fa-book mr-1"></i>{{ $post->book->title ?? 'Sách đã xóa' }}
+                                                </p>
+                                                <p class="text-xs text-red-400 mt-1">
+                                                    <i class="fas fa-trash mr-1"></i>Đã xóa: {{ $post->deleted_at->diffForHumans() }}
+                                                </p>
+                                            </div>
+
+                                            {{-- Các nút hành động --}}
+                                            <div class="flex items-center gap-2 flex-shrink-0">
+                                                <button onclick="restoreReview({{ $post->id }})"
+                                                    class="px-3 py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded-lg transition transform hover:scale-105 flex items-center gap-1">
+                                                    <i class="fas fa-undo"></i> Khôi phục
+                                                </button>
+                                                <button onclick="forceDeleteReview({{ $post->id }})"
+                                                    class="px-3 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-lg transition transform hover:scale-105 flex items-center gap-1">
+                                                    <i class="fas fa-times"></i> Xóa vĩnh viễn
+                                                </button>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                                <div class="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                                    <p class="text-sm text-yellow-700">
+                                        <i class="fas fa-info-circle mr-2"></i>
+                                        Bài viết trong thùng rác sẽ được giữ vô thời hạn. Bạn có thể khôi phục bất cứ lúc nào.
+                                    </p>
+                                </div>
+                            @else
+                                {{-- Empty State --}}
+                                <div class="text-center py-12">
+                                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <i class="fas fa-trash-alt text-3xl text-gray-300"></i>
+                                    </div>
+                                    <h4 class="font-bold text-gray-600 mb-2">Thùng rác trống</h4>
+                                    <p class="text-sm text-gray-400">Không có bài viết nào trong thùng rác.</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+
             </div>
 
         </div>
@@ -916,7 +1002,7 @@
         // --- 0. Xử lý chuyển đổi Tab Profile ---
         function showProfileTab(tabName) {
             // Danh sách các tab
-            const tabs = ['overview', 'reviews', 'books', 'saved'];
+            const tabs = ['overview', 'reviews', 'books', 'saved', 'trash'];
             
             // Ẩn tất cả nội dung tab
             tabs.forEach(tab => {
@@ -931,6 +1017,7 @@
                     btn.classList.remove('border-brand-green', 'text-brand-green', 'bg-brand-green/5');
                     btn.classList.remove('border-brand-accent', 'text-brand-accent', 'bg-brand-accent/5');
                     btn.classList.remove('border-yellow-500', 'text-yellow-600', 'bg-yellow-50');
+                    btn.classList.remove('border-red-500', 'text-red-500', 'bg-red-50');
                     btn.classList.add('border-transparent', 'text-gray-500');
                 }
             });
@@ -953,6 +1040,8 @@
                     activeBtn.classList.add('border-brand-accent', 'text-brand-accent', 'bg-brand-accent/5');
                 } else if (tabName === 'saved') {
                     activeBtn.classList.add('border-yellow-500', 'text-yellow-600', 'bg-yellow-50');
+                } else if (tabName === 'trash') {
+                    activeBtn.classList.add('border-red-500', 'text-red-500', 'bg-red-50');
                 }
             }
         }
@@ -1251,6 +1340,93 @@
             .catch(error => {
                 console.error('Error:', error);
                 alert('Có lỗi xảy ra khi gửi yêu cầu xóa!');
+            });
+        }
+
+        // --- 6. Hủy yêu cầu xóa bài review ---
+        function cancelDeleteReview(postId) {
+            if (!confirm('Bạn có chắc muốn hủy yêu cầu xóa và khôi phục bài viết này?')) {
+                return;
+            }
+
+            fetch(`/reviews/${postId}/cancel-delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra!');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi hủy yêu cầu xóa!');
+            });
+        }
+
+        // --- 7. Khôi phục bài review từ thùng rác ---
+        function restoreReview(postId) {
+            if (!confirm('Bạn có chắc muốn khôi phục bài viết này?')) {
+                return;
+            }
+
+            fetch(`/reviews/${postId}/restore`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra!');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi khôi phục bài viết!');
+            });
+        }
+
+        // --- 8. Xóa vĩnh viễn bài review ---
+        function forceDeleteReview(postId) {
+            if (!confirm('⚠️ CẢNH BÁO: Hành động này không thể hoàn tác!\n\nBạn có chắc chắn muốn xóa vĩnh viễn bài viết này?')) {
+                return;
+            }
+
+            fetch(`/reviews/${postId}/force-delete`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra!');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi xóa bài viết!');
             });
         }
     </script>

@@ -310,4 +310,82 @@ class PostController extends Controller
             'message' => 'Yêu cầu xóa đã được gửi! Vui lòng chờ Admin xử lý.'
         ]);
     }
+
+    // Hủy yêu cầu xóa bài review
+    public function cancelDelete($id)
+    {
+        $user = Auth::user();
+        $post = Post::findOrFail($id);
+
+        // Chỉ cho phép chủ bài viết hủy yêu cầu xóa
+        if ((int)$post->user_id !== (int)$user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không có quyền thực hiện hành động này.'
+            ], 403);
+        }
+
+        // Chỉ cho phép hủy nếu đang ở trạng thái pending_delete
+        if ($post->status !== 'pending_delete') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bài viết không ở trạng thái chờ xóa.'
+            ], 400);
+        }
+
+        // Chuyển status về published
+        $post->update(['status' => 'published']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã hủy yêu cầu xóa! Bài viết đã được khôi phục.'
+        ]);
+    }
+
+    // Khôi phục bài review từ thùng rác
+    public function restorePost($id)
+    {
+        $user = Auth::user();
+        $post = Post::onlyTrashed()->findOrFail($id);
+
+        // Chỉ cho phép chủ bài viết khôi phục
+        if ((int)$post->user_id !== (int)$user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không có quyền khôi phục bài viết này.'
+            ], 403);
+        }
+
+        // Khôi phục bài viết
+        $post->restore();
+        $post->update(['status' => 'published']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã khôi phục bài viết thành công!'
+        ]);
+    }
+
+    // Xóa vĩnh viễn bài review khỏi thùng rác
+    public function forceDeletePost($id)
+    {
+        $user = Auth::user();
+        $post = Post::onlyTrashed()->findOrFail($id);
+
+        // Chỉ cho phép chủ bài viết xóa vĩnh viễn
+        if ((int)$post->user_id !== (int)$user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không có quyền xóa bài viết này.'
+            ], 403);
+        }
+
+        // Xóa vĩnh viễn
+        $post->forceDelete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã xóa vĩnh viễn bài viết!'
+        ]);
+    }
 }

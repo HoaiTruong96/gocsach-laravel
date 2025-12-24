@@ -224,6 +224,15 @@ Route::middleware(['auth', 'email.verified'])->group(function () {
     // Yêu cầu xóa bài review (chờ admin duyệt)
     Route::post('/reviews/{id}/request-delete', [PostController::class, 'requestDelete'])->name('reviews.request-delete');
 
+    // Hủy yêu cầu xóa bài review
+    Route::post('/reviews/{id}/cancel-delete', [PostController::class, 'cancelDelete'])->name('reviews.cancel-delete');
+
+    // Khôi phục bài review từ thùng rác
+    Route::post('/reviews/{id}/restore', [PostController::class, 'restorePost'])->name('reviews.restore');
+
+    // Xóa vĩnh viễn bài review
+    Route::delete('/reviews/{id}/force-delete', [PostController::class, 'forceDeletePost'])->name('reviews.force-delete');
+
     // --- API NỘI BỘ (Cho JS tìm sách khi viết review) ---
     Route::get('/api/books/search', function (Illuminate\Http\Request $request) {
         $query = $request->get('q');

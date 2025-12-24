@@ -1284,12 +1284,27 @@
         // --- 3. H�M X? L� D? LI?U (AJAX & FETCH) ---
 
         function loadComments(urlOrSortType) {
-            let url = urlOrSortType.includes('http') ? urlOrSortType : `/?sort_review=${urlOrSortType}`;
+            // Xác định sortType từ url hoặc tham số
+            let sortType = urlOrSortType;
+            let url;
+            
+            if (urlOrSortType.includes('http') || urlOrSortType.includes('?')) {
+                url = urlOrSortType;
+                // Trích xuất sortType từ URL nếu có
+                const urlParams = new URLSearchParams(urlOrSortType.includes('?') ? urlOrSortType.split('?')[1] : '');
+                sortType = urlParams.get('sort_review') || 'latest';
+            } else {
+                url = `/?sort_review=${urlOrSortType}`;
+            }
+            
             const spinner = document.getElementById('loading-spinner');
             const contentWrapper = document.getElementById('comments-content-wrapper');
 
             if (spinner) spinner.classList.remove('hidden');
             if (contentWrapper) contentWrapper.style.opacity = '0.5';
+
+            // Cập nhật UI tab ngay lập tức
+            updateTabUI(sortType);
 
             fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
                 .then(response => response.text())
