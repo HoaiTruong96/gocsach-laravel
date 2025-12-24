@@ -30,8 +30,24 @@
                     <i class="fas fa-robot text-white text-xs"></i>
                 </div>
                 <div class="bg-white rounded-2xl rounded-tl-none px-4 py-3 shadow-sm max-w-[85%] sm:max-w-[80%]">
-                    <p class="text-sm text-gray-700">Xin chào! 📚 Tôi là trợ lý AI của Góc Sách. Tôi có thể giúp bạn tìm sách hay, gợi ý đọc theo sở thích. Bạn cần gì nào?</p>
+                    <p class="text-sm text-gray-700">Xin chào! Tôi là trợ lý AI của Góc Sách. Tôi có thể giúp bạn tìm sách hay, gợi ý đọc theo sở thích. Bạn cần gì nào?</p>
                 </div>
+            </div>
+            
+            {{-- Quick Replies - Gợi ý nhanh --}}
+            <div id="quick-replies" class="flex flex-wrap gap-2 mt-2">
+                <button class="quick-reply-btn px-3 py-1.5 bg-white border border-brand-green text-brand-green rounded-full text-xs hover:bg-brand-green hover:text-white transition-all duration-200" data-message="Gợi ý sách hay">
+                    Gợi ý sách hay
+                </button>
+                <button class="quick-reply-btn px-3 py-1.5 bg-white border border-brand-green text-brand-green rounded-full text-xs hover:bg-brand-green hover:text-white transition-all duration-200" data-message="Có bao nhiêu sách">
+                    Thống kê
+                </button>
+                <button class="quick-reply-btn px-3 py-1.5 bg-white border border-brand-green text-brand-green rounded-full text-xs hover:bg-brand-green hover:text-white transition-all duration-200" data-message="Làm sao để viết review">
+                    Cách viết review
+                </button>
+                <button class="quick-reply-btn px-3 py-1.5 bg-white border border-brand-green text-brand-green rounded-full text-xs hover:bg-brand-green hover:text-white transition-all duration-200" data-message="Tủ sách cá nhân là gì">
+                    Về tủ sách
+                </button>
             </div>
         </div>
 
@@ -204,6 +220,17 @@
             sendBtn.disabled = false;
             input.focus();
         }
+    });
+
+    // Quick Reply buttons
+    document.querySelectorAll('.quick-reply-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const message = this.getAttribute('data-message');
+            document.getElementById('chatbox-input').value = message;
+            document.getElementById('chatbox-form').dispatchEvent(new Event('submit'));
+            // Ẩn quick replies sau khi click
+            document.getElementById('quick-replies').style.display = 'none';
+        });
     });
 
     // Close on ESC
