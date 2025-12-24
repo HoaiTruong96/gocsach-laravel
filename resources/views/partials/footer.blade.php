@@ -25,9 +25,8 @@
                         Nơi kết nối những tâm hồn yêu sách. Chia sẻ cảm nhận, lan tỏa tri thức.
                     </p>
                     <div class="flex gap-3 pt-2 justify-center sm:justify-start">
-                        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#D4A373] hover:text-white transition transform hover:-translate-y-1"><i class="fab fa-facebook-f text-sm sm:text-xs"></i></a>
-                        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#D4A373] hover:text-white transition transform hover:-translate-y-1"><i class="fab fa-twitter text-sm sm:text-xs"></i></a>
-                        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#D4A373] hover:text-white transition transform hover:-translate-y-1"><i class="fab fa-instagram text-sm sm:text-xs"></i></a>
+                        <a href="https://www.facebook.com/profile.php?id=61585413759981" target="_blank" rel="noopener noreferrer" class="w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#D4A373] hover:text-white transition transform hover:-translate-y-1"><i class="fab fa-facebook-f text-sm sm:text-xs"></i></a>
+                        <a href="https://youtu.be/mKptA96QMZ0" target="_blank" rel="noopener noreferrer" class="w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#D4A373] hover:text-white transition transform hover:-translate-y-1"><i class="fab fa-youtube text-sm sm:text-xs"></i></a>
                     </div>
                 </div>
 
