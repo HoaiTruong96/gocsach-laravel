@@ -27,6 +27,18 @@ use App\Http\Controllers\ChatbotController;
 // 1. NHÓM PUBLIC (Ai cũng xem được)
 // ====================================================
 
+// Route serve file storage (bypass symlink issue on Windows)
+Route::get('/storage/{path}', function ($path) {
+    $fullPath = storage_path('app/public/' . $path);
+
+    if (!file_exists($fullPath)) {
+        abort(404);
+    }
+
+    $mimeType = mime_content_type($fullPath);
+    return response()->file($fullPath, ['Content-Type' => $mimeType]);
+})->where('path', '.*');
+
 // Trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
 

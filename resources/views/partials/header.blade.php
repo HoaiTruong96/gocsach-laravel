@@ -124,9 +124,9 @@
                             class="hidden dropdown-bridge absolute right-0 top-full mt-0 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in z-50 origin-top-right">
                             <div class="px-4 py-3 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
                                 <span class="text-sm font-bold text-gray-700">Thông báo</span>
-                                <a href="{{ route('notification.readAll') }}" id="mark-all-read-btn"
+                                <button type="button" onclick="markAllNotificationsAsRead()" id="mark-all-read-btn"
                                     class="{{ Auth::user()->unreadNotifications->count() > 0 ? '' : 'hidden' }} text-[10px] text-blue-500 hover:underline cursor-pointer">Đánh
-                                    dấu đã đọc</a>
+                                    dấu đã đọc</button>
                             </div>
                             <div id="notification-list" class="max-h-80 overflow-y-auto">
                                 @forelse(Auth::user()->notifications as $notification)
@@ -725,7 +725,7 @@
                         // Xử lý ảnh bìa
                         let imgUrl = book.cover_image
                             ? (book.cover_image.startsWith('http') ? book.cover_image : '/storage/' + book.cover_image)
-                            : 'https://via.placeholder.com/50x70?text=No+Image';
+                            : 'https://placehold.co/50x70?text=No+Image';
 
                         // URL chi tiết sách (dùng slug hoặc ID nếu slug không có)
                         let detailUrl = `/chi-tiet/${book.slug || book.id}`;
@@ -739,7 +739,7 @@
                         html += `
                         <li>
                             <a href="${detailUrl}" class="search-result-link flex items-center gap-3 p-3 hover:bg-gray-50 transition cursor-pointer">
-                                <img src="${imgUrl}" class="w-10 h-14 object-cover rounded shadow-sm border border-gray-200 flex-shrink-0" onerror="this.src='https://via.placeholder.com/50x70?text=No+Image'">
+                                <img src="${imgUrl}" class="w-10 h-14 object-cover rounded shadow-sm border border-gray-200 flex-shrink-0" onerror="this.src='https://placehold.co/50x70?text=No+Image'">
                                 <div class="flex-1 min-w-0">
                                     <h4 class="text-sm font-bold text-gray-800 line-clamp-1">${highlightedTitle}</h4>
                                     <p class="text-xs text-gray-500">${book.author_name || 'Đang cập nhật'}</p>
@@ -884,8 +884,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Polling mỗi 30 giây
-    setInterval(fetchNotifications, 5000);
+    // Polling mỗi 10 giây
+    setInterval(fetchNotifications, 10000);
     
     // Fetch ngay khi trang load (sau 2 giây để tránh lag)
     setTimeout(fetchNotifications, 2000);
@@ -905,23 +905,64 @@ document.addEventListener('DOMContentLoaded', function() {
             const isHidden = dropdown.classList.contains('hidden');
             dropdown.classList.toggle('hidden');
             
-            // Nếu mở dropdown và có thông báo chưa đọc -> ẩn badge
+            // Nếu mở dropdown và có thông báo chưa đọc -> chỉ ẩn badge số, KHÔNG đánh dấu đã đọc
+            // Người dùng vẫn thấy các thông báo chưa đọc với chấm xanh
             if (isHidden && badge && !badge.classList.contains('hidden')) {
-                // Gọi API đánh dấu đã đọc tất cả
-                fetch('{{ route("notification.readAll") }}', {
-                    method: 'GET',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    }
-                }).then(response => {
-                    // Ẩn badge sau khi gọi API
-                    badge.classList.add('hidden');
-                    const markAllBtn = document.getElementById('mark-all-read-btn');
-                    if (markAllBtn) markAllBtn.classList.add('hidden');
-                }).catch(err => console.log('Mark read error:', err));
+                // Chỉ ẩn badge số trên chuông, không gọi API đánh dấu đã đọc
+                badge.classList.add('hidden');
             }
         });
+        
+        // ====== MARK ALL AS READ (AJAX) ======
+        window.markAllNotificationsAsRead = function() {
+            const markAllBtn = document.getElementById('mark-all-read-btn');
+            const listContainer = document.getElementById('notification-list');
+            
+            // Disable button và hiện loading
+            if (markAllBtn) {
+                markAllBtn.innerText = 'Đang xử lý...';
+                markAllBtn.disabled = true;
+            }
+            
+            fetch('{{ route("notification.readAll") }}', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Ẩn nút "Đánh dấu đã đọc"
+                    if (markAllBtn) markAllBtn.classList.add('hidden');
+                    
+                    // Cập nhật UI: xóa chấm xanh và thêm class đã đọc cho tất cả thông báo
+                    if (listContainer) {
+                        // Xóa tất cả chấm xanh (unread indicator)
+                        listContainer.querySelectorAll('.bg-brand-green.rounded-full').forEach(dot => dot.remove());
+                        
+                        // Thêm class đã đọc cho tất cả thông báo
+                        listContainer.querySelectorAll('a').forEach(item => {
+                            item.classList.remove('bg-blue-50/30');
+                            item.classList.add('opacity-60', 'grayscale-[0.5]');
+                        });
+                    }
+                    
+                    // Ẩn badge số trên chuông (nếu chưa ẩn)
+                    const badge = document.getElementById('notification-badge');
+                    if (badge) badge.classList.add('hidden');
+                }
+            })
+            .catch(err => {
+                console.log('Mark all read error:', err);
+                // Restore button nếu lỗi
+                if (markAllBtn) {
+                    markAllBtn.innerText = 'Đánh dấu đã đọc';
+                    markAllBtn.disabled = false;
+                }
+            });
+        };
         
         // Click ra ngoài thì đóng dropdown
         document.addEventListener('click', function(e) {
