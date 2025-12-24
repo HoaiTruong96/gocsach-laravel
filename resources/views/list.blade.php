@@ -216,7 +216,7 @@
                     {{-- Phân trang --}}
                     <div class="mt-12 flex justify-center">
                         @if(isset($books) && method_exists($books, 'links'))
-                            {{ $books->links() }}
+                            {{ $books->links('vendor.pagination.custom') }}
                         @endif
                     </div>
 

@@ -272,8 +272,7 @@
                                         class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white">
                                         <option value="">-- Chọn danh hiệu --</option>
                                         @foreach($badges as $badge)
-                                            <option value="{{ $badge->id }}" {{ old('badge_id') == $badge->id ? 'selected' : '' }}>{{ $badge->icon ?? '🏅' }} {{ $badge->name }}
-                                            </option>
+                                            <option value="{{ $badge->id }}" {{ old('badge_id') == $badge->id ? 'selected' : '' }}>{{ $badge->name }}</option>
                                         @endforeach
                                     </select>
                                     @error('badge_id') <p class="error-message text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -286,7 +285,7 @@
                                         class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white">
                                         <option value="">-- Không tặng khung --</option>
                                         @foreach($frames as $frame)
-                                            <option value="{{ $frame->id }}" {{ old('avatar_frame_id') == $frame->id ? 'selected' : '' }}>🖼️ {{ $frame->name }}</option>
+                                            <option value="{{ $frame->id }}" {{ old('avatar_frame_id') == $frame->id ? 'selected' : '' }}>{{ $frame->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -385,12 +384,7 @@
                                             <div class="flex items-center gap-4 text-sm">
                                                 <span class="text-gray-600 dark:text-slate-300">
                                                     <i class="fas fa-medal text-yellow-500 mr-1"></i>
-                                                    @if($challenge->badge->icon && Str::startsWith($challenge->badge->icon, 'http'))
-                                                        <img src="{{ $challenge->badge->icon }}" alt="{{ $challenge->badge->name }}" class="w-5 h-5 object-contain inline-block rounded">
-                                                    @else
-                                                                {{ $challenge->badge->icon ?? '🏅' }}
-                                                            @endif
-                                 {{ $challenge->badge->name }}
+                                                    {{ $challenge->badge->name }}
                                                 </span>
                                                 <span class="text-gray-600 dark:text-slate-300">
                                                     <i class="fas fa-pen mr-1"></i>{{ $challenge->target_count }} reviews
@@ -584,7 +578,7 @@
                 // Remove active from all tabs
                 document.querySelectorAll('.tab-btn').forEach(el => {
                     el.classList.remove('bg-blue-600', 'text-white');
-                    el.classList.add('text-gray-600', 'hover:bg-gray-100');
+                    el.classList.add('text-gray-600', 'dark:text-slate-300', 'hover:bg-gray-100', 'dark:hover:bg-slate-700');
                 });
 
                 // Show selected section
@@ -592,7 +586,7 @@
                 // Activate selected tab
                 const activeTab = document.getElementById('tab-' + tab);
                 activeTab.classList.add('bg-blue-600', 'text-white');
-                activeTab.classList.remove('text-gray-600', 'hover:bg-gray-100');
+                activeTab.classList.remove('text-gray-600', 'dark:text-slate-300', 'hover:bg-gray-100', 'dark:hover:bg-slate-700');
 
                 // Xóa tất cả thông báo lỗi khi chuyển tab
                 document.querySelectorAll('.error-message').forEach(el => el.remove());

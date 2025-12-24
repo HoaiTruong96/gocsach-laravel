@@ -16,6 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\CheckAdmin::class,
             'email.verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
         ]);
+
+        // Track visitors cho web
+        $middleware->appendToGroup('web', \App\Http\Middleware\TrackVisitors::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -30,6 +30,14 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
+            // Kiểm tra tài khoản có bị vô hiệu hóa không
+            if (!Auth::user()->is_active) {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.',
+                ])->onlyInput('email');
+            }
+
             $request->session()->regenerate();
             
             // Kiểm tra email đã xác thực chưa
@@ -160,7 +168,7 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/login');
+        return redirect()->route('home');
     }
 
     // --- 5. ĐỔI MẬT KHẨU (Dành cho người đã đăng nhập) ---

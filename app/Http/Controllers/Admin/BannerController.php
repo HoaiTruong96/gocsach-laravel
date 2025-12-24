@@ -151,13 +151,22 @@ class BannerController extends Controller
     {
         $banner = Banner::findOrFail($id);
         $deletedOrder = $banner->order;
+        $bannerData = $banner->toArray();
 
-        // Xóa ảnh nếu nằm trong storage
-        if ($banner->image && !Str::startsWith($banner->image, 'http')) {
-            Storage::delete('public/' . $banner->image);
-        }
+        // Xóa ảnh nếu nằm trong storage (chỉ khi xóa cứng)
+        // Với soft delete, giữ ảnh để có thể restore
 
         $banner->delete();
+
+        // Ghi log để có thể khôi phục
+        \App\Models\AdminActivityLog::log(
+            'delete',
+            "Xóa Banner: {$bannerData['title']}",
+            Banner::class,
+            $bannerData['id'],
+            $bannerData,
+            null
+        );
 
         // Giảm order của các banner có order lớn hơn banner vừa xóa
         Banner::where('order', '>', $deletedOrder)->decrement('order');
