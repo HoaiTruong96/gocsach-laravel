@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\BookSuggestionController;
+use App\Http\Controllers\ChatbotController;
 
 // ====================================================
 // 1. NHÓM PUBLIC (Ai cũng xem được)
@@ -55,6 +56,9 @@ Route::get('/ajax-search', function (Illuminate\Http\Request $request) {
 
     return response()->json($books);
 })->name('ajax.search');
+
+// Chatbot API
+Route::post('/api/chatbot', [ChatbotController::class, 'chat'])->name('chatbot.chat');
 
 // Trang chi tiết bài viết Tạp chí
 Route::get('/tap-chi/{slug}', [ArticleController::class, 'show'])->name('articles.show');
