@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\PostReport;
 use App\Models\AdminActivityLog;
+use App\Notifications\ReportResolvedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -83,6 +84,17 @@ class PostReportController extends Controller
             ['status' => 'approved']
         );
 
+        // Gửi thông báo cho người báo cáo
+        if ($postReport->user) {
+            $postReport->user->notify(new ReportResolvedNotification([
+                'status' => 'approved',
+                'message' => "Báo cáo của bạn về bài viết \"{$postTitle}\" đã được chấp thuận. Bài viết đã bị ẩn.",
+                'admin_note' => $request->admin_note,
+                'post_title' => $postTitle,
+                'link' => route('home'),
+            ]));
+        }
+
         return back()->with('success', 'Đã chấp thuận báo cáo và ẩn bài viết vi phạm.');
     }
 
@@ -112,6 +124,18 @@ class PostReportController extends Controller
             null,
             ['status' => 'rejected']
         );
+
+        // Gửi thông báo cho người báo cáo
+        if ($postReport->user) {
+            $postTitle = $postReport->post ? $postReport->post->title : 'Bài viết';
+            $postReport->user->notify(new ReportResolvedNotification([
+                'status' => 'rejected',
+                'message' => "Báo cáo của bạn về bài viết \"{$postTitle}\" đã bị từ chối.",
+                'admin_note' => $request->admin_note,
+                'post_title' => $postTitle,
+                'link' => route('home'),
+            ]));
+        }
 
         return back()->with('success', 'Đã từ chối báo cáo.');
     }
@@ -172,6 +196,17 @@ class PostReportController extends Controller
             ['post_title' => $postTitle],
             ['action' => 'deleted_post']
         );
+
+        // Gửi thông báo cho người báo cáo
+        if ($postReport->user) {
+            $postReport->user->notify(new ReportResolvedNotification([
+                'status' => 'approved',
+                'message' => "Báo cáo của bạn về bài viết \"{$postTitle}\" đã được chấp thuận. Bài viết đã bị xóa.",
+                'admin_note' => $request->admin_note ?? 'Đã xóa bài viết vi phạm',
+                'post_title' => $postTitle,
+                'link' => route('home'),
+            ]));
+        }
 
         return back()->with('success', 'Đã xóa bài viết vi phạm.');
     }
