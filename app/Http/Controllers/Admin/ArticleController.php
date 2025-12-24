@@ -130,13 +130,21 @@ class ArticleController extends Controller
     public function destroy($id)
     {
         $article = Article::findOrFail($id);
+        $articleData = $article->toArray();
 
-        // Xóa ảnh thumbnail nếu có
-        if ($article->thumbnail && !Str::startsWith($article->thumbnail, 'http')) {
-            Storage::delete('public/' . $article->thumbnail);
-        }
+        // Với soft delete, giữ ảnh để có thể restore
 
         $article->delete();
+
+        // Ghi log để có thể khôi phục
+        \App\Models\AdminActivityLog::log(
+            'delete',
+            "Xóa Bài viết: {$articleData['title']}",
+            Article::class,
+            $articleData['id'],
+            $articleData,
+            null
+        );
 
         return redirect()->back()->with('success', 'Đã xóa bài viết!');
     }

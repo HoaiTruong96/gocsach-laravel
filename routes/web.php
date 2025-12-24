@@ -249,13 +249,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->only(['index', 'update', 'destroy']);
     Route::post('posts/{id}/approve-delete', [\App\Http\Controllers\Admin\PostController::class, 'approveDelete'])->name('posts.approve-delete');
     Route::post('posts/{id}/reject-delete', [\App\Http\Controllers\Admin\PostController::class, 'rejectDelete'])->name('posts.reject-delete');
-    Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
+    Route::get('users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
+    Route::post('users/{user}/toggle-active', [\App\Http\Controllers\Admin\UserController::class, 'toggleActive'])->name('users.toggle-active');
     Route::resource('banners', BannerController::class);
     Route::resource('badges', \App\Http\Controllers\Admin\BadgeController::class);
     Route::resource('challenges', \App\Http\Controllers\Admin\ChallengeController::class);
     Route::resource('avatar-frames', \App\Http\Controllers\Admin\AvatarFrameController::class);
     // Authors - dùng adminIndex() thay vì index() cho trang admin
     Route::get('authors', [AuthorController::class, 'adminIndex'])->name('authors.index');
+    Route::get('authors/proxy-image', [AuthorController::class, 'proxyImage'])->name('authors.proxy-image');
     Route::get('authors/create', [AuthorController::class, 'create'])->name('authors.create');
     Route::post('authors', [AuthorController::class, 'store'])->name('authors.store');
     Route::get('authors/{author}/edit', [AuthorController::class, 'edit'])->name('authors.edit');
@@ -263,14 +265,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('authors/{author}', [AuthorController::class, 'destroy'])->name('authors.destroy');
     Route::resource('quotes', \App\Http\Controllers\Admin\QuoteController::class);
 
-    // Activity Logs
+    // Activity Logs (xem + khôi phục)
     Route::get('/activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
-    Route::get('/activity-logs/trash', [\App\Http\Controllers\Admin\ActivityLogController::class, 'trash'])->name('activity-logs.trash');
     Route::get('/activity-logs/{activityLog}', [\App\Http\Controllers\Admin\ActivityLogController::class, 'show'])->name('activity-logs.show');
-    Route::post('/activity-logs/cleanup', [\App\Http\Controllers\Admin\ActivityLogController::class, 'cleanup'])->name('activity-logs.cleanup');
     Route::post('/activity-logs/{activityLog}/restore', [\App\Http\Controllers\Admin\ActivityLogController::class, 'restore'])->name('activity-logs.restore');
-    Route::post('/activity-logs/restore-trashed', [\App\Http\Controllers\Admin\ActivityLogController::class, 'restoreTrashed'])->name('activity-logs.restore-trashed');
-    Route::delete('/activity-logs/force-delete', [\App\Http\Controllers\Admin\ActivityLogController::class, 'forceDelete'])->name('activity-logs.force-delete');
 
     // Game / Gamification
     Route::get('/game', [\App\Http\Controllers\Admin\GameController::class, 'index'])->name('game.index');
@@ -290,4 +288,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/post-reports/{postReport}/reject', [\App\Http\Controllers\Admin\PostReportController::class, 'reject'])->name('post-reports.reject');
     Route::post('/post-reports/{postReport}/delete-post', [\App\Http\Controllers\Admin\PostReportController::class, 'deletePost'])->name('post-reports.delete-post');
     Route::delete('/post-reports/{postReport}', [\App\Http\Controllers\Admin\PostReportController::class, 'destroy'])->name('post-reports.destroy');
+
+    // API Routes cho Polling Real-time
+    Route::get('/api/pending-counts', [\App\Http\Controllers\Admin\ApiController::class, 'pendingCounts'])->name('api.pending-counts');
 });

@@ -5,7 +5,7 @@
             <th class="px-4 py-3 w-28 whitespace-nowrap">Thời gian</th>
             <th class="px-4 py-3 w-48">Admin</th>
             <th class="px-4 py-3 w-24 whitespace-nowrap">Hành động</th>
-            <th class="px-4 py-3">Mô tả</th>
+            <th class="px-4 py-3 col-description">Mô tả</th>
             <th class="px-4 py-3 w-28 whitespace-nowrap">IP</th>
             <th class="px-4 py-3 w-16 text-center"></th>
         </tr>
@@ -36,7 +36,7 @@
                         <i class="fas {{ $log->action_icon }}"></i>{{ ucfirst($log->action) }}
                     </span>
                 </td>
-                <td class="px-4 py-3 align-top">
+                <td class="px-4 py-3 align-top col-description">
                     <div class="text-sm text-gray-700 dark:text-slate-300 line-clamp-1" title="{{ $log->description }}">
                         {{ $log->description }}
                     </div>

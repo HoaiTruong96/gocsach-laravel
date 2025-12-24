@@ -30,6 +30,14 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
+            // Kiểm tra tài khoản có bị vô hiệu hóa không
+            if (!Auth::user()->is_active) {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.',
+                ])->onlyInput('email');
+            }
+
             $request->session()->regenerate();
             return redirect()->route('home'); // Đăng nhập xong về trang chủ
         }
