@@ -1,204 +1,464 @@
 @extends('layouts.admin')
-@section('title', 'Lịch Sử Hoạt Động')
-@section('header', 'Lịch Sử Hoạt Động Admin')
+@section('title', 'Nhật Ký Hoạt Động')
+@section('header', 'Nhật Ký Hoạt Động')
 
 @section('content')
-    <div
-        class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-100 dark:border-slate-700 mb-6 transition-colors duration-300">
-        <!-- Header với thống kê nhanh -->
-        <div
-            class="p-6 border-b border-gray-100 dark:border-slate-700 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-slate-700 dark:to-slate-700">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h3 class="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                        <i class="fas fa-history text-indigo-500"></i>
-                        Theo dõi hoạt động Admin
-                    </h3>
-                    <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">Xem lịch sử tất cả các hành động của các quản
-                        trị viên</p>
+    @php
+        $todayCount = \App\Models\AdminActivityLog::whereDate('created_at', today())->count();
+        $weekCount = \App\Models\AdminActivityLog::where('created_at', '>=', now()->startOfWeek())->count();
+        $totalCount = \App\Models\AdminActivityLog::count();
+    @endphp
+
+    <style>
+        /* Custom Dropdown Styles */
+        .custom-select-wrapper {
+            position: relative;
+            user-select: none;
+        }
+
+        .custom-select-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 0 12px;
+            height: 38px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dark .custom-select-trigger {
+            background: #334155;
+            border-color: #475569;
+            color: #f1f5f9;
+        }
+
+        .custom-select-trigger:hover {
+            border-color: #3b82f6;
+        }
+
+        .custom-select-wrapper.open .custom-select-trigger {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .custom-options {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 100;
+            max-height: 280px;
+            overflow-y: auto;
+            padding: 4px;
+        }
+
+        .dark .custom-options {
+            background: #1e293b;
+            border-color: #334155;
+        }
+
+        .custom-select-wrapper.open .custom-options {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .custom-option {
+            padding: 8px 12px;
+            font-size: 14px;
+            color: #374151;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dark .custom-option {
+            color: #e2e8f0;
+        }
+
+        .custom-option:hover {
+            background-color: #f3f4f6;
+            color: #2563eb;
+        }
+
+        .dark .custom-option:hover {
+            background-color: #334155;
+            color: #60a5fa;
+        }
+
+        .custom-option.selected {
+            background-color: #eff6ff;
+            color: #2563eb;
+            font-weight: 500;
+        }
+
+        .dark .custom-option.selected {
+            background-color: #1e3a8a;
+            color: #93c5fd;
+        }
+
+        .arrow {
+            transition: transform 0.2s;
+            color: #9ca3af;
+            font-size: 12px;
+        }
+
+        .custom-select-wrapper.open .arrow {
+            transform: rotate(180deg);
+            color: #3b82f6;
+        }
+
+        /* Dropdown opens upward */
+        .custom-select-wrapper.dropup .custom-options {
+            top: auto;
+            bottom: calc(100% + 6px);
+        }
+    </style>
+
+    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700">
+        {{-- Header --}}
+        <div class="p-4 border-b border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-700 rounded-t-xl">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <span class="font-bold text-gray-700 dark:text-slate-200 flex items-center gap-2">
+                        <i class="fas fa-clipboard-list text-blue-500"></i>Theo dõi hoạt động Admin
+                    </span>
+                    <div class="flex gap-2 text-xs">
+                        <span
+                            class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 rounded-full font-bold">
+                            <i class="fas fa-calendar-day"></i>{{ $todayCount }} hôm nay
+                        </span>
+                        <span
+                            class="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-300 rounded-full font-bold">
+                            <i class="fas fa-calendar-week"></i>{{ $weekCount }} tuần
+                        </span>
+                        <span
+                            class="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 dark:bg-slate-600 text-gray-600 dark:text-slate-300 rounded-full font-bold">
+                            <i class="fas fa-database"></i>{{ $totalCount }} tổng
+                        </span>
+                    </div>
                 </div>
-                <div class="flex items-center gap-3 text-sm">
-                    <div class="bg-white dark:bg-slate-600 px-4 py-2 rounded-lg shadow-sm border dark:border-slate-500">
-                        <span class="text-gray-500 dark:text-slate-300">Hôm nay:</span>
-                        <span
-                            class="font-bold text-indigo-600 dark:text-indigo-400">{{ \App\Models\AdminActivityLog::whereDate('created_at', today())->count() }}</span>
+
+                {{-- Search & Actions --}}
+                <div class="flex items-center gap-2">
+                    <div class="relative">
+                        <input type="text" id="searchInput" value="{{ request('search') }}" placeholder="Tìm mô tả..."
+                            class="w-56 pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none placeholder:italic">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                     </div>
-                    <div class="bg-white dark:bg-slate-600 px-4 py-2 rounded-lg shadow-sm border dark:border-slate-500">
-                        <span class="text-gray-500 dark:text-slate-300">Tuần này:</span>
-                        <span
-                            class="font-bold text-green-600 dark:text-green-400">{{ \App\Models\AdminActivityLog::where('created_at', '>=', now()->startOfWeek())->count() }}</span>
-                    </div>
-                    <div class="bg-white dark:bg-slate-600 px-4 py-2 rounded-lg shadow-sm border dark:border-slate-500">
-                        <span class="text-gray-500 dark:text-slate-300">Tổng:</span>
-                        <span
-                            class="font-bold text-gray-700 dark:text-white">{{ \App\Models\AdminActivityLog::count() }}</span>
-                    </div>
+                    <button type="button" id="searchBtn"
+                        class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
+                        <i class="fas fa-search" id="searchBtnIcon"></i>
+                        <i class="fas fa-spinner fa-spin hidden" id="loadingIcon"></i>
+                    </button>
+                    <button type="button" id="clearSearch"
+                        class="px-3 py-2 bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-slate-200 text-sm rounded-lg hover:bg-gray-300 dark:hover:bg-slate-500 transition {{ request('search') ? '' : 'hidden' }}">
+                        <i class="fas fa-times"></i>
+                    </button>
                     <a href="{{ route('admin.activity-logs.trash') }}"
-                        class="inline-flex items-center gap-2 px-4 py-2 bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 font-semibold rounded-lg hover:bg-red-200 dark:hover:bg-red-900/70 transition shadow-sm border border-red-200 dark:border-red-800">
-                        <i class="fas fa-trash"></i>
-                        <span>Thùng rác</span>
+                        class="inline-flex items-center gap-2 px-3 py-2 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 font-medium text-sm rounded-lg hover:bg-red-200 transition">
+                        <i class="fas fa-trash text-xs"></i>Thùng rác
                     </a>
                 </div>
+                <a href="{{ route('admin.activity-logs.trash') }}"
+                    class="inline-flex items-center gap-2 px-3 py-1.5 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 font-medium text-sm rounded-lg hover:bg-red-200 dark:hover:bg-red-900/60 transition">
+                    <i class="fas fa-trash text-xs"></i>Thùng rác
+                </a>
             </div>
         </div>
 
-        <!-- Bộ lọc -->
-        <div class="p-4 bg-gray-50 dark:bg-slate-700 border-b border-gray-100 dark:border-slate-600">
-            <form method="GET" action="{{ route('admin.activity-logs.index') }}" class="flex flex-wrap gap-3 items-end">
-                <div>
-                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Admin</label>
-                    <select name="admin_id"
-                        class="border dark:border-slate-500 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-600 dark:text-white">
-                        <option value="">Tất cả admin</option>
+        {{-- Filters --}}
+        <div class="p-4 bg-white dark:bg-slate-800 border-b border-gray-100 dark:border-slate-700">
+            <div class="flex flex-wrap gap-3 items-end">
+                {{-- Admin filter --}}
+                <div class="custom-select-wrapper" id="adminSelectWrapper" style="min-width: 160px;">
+                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1 font-medium">Admin</label>
+                    <div class="custom-select-trigger">
+                        <span
+                            class="trigger-text">{{ request('admin_id') ? ($admins->firstWhere('id', request('admin_id'))->name ?? 'Tất cả') : 'Tất cả' }}</span>
+                        <i class="fas fa-chevron-down arrow"></i>
+                    </div>
+                    <div class="custom-options">
+                        <div class="custom-option {{ !request('admin_id') ? 'selected' : '' }}" data-value="">
+                            <i class="fas fa-users text-xs w-4"></i> Tất cả
+                        </div>
                         @foreach($admins as $admin)
-                            <option value="{{ $admin->id }}" {{ request('admin_id') == $admin->id ? 'selected' : '' }}>
+                            <div class="custom-option {{ request('admin_id') == $admin->id ? 'selected' : '' }}"
+                                data-value="{{ $admin->id }}">
+                                <img src="{{ $admin->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($admin->name) }}"
+                                    class="w-4 h-4 rounded-full">
                                 {{ $admin->name }}
-                            </option>
+                            </div>
                         @endforeach
-                    </select>
+                    </div>
+                    <input type="hidden" id="adminFilter" value="{{ request('admin_id') }}">
                 </div>
-                <div>
-                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Loại hành động</label>
-                    <select name="action"
-                        class="border dark:border-slate-500 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-600 dark:text-white">
-                        <option value="">Tất cả</option>
+
+                {{-- Action filter --}}
+                <div class="custom-select-wrapper" id="actionSelectWrapper" style="min-width: 140px;">
+                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1 font-medium">Hành động</label>
+                    <div class="custom-select-trigger">
+                        <span class="trigger-text">{{ request('action') ? ucfirst(request('action')) : 'Tất cả' }}</span>
+                        <i class="fas fa-chevron-down arrow"></i>
+                    </div>
+                    <div class="custom-options">
+                        <div class="custom-option {{ !request('action') ? 'selected' : '' }}" data-value="">
+                            <i class="fas fa-list text-xs w-4"></i> Tất cả
+                        </div>
                         @foreach($actions as $action)
-                            <option value="{{ $action }}" {{ request('action') == $action ? 'selected' : '' }}>
+                            <div class="custom-option {{ request('action') == $action ? 'selected' : '' }}"
+                                data-value="{{ $action }}">
+                                <i
+                                    class="fas fa-{{ $action == 'create' ? 'plus' : ($action == 'update' ? 'edit' : ($action == 'delete' ? 'trash' : ($action == 'approve' ? 'check' : ($action == 'reject' ? 'times' : 'circle')))) }} text-xs w-4"></i>
                                 {{ ucfirst($action) }}
-                            </option>
+                            </div>
                         @endforeach
-                    </select>
+                    </div>
+                    <input type="hidden" id="actionFilter" value="{{ request('action') }}">
                 </div>
+
+                {{-- Date From --}}
                 <div>
-                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Từ ngày</label>
-                    <input type="date" name="date_from" value="{{ request('date_from') }}"
-                        class="border dark:border-slate-500 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-600 dark:text-white">
+                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1 font-medium">Từ ngày</label>
+                    <input type="date" id="dateFrom" value="{{ request('date_from') }}" max="{{ date('Y-m-d') }}"
+                        class="border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-gray-700 dark:text-white bg-white dark:bg-slate-700 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer h-[38px]">
                 </div>
+
+                {{-- Date To --}}
                 <div>
-                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Đến ngày</label>
-                    <input type="date" name="date_to" value="{{ request('date_to') }}"
-                        class="border dark:border-slate-500 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-600 dark:text-white">
+                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1 font-medium">Đến ngày</label>
+                    <input type="date" id="dateTo" value="{{ request('date_to') }}" max="{{ date('Y-m-d') }}"
+                        class="border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-gray-700 dark:text-white bg-white dark:bg-slate-700 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer h-[38px]">
                 </div>
-                <div>
-                    <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Tìm kiếm</label>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Mô tả..."
-                        class="border dark:border-slate-500 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-600 dark:text-white dark:placeholder-slate-400">
+
+                {{-- Buttons --}}
+                <button type="button" id="applyFilters"
+                    class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition flex items-center gap-1.5 h-[38px]">
+                    <i class="fas fa-filter"></i>Áp dụng
+                </button>
+                <button type="button" id="clearFilters"
+                    class="px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition flex items-center gap-1.5 h-[38px]">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        {{-- Table --}}
+        <div class="overflow-x-auto" id="logsTableContainer">
+            @include('admin.activity-logs._table', ['logs' => $logs])
+        </div>
+
+        {{-- Pagination --}}
+        <div id="paginationContainer">
+            @if($logs->hasPages())
+                <div class="p-4 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-700 rounded-b-xl">
+                    {{ $logs->links('vendor.pagination.admin') }}
+                </div>
+            @endif
+        </div>
+    </div>
+
+    {{-- Cleanup Section --}}
+    <div class="mt-6 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-5">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <h4 class="font-bold text-gray-700 dark:text-white flex items-center gap-2">
+                    <i class="fas fa-broom text-orange-500"></i>Dọn dẹp Log cũ
+                </h4>
+                <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Xóa các log cũ để giảm tải database. Không thể
+                    hoàn tác.</p>
+            </div>
+            <form method="POST" action="{{ route('admin.activity-logs.cleanup') }}" class="flex items-center gap-2"
+                onsubmit="return confirm('Bạn có chắc muốn xóa các log cũ?')">
+                @csrf
+                <div class="custom-select-wrapper dropup" id="cleanupSelectWrapper" style="min-width: 180px;">
+                    <div class="custom-select-trigger">
+                        <span class="trigger-text">Cũ hơn 90 ngày</span>
+                        <i class="fas fa-chevron-down arrow"></i>
+                    </div>
+                    <div class="custom-options">
+                        <div class="custom-option" data-value="30">Cũ hơn 30 ngày</div>
+                        <div class="custom-option" data-value="60">Cũ hơn 60 ngày</div>
+                        <div class="custom-option selected" data-value="90">Cũ hơn 90 ngày</div>
+                        <div class="custom-option" data-value="180">Cũ hơn 180 ngày</div>
+                        <div class="custom-option" data-value="365">Cũ hơn 1 năm</div>
+                    </div>
+                    <input type="hidden" name="days" value="90">
                 </div>
                 <button type="submit"
-                    class="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition">
-                    <i class="fas fa-search mr-1"></i> Lọc
+                    class="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition flex items-center gap-1.5 h-[38px]">
+                    <i class="fas fa-trash-alt"></i>Dọn dẹp
                 </button>
-                <a href="{{ route('admin.activity-logs.index') }}"
-                    class="px-4 py-2 bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-slate-200 text-sm font-semibold rounded-lg hover:bg-gray-300 dark:hover:bg-slate-500 transition">
-                    <i class="fas fa-times mr-1"></i> Xóa lọc
-                </a>
             </form>
         </div>
-
-        <!-- Danh sách logs -->
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-                <thead class="bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-slate-300 font-medium">
-                    <tr>
-                        <th class="px-4 py-3">Thời gian</th>
-                        <th class="px-4 py-3">Admin</th>
-                        <th class="px-4 py-3">Hành động</th>
-                        <th class="px-4 py-3">Mô tả</th>
-                        <th class="px-4 py-3">Địa chỉ IP</th>
-                        <th class="px-4 py-3 text-center">Chi tiết</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
-                    @forelse($logs as $log)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
-                            <td class="px-4 py-3 whitespace-nowrap">
-                                <div class="text-gray-800 dark:text-white font-medium">{{ $log->created_at->format('d/m/Y') }}
-                                </div>
-                                <div class="text-xs text-gray-400 dark:text-slate-500">{{ $log->created_at->format('H:i:s') }}
-                                </div>
-                            </td>
-                            <td class="px-4 py-3">
-                                <div class="flex items-center gap-2">
-                                    <img src="{{ $log->admin->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($log->admin->name) . '&background=random' }}"
-                                        class="w-8 h-8 rounded-full object-cover border-2 border-gray-100 dark:border-slate-600">
-                                    <div>
-                                        <div class="font-medium text-gray-800 dark:text-white">{{ $log->admin->name }}</div>
-                                        <div class="text-xs text-gray-400 dark:text-slate-500">{{ $log->admin->email }}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-4 py-3">
-                                <span
-                                    class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold {{ $log->action_color }}">
-                                    <i class="fas {{ $log->action_icon }}"></i>
-                                    {{ ucfirst($log->action) }}
-                                </span>
-                            </td>
-                            <td class="px-4 py-3">
-                                <div class="text-gray-700 dark:text-slate-300 max-w-xs truncate"
-                                    title="{{ $log->description }}">
-                                    {{ $log->description }}
-                                </div>
-                                @if($log->model_type)
-                                    <div class="text-xs text-gray-400 dark:text-slate-500 mt-1">
-                                        {{ class_basename($log->model_type) }} #{{ $log->model_id }}
-                                    </div>
-                                @endif
-                            </td>
-                            <td class="px-4 py-3 text-gray-500 dark:text-slate-400 text-xs font-mono">
-                                {{ $log->ip_address }}
-                            </td>
-                            <td class="px-4 py-3 text-center">
-                                <a href="{{ route('admin.activity-logs.show', $log) }}"
-                                    class="inline-flex items-center justify-center w-8 h-8 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/70 transition">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="px-4 py-12 text-center text-gray-400 dark:text-slate-500">
-                                <i class="fas fa-inbox text-4xl mb-3 opacity-50"></i>
-                                <p>Chưa có lịch sử hoạt động nào.</p>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Pagination -->
-        @if($logs->hasPages())
-            <div class="p-4 bg-gray-50 dark:bg-slate-700 border-t border-gray-100 dark:border-slate-600">
-                {{ $logs->links('vendor.pagination.admin') }}
-            </div>
-        @endif
     </div>
 
-    <!-- Cleanup section -->
-    <div
-        class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-100 dark:border-slate-700 p-6 transition-colors duration-300">
-        <h4 class="font-bold text-gray-700 dark:text-white mb-3">
-            <i class="fas fa-broom text-orange-500 mr-2"></i>
-            Dọn dẹp Log cũ
-        </h4>
-        <p class="text-sm text-gray-500 dark:text-slate-400 mb-4">Xóa các log cũ để giảm tải database. Hành động này không
-            thể hoàn tác.</p>
-        <form method="POST" action="{{ route('admin.activity-logs.cleanup') }}" class="flex items-center gap-3"
-            onsubmit="return confirm('Bạn có chắc muốn xóa các log cũ?')">
-            @csrf
-            <select name="days"
-                class="border dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none bg-gray-50 dark:bg-slate-700 dark:text-white">
-                <option value="30">Cũ hơn 30 ngày</option>
-                <option value="60">Cũ hơn 60 ngày</option>
-                <option value="90" selected>Cũ hơn 90 ngày</option>
-                <option value="180">Cũ hơn 180 ngày</option>
-                <option value="365">Cũ hơn 1 năm</option>
-            </select>
-            <button type="submit"
-                class="px-4 py-2 bg-orange-500 text-white text-sm font-semibold rounded-lg hover:bg-orange-600 transition">
-                <i class="fas fa-trash-alt mr-1"></i> Dọn dẹp
-            </button>
-        </form>
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Custom Dropdowns
+            function setupDropdowns() {
+                document.querySelectorAll('.custom-select-wrapper').forEach(wrapper => {
+                    const trigger = wrapper.querySelector('.custom-select-trigger');
+                    const options = wrapper.querySelectorAll('.custom-option');
+                    const input = wrapper.querySelector('input[type="hidden"]');
+                    const triggerText = wrapper.querySelector('.trigger-text');
+
+                    trigger.addEventListener('click', e => {
+                        e.stopPropagation();
+                        document.querySelectorAll('.custom-select-wrapper').forEach(w => {
+                            if (w !== wrapper) w.classList.remove('open');
+                        });
+                        wrapper.classList.toggle('open');
+                    });
+
+                    options.forEach(option => {
+                        option.addEventListener('click', e => {
+                            e.stopPropagation();
+                            triggerText.textContent = option.textContent.trim();
+                            input.value = option.dataset.value;
+                            options.forEach(o => o.classList.remove('selected'));
+                            option.classList.add('selected');
+                            wrapper.classList.remove('open');
+                        });
+                    });
+                });
+
+                document.addEventListener('click', () => {
+                    document.querySelectorAll('.custom-select-wrapper').forEach(w => w.classList.remove('open'));
+                });
+            }
+            setupDropdowns();
+
+            // Elements
+            const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
+            const clearSearchBtn = document.getElementById('clearSearch');
+            const clearFiltersBtn = document.getElementById('clearFilters');
+            const applyFiltersBtn = document.getElementById('applyFilters');
+            const tableContainer = document.getElementById('logsTableContainer');
+            const paginationContainer = document.getElementById('paginationContainer');
+            const searchBtnIcon = document.getElementById('searchBtnIcon');
+            const loadingIcon = document.getElementById('loadingIcon');
+            const adminFilter = document.getElementById('adminFilter');
+            const actionFilter = document.getElementById('actionFilter');
+            const dateFrom = document.getElementById('dateFrom');
+            const dateTo = document.getElementById('dateTo');
+
+            let debounceTimer;
+
+            function buildQuery(page = 1) {
+                const params = new URLSearchParams();
+                if (page > 1) params.set('page', page);
+                if (searchInput.value.trim()) params.set('search', searchInput.value.trim());
+                if (adminFilter.value) params.set('admin_id', adminFilter.value);
+                if (actionFilter.value) params.set('action', actionFilter.value);
+                if (dateFrom.value) params.set('date_from', dateFrom.value);
+                if (dateTo.value) params.set('date_to', dateTo.value);
+                params.set('ajax', '1');
+                return params.toString();
+            }
+
+            function performSearch(page = 1) {
+                searchBtnIcon.classList.add('hidden');
+                loadingIcon.classList.remove('hidden');
+                searchBtn.disabled = true;
+                tableContainer.style.opacity = '0.5';
+
+                fetch(`{{ route('admin.activity-logs.index') }}?${buildQuery(page)}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        tableContainer.innerHTML = data.table;
+                        paginationContainer.innerHTML = data.pagination;
+
+                        const url = new URL(window.location.href);
+                        url.search = buildQuery(page).replace('&ajax=1', '').replace('ajax=1', '');
+                        history.replaceState({}, '', url);
+
+                        clearSearchBtn.classList.toggle('hidden', !searchInput.value.trim());
+                        attachPaginationListeners();
+                    })
+                    .finally(() => {
+                        searchBtnIcon.classList.remove('hidden');
+                        loadingIcon.classList.add('hidden');
+                        searchBtn.disabled = false;
+                        tableContainer.style.opacity = '1';
+                    });
+            }
+
+            function attachPaginationListeners() {
+                paginationContainer.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const href = this.getAttribute('href');
+                        if (href) {
+                            const page = new URLSearchParams(href.split('?')[1]).get('page') || 1;
+                            performSearch(page);
+                        }
+                    });
+                });
+            }
+            attachPaginationListeners();
+
+            // Event Listeners
+            searchInput.addEventListener('input', function () {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => performSearch(), 300);
+            });
+
+            searchBtn.addEventListener('click', () => performSearch());
+
+            searchInput.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    performSearch();
+                }
+            });
+
+            clearSearchBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                performSearch();
+                searchInput.focus();
+            });
+
+            applyFiltersBtn.addEventListener('click', () => performSearch());
+
+            clearFiltersBtn.addEventListener('click', () => {
+                // Reset dropdowns
+                adminFilter.value = '';
+                actionFilter.value = '';
+                document.querySelector('#adminSelectWrapper .trigger-text').textContent = 'Tất cả';
+                document.querySelectorAll('#adminSelectWrapper .custom-option').forEach(o => o.classList.remove('selected'));
+                document.querySelector('#adminSelectWrapper .custom-option[data-value=""]').classList.add('selected');
+                document.querySelector('#actionSelectWrapper .trigger-text').textContent = 'Tất cả';
+                document.querySelectorAll('#actionSelectWrapper .custom-option').forEach(o => o.classList.remove('selected'));
+                document.querySelector('#actionSelectWrapper .custom-option[data-value=""]').classList.add('selected');
+
+                // Reset dates & search
+                dateFrom.value = '';
+                dateTo.value = '';
+                searchInput.value = '';
+
+                performSearch();
+            });
+        });
+    </script>
 @endsection

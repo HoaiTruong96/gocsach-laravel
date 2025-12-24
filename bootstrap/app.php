@@ -11,9 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // [QUAN TRỌNG] Đăng ký tên tắt 'admin' ở đây
+        // [QUAN TRỌNG] Đăng ký tên tắt middleware
         $middleware->alias([
             'admin' => \App\Http\Middleware\CheckAdmin::class,
+            'email.verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

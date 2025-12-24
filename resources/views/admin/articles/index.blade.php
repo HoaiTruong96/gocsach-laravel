@@ -63,13 +63,14 @@
                             data-id="{{ $article->id }}"
                             data-title="{{ strtolower($article->title) }}"
                             data-date="{{ $article->created_at->timestamp }}">
-                            <td class="px-4 py-4 font-medium text-gray-500 dark:text-slate-400 text-center">{{ $article->id }}</td>
+                            <td class="px-4 py-4 font-medium text-gray-500 dark:text-slate-400 text-center">{{ ($articles->currentPage() - 1) * $articles->perPage() + $loop->iteration }}</td>
                             <td class="px-4 py-4">
                                 @if($article->thumbnail)
                                     @php
-                                        $imgUrl = str_starts_with($article->thumbnail, 'http') 
-                                            ? $article->thumbnail 
-                                            : asset('storage/' . $article->thumbnail);
+                                        $thumb = trim($article->thumbnail);
+                                        $imgUrl = str_starts_with($thumb, 'http') 
+                                            ? $thumb 
+                                            : asset('storage/' . $thumb);
                                     @endphp
                                     <img src="{{ $imgUrl }}" alt="{{ $article->title }}" class="w-16 h-12 object-cover rounded-lg shadow-sm">
                                 @else
@@ -117,11 +118,22 @@
                                 {{ $article->created_at->format('d/m/Y H:i') }}
                             </td>
                             <td class="px-4 py-4 text-center">
-                                <a href="{{ route('admin.articles.edit', $article->id) }}"
-                                    class="w-8 h-8 inline-flex items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white transition"
-                                    title="Sửa">
-                                    <i class="fas fa-pen text-xs"></i>
-                                </a>
+                                <div class="flex justify-center gap-2">
+                                    <a href="{{ route('admin.articles.edit', $article->id) }}"
+                                        class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 hover:bg-blue-500 dark:hover:bg-blue-600 hover:text-white transition"
+                                        title="Sửa">
+                                        <i class="fas fa-pen text-xs"></i>
+                                    </a>
+                                    <form action="{{ route('admin.articles.destroy', $article->id) }}" method="POST"
+                                        onsubmit="return confirm('Bạn có chắc muốn xóa bài viết này?');">
+                                        @csrf @method('DELETE')
+                                        <button type="submit"
+                                            class="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 hover:bg-red-500 dark:hover:bg-red-600 hover:text-white transition"
+                                            title="Xóa">
+                                            <i class="fas fa-trash text-xs"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @empty

@@ -52,7 +52,7 @@
                         <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 transition" data-order="{{ $quote->order }}"
                             data-author="{{ strtolower($quote->author) }}">
                             <td class="px-4 py-4 text-center font-medium text-gray-500 dark:text-slate-400">
-                                {{ $quote->order }}
+                                {{ ($quotes->currentPage() - 1) * $quotes->perPage() + $loop->iteration }}
                             </td>
                             <td class="px-4 py-4">
                                 <div class="text-gray-800 dark:text-white line-clamp-2 italic">
@@ -81,7 +81,7 @@
                             <td class="px-4 py-4 text-center">
                                 <div class="flex justify-center gap-2">
                                     <a href="{{ route('admin.quotes.edit', $quote->id) }}"
-                                        class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white transition"
+                                        class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 hover:bg-blue-500 dark:hover:bg-blue-600 hover:text-white transition"
                                         title="Sửa">
                                         <i class="fas fa-pen text-xs"></i>
                                     </a>
@@ -89,7 +89,7 @@
                                         onsubmit="return confirm('Bạn có chắc muốn xóa châm ngôn này?');">
                                         @csrf @method('DELETE')
                                         <button type="submit"
-                                            class="w-8 h-8 flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white transition"
+                                            class="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 hover:bg-red-500 dark:hover:bg-red-600 hover:text-white transition"
                                             title="Xóa">
                                             <i class="fas fa-trash text-xs"></i>
                                         </button>

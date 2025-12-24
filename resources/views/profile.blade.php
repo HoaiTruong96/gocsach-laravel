@@ -116,12 +116,12 @@
                         </div>
                     </div>
                     {{-- [MỚI] KHUNG HIỂN THỊ DANH HIỆU (BADGES) --}}
-                    @if($user->activeBadges && $user->activeBadges->count() > 0)
-                        <div class="mb-6 border-t border-b border-gray-100 py-4">
-                            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">
-                                <i class="fas fa-medal mr-1"></i> Danh Hiệu
-                            </h4>
+                    <div class="mb-6 border-t border-b border-gray-100 py-4">
+                        <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">
+                            <i class="fas fa-medal mr-1"></i> Danh Hiệu
+                        </h4>
 
+                        @if($user->activeBadges && $user->activeBadges->count() > 0)
                             <div class="flex justify-center flex-wrap gap-3">
                                 @foreach($user->activeBadges as $badge)
                                     @php
@@ -171,70 +171,108 @@
                                     </div>
                                 @endforeach
                             </div>
-                        </div>
-                    @endif
+                        @else
+                            {{-- Empty State: Chưa có danh hiệu nào --}}
+                            <div class="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                                <i class="fas fa-medal text-3xl text-gray-300 mb-2"></i>
+                                @if(isset($isOwnProfile) && $isOwnProfile)
+                                    <p class="text-xs text-gray-400">Bạn chưa có danh hiệu nào</p>
+                                    <p class="text-[10px] text-gray-300 mt-1">Hoàn thành thử thách để nhận danh hiệu!</p>
+                                @else
+                                    <p class="text-xs text-gray-400">Chưa có danh hiệu nào</p>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
                     {{-- KẾT THÚC KHUNG DANH HIỆU --}}
 
                     {{-- [MỚI] KHUNG AVATAR --}}
-                    @if(isset($isOwnProfile) && $isOwnProfile && $user->avatarFrames && $user->avatarFrames->count() > 0)
-                        <div class="mb-6 border-t border-b border-gray-100 py-4">
-                            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">
-                                <i class="fas fa-image mr-1"></i> Khung Avatar
-                            </h4>
+                    <div class="mb-6 border-t border-b border-gray-100 py-4">
+                        <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">
+                            <i class="fas fa-image mr-1"></i> Khung Avatar
+                        </h4>
 
-                            <div class="grid grid-cols-3 gap-2">
-                                @foreach($user->avatarFrames as $frame)
-                                    <div class="relative group cursor-pointer border-2 rounded-lg p-1 transition-all
-                                                                {{ $frame->pivot->is_equipped ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300' }}"
-                                        onclick="equipFrame({{ $frame->id }})">
+                        @if($user->avatarFrames && $user->avatarFrames->count() > 0)
+                            @if(isset($isOwnProfile) && $isOwnProfile)
+                                {{-- Hiển thị cho chủ profile - có thể trang bị/gỡ --}}
+                                <div class="grid grid-cols-3 gap-2">
+                                    @foreach($user->avatarFrames as $frame)
+                                        <div class="relative group cursor-pointer border-2 rounded-lg p-1 transition-all
+                                                    {{ $frame->pivot->is_equipped ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300' }}"
+                                            onclick="equipFrame({{ $frame->id }})">
 
-                                        <!-- Frame Preview -->
-                                        <div
-                                            class="aspect-square bg-gray-50 rounded overflow-hidden flex items-center justify-center">
-                                            <img src="{{ Str::startsWith($frame->frame_image, 'http') ? $frame->frame_image : asset('storage/' . $frame->frame_image) }}"
-                                                alt="{{ $frame->name }}" class="w-full h-full object-contain">
+                                            <!-- Frame Preview -->
+                                            <div class="aspect-square bg-gray-50 rounded overflow-hidden flex items-center justify-center">
+                                                <img src="{{ Str::startsWith($frame->frame_image, 'http') ? $frame->frame_image : asset('storage/' . $frame->frame_image) }}"
+                                                    alt="{{ $frame->name }}" class="w-full h-full object-contain">
+                                            </div>
+
+                                            <!-- Equipped Badge -->
+                                            @if($frame->pivot->is_equipped)
+                                                <div class="absolute -top-1 -right-1 bg-purple-500 text-white text-[8px] px-1 py-0.5 rounded-full font-bold shadow">
+                                                    Đang dùng
+                                                </div>
+                                            @endif
+
+                                            <!-- Tooltip -->
+                                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-max">
+                                                <div class="bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-lg text-center">
+                                                    <div class="font-bold">{{ $frame->name }}</div>
+                                                </div>
+                                                <div class="w-2 h-2 bg-gray-800 transform rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2"></div>
+                                            </div>
                                         </div>
-
-                                        <!-- Equipped Badge -->
-                                        @if($frame->pivot->is_equipped)
-                                            <div
-                                                class="absolute -top-1 -right-1 bg-purple-500 text-white text-[8px] px-1 py-0.5 rounded-full font-bold shadow">
-                                                Đang dùng
-                                            </div>
-                                        @endif
-
-                                        <!-- Tooltip -->
-                                        <div
-                                            class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-max">
-                                            <div class="bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-lg text-center">
-                                                <div class="font-bold">{{ $frame->name }}</div>
-                                            </div>
-                                            <div
-                                                class="w-2 h-2 bg-gray-800 transform rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2">
-                                            </div>
+                                    @endforeach
                                 </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                            @if($user->equippedFrame())
-                                <button onclick="unequipFrame()"
-                                    class="mt-3 w-full text-[10px] text-gray-500 hover:text-red-500 transition py-1 rounded hover:bg-red-50 border border-transparent hover:border-red-200">
-                                    <i class="fas fa-times-circle"></i> Gỡ khung avatar
-                                </button>
+                                @if($user->equippedFrame())
+                                    <button onclick="unequipFrame()"
+                                        class="mt-3 w-full text-[10px] text-gray-500 hover:text-red-500 transition py-1 rounded hover:bg-red-50 border border-transparent hover:border-red-200">
+                                        <i class="fas fa-times-circle"></i> Gỡ khung avatar
+                                    </button>
+                                @endif
+                            @else
+                                {{-- Hiển thị cho người xem - chỉ xem, không trang bị --}}
+                                <div class="grid grid-cols-3 gap-2">
+                                    @foreach($user->avatarFrames as $frame)
+                                        <div class="relative group border-2 rounded-lg p-1 transition-all
+                                                    {{ $frame->pivot->is_equipped ? 'border-purple-500 bg-purple-50' : 'border-gray-200' }}">
+
+                                            <!-- Frame Preview -->
+                                            <div class="aspect-square bg-gray-50 rounded overflow-hidden flex items-center justify-center">
+                                                <img src="{{ Str::startsWith($frame->frame_image, 'http') ? $frame->frame_image : asset('storage/' . $frame->frame_image) }}"
+                                                    alt="{{ $frame->name }}" class="w-full h-full object-contain">
+                                            </div>
+
+                                            <!-- Equipped Badge -->
+                                            @if($frame->pivot->is_equipped)
+                                                <div class="absolute -top-1 -right-1 bg-purple-500 text-white text-[8px] px-1 py-0.5 rounded-full font-bold shadow">
+                                                    Đang dùng
+                                                </div>
+                                            @endif
+
+                                            <!-- Tooltip -->
+                                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-max">
+                                                <div class="bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-lg text-center">
+                                                    <div class="font-bold">{{ $frame->name }}</div>
+                                                </div>
+                                                <div class="w-2 h-2 bg-gray-800 transform rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2"></div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
                             @endif
-                        </div>
-                    @else
-                        {{-- Empty State: Chưa có khung avatar (cho isOwnProfile) --}}
-                        <div class="mb-6 border-t border-b border-gray-100 py-4">
-                            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">
-                                <i class="fas fa-image mr-1"></i> Khung Avatar
-                            </h4>
+                        @else
+                            {{-- Empty State: Chưa có khung avatar --}}
                             <div class="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-200">
                                 <i class="fas fa-image text-3xl text-gray-300 mb-2"></i>
-                                <p class="text-xs text-gray-400">Bạn chưa sở hữu khung avatar nào</p>
+                                @if(isset($isOwnProfile) && $isOwnProfile)
+                                    <p class="text-xs text-gray-400">Bạn chưa sở hữu khung avatar nào</p>
+                                @else
+                                    <p class="text-xs text-gray-400">Chưa sở hữu khung avatar nào</p>
+                                @endif
                             </div>
-                        </div>
-                    @endif
+                        @endif
+                    </div>
                     {{-- KẾT THÚC KHUNG AVATAR --}}
 
 
@@ -374,9 +412,25 @@
                                                 @endif
                                             </div>
                                         </div>
-                                        <a href="{{ route('reviews.edit', $post->id) }}" class="text-blue-500 hover:text-blue-700 self-center opacity-0 group-hover:opacity-100 transition">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
+                                        @if(Auth::check() && Auth::id() == $post->user_id)
+                                            {{-- Nút Sửa (chỉ cho chủ bài viết) --}}
+                                            <a href="{{ route('reviews.edit', $post->id) }}" class="text-blue-500 hover:text-blue-700 self-center opacity-0 group-hover:opacity-100 transition" title="Chỉnh sửa">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            {{-- Nút Xóa (chờ admin duyệt) --}}
+                                            @if($post->status != 'pending_delete')
+                                                <button onclick="requestDeleteReview({{ $post->id }})" class="text-red-400 hover:text-red-600 self-center opacity-0 group-hover:opacity-100 transition" title="Yêu cầu xóa">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            @else
+                                                <span class="text-[10px] text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded font-bold self-center">Chờ xóa</span>
+                                            @endif
+                                        @else
+                                            {{-- Nút Xem (cho người khác) --}}
+                                            <a href="{{ route('book.reviews', $post->book->slug ?? $post->book_id) }}" class="text-brand-green hover:text-brand-green/80 self-center opacity-0 group-hover:opacity-100 transition" title="Xem bài review">
+                                                <i class="fas fa-external-link-alt"></i>
+                                            </a>
+                                        @endif
                                     </div>
                                 @endforeach
                             </div>
@@ -384,7 +438,9 @@
                             <div class="text-center py-6 text-gray-400">
                                 <i class="fas fa-pen-nib text-2xl mb-2"></i>
                                 <p class="text-sm">Chưa có bài review nào</p>
-                                <a href="{{ route('reviews.create') }}" class="text-brand-accent text-sm font-bold hover:underline mt-2 inline-block">+ Viết bài đầu tiên</a>
+                                @if(isset($isOwnProfile) && $isOwnProfile)
+                                    <a href="{{ route('reviews.create') }}" class="text-brand-accent text-sm font-bold hover:underline mt-2 inline-block">+ Viết bài đầu tiên</a>
+                                @endif
                             </div>
                         @endif
                     </div>
@@ -427,7 +483,9 @@
                             <div class="text-center py-6 text-gray-400">
                                 <i class="fas fa-book-medical text-2xl mb-2"></i>
                                 <p class="text-sm">Chưa đề xuất sách nào</p>
-                                <a href="{{ route('books.suggest') }}" class="text-brand-accent text-sm font-bold hover:underline mt-2 inline-block">+ Đề xuất sách mới</a>
+                                @if(isset($isOwnProfile) && $isOwnProfile)
+                                    <a href="{{ route('books.suggest') }}" class="text-brand-accent text-sm font-bold hover:underline mt-2 inline-block">+ Đề xuất sách mới</a>
+                                @endif
                             </div>
                         @endif
                     </div>
@@ -539,6 +597,17 @@
                                                 class="text-blue-500 hover:text-blue-700 font-bold hover:underline text-xs uppercase tracking-wide flex items-center gap-1 transition">
                                                 <i class="fas fa-edit"></i> Sửa
                                             </a>
+                                            {{-- Nút Xóa (chờ admin duyệt) --}}
+                                            @if($post->status != 'pending_delete')
+                                                <button onclick="requestDeleteReview({{ $post->id }})"
+                                                    class="text-red-500 hover:text-red-700 font-bold hover:underline text-xs uppercase tracking-wide flex items-center gap-1 transition">
+                                                    <i class="fas fa-trash-alt"></i> Xóa
+                                                </button>
+                                            @else
+                                                <span class="text-orange-600 font-bold text-xs uppercase tracking-wide flex items-center gap-1">
+                                                    <i class="fas fa-clock"></i> Chờ xóa
+                                                </span>
+                                            @endif
                                         @endif
 
                                         <a href="{{ route('book.reviews', $post->book->slug ?? $post->book_id) }}"
@@ -1155,6 +1224,35 @@
                     console.error('Error:', error);
                 });
         }
+
+        // --- 5. Yêu cầu xóa bài review (chờ admin duyệt) ---
+        function requestDeleteReview(postId) {
+            if (!confirm('Bạn có chắc muốn yêu cầu xóa bài review này?\n\nYêu cầu sẽ được gửi đến Admin để xử lý.')) {
+                return;
+            }
+
+            fetch(`/reviews/${postId}/request-delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra!');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi gửi yêu cầu xóa!');
+            });
+        }
     </script>
 
     {{-- ============================================================== --}}
@@ -1337,32 +1435,6 @@
                                 btnElement.innerHTML = '<i class="fas fa-bookmark"></i>';
                                 btnElement.disabled = false;
                             });
-                        }
-
-                        // Tab Switching Function
-                        function showProfileTab(tabName) {
-                            // Hide all tab contents
-                            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-
-                            // Show selected tab content
-                            const selectedContent = document.getElementById(`tab-content-${tabName}`);
-                            if (selectedContent) selectedContent.classList.remove('hidden');
-
-                            // Update tab button styles
-                            const reviewsBtn = document.getElementById('tab-btn-reviews');
-                            const savedBtn = document.getElementById('tab-btn-saved');
-
-                            if (tabName === 'reviews') {
-                                reviewsBtn.classList.add('border-brand-green', 'text-brand-green');
-                                reviewsBtn.classList.remove('border-transparent', 'text-gray-500');
-                                savedBtn.classList.remove('border-yellow-500', 'text-yellow-600');
-                                savedBtn.classList.add('border-transparent', 'text-gray-500');
-                            } else {
-                                savedBtn.classList.add('border-yellow-500', 'text-yellow-600');
-                                savedBtn.classList.remove('border-transparent', 'text-gray-500');
-                                reviewsBtn.classList.remove('border-brand-green', 'text-brand-green');
-                                reviewsBtn.classList.add('border-transparent', 'text-gray-500');
-                            }
                         }
 
                         // Toggle Comment Box for Saved Posts

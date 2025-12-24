@@ -1,80 +1,153 @@
 @extends('layouts.admin')
-@section('title', 'Thành Viên')
-@section('header', 'Danh sách người dùng')
+@section('title', 'Quản Lý Thành Viên')
+@section('header', 'Quản Lý Thành Viên')
 
 @section('content')
+    @php
+        $totalUsers = \App\Models\User::count();
+        $adminCount = \App\Models\User::where('role', 'admin')->count();
+        $memberCount = $totalUsers - $adminCount;
+    @endphp
+
     <div
-        class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden transition-colors duration-300">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead class="bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-slate-300 text-xs uppercase">
-                    <tr>
-                        <th class="px-6 py-3">Thành viên</th>
-                        <th class="px-6 py-3">Email</th>
-                        <th class="px-6 py-3 text-center">Vai trò</th>
-                        <th class="px-6 py-3 text-center">Đóng góp</th>
-                        <th class="px-6 py-3 text-center">Ngày tham gia</th>
-                        <th class="px-6 py-3 text-right">Hành động</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
-                    @foreach($users as $user)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <img src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . $user->name . '&background=random' }}"
-                                        class="w-10 h-10 rounded-full border dark:border-slate-600">
-                                    <div>
-                                        <div class="font-bold text-gray-800 dark:text-white">{{ $user->name }}</div>
-                                        <div class="text-xs text-gray-500 dark:text-slate-400">
-                                            {{ $user->is_active ? '🟢 Đang hoạt động' : '⚪ Ngoại tuyến' }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-600 dark:text-slate-300">{{ $user->email }}</td>
-
-                            <td class="px-6 py-4 text-center">
-                                @if($user->role === 'admin')
-                                    <span
-                                        class="px-3 py-1 bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 rounded-full text-xs font-bold border border-red-200 dark:border-red-800">Quản trị</span>
-                                @else
-                                    <span
-                                        class="px-3 py-1 bg-blue-50 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 rounded-full text-xs font-bold border border-blue-100 dark:border-blue-800">Thành viên</span>
-                                @endif
-                            </td>
-
-                            <td class="px-6 py-4 text-center">
-                                <div class="text-sm font-bold text-gray-700 dark:text-white">{{ $user->posts_count }}</div>
-                                <div class="text-[10px] text-gray-400 dark:text-slate-500 uppercase">Bài viết</div>
-                            </td>
-
-                            <td class="px-6 py-4 text-center text-sm text-gray-500 dark:text-slate-400">
-                                {{ $user->created_at->format('d/m/Y') }}
-                            </td>
-
-                            <td class="px-6 py-4 text-right">
-                                @if($user->role !== 'admin')
-                                    <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST"
-                                        onsubmit="return confirm('Bạn có chắc muốn xóa/ban thành viên này?');">
-                                        @csrf @method('DELETE')
-                                        <button class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-2 rounded transition"
-                                            title="Xóa thành viên">
-                                            <i class="fas fa-user-slash"></i>
-                                        </button>
-                                    </form>
-                                @else
-                                    <span class="text-gray-300 dark:text-slate-600 cursor-not-allowed"><i
-                                            class="fas fa-lock"></i></span>
-                                @endif
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+        class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+        {{-- Header --}}
+        <div
+            class="p-4 border-b border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-700 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-4">
+                <span class="font-bold text-gray-700 dark:text-slate-200 flex items-center gap-2">
+                    <i class="fas fa-users text-blue-500"></i>Tất cả thành viên
+                </span>
+                <div class="flex gap-2 text-xs">
+                    <span
+                        class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 rounded-full font-bold whitespace-nowrap">
+                        <i class="fas fa-users"></i>{{ $totalUsers }}
+                    </span>
+                    <span
+                        class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 rounded-full font-bold whitespace-nowrap">
+                        <i class="fas fa-shield-alt"></i>{{ $adminCount }}
+                    </span>
+                    <span
+                        class="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-300 rounded-full font-bold whitespace-nowrap">
+                        <i class="fas fa-user"></i>{{ $memberCount }}
+                    </span>
+                </div>
+            </div>
+            {{-- Search --}}
+            <div class="flex items-center gap-2">
+                <div class="relative">
+                    <input type="text" id="searchInput" value="{{ request('search') }}" placeholder="Tìm tên hoặc email..."
+                        class="w-56 pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none placeholder:italic placeholder:text-gray-400 dark:placeholder:text-slate-400">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-400 text-sm"></i>
+                </div>
+                <button type="button" id="searchBtn" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
+                    <i class="fas fa-search" id="searchBtnIcon"></i>
+                    <i class="fas fa-spinner fa-spin hidden" id="loadingIcon"></i>
+                </button>
+                <button type="button" id="clearSearch"
+                    class="px-3 py-2 bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-slate-200 text-sm rounded-lg hover:bg-gray-300 dark:hover:bg-slate-500 transition {{ request('search') ? '' : 'hidden' }}">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
         </div>
-        <div class="p-4 border-t dark:border-slate-700">
-            {{ $users->links('vendor.pagination.admin') }}
+
+        {{-- Bảng --}}
+        <div class="overflow-x-auto" id="usersTableContainer">
+            @include('admin.users._table', ['users' => $users])
+        </div>
+
+        <div id="paginationContainer">
+            @if($users->hasPages())
+                <div class="p-4 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-700">
+                    {{ $users->links('vendor.pagination.admin') }}
+                </div>
+            @endif
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
+            const clearBtn = document.getElementById('clearSearch');
+            const tableContainer = document.getElementById('usersTableContainer');
+            const paginationContainer = document.getElementById('paginationContainer');
+            const searchBtnIcon = document.getElementById('searchBtnIcon');
+            const loadingIcon = document.getElementById('loadingIcon');
+
+            let debounceTimer;
+            let currentSearch = searchInput.value;
+
+            function performSearch(query) {
+                // Show loading on button
+                searchBtnIcon.classList.add('hidden');
+                loadingIcon.classList.remove('hidden');
+                searchBtn.disabled = true;
+                tableContainer.style.opacity = '0.5';
+
+                fetch(`{{ route('admin.users.index') }}?search=${encodeURIComponent(query)}&ajax=1`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        tableContainer.innerHTML = data.table;
+                        paginationContainer.innerHTML = data.pagination;
+
+                        // Update URL without reload
+                        const url = new URL(window.location.href);
+                        if (query) {
+                            url.searchParams.set('search', query);
+                        } else {
+                            url.searchParams.delete('search');
+                        }
+                        window.history.replaceState({}, '', url);
+
+                        // Toggle clear button
+                        clearBtn.classList.toggle('hidden', !query);
+                    })
+                    .finally(() => {
+                        searchBtnIcon.classList.remove('hidden');
+                        loadingIcon.classList.add('hidden');
+                        searchBtn.disabled = false;
+                        tableContainer.style.opacity = '1';
+                    });
+            }
+
+            // Debounced search on input
+            searchInput.addEventListener('input', function () {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    const query = this.value.trim();
+                    if (query !== currentSearch) {
+                        currentSearch = query;
+                        performSearch(query);
+                    }
+                }, 300);
+            });
+
+            // Click search button
+            searchBtn.addEventListener('click', function () {
+                const query = searchInput.value.trim();
+                currentSearch = query;
+                performSearch(query);
+            });
+
+            // Enter key
+            searchInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const query = this.value.trim();
+                    currentSearch = query;
+                    performSearch(query);
+                }
+            });
+
+            clearBtn.addEventListener('click', function () {
+                searchInput.value = '';
+                currentSearch = '';
+                performSearch('');
+                searchInput.focus();
+            });
+        });
+    </script>
 @endsection

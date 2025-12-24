@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\BookSuggestionController;
+use App\Http\Controllers\ChatbotController;
 
 // ====================================================
 // 1. NHÓM PUBLIC (Ai cũng xem được)
@@ -34,7 +35,6 @@ Route::view('/ve-chung-toi', 'pages.about')->name('page.about');
 Route::view('/dieu-khoan-su-dung', 'pages.terms')->name('page.terms');
 Route::view('/chinh-sach-bao-mat', 'pages.privacy')->name('page.privacy');
 Route::view('/lien-he', 'pages.contact')->name('page.contact');
-Route::post('/post/{post_id}/comment', [CommentController::class, 'store'])->middleware('auth');
 // AJAX Live Search (cho Header)
 Route::get('/ajax-search', function (Illuminate\Http\Request $request) {
     $keyword = $request->get('keyword');
@@ -55,6 +55,9 @@ Route::get('/ajax-search', function (Illuminate\Http\Request $request) {
 
     return response()->json($books);
 })->name('ajax.search');
+
+// Chatbot API
+Route::post('/api/chatbot', [ChatbotController::class, 'chat'])->name('chatbot.chat');
 
 // Trang chi tiết bài viết Tạp chí
 Route::get('/tap-chi/{slug}', [ArticleController::class, 'show'])->name('articles.show');
@@ -95,37 +98,35 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
-
-    // Quên mật khẩu (OTP)
-    Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
-    Route::post('/forgot-password', [AuthController::class, 'sendResetCode'])->name('password.email');
-    Route::get('/verify-code', [AuthController::class, 'showVerifyCodeForm'])->name('password.verify.form');
-    Route::post('/verify-code', [AuthController::class, 'verifyCode'])->name('password.verify');
-    Route::post('/resend-code', [AuthController::class, 'resendCode'])->name('password.resend');
-    Route::get('/reset-password', [AuthController::class, 'showResetPasswordForm'])->name('password.reset.form');
-    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 });
 
 // ====================================================
-// 2.5 NHÓM XÁC THỰC EMAIL (EMAIL VERIFICATION)
+// 2.1 QUÊN MẬT KHẨU (Cả guest và auth đều dùng được)
+// ====================================================
+Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('password.request');
+Route::post('/forgot-password', [AuthController::class, 'sendResetCode'])->name('password.email');
+Route::get('/verify-code', [AuthController::class, 'showVerifyCodeForm'])->name('password.verify.form');
+Route::post('/verify-code', [AuthController::class, 'verifyCode'])->name('password.verify');
+Route::post('/resend-code', [AuthController::class, 'resendCode'])->name('password.resend');
+Route::get('/reset-password', [AuthController::class, 'showResetPasswordForm'])->name('password.reset.form');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+
+// ====================================================
+// 2.5 NHÓM XÁC THỰC EMAIL (EMAIL VERIFICATION - OTP)
 // ====================================================
 
-// 1. Giao diện thông báo "Hãy check mail"
+// 1. Giao diện nhập mã OTP xác thực
 Route::get('/email/verify', function () {
     return view('auth.verify-email');
 })->middleware('auth')->name('verification.notice');
 
-// 2. Xử lý khi người dùng click vào link trong email
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill();
-    return redirect()->route('home')->with('success', 'Email đã được xác thực thành công!');
-})->middleware(['auth', 'signed'])->name('verification.verify');
+// 2. Xử lý xác thực mã OTP
+Route::post('/email/verify', [AuthController::class, 'verifyRegistrationCode'])
+    ->middleware('auth')->name('verification.verify');
 
-// 3. Gửi lại email xác thực (nếu user không nhận được)
-Route::post('/email/verification-notification', function (Request $request) {
-    $request->user()->sendEmailVerificationNotification();
-    return back()->with('message', 'Link xác thực đã được gửi lại!');
-})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+// 3. Gửi lại mã OTP xác thực
+Route::post('/email/resend-code', [AuthController::class, 'resendRegistrationCode'])
+    ->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
 // Route cho trang Thử Thách
 // Code này chạy qua Controller để lấy dữ liệu rồi mới trả về View
@@ -133,12 +134,15 @@ Route::get('/thu-thach', [ChallengeController::class, 'index'])->name('challenge
 
 
 // ====================================================
-// 3. NHÓM THÀNH VIÊN (AUTH REQUIRED)
+// 3. NHÓM THÀNH VIÊN (AUTH + EMAIL VERIFIED REQUIRED)
 // ====================================================
-Route::middleware('auth')->group(function () {
 
-    // --- AUTH ---
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+// Route logout - cho phép cả user chưa verify
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+
+Route::middleware(['auth', 'email.verified'])->group(function () {
+
+    // --- CHANGE PASSWORD ---
     Route::get('/change-password', [AuthController::class, 'showChangePasswordForm'])->name('change.password');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('change.password.post');
 
@@ -167,6 +171,9 @@ Route::middleware('auth')->group(function () {
 
     // Route comment bài viết (nếu dùng PostController riêng)
     Route::post('/posts/{id}/comment', [PostController::class, 'postComment'])->name('posts.comment');
+
+    // Route comment cho chi tiết bài viết
+    Route::post('/post/{post_id}/comment', [CommentController::class, 'store'])->name('post.comment');
 
     // --- REPORT (BÁO CÁO VI PHẠM) ---
     Route::post('/report/post/{id}', [\App\Http\Controllers\ReportController::class, 'reportPost'])->name('report.post');
@@ -201,6 +208,9 @@ Route::middleware('auth')->group(function () {
     // Chỉnh sửa bài review
     Route::get('/reviews/{id}/chinh-sua', [PostController::class, 'edit'])->name('reviews.edit');
     Route::put('/reviews/{id}/update', [PostController::class, 'update'])->name('reviews.update');
+
+    // Yêu cầu xóa bài review (chờ admin duyệt)
+    Route::post('/reviews/{id}/request-delete', [PostController::class, 'requestDelete'])->name('reviews.request-delete');
 
     // --- API NỘI BỘ (Cho JS tìm sách khi viết review) ---
     Route::get('/api/books/search', function (Illuminate\Http\Request $request) {
@@ -246,7 +256,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('books/{book}/approve', [AdminBookController::class, 'approve'])->name('books.approve');
     Route::resource('articles', ArticleController::class);
     Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class);
-    Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->only(['index', 'update', 'destroy']);
+    Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->only(['index', 'edit', 'update', 'destroy']);
+    Route::post('posts/{id}/approve-delete', [\App\Http\Controllers\Admin\PostController::class, 'approveDelete'])->name('posts.approve-delete');
+    Route::post('posts/{id}/reject-delete', [\App\Http\Controllers\Admin\PostController::class, 'rejectDelete'])->name('posts.reject-delete');
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
     Route::resource('banners', BannerController::class);
     Route::resource('badges', \App\Http\Controllers\Admin\BadgeController::class);

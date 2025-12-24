@@ -24,8 +24,10 @@ class BookController extends Controller
         if ($request->has('keyword') && $request->keyword != '') {
             $keyword = $request->keyword;
             $query->where(function ($q) use ($keyword) {
-                $q->where('title', 'LIKE', "%{$keyword}%")
-                    ->orWhere('author_name', 'LIKE', "%{$keyword}%");
+                // Sử dụng LOWER + BINARY để tìm kiếm phân biệt dấu (Accent Sensitive) nhưng không phân biệt hoa thường
+                // Ví dụ: "Tư" sẽ không ra "Tú", nhưng "tư" vẫn ra "Tư"
+                $q->whereRaw('LOWER(title) LIKE BINARY LOWER(?)', ["%{$keyword}%"])
+                    ->orWhereRaw('LOWER(author_name) LIKE BINARY LOWER(?)', ["%{$keyword}%"]);
             });
         }
 
@@ -41,10 +43,16 @@ class BookController extends Controller
         // withQueryString() giúp giữ lại các tham số tìm kiếm khi chuyển trang (VD: trang 2 vẫn đang tìm kiếm "Harry Potter")
         $books = $query->latest()->paginate(10)->withQueryString();
 
-        // Lấy tất cả danh mục để hiển thị trong dropdown bộ lọc
-        $categories = Category::all();
+        // Lấy tất cả danh mục để hiển thị trong dropdown bộ lọc (Sắp xếp A-Z)
+        $categories = Category::orderBy('name', 'asc')->get();
+        // Lấy tổng số sách trong kho (không bị ảnh hưởng bởi bộ lọc)
+        $totalBooks = Book::count();
 
-        return view('admin.books.index', compact('books', 'categories'));
+        if ($request->ajax()) {
+            return view('admin.books.table', compact('books', 'categories'));
+        }
+
+        return view('admin.books.index', compact('books', 'categories', 'totalBooks'));
     }
 
     // Form thêm mới
@@ -76,7 +84,7 @@ class BookController extends Controller
             $data['cover_image'] = $request->file('cover_image')->store('books', 'public');
         } elseif ($request->filled('cover_image_url')) {
             // Nếu không có file, sử dụng URL
-            $data['cover_image'] = $request->cover_image_url;
+            $data['cover_image'] = trim($request->cover_image_url);
         }
 
         // 1. Tạo sách
@@ -157,7 +165,7 @@ class BookController extends Controller
             if ($book->cover_image && !str_starts_with($book->cover_image, 'http') && Storage::disk('public')->exists($book->cover_image)) {
                 Storage::disk('public')->delete($book->cover_image);
             }
-            $data['cover_image'] = $request->cover_image_url;
+            $data['cover_image'] = trim($request->cover_image_url);
         }
 
         // Update thông tin cơ bản và đồng bộ

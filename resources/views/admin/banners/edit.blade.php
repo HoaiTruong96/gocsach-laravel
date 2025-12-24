@@ -40,25 +40,38 @@
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Mô tả</label>
-                        <textarea name="description" rows="3"
-                            class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic resize-y min-h-[80px]"
+                        <textarea name="description" rows="5"
+                            class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic resize-y min-h-[120px]"
                             placeholder="Một câu trích dẫn ấn tượng...">{{ old('description', $banner->description) }}</textarea>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Đánh giá</label>
-                            <input type="number" name="rating" value="{{ old('rating', $banner->rating) }}" min="1" max="5"
-                                step="0.1"
-                                class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic"
-                                placeholder="1.0 - 5.0">
+                    {{-- Đánh giá --}}
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <label class="text-sm font-bold text-gray-700 dark:text-slate-300">Đánh giá</label>
+                            <span class="rating-inline-value text-sm font-bold text-amber-500 min-w-[60px]"></span>
+                            <button type="button" class="rating-clear-btn px-2 py-1 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-800/50 text-xs text-red-600 dark:text-red-400 rounded transition-colors hidden">
+                                <i class="fas fa-times"></i> Xóa
+                            </button>
                         </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Thứ tự hiển
-                                thị</label>
-                            <input type="number" name="order" value="{{ old('order', $banner->order) }}" min="0"
-                                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                                class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white">
-                        </div>
+                        @include('admin.partials.custom-pickers', [
+                            'type' => 'rating',
+                            'name' => 'rating',
+                            'value' => old('rating', $banner->rating),
+                            'max' => 5
+                        ])
+                    </div>
+
+                    {{-- Thứ tự hiển thị --}}
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Thứ tự hiển thị</label>
+                        @include('admin.partials.custom-pickers', [
+                            'type' => 'scroll',
+                            'name' => 'order',
+                            'value' => old('order', $banner->order),
+                            'min' => 0,
+                            'max' => 99,
+                            'autoText' => 'Auto'
+                        ])
                     </div>
                 </div>
 

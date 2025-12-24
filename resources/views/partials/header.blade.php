@@ -19,9 +19,9 @@
                 cộng đồng</button>
 
             <div class="flex gap-3 ml-4">
-                <a href="#" class="hover:text-brand-accent transition"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" class="hover:text-brand-accent transition"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="hover:text-brand-accent transition"><i class="fab fa-youtube"></i></a>
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="hover:text-brand-accent transition"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="hover:text-brand-accent transition"><i class="fab fa-instagram"></i></a>
+                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" class="hover:text-brand-accent transition"><i class="fab fa-youtube"></i></a>
             </div>
         </div>
     </div>
@@ -240,13 +240,13 @@
                         </div>
                     </div>
 
-                    {{-- User Dropdown --}}
-                    <div class="relative group pb-2 -mb-2 z-50">
-                        <a href="{{ route('profile') }}"
-                            class="flex items-center gap-2 focus:outline-none py-1 group-hover:opacity-80 transition cursor-pointer relative z-20">
+                    {{-- User Dropdown - Click to Open --}}
+                    <div class="relative z-50" id="user-dropdown-container">
+                        <button type="button" id="user-dropdown-trigger"
+                            class="flex items-center gap-2 focus:outline-none py-1 cursor-pointer relative z-20 rounded-xl px-2 transition-all duration-300 hover:bg-green-100 hover:shadow-[0_0_15px_rgba(62,95,78,0.3)]">
                             @include('partials.user-avatar-with-frame', [
                                 'user' => Auth::user(),
-                                'size' => 'w-10 h-10',
+                                'size' => 'w-12 h-12',
                                 'avatarSize' => 'w-9 h-9'
                             ])
                             <div class="hidden lg:flex flex-col items-start">
@@ -254,11 +254,11 @@
                                     class="text-xs font-bold text-gray-700 truncate max-w-[80px]">{{ Auth::user()->name }}</span>
                                 <span class="text-[10px] text-gray-400">{{ Auth::user()->role == 'admin' ? 'Quản trị viên' : 'Thành viên' }}</span>
                             </div>
-                            <i class="fas fa-chevron-down text-xs text-gray-400 ml-1"></i>
-                        </a>
+                            <i class="fas fa-chevron-down text-xs text-gray-400 ml-1 transition-transform duration-300" id="user-dropdown-arrow"></i>
+                        </button>
 
-                        <div
-                            class="dropdown-menu dropdown-bridge absolute right-0 top-full mt-0 w-60 bg-white rounded-xl shadow-xl border border-gray-100 py-2 animate-fade-in origin-top-right z-10">
+                        <div id="user-dropdown-menu"
+                            class="hidden absolute right-0 top-full mt-2 w-60 bg-white rounded-xl shadow-xl border border-gray-100 py-2 animate-fade-in origin-top-right z-10">
                             <div class="px-4 py-3 border-b border-gray-50 bg-gray-50/50 rounded-t-xl mb-1">
                                 <p class="text-xs text-gray-400 uppercase tracking-wider font-bold">Tài khoản</p>
                                 <p class="text-sm font-bold text-brand-green truncate">{{ Auth::user()->email }}</p>
@@ -292,6 +292,48 @@
                             </form>
                         </div>
                     </div>
+
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const trigger = document.getElementById('user-dropdown-trigger');
+                        const menu = document.getElementById('user-dropdown-menu');
+                        const arrow = document.getElementById('user-dropdown-arrow');
+                        const container = document.getElementById('user-dropdown-container');
+
+                        if (trigger && menu) {
+                            // Toggle dropdown on click
+                            trigger.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const isOpen = !menu.classList.contains('hidden');
+                                
+                                if (isOpen) {
+                                    menu.classList.add('hidden');
+                                    arrow.classList.remove('rotate-180');
+                                } else {
+                                    menu.classList.remove('hidden');
+                                    arrow.classList.add('rotate-180');
+                                }
+                            });
+
+                            // Close dropdown when clicking outside
+                            document.addEventListener('click', function(e) {
+                                if (!container.contains(e.target)) {
+                                    menu.classList.add('hidden');
+                                    arrow.classList.remove('rotate-180');
+                                }
+                            });
+
+                            // Close on ESC key
+                            document.addEventListener('keydown', function(e) {
+                                if (e.key === 'Escape') {
+                                    menu.classList.add('hidden');
+                                    arrow.classList.remove('rotate-180');
+                                }
+                            });
+                        }
+                    });
+                    </script>
                 @else
                     {{-- Guest --}}
                     <div class="flex items-center gap-2 sm:gap-3">

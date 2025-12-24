@@ -55,6 +55,11 @@ class ArticleController extends Controller
         $data['user_id'] = auth()->id();
         $data['view_count'] = 0;
 
+        // Ensure only ONE article can be featured at a time
+        if ($data['is_featured']) {
+            Article::where('is_featured', true)->update(['is_featured' => false]);
+        }
+
         // Xử lý upload ảnh hoặc URL
         if ($request->hasFile('thumbnail')) {
             $path = $request->file('thumbnail')->store('articles', 'public');
@@ -93,6 +98,13 @@ class ArticleController extends Controller
         $data['is_featured'] = $request->has('is_featured');
         $data['is_active'] = $request->has('is_active');
 
+        // Ensure only ONE article can be featured at a time
+        if ($data['is_featured']) {
+            Article::where('is_featured', true)
+                ->where('id', '!=', $article->id)
+                ->update(['is_featured' => false]);
+        }
+
         // Xử lý upload ảnh mới hoặc URL
         if ($request->hasFile('thumbnail')) {
             // Xóa ảnh cũ nếu không phải link online
@@ -112,5 +124,20 @@ class ArticleController extends Controller
         $article->update($data);
 
         return redirect()->route('admin.articles.index')->with('success', 'Cập nhật bài viết thành công!');
+    }
+
+    // Xóa bài viết
+    public function destroy($id)
+    {
+        $article = Article::findOrFail($id);
+
+        // Xóa ảnh thumbnail nếu có
+        if ($article->thumbnail && !Str::startsWith($article->thumbnail, 'http')) {
+            Storage::delete('public/' . $article->thumbnail);
+        }
+
+        $article->delete();
+
+        return redirect()->back()->with('success', 'Đã xóa bài viết!');
     }
 }

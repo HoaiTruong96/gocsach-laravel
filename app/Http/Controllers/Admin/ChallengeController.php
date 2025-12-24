@@ -74,6 +74,14 @@ class ChallengeController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Tạo thử thách thành công!',
+                'challenge' => $challenge->load('badge')
+            ]);
+        }
+
         return redirect()->route('admin.game.index', ['tab' => 'challenges'])
             ->with('success', 'Tạo thử thách thành công!');
     }
@@ -171,6 +179,13 @@ class ChallengeController extends Controller
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Xóa thử thách thành công!'
+            ]);
+        }
 
         return redirect()->route('admin.game.index', ['tab' => 'challenges'])
             ->with('success', 'Xóa thử thách thành công!');

@@ -12,10 +12,35 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::withCount('posts')->latest()->paginate(15);
-        // Bạn cần tạo view 'admin.users.index'
+        $query = User::withCount('posts');
+
+        // Search by name or email
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query->latest()->paginate(15)->appends($request->query());
+
+        // AJAX request - return JSON with rendered HTML
+        if ($request->ajax() || $request->has('ajax')) {
+            $paginationHtml = '';
+            if ($users->hasPages()) {
+                $paginationHtml = '<div class="p-4 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-700">'
+                    . $users->links('vendor.pagination.admin')->toHtml()
+                    . '</div>';
+            }
+            return response()->json([
+                'table' => view('admin.users._table', compact('users'))->render(),
+                'pagination' => $paginationHtml
+            ]);
+        }
+
         return view('admin.users.index', compact('users'));
     }
 
