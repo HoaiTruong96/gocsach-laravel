@@ -403,7 +403,7 @@
                                     <div class="flex gap-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition group">
                                         @php
                                             $cover = $post->book->cover_image ?? null;
-                                            $coverUrl = $cover ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover)) : 'https://placehold.co/50';
+                                            $coverUrl = $cover ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover)) : 'https://via.placeholder.com/50';
                                         @endphp
                                         <img src="{{ $coverUrl }}" class="w-12 h-16 object-cover rounded shadow-sm flex-shrink-0">
                                         <div class="flex-1 min-w-0">
@@ -475,7 +475,7 @@
                                     <div class="flex gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition group">
                                         @php
                                             $cover = $book->cover_image ?? null;
-                                            $coverUrl = $cover ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover)) : 'https://placehold.co/50x75';
+                                            $coverUrl = $cover ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover)) : 'https://via.placeholder.com/50x75';
                                         @endphp
                                         <img src="{{ $coverUrl }}" class="w-12 h-16 object-cover rounded shadow-sm flex-shrink-0">
                                         <div class="flex-1 min-w-0">
@@ -557,7 +557,7 @@
                                                 $cover = $post->book->cover_image ?? null;
                                                 $coverUrl = $cover
                                                     ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover))
-                                                    : 'https://placehold.co/50';
+                                                    : 'https://via.placeholder.com/50';
                                             @endphp
                                             <img src="{{ $coverUrl }}"
                                                 class="w-12 h-16 object-cover rounded shadow-sm border border-gray-200">
@@ -685,7 +685,7 @@
                                             $cover = $book->cover_image ?? null;
                                             $coverUrl = $cover
                                                 ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover))
-                                                : 'https://placehold.co/150x225?text=' . urlencode(Str::limit($book->title, 10));
+                                                : 'https://via.placeholder.com/150x225?text=' . urlencode(Str::limit($book->title, 10));
                                         @endphp
                                         <img src="{{ $coverUrl }}" class="w-full h-full object-cover transition group-hover:opacity-90">
                                         @if($book->is_approved)
@@ -770,7 +770,7 @@
                                         <div class="flex gap-5">
                                             @if($savedPost->book)
                                                 <a href="{{ route('detail', $savedPost->book->slug) }}" class="flex-shrink-0">
-                                                    <img src="{{ $savedPost->book->cover_image ? (Str::startsWith($savedPost->book->cover_image, 'http') ? $savedPost->book->cover_image : asset('storage/' . $savedPost->book->cover_image)) : 'https://placehold.co/80x120' }}"
+                                                    <img src="{{ $savedPost->book->cover_image ? (Str::startsWith($savedPost->book->cover_image, 'http') ? $savedPost->book->cover_image : asset('storage/' . $savedPost->book->cover_image)) : 'https://via.placeholder.com/80x120' }}"
                                                         class="w-20 h-28 object-cover rounded-lg shadow-sm group-hover:shadow-md transition">
                                                 </a>
                                             @endif

@@ -27,18 +27,6 @@ use App\Http\Controllers\ChatbotController;
 // 1. NHÓM PUBLIC (Ai cũng xem được)
 // ====================================================
 
-// Route serve file storage (bypass symlink issue on Windows)
-Route::get('/storage/{path}', function ($path) {
-    $fullPath = storage_path('app/public/' . $path);
-
-    if (!file_exists($fullPath)) {
-        abort(404);
-    }
-
-    $mimeType = mime_content_type($fullPath);
-    return response()->file($fullPath, ['Content-Type' => $mimeType]);
-})->where('path', '.*');
-
 // Trang chủ
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -185,7 +173,7 @@ Route::middleware(['auth', 'email.verified'])->group(function () {
 
     // Route comment bài viết (nếu dùng PostController riêng)
     Route::post('/posts/{id}/comment', [PostController::class, 'postComment'])->name('posts.comment');
-
+    
     // Route comment cho chi tiết bài viết
     Route::post('/post/{post_id}/comment', [CommentController::class, 'store'])->name('post.comment');
 
