@@ -119,7 +119,7 @@
                                 @php
                                     $thumbnail = $related->thumbnail 
                                         ? (Str::startsWith($related->thumbnail, 'http') ? $related->thumbnail : asset('storage/' . $related->thumbnail))
-                                        : 'https://placehold.co/100x100?text=No+Image';
+                                        : 'https://via.placeholder.com/100x100?text=No+Image';
                                 @endphp
                                 <a href="{{ route('articles.show', $related->slug) }}" 
                                    class="bg-gray-50 p-4 rounded-lg border border-gray-100 flex gap-3 items-center hover:bg-gray-100 hover:shadow-md transition group">

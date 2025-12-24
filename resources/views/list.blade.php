@@ -144,7 +144,7 @@
                                 @php
                                     $cover = $book->cover_image;
                                     if (!$cover) {
-                                        $coverUrl = 'https://placehold.co/300x450?text=No+Image';
+                                        $coverUrl = 'https://via.placeholder.com/300x450?text=No+Image';
                                     } elseif (str_starts_with($cover, 'http')) {
                                         $coverUrl = $cover;
                                     } else {
@@ -159,7 +159,7 @@
                                             <img src="{{ $coverUrl }}" 
                                                  alt="{{ $book->title }}"
                                                  class="w-full h-full object-cover transition duration-700 group-hover:scale-110"
-                                                 onerror="this.src='https://placehold.co/300x450?text=No+Image'">
+                                                 onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">
                                         </a>
                                         
                                         @if($book->view_count > 1000)
