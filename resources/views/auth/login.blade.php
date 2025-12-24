@@ -75,6 +75,9 @@
 
                 <div class="text-center mt-6">
                     <p class="text-sm text-gray-500">Chưa có tài khoản? <a href="{{ route('register') }}" class="text-brand-brown font-bold hover:underline">Đăng ký ngay</a></p>
+                    <a href="{{ route('home') }}" class="inline-flex items-center gap-2 mt-4 text-sm text-gray-500 hover:text-brand-green transition">
+                        <i class="fas fa-arrow-left"></i> Quay lại trang chủ
+                    </a>
                 </div>
             </form>
         </div>
