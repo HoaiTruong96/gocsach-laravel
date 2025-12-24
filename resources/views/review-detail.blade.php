@@ -46,7 +46,7 @@
                     Danh Sách Review ({{ $reviews->total() }})
                 </h2>
                 
-                <a href="{{ route('detail', $book->slug) }}#section-review" class="inline-flex items-center gap-2 text-sm font-bold text-brand-accent hover:text-brand-brown hover:underline transition">
+                <a href="{{ route('reviews.create', ['book_id' => $book->id]) }}" class="inline-flex items-center gap-2 text-sm font-bold text-brand-accent hover:text-brand-brown hover:underline transition">
                     <i class="fas fa-pen"></i> Viết đánh giá mới
                 </a>
             </div>
