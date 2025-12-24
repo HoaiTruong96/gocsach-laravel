@@ -274,4 +274,40 @@ class PostController extends Controller
         return redirect()->route('profile', $user->id)
             ->with('success', $message);
     }
+
+    // Yêu cầu xóa bài review (chờ admin duyệt)
+    public function requestDelete($id)
+    {
+        $user = Auth::user();
+        $post = Post::findOrFail($id);
+
+        // Chỉ cho phép chủ bài viết yêu cầu xóa
+        if ((int)$post->user_id !== (int)$user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không có quyền xóa bài viết này.'
+            ], 403);
+        }
+
+        // Cập nhật status thành pending_delete
+        $post->update(['status' => 'pending_delete']);
+
+        // Gửi thông báo cho admin
+        try {
+            $admins = User::where('role', 'admin')->get();
+            Notification::send($admins, new AdminNewPostNotification([
+                'author_name' => $user->name,
+                'post_title' => '[Yêu cầu xóa] ' . $post->title,
+                'link' => route('admin.posts.index', ['status' => 'pending_delete']),
+                'avatar' => $user->avatar
+            ]));
+        } catch (\Exception $e) {
+            \Log::error("Failed to send delete request notification: " . $e->getMessage());
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Yêu cầu xóa đã được gửi! Vui lòng chờ Admin xử lý.'
+        ]);
+    }
 }
