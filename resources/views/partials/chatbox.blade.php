@@ -124,7 +124,7 @@
                 
                 // Hiển thị các tin nhắn cũ
                 data.messages.forEach(msg => {
-                    addMessage(msg.content, msg.role === 'user');
+                    addMessage(msg.content, msg.role === 'user', msg.created_at);
                     chatHistory.push({ role: msg.role, content: msg.content });
                 });
             }
@@ -210,25 +210,52 @@
         }
     }
 
-    function addMessage(content, isUser = false) {
+    function addMessage(content, isUser = false, timestamp = null) {
         const container = document.getElementById('chatbox-messages');
+        const timeStr = formatTime(timestamp);
         const messageHtml = isUser 
             ? `<div class="flex gap-3 justify-end">
-                    <div class="bg-brand-green text-white rounded-2xl rounded-tr-none px-4 py-3 shadow-sm max-w-[80%]">
-                        <p class="text-sm">${escapeHtml(content)}</p>
+                    <div class="max-w-[80%]">
+                        <div class="bg-brand-green text-white rounded-2xl rounded-tr-none px-4 py-3 shadow-sm">
+                            <p class="text-sm">${escapeHtml(content)}</p>
+                        </div>
+                        <p class="text-[10px] text-gray-400 text-right mt-1">${timeStr}</p>
                     </div>
                </div>`
             : `<div class="flex gap-3">
                     <div class="w-8 h-8 bg-brand-green rounded-full flex items-center justify-center flex-shrink-0">
                         <i class="fas fa-robot text-white text-xs"></i>
                     </div>
-                    <div class="bg-white rounded-2xl rounded-tl-none px-4 py-3 shadow-sm max-w-[80%]">
-                        <p class="text-sm text-gray-700">${formatMessage(content)}</p>
+                    <div class="max-w-[80%]">
+                        <div class="bg-white rounded-2xl rounded-tl-none px-4 py-3 shadow-sm">
+                            <p class="text-sm text-gray-700">${formatMessage(content)}</p>
+                        </div>
+                        <p class="text-[10px] text-gray-400 mt-1">${timeStr}</p>
                     </div>
                </div>`;
         
         container.insertAdjacentHTML('beforeend', messageHtml);
         container.scrollTop = container.scrollHeight;
+    }
+
+    // Format thời gian hiển thị
+    function formatTime(timestamp) {
+        if (!timestamp) {
+            // Tin nhắn mới - lấy thời gian hiện tại
+            const now = new Date();
+            return now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        }
+        // Tin nhắn từ lịch sử
+        const date = new Date(timestamp);
+        const now = new Date();
+        const isToday = date.toDateString() === now.toDateString();
+        
+        if (isToday) {
+            return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        } else {
+            return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) + ' ' + 
+                   date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        }
     }
 
     function escapeHtml(text) {

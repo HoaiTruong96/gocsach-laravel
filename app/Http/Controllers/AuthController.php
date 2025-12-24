@@ -160,7 +160,7 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/login');
+        return redirect()->route('home');
     }
 
     // --- 5. ĐỔI MẬT KHẨU (Dành cho người đã đăng nhập) ---
