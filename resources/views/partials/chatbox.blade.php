@@ -87,6 +87,27 @@
             </form>
             <p class="text-[10px] text-gray-400 text-center mt-2">Powered by Gemini AI</p>
         </div>
+
+        {{-- Custom Confirm Modal --}}
+        <div id="chatbox-confirm-modal" class="hidden absolute inset-0 bg-black/50 flex items-center justify-center z-50 rounded-2xl">
+            <div class="bg-white rounded-xl p-5 mx-4 max-w-[280px] shadow-xl transform transition-all">
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-trash-alt text-red-500 text-lg"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 mb-2">Xóa lịch sử?</h4>
+                    <p class="text-sm text-gray-500 mb-4">Bạn có chắc muốn xóa toàn bộ lịch sử trò chuyện?</p>
+                    <div class="flex gap-3">
+                        <button onclick="hideConfirmModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition text-sm font-medium">
+                            Hủy
+                        </button>
+                        <button onclick="confirmClearHistory()" class="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium">
+                            Xóa
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     {{-- Floating Button - Smaller size --}}
@@ -134,9 +155,19 @@
         }
     }
 
-    // Xóa lịch sử chat
-    async function clearChatHistory() {
-        if (!confirm('Bạn có chắc muốn xóa toàn bộ lịch sử trò chuyện?')) return;
+    // Hiển thị modal xác nhận xóa
+    function clearChatHistory() {
+        document.getElementById('chatbox-confirm-modal').classList.remove('hidden');
+    }
+
+    // Ẩn modal
+    function hideConfirmModal() {
+        document.getElementById('chatbox-confirm-modal').classList.add('hidden');
+    }
+
+    // Xác nhận xóa lịch sử
+    async function confirmClearHistory() {
+        hideConfirmModal();
         
         try {
             const response = await fetch('{{ route("chatbot.clear") }}', {
@@ -151,6 +182,7 @@
             if (data.success) {
                 // Reset UI
                 chatHistory = [];
+                historyLoaded = false;
                 const container = document.getElementById('chatbox-messages');
                 container.innerHTML = `
                     <div class="flex gap-3">

@@ -1143,6 +1143,26 @@
                                     <div class="text-[10px] text-gray-500 uppercase font-medium">Bình luận</div>
                                 </div>
                             </div>
+
+                            {{-- Online Users --}}
+                            <div class="mt-3 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl p-3 flex items-center justify-between text-white">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                                    <span class="text-sm font-medium">Đang online</span>
+                                </div>
+                                <span class="text-xl font-bold">{{ number_format($communityStats['online_users'] ?? 0) }}</span>
+                            </div>
+
+                            {{-- Total Visits --}}
+                            <div class="mt-2 bg-white/60 rounded-xl p-3 border border-white">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-500 flex items-center gap-2">
+                                        <i class="fas fa-eye text-blue-500"></i>
+                                        Tổng lượt truy cập
+                                    </span>
+                                    <span class="font-bold text-gray-800">{{ number_format($communityStats['total_visits'] ?? 0) }}</span>
+                                </div>
+                            </div>
                         </div>
                     @endif
 
