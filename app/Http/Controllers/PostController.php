@@ -210,8 +210,9 @@ class PostController extends Controller
         $post = Post::with('book')->findOrFail($id);
 
         // Chỉ cho phép chủ bài viết sửa
-        if ($post->user_id !== $user->id) {
-            abort(403, 'Bạn không có quyền sửa bài viết này.');
+        // Dùng (int) để tránh type mismatch giữa string và integer trên production
+        if ((int)$post->user_id !== (int)$user->id) {
+            return redirect()->back()->with('error', 'Bạn không có quyền sửa bài viết này.');
         }
 
         return view('edit-review', compact('user', 'post'));
@@ -224,8 +225,9 @@ class PostController extends Controller
         $post = Post::findOrFail($id);
 
         // Chỉ cho phép chủ bài viết sửa
-        if ($post->user_id !== $user->id) {
-            abort(403, 'Bạn không có quyền sửa bài viết này.');
+        // Dùng (int) để tránh type mismatch giữa string và integer trên production
+        if ((int)$post->user_id !== (int)$user->id) {
+            return redirect()->back()->with('error', 'Bạn không có quyền sửa bài viết này.');
         }
 
         // Validate dữ liệu
