@@ -68,7 +68,7 @@
                         <button onclick="toggleReplySection({{ $comment->id }})"
                             class="flex items-center gap-1.5 md:gap-1 text-xs font-bold text-gray-500 hover:text-brand-green transition group">
                             <i class="far fa-comment-dots group-hover:scale-110 transition-transform"></i>
-                            <span class="hidden md:inline">Trả lời</span> <span id="reply-count-{{ $comment->id }}">({{ $comment->replies->count() }})</span>
+                            <span class="hidden md:inline">Trả lời </span><span>({{ $comment->replies->count() }})</span>
                             <i id="chevron-reply-{{ $comment->id }}"
                                 class="fas fa-chevron-down text-[10px] ml-1 transition-transform duration-300"></i>
                         </button>

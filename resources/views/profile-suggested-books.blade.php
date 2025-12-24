@@ -82,7 +82,7 @@
                                         $cover = $book->cover_image ?? null;
                                         $coverUrl = $cover
                                             ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover))
-                                            : 'https://placehold.co/150x225?text=' . urlencode(Str::limit($book->title, 10));
+                                            : 'https://via.placeholder.com/150x225?text=' . urlencode(Str::limit($book->title, 10));
                                     @endphp
                                     <img src="{{ $coverUrl }}" class="w-full h-full object-cover transition group-hover:opacity-90">
                                     @if($book->is_approved)
