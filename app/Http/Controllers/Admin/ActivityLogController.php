@@ -47,8 +47,10 @@ class ActivityLogController extends Controller
         // Lấy danh sách admins để filter
         $admins = User::where('role', 'admin')->get();
 
-        // Các loại action unique
-        $actions = AdminActivityLog::distinct()->pluck('action');
+        // Các loại action
+        $actions = AdminActivityLog::distinct()
+            ->whereNotIn('action', ['cleanup', 'restore', 'force_delete'])
+            ->pluck('action');
 
         // AJAX request - return JSON
         if ($request->ajax() || $request->has('ajax')) {
@@ -113,18 +115,29 @@ class ActivityLogController extends Controller
         }
 
         try {
-            // Kiểm tra xem record có bị soft delete không
-            $existingRecord = $modelClass::withTrashed()->find($activityLog->model_id);
+            // Kiểm tra xem model có sử dụng SoftDeletes không
+            $usesSoftDeletes = in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses_recursive($modelClass));
 
-            if ($existingRecord && $existingRecord->trashed()) {
+            $existingRecord = null;
+            if ($usesSoftDeletes) {
+                // Chỉ dùng withTrashed nếu model có SoftDeletes
+                $existingRecord = $modelClass::withTrashed()->find($activityLog->model_id);
+            } else {
+                // Nếu không có SoftDeletes, check record bình thường
+                $existingRecord = $modelClass::find($activityLog->model_id);
+            }
+
+            if ($existingRecord && $usesSoftDeletes && method_exists($existingRecord, 'trashed') && $existingRecord->trashed()) {
                 // Restore nếu đang bị soft delete
                 $existingRecord->restore();
                 $actionDesc = "Khôi phục (soft delete): " . $this->getModelDescription($modelClass, $existingRecord);
-            } else {
-                // Tạo mới từ old_values nếu bị hard delete
+            } elseif (!$existingRecord) {
+                // Tạo mới từ old_values nếu không tồn tại
                 $filteredValues = $this->filterRestorableValues($modelClass, $oldValues);
                 $newRecord = $modelClass::create($filteredValues);
                 $actionDesc = "Khôi phục (tạo lại): " . $this->getModelDescription($modelClass, $newRecord);
+            } else {
+                return back()->with('error', 'Mục này vẫn còn tồn tại, không cần khôi phục.');
             }
 
             // Ghi log khôi phục

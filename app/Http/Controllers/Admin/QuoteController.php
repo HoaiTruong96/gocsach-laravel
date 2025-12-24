@@ -70,7 +70,19 @@ class QuoteController extends Controller
     public function destroy($id)
     {
         $quote = Quote::findOrFail($id);
+        $quoteData = $quote->toArray();
+
         $quote->delete();
+
+        // Ghi log để có thể khôi phục
+        \App\Models\AdminActivityLog::log(
+            'delete',
+            "Xóa Châm ngôn: " . \Str::limit($quoteData['content'], 50),
+            Quote::class,
+            $quoteData['id'],
+            $quoteData,
+            null
+        );
 
         return redirect()->back()->with('success', 'Đã xóa châm ngôn!');
     }

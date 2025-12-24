@@ -141,116 +141,69 @@ class AuthorController extends Controller
 
     /**
      * Danh sách tác giả cho Admin quản lý
-     * Kết hợp dữ liệu từ bảng authors và books.author_name
+     * Chỉ hiện tác giả đã đăng ký trong bảng authors
      */
     public function adminIndex(Request $request)
     {
-        $tab = $request->get('tab', 'all');
-
-        // Lấy tất cả tác giả từ bảng authors với số sách
-        $authorsFromTable = Author::withCount([
+        $query = Author::withCount([
             'books' => function ($q) {
                 $q->where('is_approved', true);
             }
-        ])->orderBy('name')->get();
+        ])->orderBy('name');
 
-        // Lấy tất cả author_name từ books mà CHƯA có trong bảng authors
-        // Cần tách nhiều tên tác giả trong một trường (phân cách bằng dấu phẩy, chấm phẩy, "và", "and")
-        $registeredNames = Author::pluck('name')->map(fn($n) => mb_strtolower(trim($n)))->toArray();
-
-        $booksWithAuthors = DB::table('books')
-            ->select('author_name')
-            ->whereNotNull('author_name')
-            ->where('author_name', '<>', '')
-            ->get();
-
-        // Tách từng tên tác giả và đếm số sách
-        $unregisteredCounts = [];
-        foreach ($booksWithAuthors as $book) {
-            // Tách bằng dấu phẩy, chấm phẩy, " và ", " and "
-            $names = preg_split('/[,;]|\s+và\s+|\s+and\s+/iu', $book->author_name);
-            foreach ($names as $name) {
-                $name = trim($name);
-                if (empty($name))
-                    continue;
-
-                // Kiểm tra tên này đã đăng ký hay chưa
-                if (!in_array(mb_strtolower($name), $registeredNames)) {
-                    if (!isset($unregisteredCounts[$name])) {
-                        $unregisteredCounts[$name] = 0;
-                    }
-                    $unregisteredCounts[$name]++;
-                }
-            }
-        }
-
-        // Chuyển thành collection
-        $authorsFromBooks = collect($unregisteredCounts)->map(function ($count, $name) {
-            return (object) [
-                'id' => null,
-                'name' => $name,
-                'slug' => Str::slug($name),
-                'photo' => null,
-                'bio' => null,
-                'birth_year' => null,
-                'death_year' => null,
-                'nationality' => null,
-                'books_count' => $count,
-                'is_from_books' => true, // Đánh dấu chưa có trong bảng authors
-            ];
-        })->sortBy('name')->values();
-
-        // Đánh dấu các tác giả đã có trong bảng authors
-        $authorsFromTable->each(function ($author) {
-            $author->is_from_books = false;
-        });
-
-        // Kết hợp và phân loại theo tab
-        if ($tab === 'registered') {
-            // Chỉ hiển thị tác giả đã có trong bảng authors
-            $allAuthors = $authorsFromTable;
-        } elseif ($tab === 'unregistered') {
-            // Chỉ hiển thị tác giả từ books chưa có trong authors
-            $allAuthors = $authorsFromBooks;
-        } else {
-            // Hiển thị tất cả
-            $allAuthors = $authorsFromTable->concat($authorsFromBooks)->sortBy('name');
+        // Lọc theo quốc tịch
+        $nationality = $request->get('nationality');
+        if ($nationality) {
+            $query->where('nationality', $nationality);
         }
 
         // Lọc theo từ khóa tìm kiếm
         $q = $request->get('q');
         if ($q) {
-            $q = mb_strtolower(trim($q));
-            $allAuthors = $allAuthors->filter(function ($author) use ($q) {
-                return str_contains(mb_strtolower($author->name), $q);
-            });
+            $query->where('name', 'like', '%' . $q . '%');
         }
 
-        // Phân trang thủ công
-        $page = $request->get('page', 1);
-        $perPage = 15;
-        $total = $allAuthors->count();
-        $authors = new \Illuminate\Pagination\LengthAwarePaginator(
-            $allAuthors->forPage($page, $perPage)->values(),
-            $total,
-            $perPage,
-            $page,
-            ['path' => $request->url(), 'query' => $request->query()]
-        );
+        // Phân trang
+        $authors = $query->paginate(15)->withQueryString();
 
-        // Thống kê
-        $stats = [
-            'total' => $authorsFromTable->count() + $authorsFromBooks->count(),
-            'registered' => $authorsFromTable->count(),
-            'unregistered' => $authorsFromBooks->count(),
-        ];
+        // Lấy danh sách quốc tịch để hiển thị dropdown
+        $nationalities = Author::whereNotNull('nationality')
+            ->where('nationality', '<>', '')
+            ->distinct()
+            ->orderBy('nationality')
+            ->pluck('nationality');
 
         // Nếu là AJAX request, chỉ trả về table partial
         if ($request->ajax()) {
-            return view('admin.authors.table', compact('authors', 'tab'));
+            return view('admin.authors.table', compact('authors'));
         }
 
-        return view('admin.authors.index', compact('authors', 'tab', 'stats', 'q'));
+        return view('admin.authors.index', compact('authors', 'nationalities', 'q'));
+    }
+
+    /**
+     * Proxy ảnh để tránh lỗi CORS
+     */
+    public function proxyImage(Request $request)
+    {
+        $url = $request->input('url');
+        if (!$url)
+            return response()->json(['error' => 'URL Required'], 400);
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(10)->withoutVerifying()->get($url);
+
+            if ($response->failed())
+                throw new \Exception('Failed to fetch image');
+
+            $contentType = $response->header('Content-Type') ?: 'image/jpeg';
+
+            return response($response->body())
+                ->header('Content-Type', $contentType)
+                ->header('Access-Control-Allow-Origin', '*');
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Could not load image'], 400);
+        }
     }
 
     /**
@@ -258,7 +211,13 @@ class AuthorController extends Controller
      */
     public function create()
     {
-        return view('admin.authors.create');
+        $nationalities = Author::whereNotNull('nationality')
+            ->where('nationality', '<>', '')
+            ->distinct()
+            ->orderBy('nationality')
+            ->pluck('nationality');
+
+        return view('admin.authors.create', compact('nationalities'));
     }
 
     /**
@@ -273,8 +232,10 @@ class AuthorController extends Controller
             'cropped_photo' => 'nullable|string',
             'bio' => 'nullable|string',
             'birth_year' => 'nullable|integer|min:0|max:' . date('Y'),
-            'death_year' => 'nullable|integer|min:0|max:' . date('Y'),
+            'death_year' => 'nullable|integer|min:0|max:' . date('Y') . '|gte:birth_year',
             'nationality' => 'nullable|string|max:100',
+        ], [
+            'death_year.gte' => 'Năm mất phải lớn hơn hoặc bằng năm sinh.',
         ]);
 
         // Handle cropped base64 image (priority)
@@ -312,7 +273,13 @@ class AuthorController extends Controller
     public function edit($id)
     {
         $author = Author::findOrFail($id);
-        return view('admin.authors.edit', compact('author'));
+        $nationalities = Author::whereNotNull('nationality')
+            ->where('nationality', '<>', '')
+            ->distinct()
+            ->orderBy('nationality')
+            ->pluck('nationality');
+
+        return view('admin.authors.edit', compact('author', 'nationalities'));
     }
 
     /**
@@ -329,8 +296,10 @@ class AuthorController extends Controller
             'cropped_photo' => 'nullable|string',
             'bio' => 'nullable|string',
             'birth_year' => 'nullable|integer|min:0|max:' . date('Y'),
-            'death_year' => 'nullable|integer|min:0|max:' . date('Y'),
+            'death_year' => 'nullable|integer|min:0|max:' . date('Y') . '|gte:birth_year',
             'nationality' => 'nullable|string|max:100',
+        ], [
+            'death_year.gte' => 'Năm mất phải lớn hơn hoặc bằng năm sinh.',
         ]);
 
         // Delete old file helper
@@ -376,7 +345,19 @@ class AuthorController extends Controller
     public function destroy($id)
     {
         $author = Author::findOrFail($id);
+        $authorData = $author->toArray();
+
         $author->delete();
+
+        // Ghi log để có thể khôi phục
+        \App\Models\AdminActivityLog::log(
+            'delete',
+            "Xóa Tác giả: {$authorData['name']}",
+            Author::class,
+            $authorData['id'],
+            $authorData,
+            null
+        );
 
         return redirect()->route('admin.authors.index')
             ->with('success', 'Đã xóa tác giả thành công!');
