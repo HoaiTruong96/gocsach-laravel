@@ -229,7 +229,7 @@
         <!-- Pagination -->
         <div class="mt-12 flex justify-center">
             @if(method_exists($books, 'links'))
-                {{ $books->withQueryString()->links() }}
+                {{ $books->withQueryString()->links('vendor.pagination.custom') }}
             @endif
         </div>
 
