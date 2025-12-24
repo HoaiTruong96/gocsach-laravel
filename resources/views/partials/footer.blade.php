@@ -22,9 +22,9 @@
                         Nơi kết nối những tâm hồn yêu sách. Chia sẻ cảm nhận, lan tỏa tri thức và tìm kiếm cuốn sách thay đổi cuộc đời bạn.
                     </p>
                     <div class="flex gap-4 pt-2">
-                        <a href="#" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#D4A373] hover:text-white transition transform hover:-translate-y-1"><i class="fab fa-facebook-f text-xs"></i></a>
-                        <a href="#" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#D4A373] hover:text-white transition transform hover:-translate-y-1"><i class="fab fa-twitter text-xs"></i></a>
-                        <a href="#" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#D4A373] hover:text-white transition transform hover:-translate-y-1"><i class="fab fa-instagram text-xs"></i></a>
+                        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#D4A373] hover:text-white transition transform hover:-translate-y-1"><i class="fab fa-facebook-f text-xs"></i></a>
+                        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#D4A373] hover:text-white transition transform hover:-translate-y-1"><i class="fab fa-twitter text-xs"></i></a>
+                        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-[#D4A373] hover:text-white transition transform hover:-translate-y-1"><i class="fab fa-instagram text-xs"></i></a>
                     </div>
                 </div>
 

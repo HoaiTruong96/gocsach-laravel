@@ -119,16 +119,55 @@
                 </div>
 
                 {{-- Widget: Mua Sách (Tái sử dụng từ Home) --}}
-                <div class="bg-brand-beige/20 p-6 rounded-xl border border-brand-beige sticky top-24">
-                    <h3 class="font-serif font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
-                        <span class="text-brand-accent">🛒</span> Mua Sách Online
-                    </h3>
-                    <div class="space-y-3">
-                        <a href="#" class="block bg-white p-3 rounded-lg text-sm font-bold text-gray-700 hover:text-blue-600 hover:shadow-md transition text-center border border-gray-200">
-                            Mua trên Tiki
+                <div class="bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 rounded-2xl p-4 sm:p-6 border border-amber-100 shadow-lg relative overflow-hidden sticky top-24">
+                    {{-- Decorative --}}
+                    <div class="absolute -top-6 -right-6 w-20 h-20 bg-amber-200/40 rounded-full blur-2xl pointer-events-none">
+                    </div>
+
+                    <div class="flex items-center gap-3 mb-4 relative">
+                        <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-md">
+                            <i class="fas fa-shopping-bag text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-serif font-bold text-gray-800 leading-none">Mua Sách Giá Tốt
+                            </h3>
+                            <span class="text-[10px] text-gray-400">Đối tác uy tín</span>
+                        </div>
+                    </div>
+
+
+                    <div class="space-y-2 relative">
+                        <a href="https://tiki.vn/nha-sach-tiki/c8322" target="_blank" class="flex items-center justify-between p-3 rounded-xl bg-white/80 backdrop-blur-sm border border-white hover:border-blue-300 hover:bg-blue-50 hover:shadow-md transition-all duration-300 group">
+                            <div class="flex items-center gap-3">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/4/43/Logo_Tiki_2023.png" class="w-8 h-8 object-contain" alt="Tiki">
+                                <div>
+                                    <span class="font-bold text-sm text-gray-700 group-hover:text-blue-600 block">Tiki Trading</span>
+                                    <span class="text-[10px] text-green-600 font-bold">🔥 Giảm tới 35%</span>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-300 text-xs group-hover:text-blue-500 group-hover:translate-x-1 transition-all"></i>
                         </a>
-                        <a href="#" class="block bg-white p-3 rounded-lg text-sm font-bold text-gray-700 hover:text-orange-600 hover:shadow-md transition text-center border border-gray-200">
-                            Mua trên Shopee
+
+                        <a href="https://shopee.vn/nhasachphuongnam" target="_blank" class="flex items-center justify-between p-3 rounded-xl bg-white/80 backdrop-blur-sm border border-white hover:border-orange-300 hover:bg-orange-50 hover:shadow-md transition-all duration-300 group">
+                            <div class="flex items-center gap-3">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg" class="w-8 h-8 object-contain" alt="Shopee">
+                                <div>
+                                    <span class="font-bold text-sm text-gray-700 group-hover:text-orange-600 block">Shopee Mall</span>
+                                    <span class="text-[10px] text-orange-500 font-bold">🚚 Freeship Extra</span>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-300 text-xs group-hover:text-orange-500 group-hover:translate-x-1 transition-all"></i>
+                        </a>
+
+                        <a href="https://www.fahasa.com/" target="_blank" class="flex items-center justify-between p-3 rounded-xl bg-white/80 backdrop-blur-sm border border-white hover:border-red-300 hover:bg-red-50 hover:shadow-md transition-all duration-300 group">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white font-bold text-xs shadow-sm">F</div>
+                                <div>
+                                    <span class="font-bold text-sm text-gray-700 group-hover:text-red-600 block">Fahasa.com</span>
+                                    <span class="text-[10px] text-gray-500">✓ Sách chính hãng</span>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-300 text-xs group-hover:text-red-500 group-hover:translate-x-1 transition-all"></i>
                         </a>
                     </div>
                 </div>
