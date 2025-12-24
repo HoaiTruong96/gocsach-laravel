@@ -31,6 +31,55 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+            
+            // Kiểm tra email đã xác thực chưa
+            $user = Auth::user();
+            if (!$user->email_verified_at) {
+                // Kiểm tra xem có mã OTP còn hiệu lực không
+                $existingCode = DB::table('password_reset_codes')
+                    ->where('email', $user->email)
+                    ->where('expires_at', '>', Carbon::now())
+                    ->first();
+                
+                // Nếu không có mã hoặc mã đã hết hạn, tạo mã mới
+                if (!$existingCode) {
+                    $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+                    
+                    DB::table('password_reset_codes')->where('email', $user->email)->delete();
+                    DB::table('password_reset_codes')->insert([
+                        'email' => $user->email,
+                        'code' => $code,
+                        'expires_at' => Carbon::now()->addMinutes(10),
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now(),
+                    ]);
+
+                    // Gửi email mã OTP
+                    Mail::send([], [], function ($message) use ($user, $code) {
+                        $message->to($user->email)
+                            ->subject('Xác thực tài khoản - Góc Sách')
+                            ->html("
+                                <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;'>
+                                    <h2 style='color: #3E5F4E; text-align: center;'>📚 Góc Sách</h2>
+                                    <p>Xin chào <strong>{$user->name}</strong>,</p>
+                                    <p>Đây là mã xác thực tài khoản của bạn:</p>
+                                    <div style='background: #f5f5f5; padding: 20px; text-align: center; border-radius: 10px; margin: 20px 0;'>
+                                        <span style='font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #3E5F4E;'>{$code}</span>
+                                    </div>
+                                    <p style='color: #888; font-size: 14px;'>Mã này sẽ hết hạn sau 10 phút.</p>
+                                </div>
+                            ");
+                    });
+
+                    return redirect()->route('verification.notice')
+                        ->with('status', 'Đã gửi mã xác thực mới vào email của bạn!');
+                }
+                
+                // Nếu mã còn hiệu lực, chuyển đến trang xác thực
+                return redirect()->route('verification.notice')
+                    ->with('status', 'Vui lòng xác thực email để tiếp tục sử dụng.');
+            }
+            
             return redirect()->route('home'); // Đăng nhập xong về trang chủ
         }
 
@@ -53,24 +102,56 @@ class AuthController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users', 'regex:/^[a-zA-Z0-9._%+-]+@gmail\.com$/i'],
             'password' => 'required|string|min:6|confirmed',
         ], [
-            'email.regex' => 'Chỉ chấp nhận email @gmail.com. Vui lòng sử dụng địa chỉ Gmail.'
+            'email.regex' => 'Chỉ chấp nhận email @gmail.com. Vui lòng sử dụng địa chỉ Gmail.',
+            'email.unique' => 'Email này đã được sử dụng.'
         ]);
 
-        // Tạo user mới trong Database
+        // Tạo user mới trong Database (chưa xác thực email, chưa kích hoạt)
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'is_active' => false, // Chưa kích hoạt cho đến khi xác thực OTP
         ]);
 
-        // Bắn sự kiện để Laravel tự gửi mail xác thực
-        event(new Registered($user));
+        // Tạo mã OTP 6 số ngẫu nhiên
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-        // Đăng nhập luôn cho người dùng sau khi đăng ký
+        // Lưu mã OTP vào database
+        DB::table('password_reset_codes')->where('email', $request->email)->delete();
+        DB::table('password_reset_codes')->insert([
+            'email' => $request->email,
+            'code' => $code,
+            'expires_at' => Carbon::now()->addMinutes(10),
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ]);
+
+        // Gửi email chứa mã OTP
+        Mail::send([], [], function ($message) use ($request, $code, $user) {
+            $message->to($request->email)
+                ->subject('Xác thực tài khoản - Góc Sách')
+                ->html("
+                    <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;'>
+                        <h2 style='color: #3E5F4E; text-align: center;'>📚 Góc Sách</h2>
+                        <p>Xin chào <strong>{$user->name}</strong>,</p>
+                        <p>Cảm ơn bạn đã đăng ký tài khoản. Đây là mã xác thực của bạn:</p>
+                        <div style='background: #f5f5f5; padding: 20px; text-align: center; border-radius: 10px; margin: 20px 0;'>
+                            <span style='font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #3E5F4E;'>{$code}</span>
+                        </div>
+                        <p style='color: #888; font-size: 14px;'>Mã này sẽ hết hạn sau 10 phút.</p>
+                        <p style='color: #888; font-size: 14px;'>Nếu bạn không yêu cầu đăng ký, vui lòng bỏ qua email này.</p>
+                    </div>
+                ");
+        });
+
+        // Đăng nhập tạm cho người dùng
         Auth::login($user);
 
-        // Chuyển hướng đến trang thông báo "Vui lòng check mail"
-        return redirect()->route('verification.notice');
+        // Chuyển hướng đến trang nhập mã OTP
+        return redirect()->route('verification.notice')
+            ->with('verify_email', $request->email)
+            ->with('status', 'Đã gửi mã xác thực vào email của bạn!');
     }
 
     // --- 4. ĐĂNG XUẤT ---
@@ -294,5 +375,88 @@ class AuthController extends Controller
         session()->forget(['verified_email', 'verified_code', 'reset_email']);
 
         return redirect()->route('login')->with('status', 'Đổi mật khẩu thành công! Vui lòng đăng nhập lại.');
+    }
+
+    // --- 7. XÁC THỰC EMAIL KHI ĐĂNG KÝ (OTP) ---
+
+    // Xác thực mã OTP khi đăng ký
+    public function verifyRegistrationCode(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string|size:6',
+        ], [
+            'code.required' => 'Vui lòng nhập mã xác thực.',
+            'code.size' => 'Mã xác thực phải có 6 số.'
+        ]);
+
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login')->withErrors(['error' => 'Vui lòng đăng nhập lại.']);
+        }
+
+        $record = DB::table('password_reset_codes')
+            ->where('email', $user->email)
+            ->where('code', $request->code)
+            ->where('expires_at', '>', Carbon::now())
+            ->first();
+
+        if (!$record) {
+            return back()
+                ->with('verify_email', $user->email)
+                ->withErrors(['code' => 'Mã xác thực không đúng hoặc đã hết hạn.']);
+        }
+
+        // Mã đúng - xác thực email và kích hoạt tài khoản
+        $user->email_verified_at = Carbon::now();
+        $user->is_active = true; // Kích hoạt tài khoản
+        $user->save();
+
+        // Xóa mã đã sử dụng
+        DB::table('password_reset_codes')->where('email', $user->email)->delete();
+
+        return redirect()->route('home')->with('success', 'Xác thực email thành công! Chào mừng bạn đến với Góc Sách.');
+    }
+
+    // Gửi lại mã OTP khi đăng ký
+    public function resendRegistrationCode(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        // Tạo mã mới
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        // Lưu mã mới
+        DB::table('password_reset_codes')->where('email', $user->email)->delete();
+        DB::table('password_reset_codes')->insert([
+            'email' => $user->email,
+            'code' => $code,
+            'expires_at' => Carbon::now()->addMinutes(10),
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ]);
+
+        // Gửi email
+        Mail::send([], [], function ($message) use ($user, $code) {
+            $message->to($user->email)
+                ->subject('Mã xác thực tài khoản - Góc Sách')
+                ->html("
+                    <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;'>
+                        <h2 style='color: #3E5F4E; text-align: center;'>📚 Góc Sách</h2>
+                        <p>Xin chào <strong>{$user->name}</strong>,</p>
+                        <p>Đây là mã xác thực mới của bạn:</p>
+                        <div style='background: #f5f5f5; padding: 20px; text-align: center; border-radius: 10px; margin: 20px 0;'>
+                            <span style='font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #3E5F4E;'>{$code}</span>
+                        </div>
+                        <p style='color: #888; font-size: 14px;'>Mã này sẽ hết hạn sau 10 phút.</p>
+                    </div>
+                ");
+        });
+
+        return back()
+            ->with('verify_email', $user->email)
+            ->with('status', 'Đã gửi lại mã xác thực mới!');
     }
 }
