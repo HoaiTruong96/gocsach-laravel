@@ -284,7 +284,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('books/{book}/approve', [AdminBookController::class, 'approve'])->name('books.approve');
     Route::resource('articles', ArticleController::class);
     Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class);
-    Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->only(['index', 'update', 'destroy']);
+    Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->only(['index', 'edit', 'update', 'destroy']);
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
     Route::resource('banners', BannerController::class);
     Route::resource('badges', \App\Http\Controllers\Admin\BadgeController::class);
