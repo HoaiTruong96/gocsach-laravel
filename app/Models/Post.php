@@ -20,7 +20,7 @@ class Post extends Model
         'excerpt',
         'content',
         'rating',
-        'status',       // draft, pending, published, rejected, hidden
+        'status',       // draft, pending, published, rejected, hidden, pending_delete
         'published_at',
         'view_count',
     ];

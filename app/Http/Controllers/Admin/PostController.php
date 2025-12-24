@@ -27,7 +27,7 @@ class PostController extends Controller
         }
 
         $reviews = $query
-            ->orderByRaw("CASE WHEN status = 'pending' THEN 1 ELSE 2 END")
+            ->orderByRaw("CASE WHEN status = 'pending' THEN 1 WHEN status = 'pending_delete' THEN 2 ELSE 3 END")
             ->latest()
             ->paginate(10)
             ->withQueryString();
@@ -209,5 +209,63 @@ class PostController extends Controller
         return back()->with('success', 'Đã xóa bài viết!');
     }
 
-    // ĐÃ XÓA HÀM approve() ĐỂ TRÁNH XUNG ĐỘT LOGIC
+    /**
+     * Duyệt yêu cầu xóa bài viết từ user
+     */
+    public function approveDelete($id)
+    {
+        $post = Post::with('book')->findOrFail($id);
+
+        // Chỉ cho phép duyệt xóa bài có status = pending_delete
+        if ($post->status !== 'pending_delete') {
+            return back()->with('error', 'Bài viết này không ở trạng thái chờ xóa!');
+        }
+
+        $postData = $post->toArray();
+        $bookTitle = $post->book->title ?? 'Sách đã xóa';
+        $userName = $post->user->name ?? 'Người dùng';
+
+        $post->delete();
+
+        // Ghi log
+        AdminActivityLog::log(
+            'delete',
+            "Duyệt xóa bài review của {$userName} về sách: {$bookTitle}",
+            Post::class,
+            $id,
+            $postData,
+            null
+        );
+
+        return back()->with('success', 'Đã duyệt xóa bài viết!');
+    }
+
+    /**
+     * Từ chối yêu cầu xóa, đưa bài về trạng thái published
+     */
+    public function rejectDelete($id)
+    {
+        $post = Post::with('book')->findOrFail($id);
+
+        if ($post->status !== 'pending_delete') {
+            return back()->with('error', 'Bài viết này không ở trạng thái chờ xóa!');
+        }
+
+        $oldStatus = $post->status;
+        $post->update(['status' => 'published']);
+
+        $bookTitle = $post->book->title ?? 'Sách đã xóa';
+
+        // Ghi log
+        AdminActivityLog::log(
+            'reject',
+            "Từ chối xóa bài review về sách: {$bookTitle}",
+            Post::class,
+            $post->id,
+            ['status' => $oldStatus],
+            ['status' => 'published']
+        );
+
+        return back()->with('success', 'Đã từ chối yêu cầu xóa, bài viết được giữ lại!');
+    }
 }
