@@ -24,8 +24,8 @@
                     {{-- Mô tả --}}
                     <div>
                         <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Mô tả</label>
-                        <textarea name="description" rows="3"
-                            class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white resize-y min-h-[80px]"
+                        <textarea name="description" rows="5"
+                            class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white resize-y min-h-[120px]"
                             placeholder="Mô tả khung avatar...">{{ old('description', $frame->description) }}</textarea>
                     </div>
 
@@ -64,9 +64,14 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Thứ tự</label>
-                            <input type="number" name="order" value="{{ old('order', $frame->order) }}" min="0"
-                                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                                class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white">
+                            @include('admin.partials.custom-pickers', [
+                                'type' => 'scroll',
+                                'name' => 'order',
+                                'value' => old('order', $frame->order),
+                                'min' => 0,
+                                'max' => 99,
+                                'autoText' => 'Auto'
+                            ])
                         </div>
                         <div class="flex items-end pb-2">
                             <label class="flex items-center cursor-pointer">

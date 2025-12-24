@@ -3,7 +3,7 @@
 @section('header', 'Danh sách đầu sách')
 
 @section('content')
-{{-- Thêm style đổ bóng mềm mại ngay tại đây --}}
+{{-- Thêm style đổ bóng mềm mại --}}
 <style>
     .shadow-soft {
         box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 0 3px rgba(0,0,0,0.02);
@@ -13,224 +13,334 @@
     }
 </style>
 
-{{-- FIX: Thêm h-[calc(100vh-120px)] để trang luôn full chiều cao, tránh lỗi sidebar bên trái bị ngắn/hụt --}}
-<div class="flex flex-col h-[calc(100vh-120px)] gap-4">
+<div class="flex flex-col gap-4">
     
-    {{-- Header Toolbar: Đã thay shadow-sm thành shadow-soft --}}
+    {{-- Header Toolbar --}}
     <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-soft border border-gray-100 dark:border-slate-700 flex flex-col md:flex-row justify-between items-center gap-4 flex-none z-50 transition-colors duration-300">
         
         <h2 class="text-lg font-bold text-gray-700 dark:text-white whitespace-nowrap flex items-center gap-2">
-            Kho sách <span class="px-2 py-0.5 bg-gray-100 dark:bg-slate-600 text-gray-600 dark:text-slate-200 rounded-full text-xs border border-gray-300 dark:border-slate-500">{{ $books->total() }}</span>
+            Kho sách <span class="px-2 py-0.5 bg-gray-100 dark:bg-slate-600 text-gray-600 dark:text-slate-200 rounded-full text-xs border border-gray-300 dark:border-slate-500">{{ $totalBooks ?? $books->total() }}</span>
         </h2>
 
         <div class="flex items-center gap-2 w-full md:w-auto">
             
-            <form action="{{ route('admin.books.index') }}" method="GET" class="flex items-center gap-2">
-
-                <div class="relative group">
-                    
-                    <div class="h-10 w-48 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-200 text-sm rounded-lg flex items-center justify-between px-3 cursor-pointer hover:border-blue-500 hover:text-blue-600 transition shadow-sm select-none relative z-10">
-                        <span class="truncate font-medium flex items-center gap-2">
-                            <i class="fas fa-filter text-xs text-gray-400"></i>
+            {{-- Form Tìm kiếm & Lọc (Thêm ID để JS bắt sự kiện) --}}
+            <form id="book-search-form" action="{{ route('admin.books.index') }}" method="GET" class="flex items-center gap-2">
+                
+                {{-- Category Filter --}}
+                <div class="relative" id="category-filter-wrapper">
+                    <button type="button" 
+                        onclick="toggleCategoryDropdown()"
+                        class="h-10 pl-4 pr-10 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg text-sm text-gray-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm flex items-center gap-2 min-w-[250px] relative">
+                        <span id="current-category-label" class="truncate max-w-[210px] font-medium block text-left">
                             @if(request('category_id') && request('category_id') != 'all')
-                                {{ $categories->firstWhere('id', request('category_id'))->name ?? 'Tất cả' }}
+                                {{ $categories->firstWhere('id', request('category_id'))->name ?? 'Tất cả thể loại' }}
                             @else
-                                Tất cả thể loại
+                                <span class="text-gray-500 dark:text-slate-400">Tất cả thể loại</span>
                             @endif
                         </span>
-                        <i class="fas fa-caret-down text-gray-400 group-hover:text-blue-500 transition-transform group-hover:rotate-180"></i>
-                    </div>
+                        
+                        <span class="absolute right-0 inset-y-0 flex items-center pr-3 pointer-events-none text-gray-400">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </span>
+                    </button>
 
-                    {{-- Dropdown Menu: Đã thêm shadow-soft --}}
-                    <div class="absolute top-full left-0 pt-2 w-[400px] hidden group-hover:block z-50">
-                        <div class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-soft overflow-hidden">
-                            <div class="bg-gray-50 dark:bg-slate-700 px-4 py-3 text-[11px] font-bold text-gray-500 dark:text-slate-300 uppercase tracking-wider border-b border-gray-100 dark:border-slate-600 flex justify-between items-center">
-                                <span>Chọn thể loại</span>
-                                <span class="text-blue-600 dark:text-blue-400 text-[10px] bg-blue-50 dark:bg-blue-900/50 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-800">A-Z</span>
+                    {{-- Dropdown Menu --}}
+                    <div id="category-dropdown" 
+                        class="hidden absolute top-[calc(100%+8px)] left-0 w-full bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 z-50 overflow-hidden">
+                        
+                        {{-- Search box inside dropdown --}}
+                        <div class="p-2 border-b border-gray-100 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-700/50">
+                            <div class="relative">
+                                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                                <input type="text" id="category-search" 
+                                    onkeyup="filterCategories()"
+                                    placeholder="Tìm thể loại..." 
+                                    class="w-full h-8 pl-8 pr-3 text-xs bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-md focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition">
                             </div>
+                        </div>
 
-                            <div class="p-3 grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto custom-scrollbar bg-white dark:bg-slate-800">
-                                <label class="cursor-pointer group/item">
-                                    <input type="radio" name="category_id" value="all" onchange="this.form.submit()" class="hidden peer"
-                                        {{ !request('category_id') || request('category_id') == 'all' ? 'checked' : '' }}>
-                                    <div class="px-3 py-2 rounded-lg border border-transparent text-sm text-gray-600 peer-checked:bg-blue-50 peer-checked:text-blue-700 peer-checked:border-blue-200 hover:bg-gray-50 hover:text-gray-900 transition flex items-center gap-2">
-                                        <div class="w-1 h-4 bg-gray-300 rounded-full group-hover/item:bg-blue-400 peer-checked:bg-blue-600 transition-colors"></div>
-                                        Tất cả
-                                    </div>
-                                </label>
+                        <div class="max-h-[280px] overflow-y-auto custom-scrollbar p-1.5 space-y-0.5">
+                            {{-- Option: All --}}
+                            <label class="cursor-pointer group block">
+                                <input type="radio" name="category_id" value="all" class="hidden peer"
+                                    {{ !request('category_id') || request('category_id') == 'all' ? 'checked' : '' }}>
+                                <div class="px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-slate-300 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/30 peer-checked:text-blue-600 dark:peer-checked:text-blue-400 peer-checked:font-semibold hover:bg-gray-50 dark:hover:bg-slate-700/80 transition flex items-center justify-between">
+                                    <span>Tất cả</span>
+                                    <i class="fas fa-check text-blue-600 dark:text-blue-400 text-xs opacity-0 peer-checked:opacity-100 transition-opacity"></i>
+                                </div>
+                            </label>
 
-                                @foreach($categories as $cat)
-                                <label class="cursor-pointer group/item">
-                                    <input type="radio" name="category_id" value="{{ $cat->id }}" onchange="this.form.submit()" class="hidden peer"
-                                        {{ request('category_id') == $cat->id ? 'checked' : '' }}>
-                                    
-                                    <div class="px-3 py-2 rounded-lg border border-transparent text-sm text-gray-600 peer-checked:bg-blue-50 peer-checked:text-blue-700 peer-checked:font-bold peer-checked:border-blue-200 hover:bg-gray-50 hover:text-gray-900 transition truncate flex items-center gap-2">
-                                        <div class="w-1 h-4 bg-gray-200 rounded-full group-hover/item:bg-blue-300 peer-checked:bg-blue-600 transition-colors"></div>
-                                        {{ $cat->name }}
-                                    </div>
-                                </label>
-                                @endforeach
-                            </div>
+                            {{-- Options: Categories --}}
+                            @foreach($categories as $cat)
+                            <label class="cursor-pointer group block category-item" data-name="{{ strtolower($cat->name) }}">
+                                <input type="radio" name="category_id" value="{{ $cat->id }}" class="hidden peer"
+                                    {{ request('category_id') == $cat->id ? 'checked' : '' }}>
+                                <div class="px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-slate-300 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/30 peer-checked:text-blue-600 dark:peer-checked:text-blue-400 peer-checked:font-semibold hover:bg-gray-50 dark:hover:bg-slate-700/80 transition flex items-center justify-between">
+                                    <span>{{ $cat->name }}</span>
+                                    <i class="fas fa-check text-blue-600 dark:text-blue-400 text-xs opacity-0 peer-checked:opacity-100 transition-opacity"></i>
+                                </div>
+                            </label>
+                            @endforeach
                             
-                            <div class="bg-gray-50 dark:bg-slate-700 border-t border-gray-100 dark:border-slate-600 p-2 text-center text-[10px] text-gray-400 dark:text-slate-400">
-                                Nhấn vào để lọc ngay
+                            <div id="no-category-found" class="hidden px-3 py-4 text-center text-xs text-gray-400 dark:text-slate-500 italic">
+                                Không tìm thấy thể loại
                             </div>
                         </div>
                     </div>
+
+                    {{-- Overlay to close dropdown --}}
+                    <div id="dropdown-overlay" onclick="toggleCategoryDropdown()" class="hidden fixed inset-0 z-40 bg-transparent"></div>
                 </div>
-                <div class="relative w-40 md:w-60 group">
-                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+
+                {{-- Search Input --}}
+                {{-- Search Input (Flex container to fix alignment) --}}
+                <div class="relative w-full md:w-80 group flex">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-20">
                         <i class="fas fa-search text-gray-400 text-xs group-focus-within:text-blue-500 transition"></i>
                     </div>
                     
-                    <input type="text" name="keyword" placeholder="Tên sách, tác giả..." value="{{ request('keyword') }}"
-                        class="h-10 w-full pl-9 pr-10 border border-gray-300 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition shadow-sm bg-white dark:bg-slate-700 text-gray-800 dark:text-white dark:placeholder-slate-400">
+                    <input type="text" name="keyword" placeholder="Nhập tên sách, tác giả..." value="{{ request('keyword') }}"
+                        class="h-10 w-full pl-9 pr-3 border border-gray-300 dark:border-slate-600 rounded-l-lg border-r-0 text-sm focus:outline-none focus:ring-0 focus:border-blue-500 transition shadow-sm bg-white dark:bg-slate-700 text-gray-800 dark:text-white dark:placeholder-slate-400 z-10">
                     
-                    <button type="submit" class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-r-lg transition cursor-pointer" title="Tìm kiếm">
+                    <button type="submit" class="h-10 px-4 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-r-lg text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-slate-600 transition cursor-pointer flex items-center justify-center flex-none z-10" title="Tìm kiếm">
                         <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
 
-                @if(request('keyword') || (request('category_id') && request('category_id') != 'all') || request('per_page') != '10' && request('per_page'))
-                <a href="{{ route('admin.books.index') }}" class="h-10 w-10 bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-500 rounded-lg text-sm transition flex items-center justify-center shadow-sm" title="Xóa bộ lọc">
-                    <i class="fas fa-times"></i>
-                </a>
-                @endif
+                {{-- Button Xóa lọc (Ẩn hiện bằng JS) --}}
+                <button type="button" 
+                    id="clear-filter-btn"
+                    onclick="clearFilters()" 
+                    class="{{ (request('keyword') || (request('category_id') && request('category_id') != 'all')) ? '' : 'hidden' }} h-10 w-10 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition shadow-sm flex items-center justify-center flex-none" 
+                    title="Xóa bộ lọc (Reset)">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
             </form>
 
-            <div class="h-8 w-px bg-gray-300 mx-1"></div>
+            <div class="h-8 w-px bg-gray-300 dark:bg-slate-600 mx-1 hidden md:block"></div>
 
-            {{-- Nút thêm mới: Thêm shadow-soft --}}
-            <a href="{{ route('admin.books.create') }}" class="h-10 bg-blue-600 text-white px-4 rounded-lg text-sm hover:bg-blue-700 flex items-center justify-center shadow-soft hover:shadow-lg transition transform hover:scale-105 whitespace-nowrap">
+            {{-- Nút thêm mới --}}
+            <a href="{{ route('admin.books.create') }}" class="h-10 bg-blue-600 text-white px-4 rounded-lg text-sm hover:bg-blue-700 flex items-center justify-center shadow-soft transition whitespace-nowrap">
                 <i class="fas fa-plus mr-2"></i> Thêm mới
             </a>
         </div>
     </div>
 
-    {{-- Table Container: Đã thay shadow-sm thành shadow-soft --}}
-    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-soft border border-gray-100 dark:border-slate-700 flex-1 flex flex-col z-0 transition-colors duration-300">
-        
-        <div class="flex-1 overflow-auto">
-            <table class="w-full text-left border-collapse">
-                <thead class="bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-slate-300 text-xs uppercase sticky top-0 z-10 shadow-sm">
-                    <tr>
-                        <th class="px-6 py-3 bg-gray-50 dark:bg-slate-700">Sách</th>
-                        <th class="px-6 py-3 bg-gray-50 dark:bg-slate-700">Tác giả</th>
-                        <th class="px-6 py-3 w-64 bg-gray-50 dark:bg-slate-700">Danh mục</th>
-                        {{-- FIX: Thêm class w-32 để cố định chiều rộng cột Trạng thái --}}
-                        <th class="px-6 py-3 text-center bg-gray-50 dark:bg-slate-700 w-32">Trạng thái</th>
-                        <th class="px-6 py-3 text-right bg-gray-50 dark:bg-slate-700">Hành động</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
-                    @forelse($books as $book)
-                    <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 group transition duration-150">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
-                                <div class="relative w-10 h-14 flex-shrink-0">
-                                    {{-- FIX: Logic xử lý hiển thị ảnh cover --}}
-                                    @php
-                                        $coverImage = $book->cover_image;
-                                        // Kiểm tra nếu là URL online (bắt đầu bằng http) thì giữ nguyên
-                                        // Nếu không thì mới dùng Storage::url
-                                        if ($coverImage && !str_starts_with($coverImage, 'http')) {
-                                            $coverImage = Storage::url($coverImage);
-                                        }
-                                        // Nếu không có ảnh thì dùng placeholder
-                                        $coverSrc = $coverImage ?: 'https://placehold.co/50';
-                                    @endphp
-                                    <img src="{{ $coverSrc }}"
-                                         class="w-full h-full object-cover rounded border border-gray-200 dark:border-slate-600 bg-gray-100 dark:bg-slate-600 shadow-sm"
-                                         alt="{{ $book->title }}"
-                                         onerror="this.onerror=null; this.src='https://placehold.co/50?text=No+Img';">
-                                </div>
-                                <div>
-                                    <span class="font-bold text-gray-800 dark:text-white block text-sm leading-tight mb-1" title="{{ $book->title }}">
-                                        {{ Str::limit($book->title, 35) }}
-                                    </span>
-                                    <span class="text-[10px] text-gray-400 dark:text-slate-500 flex items-center gap-1">
-                                        <i class="far fa-eye"></i> {{ number_format($book->view_count) }} lượt xem
-                                    </span>
-                                </div>
-                            </div>
-                        </td>
-
-                        <td class="px-6 py-4 text-gray-600 dark:text-slate-300 text-sm font-medium">
-                            {{ $book->author_name }}
-                        </td>
-
-                        <td class="px-6 py-4">
-                            <div class="flex flex-wrap gap-1">
-                                @forelse($book->categories as $cat)
-                                <span class="px-2 py-1 bg-blue-50 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 rounded-md text-[10px] font-bold border border-blue-100 dark:border-blue-800 whitespace-nowrap">
-                                    {{ $cat->name }}
-                                </span>
-                                @empty
-                                <span class="text-gray-400 dark:text-slate-500 text-xs italic">Chưa phân loại</span>
-                                @endforelse
-                            </div>
-                        </td>
-
-                        <td class="px-6 py-4 text-center">
-                            @if($book->is_approved)
-                            {{-- FIX: Thêm justify-center, w-24 để đồng bộ kích thước --}}
-                            <span class="inline-flex items-center justify-center gap-1 text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900/50 px-2 py-1 rounded-full text-[10px] font-bold border border-green-200 dark:border-green-800 w-24 whitespace-nowrap">
-                                <i class="fas fa-check-circle"></i> Đã duyệt
-                            </span>
-                            @else
-                            {{-- FIX: Thêm justify-center, w-24 để đồng bộ kích thước --}}
-                            <span class="inline-flex items-center justify-center gap-1 text-yellow-700 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-900/50 px-2 py-1 rounded-full text-[10px] font-bold border border-yellow-200 dark:border-yellow-800 w-24 whitespace-nowrap">
-                                <i class="fas fa-clock"></i> Chờ duyệt
-                            </span>
-                            @endif
-                        </td>
-
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex justify-end items-center gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                                {{-- Nút Duyệt (chỉ hiện khi chưa được duyệt) --}}
-                                @if(!$book->is_approved)
-                                <form action="{{ route('admin.books.approve', $book) }}" method="POST" class="inline">
-                                    @csrf
-                                    <button class="h-8 px-3 flex items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400 hover:bg-green-500 hover:text-white transition text-xs font-bold gap-1" title="Duyệt sách này">
-                                        <i class="fas fa-check"></i> Duyệt
-                                    </button>
-                                </form>
-                                @endif
-                                <a href="{{ route('admin.books.edit', $book) }}" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-slate-600 text-gray-500 dark:text-slate-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 hover:text-blue-600 dark:hover:text-blue-400 transition" title="Chỉnh sửa">
-                                    <i class="fas fa-edit text-xs"></i>
-                                </a>
-                                <form action="{{ route('admin.books.destroy', $book) }}" method="POST" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa cuốn sách này không?');">
-                                    @csrf @method('DELETE')
-                                    <button class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-slate-600 text-gray-500 dark:text-slate-300 hover:bg-red-100 dark:hover:bg-red-900/50 hover:text-red-500 dark:hover:text-red-400 transition" title="Xóa">
-                                        <i class="fas fa-trash text-xs"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="5" class="text-center py-12 text-gray-500 dark:text-slate-400">
-                            <div class="flex flex-col items-center justify-center">
-                                <i class="fas fa-search text-4xl text-gray-300 dark:text-slate-600 mb-3"></i>
-                                <p>Không tìm thấy cuốn sách nào phù hợp.</p>
-                                @if(request('keyword') || request('category_id'))
-                                <a href="{{ route('admin.books.index') }}" class="text-blue-600 dark:text-blue-400 text-sm hover:underline mt-1 font-medium">Xóa bộ lọc</a>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        @if($books->hasPages())
-        <div class="p-4 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-700 flex justify-center flex-none">
-            {{ $books->links('vendor.pagination.admin') }}
-        </div>
-        @endif
+    {{-- Table Container --}}
+    <div id="books-table-container" class="bg-white dark:bg-slate-800 rounded-xl shadow-soft border border-gray-100 dark:border-slate-700 flex-1 flex flex-col z-0 transition-colors duration-300">
+        @include('admin.books.table')
     </div>
 
 </div>
+
+{{-- JAVASCRIPT XỬ LÝ ENAX (VANILLA JS CHO ỔN ĐỊNH) --}}
+<script>
+    // 1. Dropdown Toggle & Animation
+    function toggleCategoryDropdown() {
+        const dropdown = document.getElementById('category-dropdown');
+        const overlay = document.getElementById('dropdown-overlay');
+        
+        if (dropdown.classList.contains('hidden')) {
+            // OPEN
+            dropdown.classList.remove('hidden');
+            overlay.classList.remove('hidden');
+            
+            // Slide Down Animation
+            dropdown.animate([
+                { opacity: 0, transform: 'translateY(-10px)' },
+                { opacity: 1, transform: 'translateY(0)' }
+            ], {
+                duration: 200, easing: 'ease-out', fill: 'forwards'
+            });
+
+            setTimeout(() => {
+                const searchInput = document.getElementById('category-search');
+                if(searchInput) searchInput.focus();
+            }, 100);
+
+        } else {
+            // CLOSE
+            const animation = dropdown.animate([
+                { opacity: 1, transform: 'translateY(0)' },
+                { opacity: 0, transform: 'translateY(-10px)' }
+            ], {
+                duration: 150, easing: 'ease-in', fill: 'forwards'
+            });
+            
+            animation.onfinish = () => {
+                dropdown.classList.add('hidden');
+                overlay.classList.add('hidden');
+            };
+        }
+    }
+
+    // 2. Filter Client-side inside Dropdown (Improved Logic)
+    function filterCategories() {
+        const input = document.getElementById('category-search');
+        // Chuẩn hóa chuỗi tìm kiếm: bỏ dấu, về chữ thường
+        const filter = input.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const items = document.querySelectorAll('.category-item');
+        const noResults = document.getElementById('no-category-found');
+        let hasVisible = false;
+
+        items.forEach(item => {
+            // Lấy data-name gốc và cũng chuẩn hóa tương tự
+            const originalName = item.getAttribute('data-name').toLowerCase();
+            const normalizedName = originalName.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            
+            // Tìm kiếm tương đối (cho phép gõ không dấu tìm có dấu)
+            if (normalizedName.includes(filter)) {
+                item.style.display = "";
+                hasVisible = true;
+            } else {
+                item.style.display = "none";
+            }
+        });
+        
+        if (!hasVisible) {
+            noResults.classList.remove('hidden');
+        } else {
+            noResults.classList.add('hidden');
+        }
+    }
+
+    // 3. MAIN AJAX LOGIC (Vanilla JS)
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchForm = document.getElementById('book-search-form');
+        const tableContainer = document.getElementById('books-table-container');
+
+        // A. Handle Form Submit (Search)
+        if (searchForm) {
+            searchForm.addEventListener('submit', function(e) {
+                e.preventDefault(); // Stop page reload
+                fetchData(getFullUrl());
+            });
+        }
+
+        // B. Handle Category Radio Change
+        const radios = document.querySelectorAll('input[name="category_id"]');
+        radios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Update Label immediately
+                updateCategoryLabel(this);
+                // Close Dropdown
+                toggleCategoryDropdown();
+                // Fetch Data
+                fetchData(getFullUrl());
+            });
+        });
+
+        // C. Handle Pagination Clicks (Event Delegation)
+        // Vì pagination inner HTML thay đổi sau khi AJAX, nên phải dùng delegation từ container cha
+        if (tableContainer) {
+            tableContainer.addEventListener('click', function(e) {
+                // Cập nhật selector chính xác cho Laravel Pagination (Tailwind)
+                // Thường là thẻ 'a' nằm trong 'nav' hoặc thẻ 'a' có class page-link (tùy view)
+                // Selector này bao quát cả nav > a và .pagination a
+                const link = e.target.closest('nav[role="navigation"] a') || e.target.closest('.pagination a'); 
+                
+                if (link && link.getAttribute('href')) {
+                    e.preventDefault();
+                    // Lấy URL trực tiếp từ href
+                    fetchData(link.getAttribute('href'));
+                }
+            });
+        }
+
+        // Helper: Get Current URL with Params
+        function getFullUrl(page = 1) {
+            // Lấy URL form action
+            const baseUrl = searchForm.getAttribute('action');
+            // Lấy FormData
+            const formData = new FormData(searchForm);
+            // Convert to Query String
+            const params = new URLSearchParams(formData);
+            // Reset page param if generic fetch (or keep existing logic)
+            // Note: Laravel pagination links already contain full query params sometimes.
+            // But here we build from form.
+            return `${baseUrl}?${params.toString()}`;
+        }
+
+        // Core Fetch Function
+        function fetchData(url) {
+            // Visual Loading Feedback
+            tableContainer.style.opacity = '0.5';
+            tableContainer.style.pointerEvents = 'none';
+
+            // Check Visibility of Clear Button
+            checkClearButtonVisibility();
+
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest', // Important for Laravel $request->ajax()
+                    'Accept': 'text/html'
+                }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.text();
+            })
+            .then(html => {
+                tableContainer.innerHTML = html;
+                
+                // Update Browser URL (History)
+                window.history.pushState({}, '', url);
+            })
+            .catch(error => {
+                console.error('Error loading books:', error);
+                alert('Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại.');
+            })
+            .finally(() => {
+                tableContainer.style.opacity = '1';
+                tableContainer.style.pointerEvents = 'auto';
+            });
+        }
+
+        // Helper: Update UI Label
+        function updateCategoryLabel(radioInput) {
+            const labelSpan = document.getElementById('current-category-label');
+            
+            if (radioInput.value === 'all') {
+                labelSpan.innerHTML = '<span class="text-gray-500 dark:text-slate-400">Tất cả thể loại</span>';
+            } else {
+                // Find sibling text
+                // Structure: label > input ~ div > span
+                const wrapperDiv = radioInput.nextElementSibling; // the div after input
+                const nameSpan = wrapperDiv.querySelector('span'); // first span
+                if (nameSpan) {
+                    labelSpan.innerText = nameSpan.innerText;
+                }
+            }
+        }
+
+        // Helper: Check Clear Button
+        function checkClearButtonVisibility() {
+            const btn = document.getElementById('clear-filter-btn');
+            const keyword = searchForm.querySelector('input[name="keyword"]').value;
+            const category = searchForm.querySelector('input[name="category_id"]:checked')?.value;
+
+            if (keyword || (category && category !== 'all')) {
+                btn.classList.remove('hidden');
+            } else {
+                btn.classList.add('hidden');
+            }
+        }
+
+        // Make global for existing onclick="clearFilters()"
+        window.clearFilters = function() {
+            // Reset Inputs
+            searchForm.querySelector('input[name="keyword"]').value = '';
+            
+            const allRadio = searchForm.querySelector('input[name="category_id"][value="all"]');
+            if (allRadio) {
+                allRadio.checked = true;
+                updateCategoryLabel(allRadio);
+            }
+
+            // Fetch
+            fetchData(getFullUrl());
+        };
+    });
+</script>
 @endsection

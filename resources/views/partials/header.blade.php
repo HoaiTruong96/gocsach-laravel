@@ -246,7 +246,7 @@
                             class="flex items-center gap-2 focus:outline-none py-1 group-hover:opacity-80 transition cursor-pointer relative z-20">
                             @include('partials.user-avatar-with-frame', [
                                 'user' => Auth::user(),
-                                'size' => 'w-10 h-10',
+                                'size' => 'w-12 h-12',
                                 'avatarSize' => 'w-9 h-9'
                             ])
                             <div class="hidden lg:flex flex-col items-start">
