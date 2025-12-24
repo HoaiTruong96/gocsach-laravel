@@ -209,9 +209,10 @@ class PostController extends Controller
         $user = Auth::user();
         $post = Post::with('book')->findOrFail($id);
 
-        // Chỉ cho phép chủ bài viết sửa
-        if ($post->user_id !== $user->id) {
-            abort(403, 'Bạn không có quyền sửa bài viết này.');
+        // Chỉ cho phép chủ bài viết hoặc admin sửa
+        $isAdmin = $user->role === 'admin';
+        if (!$isAdmin && (int)$post->user_id !== (int)$user->id) {
+            return redirect()->back()->with('error', 'Bạn không có quyền sửa bài viết này.');
         }
 
         return view('edit-review', compact('user', 'post'));
@@ -223,9 +224,10 @@ class PostController extends Controller
         $user = Auth::user();
         $post = Post::findOrFail($id);
 
-        // Chỉ cho phép chủ bài viết sửa
-        if ($post->user_id !== $user->id) {
-            abort(403, 'Bạn không có quyền sửa bài viết này.');
+        // Chỉ cho phép chủ bài viết hoặc admin sửa
+        $isAdmin = $user->role === 'admin';
+        if (!$isAdmin && (int)$post->user_id !== (int)$user->id) {
+            return redirect()->back()->with('error', 'Bạn không có quyền sửa bài viết này.');
         }
 
         // Validate dữ liệu
@@ -251,8 +253,8 @@ class PostController extends Controller
             $thumbnailPath = $request->thumbnail_url;
         }
 
-        // Xác định trạng thái: Admin = tự động duyệt, User = chờ duyệt lại
-        $isAdmin = $user->role === 'admin';
+        // Xác định trạng thái: Admin sửa = tự động duyệt, User sửa = chờ duyệt lại
+        // Biến $isAdmin đã được định nghĩa ở trên
         $status = $isAdmin ? 'published' : 'pending';
 
         // Cập nhật bài viết

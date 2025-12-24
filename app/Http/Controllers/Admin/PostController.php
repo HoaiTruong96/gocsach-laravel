@@ -41,15 +41,72 @@ class PostController extends Controller
     }
 
     /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id)
+    {
+        $post = Post::with(['user', 'book'])->findOrFail($id);
+
+        return view('admin.posts.edit', compact('post'));
+    }
+
+    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, $id)
     {
         $post = Post::findOrFail($id);
-        $oldStatus = $post->status; // Lưu trạng thái cũ để so sánh
+        $oldStatus = $post->status;
 
-        // 1. Cập nhật trạng thái
-        // (status được gửi từ form: 'published' hoặc 'rejected')
+        // === XỬ LÝ KHI ADMIN CHỈNH SỬA NỘI DUNG (từ form edit) ===
+        if ($request->has('edit_content')) {
+            // Validate dữ liệu
+            $request->validate([
+                'title' => 'required|string|max:255',
+                'rating' => 'required|numeric|min:1|max:5',
+                'content' => 'required|min:10',
+                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
+                'thumbnail_url' => 'nullable|url|max:500',
+            ], [
+                'title.required' => 'Vui lòng nhập tiêu đề bài viết.',
+                'rating.required' => 'Vui lòng chọn điểm đánh giá.',
+                'content.required' => 'Vui lòng nhập nội dung bài viết.',
+                'content.min' => 'Nội dung quá ngắn (tối thiểu 10 ký tự).',
+            ]);
+
+            // Xử lý upload thumbnail
+            $thumbnailPath = $post->thumbnail;
+            if ($request->hasFile('thumbnail')) {
+                $thumbnailPath = $request->file('thumbnail')->store('posts/thumbnails', 'public');
+            } elseif ($request->filled('thumbnail_url')) {
+                $thumbnailPath = $request->thumbnail_url;
+            }
+
+            // Cập nhật bài viết - Admin edit = tự động published
+            $post->update([
+                'title' => $request->input('title'),
+                'rating' => $request->input('rating'),
+                'content' => $request->input('content'),
+                'thumbnail' => $thumbnailPath,
+                'status' => 'published', // Admin edit = tự động duyệt
+            ]);
+
+            // Ghi log
+            $bookTitle = $post->book->title ?? 'Sách đã xóa';
+            AdminActivityLog::log(
+                'update',
+                "Chỉnh sửa bài review về sách: {$bookTitle}",
+                Post::class,
+                $post->id,
+                ['status' => $oldStatus],
+                ['status' => 'published', 'title' => $post->title]
+            );
+
+            return redirect()->route('admin.posts.index')->with('success', 'Đã cập nhật bài viết thành công!');
+        }
+
+        // === XỬ LÝ KHI THAY ĐỔI TRẠNG THÁI (từ index) ===
+        // (status được gửi từ form: 'published', 'hidden', hoặc 'rejected')
         $post->update(['status' => $request->status]);
 
         // 2. Ghi log hoạt động
