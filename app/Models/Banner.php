@@ -3,8 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Banner extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = ['title', 'tag', 'description', 'image', 'rating', 'link', 'is_active', 'order'];
 }

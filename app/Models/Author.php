@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Author extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
-    // Tắt timestamps vì bảng không có created_at/updated_at
-    public $timestamps = false;
+    // Timestamps: chỉ cần updated_at cho deleted_at hoạt động
+    public $timestamps = true;
 
     protected $fillable = [
         'name',

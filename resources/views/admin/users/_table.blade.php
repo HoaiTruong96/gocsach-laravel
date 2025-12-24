@@ -20,8 +20,15 @@
                 <td class="px-5 py-4">
                     <div class="flex items-center gap-3">
                         <img src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random' }}"
-                            class="w-10 h-10 rounded-full border dark:border-slate-600">
-                        <span class="font-bold text-gray-800 dark:text-white">{{ $user->name }}</span>
+                            class="w-10 h-10 rounded-full border dark:border-slate-600 {{ !$user->is_active ? 'opacity-50 grayscale' : '' }}">
+                        <div>
+                            <span class="font-bold text-gray-800 dark:text-white {{ !$user->is_active ? 'line-through opacity-60' : '' }}">{{ $user->name }}</span>
+                            @if(!$user->is_active)
+                                <span class="ml-2 inline-flex items-center px-1.5 py-0.5 bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-300 rounded text-xs font-bold">
+                                    <i class="fas fa-ban mr-1 text-[10px]"></i>Đã khóa
+                                </span>
+                            @endif
+                        </div>
                     </div>
                 </td>
                 <td class="px-5 py-4 text-sm text-gray-600 dark:text-slate-300 max-w-[220px] truncate"
@@ -50,19 +57,27 @@
                 </td>
                 <td class="px-5 py-4 text-center">
                     @if($user->role !== 'admin')
-                        <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST"
-                            onsubmit="return confirm('Bạn có chắc muốn xóa thành viên {{ $user->name }}?');">
-                            @csrf @method('DELETE')
-                            <button
-                                class="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 hover:bg-red-500 dark:hover:bg-red-600 hover:text-white transition opacity-0 group-hover:opacity-100"
-                                title="Xóa">
-                                <i class="fas fa-trash text-xs"></i>
-                            </button>
+                        <form action="{{ route('admin.users.toggle-active', $user->id) }}" method="POST"
+                            onsubmit="return confirm('{{ $user->is_active ? 'Vô hiệu hóa' : 'Kích hoạt' }} tài khoản {{ $user->name }}?');">
+                            @csrf
+                            @if($user->is_active)
+                                <button
+                                    class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-300 hover:bg-orange-500 dark:hover:bg-orange-600 hover:text-white transition opacity-0 group-hover:opacity-100"
+                                    title="Vô hiệu hóa">
+                                    <i class="fas fa-ban text-xs"></i>
+                                </button>
+                            @else
+                                <button
+                                    class="w-8 h-8 flex items-center justify-center rounded-full bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-300 hover:bg-green-500 dark:hover:bg-green-600 hover:text-white transition"
+                                    title="Kích hoạt lại">
+                                    <i class="fas fa-check text-xs"></i>
+                                </button>
+                            @endif
                         </form>
                     @else
                         <span
                             class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-slate-600 text-gray-400 dark:text-slate-500"
-                            title="Admin không thể xóa">
+                            title="Admin không thể vô hiệu hóa">
                             <i class="fas fa-lock text-xs"></i>
                         </span>
                     @endif

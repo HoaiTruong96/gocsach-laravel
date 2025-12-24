@@ -330,10 +330,11 @@ class HomeController extends Controller
                 'App\Notifications\NewReportNotification',
                 'App\Notifications\NewBookRequestNotification',
                 'App\Notifications\BookApprovedNotification',
-                'App\Notifications\AdminNewPostNotification'
+                'App\Notifications\AdminNewPostNotification',
+                'App\Notifications\ReportResolvedNotification'
             ];
 
-            $systemTypes = ['new_report', 'book_request', 'book_approved', 'admin_new_post'];
+            $systemTypes = ['new_report', 'book_request', 'book_approved', 'admin_new_post', 'report_resolved'];
 
             // Check nếu là system notification
             $isSystemNotification = in_array($dbType, $systemClasses) || in_array($dataType, $systemTypes) || isset($notification->data['icon']);
@@ -344,6 +345,7 @@ class HomeController extends Controller
                 'App\Notifications\NewBookRequestNotification' => 'book_request',
                 'App\Notifications\BookApprovedNotification' => 'book_approved',
                 'App\Notifications\AdminNewPostNotification' => 'admin_new_post',
+                'App\Notifications\ReportResolvedNotification' => 'report_resolved',
                 default => ''
             };
 
@@ -374,6 +376,18 @@ class HomeController extends Controller
                         $icon = 'fas fa-file-contract';
                         $title = 'Bài đăng mới ';
                         $color = 'text-red-600';
+                        break;
+                    case 'report_resolved':
+                        $status = $notification->data['status'] ?? 'resolved';
+                        if ($status === 'approved') {
+                            $icon = 'fas fa-check-circle';
+                            $title = 'Báo cáo được chấp thuận';
+                            $color = 'text-green-600';
+                        } else {
+                            $icon = 'fas fa-times-circle';
+                            $title = 'Báo cáo bị từ chối';
+                            $color = 'text-red-600';
+                        }
                         break;
                 }
             }
