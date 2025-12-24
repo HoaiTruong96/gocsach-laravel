@@ -117,7 +117,15 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('
 
 // 1. Giao diện nhập mã OTP xác thực
 Route::get('/email/verify', function () {
-    return view('auth.verify-email');
+    return view('auth.verify-otp', [
+        'title' => 'Xác Thực Email',
+        'heading' => 'Xác Thực Email',
+        'icon' => 'fa-envelope-open-text',
+        'email' => Auth::user()->email,
+        'verifyRoute' => route('verification.verify'),
+        'resendRoute' => route('verification.send'),
+        'type' => 'registration'
+    ]);
 })->middleware('auth')->name('verification.notice');
 
 // 2. Xử lý xác thực mã OTP

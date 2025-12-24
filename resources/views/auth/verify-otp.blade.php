@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xác Thực Mã - Góc Sách</title>
+    <title>{{ $title ?? 'Xác Thực Mã' }} - Góc Sách</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script>
@@ -47,9 +47,9 @@
     <div class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
         <div class="bg-brand-green p-6 text-center text-white">
             <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                <i class="fas fa-shield-alt text-2xl"></i>
+                <i class="fas {{ $icon ?? 'fa-shield-alt' }} text-2xl"></i>
             </div>
-            <h2 class="text-2xl font-serif font-bold">Nhập Mã Xác Thực</h2>
+            <h2 class="text-2xl font-serif font-bold">{{ $heading ?? 'Nhập Mã Xác Thực' }}</h2>
             <p class="text-white/80 text-sm mt-1">Chúng tôi đã gửi mã 6 số vào email của bạn</p>
         </div>
 
@@ -70,13 +70,15 @@
 
             <div class="text-center mb-6">
                 <p class="text-gray-600 text-sm">
-                    Mã đã được gửi đến <span class="font-bold text-brand-green">{{ session('reset_email') ?? $email ?? '' }}</span>
+                    Mã đã được gửi đến <span class="font-bold text-brand-green">{{ $email }}</span>
                 </p>
             </div>
 
-            <form method="POST" action="{{ route('password.verify') }}" id="verify-form" onsubmit="return validateCode()">
+            <form method="POST" action="{{ $verifyRoute }}" id="verify-form" onsubmit="return validateCode()">
                 @csrf
-                <input type="hidden" name="email" value="{{ session('reset_email') ?? $email ?? '' }}">
+                @if(isset($email))
+                    <input type="hidden" name="email" value="{{ $email }}">
+                @endif
                 
                 {{-- Ô nhập mã 6 số --}}
                 <div class="flex justify-center gap-2 mb-2">
@@ -105,9 +107,11 @@
 
             <div class="text-center mt-6 pt-6 border-t border-gray-100">
                 <p class="text-gray-500 text-sm mb-3">Không nhận được mã?</p>
-                <form method="POST" action="{{ route('password.resend') }}" class="inline">
+                <form method="POST" action="{{ $resendRoute }}" class="inline">
                     @csrf
-                    <input type="hidden" name="email" value="{{ session('reset_email') ?? $email ?? '' }}">
+                    @if(isset($email))
+                        <input type="hidden" name="email" value="{{ $email }}">
+                    @endif
                     <button type="submit" class="text-brand-green font-medium hover:underline">
                         <i class="fas fa-redo mr-1"></i>
                         Gửi lại mã
@@ -116,10 +120,20 @@
             </div>
 
             <div class="text-center mt-4">
-                <a href="{{ route('password.request') }}" class="text-gray-500 text-sm hover:underline">
-                    <i class="fas fa-arrow-left mr-1"></i>
-                    Quay lại
-                </a>
+                @if($type === 'registration')
+                    <form method="POST" action="{{ route('logout') }}" class="inline">
+                        @csrf
+                        <button type="submit" class="text-gray-500 text-sm hover:underline">
+                            <i class="fas fa-sign-out-alt mr-1"></i>
+                            Đăng xuất
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('password.request') }}" class="text-gray-500 text-sm hover:underline">
+                        <i class="fas fa-arrow-left mr-1"></i>
+                        Quay lại
+                    </a>
+                @endif
             </div>
         </div>
     </div>

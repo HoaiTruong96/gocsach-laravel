@@ -130,7 +130,7 @@ class AuthController extends Controller
         // Gửi email chứa mã OTP
         Mail::send([], [], function ($message) use ($request, $code, $user) {
             $message->to($request->email)
-                ->subject('Xác thực tài khoản - Góc Sách')
+                ->subject('Mã xác thực - Góc Sách')
                 ->html("
                     <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;'>
                         <h2 style='color: #3E5F4E; text-align: center;'>📚 Góc Sách</h2>
@@ -281,7 +281,7 @@ class AuthController extends Controller
         // Gửi email chứa mã OTP
         Mail::send([], [], function ($message) use ($email, $code, $user) {
             $message->to($email)
-                ->subject('Mã xác thực đặt lại mật khẩu - Góc Sách')
+                ->subject('Mã xác thực - Góc Sách')
                 ->html("
                     <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;'>
                         <h2 style='color: #3E5F4E; text-align: center;'>📚 Góc Sách</h2>
@@ -309,7 +309,15 @@ class AuthController extends Controller
         if (!$email) {
             return redirect()->route('password.request');
         }
-        return view('auth.verify-code', ['email' => $email]);
+        return view('auth.verify-otp', [
+            'title' => 'Xác Thực Mã',
+            'heading' => 'Nhập Mã Xác Thực',
+            'icon' => 'fa-shield-alt',
+            'email' => $email,
+            'verifyRoute' => route('password.verify'),
+            'resendRoute' => route('password.resend'),
+            'type' => 'password_reset'
+        ]);
     }
 
     // Xác thực mã OTP
@@ -454,7 +462,7 @@ class AuthController extends Controller
         // Gửi email
         Mail::send([], [], function ($message) use ($user, $code) {
             $message->to($user->email)
-                ->subject('Mã xác thực tài khoản - Góc Sách')
+                ->subject('Mã xác thực - Góc Sách')
                 ->html("
                     <div style='font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;'>
                         <h2 style='color: #3E5F4E; text-align: center;'>📚 Góc Sách</h2>
