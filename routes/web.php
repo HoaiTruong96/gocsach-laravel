@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\BookSuggestionController;
+use App\Http\Controllers\ChatbotController;
 
 // ====================================================
 // 1. NHÓM PUBLIC (Ai cũng xem được)
@@ -54,6 +55,9 @@ Route::get('/ajax-search', function (Illuminate\Http\Request $request) {
 
     return response()->json($books);
 })->name('ajax.search');
+
+// Chatbot API
+Route::post('/api/chatbot', [ChatbotController::class, 'chat'])->name('chatbot.chat');
 
 // Trang chi tiết bài viết Tạp chí
 Route::get('/tap-chi/{slug}', [ArticleController::class, 'show'])->name('articles.show');
@@ -252,7 +256,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('books/{book}/approve', [AdminBookController::class, 'approve'])->name('books.approve');
     Route::resource('articles', ArticleController::class);
     Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class);
-    Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->only(['index', 'update', 'destroy']);
+    Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)->only(['index', 'edit', 'update', 'destroy']);
     Route::post('posts/{id}/approve-delete', [\App\Http\Controllers\Admin\PostController::class, 'approveDelete'])->name('posts.approve-delete');
     Route::post('posts/{id}/reject-delete', [\App\Http\Controllers\Admin\PostController::class, 'rejectDelete'])->name('posts.reject-delete');
     Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
