@@ -6,6 +6,7 @@
     @php
         $countAll = \App\Models\Post::whereNotNull('book_id')->count();
         $countPending = \App\Models\Post::whereNotNull('book_id')->where('status', 'pending')->count();
+        $countPendingDelete = \App\Models\Post::whereNotNull('book_id')->where('status', 'pending_delete')->count();
         $countPublished = \App\Models\Post::whereNotNull('book_id')->where('status', 'published')->count();
         $countHidden = \App\Models\Post::whereNotNull('book_id')->where('status', 'hidden')->count();
         $countRejected = \App\Models\Post::whereNotNull('book_id')->where('status', 'rejected')->count();
@@ -39,6 +40,11 @@
                     class="ajax-tab px-4 py-2 rounded-lg text-sm font-medium transition-all {{ request('status') == 'rejected' ? 'bg-red-500 text-white shadow-md' : 'bg-white dark:bg-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-500 border border-gray-200 dark:border-slate-500' }}">
                     <i class="fas fa-ban mr-1"></i> Từ chối
                     <span class="ml-1 px-1.5 py-0.5 rounded text-xs font-bold {{ request('status') == 'rejected' ? 'bg-white/20' : 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300' }}">{{ $countRejected }}</span>
+                </button>
+                <button type="button" data-status="pending_delete"
+                    class="ajax-tab px-4 py-2 rounded-lg text-sm font-medium transition-all {{ request('status') == 'pending_delete' ? 'bg-orange-500 text-white shadow-md' : 'bg-white dark:bg-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-500 border border-gray-200 dark:border-slate-500' }}">
+                    <i class="fas fa-trash-alt mr-1"></i> Chờ xóa
+                    <span class="ml-1 px-1.5 py-0.5 rounded text-xs font-bold {{ request('status') == 'pending_delete' ? 'bg-white/20' : 'bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300' }}">{{ $countPendingDelete }}</span>
                 </button>
             </div>
         </div>
@@ -122,6 +128,11 @@
                                             <i class="fas fa-eye-slash mr-1"></i>Đang ẩn
                                         </span>
                                         @break
+                                    @case('pending_delete')
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300">
+                                            <i class="fas fa-trash-alt mr-1"></i>Chờ xóa
+                                        </span>
+                                        @break
                                     @default
                                         <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 dark:bg-slate-600 text-gray-600">{{ $review->status }}</span>
                                 @endswitch
@@ -129,11 +140,6 @@
 
                             <td class="px-5 py-4 text-center align-top">
                                 <div class="flex justify-center gap-1.5">
-                                    {{-- Nút Sửa (luôn hiển thị) --}}
-                                    <a href="{{ route('admin.posts.edit', $review->id) }}"
-                                        class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 hover:bg-blue-500 dark:hover:bg-blue-600 hover:text-white transition" title="Sửa">
-                                        <i class="fas fa-edit text-xs"></i>
-                                    </a>
                                     @if($review->status == 'pending')
                                         {{-- Duyệt --}}
                                         <form action="{{ route('admin.posts.update', $review->id) }}" method="POST">
@@ -171,6 +177,22 @@
                                             @csrf @method('DELETE')
                                             <button class="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 hover:bg-red-500 dark:hover:bg-red-600 hover:text-white transition" title="Xóa">
                                                 <i class="fas fa-trash text-xs"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                    @if($review->status == 'pending_delete')
+                                        {{-- Duyệt xóa --}}
+                                        <form action="{{ route('admin.posts.approve-delete', $review->id) }}" method="POST" onsubmit="return confirm('Xác nhận xóa bài viết này?');">
+                                            @csrf
+                                            <button class="w-8 h-8 flex items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-300 hover:bg-orange-500 dark:hover:bg-orange-600 hover:text-white transition" title="Duyệt xóa">
+                                                <i class="fas fa-check text-xs"></i>
+                                            </button>
+                                        </form>
+                                        {{-- Từ chối xóa --}}
+                                        <form action="{{ route('admin.posts.reject-delete', $review->id) }}" method="POST">
+                                            @csrf
+                                            <button class="w-8 h-8 flex items-center justify-center rounded-full bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-300 hover:bg-green-500 dark:hover:bg-green-600 hover:text-white transition" title="Giữ bài">
+                                                <i class="fas fa-undo text-xs"></i>
                                             </button>
                                         </form>
                                     @endif
@@ -346,6 +368,7 @@
                     else if (s === 'published') tab.classList.add('bg-green-500', 'text-white', 'shadow-md');
                     else if (s === 'hidden') tab.classList.add('bg-gray-500', 'text-white', 'shadow-md');
                     else if (s === 'rejected') tab.classList.add('bg-red-500', 'text-white', 'shadow-md');
+                    else if (s === 'pending_delete') tab.classList.add('bg-orange-500', 'text-white', 'shadow-md');
                 } else {
                     tab.classList.add('bg-white', 'dark:bg-slate-600', 'text-gray-600', 'dark:text-slate-300', 'hover:bg-gray-100', 'dark:hover:bg-slate-500', 'border', 'border-gray-200', 'dark:border-slate-500');
                 }

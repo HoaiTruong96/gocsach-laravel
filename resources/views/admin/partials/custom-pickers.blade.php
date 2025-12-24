@@ -93,8 +93,7 @@ old('published_year'), 'placeholder' => 'Chọn năm', 'min' => 1900, 'max' => 2
 @elseif($type === 'rating')
     {{-- Rating Picker - Interactive Star Style (1.0 - 5.0) --}}
     @php
-        $numericValue = $value ? (float) $value : 0;
-        $currentVal = $value ? number_format($numericValue, 1) : '';
+        $currentVal = $value ? number_format((float) $value, 1) : '';
         $hasValue = !empty($currentVal);
     @endphp
     <div class="rating-picker-container" data-name="{{ $name }}" data-initial="{{ $currentVal }}">
@@ -109,7 +108,7 @@ old('published_year'), 'placeholder' => 'Chọn năm', 'min' => 1900, 'max' => 2
                     <i class="fas fa-star text-3xl text-gray-200 dark:text-slate-600 absolute inset-0"></i>
                     {{-- Filled star (clipped based on value) --}}
                     <div class="rating-star-fill absolute inset-0 overflow-hidden"
-                        style="width: {{ $hasValue && $numericValue >= $i ? '100' : ($hasValue && $numericValue > $i - 1 ? (($numericValue - ($i - 1)) * 100) : '0') }}%;">
+                        style="width: {{ $hasValue && $value >= $i ? '100' : ($hasValue && $value > $i - 1 ? (($value - ($i - 1)) * 100) : '0') }}%;">
                         <i class="fas fa-star text-3xl text-amber-400"></i>
                     </div>
                 </div>
