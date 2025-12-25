@@ -27,9 +27,12 @@ class SiteVisit extends Model
      */
     public static function trackVisit(string $ip): void
     {
+        // Use Laravel's session ID which is more reliable than PHP's session_id()
+        $sessionId = session()->getId() ?: null;
+        
         self::updateOrCreate(
             ['ip_address' => $ip],
-            ['session_id' => session_id(), 'last_activity' => now()]
+            ['session_id' => $sessionId, 'last_activity' => now()]
         );
     }
 
