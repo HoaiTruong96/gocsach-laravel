@@ -118,6 +118,11 @@
                                 title="Sửa">
                                 <i class="fas fa-pen text-xs"></i>
                             </a>
+                            <a href="{{ route('reviews.create', ['book_id' => $book->id]) }}"
+                                class="h-8 w-8 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 hover:bg-purple-500 dark:hover:bg-purple-600 hover:text-white transition flex items-center justify-center"
+                                title="Viết Review" target="_blank">
+                                <i class="fas fa-feather-alt text-xs"></i>
+                            </a>
                             <form action="{{ route('admin.books.destroy', $book) }}" method="POST" class="inline"
                                 onsubmit="return confirm('Bạn có chắc chắn muốn xóa cuốn sách này không?');">
                                 @csrf @method('DELETE')
