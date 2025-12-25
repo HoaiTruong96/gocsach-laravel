@@ -289,6 +289,28 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         return response()->json(['success' => false, 'message' => 'Invalid theme'], 400);
     })->name('set-theme');
 
+    // Theme Management Page
+    Route::get('/theme', function () {
+        return view('admin.theme.index');
+    })->name('theme.index');
+
+    // Save Theme Settings
+    Route::post('/theme/save-settings', function (Illuminate\Http\Request $request) {
+        $theme = $request->input('theme');
+        $settings = $request->input('settings');
+        
+        $validThemes = ['christmas', 'tet', 'valentine', 'halloween'];
+        
+        if (in_array($theme, $validThemes) && is_array($settings)) {
+            $allSettings = session('theme_settings', []);
+            $allSettings[$theme] = $settings;
+            session(['theme_settings' => $allSettings]);
+            return response()->json(['success' => true]);
+        }
+        
+        return response()->json(['success' => false, 'message' => 'Invalid data'], 400);
+    })->name('theme.save-settings');
+
     // Resource Controllers
     Route::resource('books', AdminBookController::class);
     Route::post('books/{book}/approve', [AdminBookController::class, 'approve'])->name('books.approve');
