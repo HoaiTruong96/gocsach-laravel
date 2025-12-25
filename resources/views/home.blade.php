@@ -854,6 +854,95 @@
                         </div>
                     @endif
 
+                    {{-- Widget: Tác giả ngày hôm nay --}}
+                    @if(isset($dailyAuthor) && $dailyAuthor)
+                        <div
+                            class="bg-gradient-to-br from-sky-50 via-blue-50 to-cyan-50 rounded-2xl p-7 border border-sky-100 shadow-lg relative overflow-hidden group hover:shadow-xl transition-all duration-300">
+                            {{-- Decorative --}}
+                            <div
+                                class="absolute -top-8 -right-8 w-28 h-28 bg-sky-200/30 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-500">
+                            </div>
+                            <div
+                                class="absolute -bottom-6 -left-6 w-20 h-20 bg-blue-200/30 rounded-full blur-xl pointer-events-none">
+                            </div>
+
+                            {{-- Header --}}
+                            <div class="flex items-center justify-between mb-5 relative">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-11 h-11 bg-gradient-to-br from-sky-500 to-blue-500 rounded-xl flex items-center justify-center shadow-md">
+                                        <i class="fas fa-user-pen text-white text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-serif font-bold text-gray-800 text-base leading-none">Tác Giả Hôm Nay
+                                        </h3>
+                                        <span class="text-xs text-gray-400">Khám phá tác giả</span>
+                                    </div>
+                                </div>
+                                <a href="{{ route('authors.index') }}"
+                                    class="text-xs text-sky-500 hover:text-sky-700 font-bold flex items-center gap-1"
+                                    title="Xem tất cả tác giả">
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+
+                            {{-- Author Card --}}
+                            <a href="{{ route('authors.show', $dailyAuthor->slug ?? $dailyAuthor->id) }}" class="block group/author">
+                                <div class="flex gap-5">
+                                    {{-- Author Photo --}}
+                                    <div
+                                        class="w-24 h-24 rounded-full overflow-hidden shadow-lg flex-shrink-0 transform group-hover/author:scale-105 transition-transform duration-300 border-3 border-white">
+                                        @php
+                                            $photoUrl = !empty($dailyAuthor->photo)
+                                                ? (str_starts_with($dailyAuthor->photo, 'http') ? $dailyAuthor->photo : asset('storage/' . $dailyAuthor->photo))
+                                                : 'https://ui-avatars.com/api/?name=' . urlencode($dailyAuthor->name) . '&background=0284C7&color=fff&size=96';
+                                        @endphp
+                                        <img src="{{ $photoUrl }}" alt="{{ $dailyAuthor->name }}"
+                                            class="w-full h-full object-cover">
+                                    </div>
+
+                                    {{-- Author Info --}}
+                                    <div class="flex-1 min-w-0 py-1">
+                                        <h4
+                                            class="font-bold text-gray-800 text-base leading-snug group-hover/author:text-sky-600 transition-colors">
+                                            {{ $dailyAuthor->name }}
+                                        </h4>
+                                        
+                                        @if($dailyAuthor->nationality)
+                                            <p class="text-sm text-gray-500 mt-1 flex items-center gap-1.5">
+                                                <i class="fas fa-globe-asia text-xs text-gray-400"></i>
+                                                {{ $dailyAuthor->nationality }}
+                                            </p>
+                                        @endif
+
+                                        @if($dailyAuthor->birth_year)
+                                            <p class="text-xs text-gray-400 mt-1 flex items-center gap-1.5">
+                                                <i class="fas fa-calendar-alt text-[10px]"></i>
+                                                {{ $dailyAuthor->birth_year }}{{ $dailyAuthor->death_year ? ' - ' . $dailyAuthor->death_year : '' }}
+                                            </p>
+                                        @endif
+
+                                        {{-- CTA Button --}}
+                                        <div class="mt-3">
+                                            <span
+                                                class="inline-flex items-center gap-1.5 px-4 py-2 bg-sky-600 text-white text-xs font-bold rounded-full group-hover/author:bg-sky-700 transition shadow-md">
+                                                Xem tác giả <i
+                                                    class="fas fa-arrow-right text-[10px] group-hover/author:translate-x-1 transition-transform"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Full Bio --}}
+                                @if($dailyAuthor->bio)
+                                    <p class="text-gray-600 text-sm mt-4 leading-relaxed italic">
+                                        "{{ strip_tags($dailyAuthor->bio) }}"
+                                    </p>
+                                @endif
+                            </a>
+                        </div>
+                    @endif
+
                     {{-- Widget 1: Top Thịnh Hành - Redesigned --}}
                     <div
                         class="bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 rounded-2xl p-7 border border-orange-100 shadow-lg relative overflow-hidden group/widget hover:shadow-xl transition-shadow duration-300">
