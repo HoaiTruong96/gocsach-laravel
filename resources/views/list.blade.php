@@ -21,8 +21,18 @@
             
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-                {{-- SIDEBAR: BỘ LỌC --}}
-                <aside class="lg:col-span-3 space-y-8">
+                {{-- MOBILE: FILTER TOGGLE BUTTON --}}
+                <div class="lg:hidden">
+                    <button type="button" id="mobile-filter-toggle"
+                        class="w-full flex items-center justify-center gap-2 bg-white border border-brand-green text-brand-green font-bold py-3 px-4 rounded-xl shadow-sm hover:bg-brand-green hover:text-white transition">
+                        <i class="fas fa-filter"></i>
+                        <span>Bộ lọc</span>
+                        <i class="fas fa-chevron-down text-xs ml-auto transition-transform" id="filter-toggle-icon"></i>
+                    </button>
+                </div>
+            
+                {{-- SIDEBAR: BỘ LỌC - Hidden on mobile by default --}}
+                <aside id="mobile-filter-panel" class="lg:col-span-3 space-y-8 hidden lg:block">
                     {{-- Widget Thể Loại --}}
 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-soft">
     <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
@@ -249,6 +259,18 @@
                     filterForm.submit();
                 });
             });
+            
+            // Mobile Filter Toggle
+            const filterToggle = document.getElementById('mobile-filter-toggle');
+            const filterPanel = document.getElementById('mobile-filter-panel');
+            const filterIcon = document.getElementById('filter-toggle-icon');
+            
+            if (filterToggle && filterPanel) {
+                filterToggle.addEventListener('click', function() {
+                    filterPanel.classList.toggle('hidden');
+                    filterIcon.classList.toggle('rotate-180');
+                });
+            }
         });
     </script>
 @endsection
