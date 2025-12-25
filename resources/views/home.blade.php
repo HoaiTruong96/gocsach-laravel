@@ -794,10 +794,10 @@
                                         <span class="text-xs text-gray-400">Gợi ý cho bạn</span>
                                     </div>
                                 </div>
-                                <a href="{{ route('home') }}"
+                                <a href="{{ route('books.list') }}"
                                     class="text-xs text-purple-500 hover:text-purple-700 font-bold flex items-center gap-1"
-                                    title="Đổi sách khác vào ngày mai">
-                                    <i class="fas fa-sync-alt"></i>
+                                    title="Xem tất cả sách">
+                                    <i class="fas fa-arrow-right"></i>
                                 </a>
                             </div>
 
