@@ -1,11 +1,13 @@
 {{-- AI Chatbox Component --}}
-<div id="chatbox-container" class="fixed bottom-6 right-6 z-[9998] sm:bottom-6 sm:right-6">
-    
+<div id="chatbox-container" class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[9998]">
+
     {{-- Chat Window - Responsive: compact on mobile, larger on desktop --}}
-    <div id="chatbox-window" class="hidden absolute bottom-14 right-0 w-[90vw] sm:w-[420px] max-w-[420px] h-[70vh] sm:h-auto sm:max-h-[600px] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden transform transition-all duration-300 origin-bottom-right scale-95 opacity-0 flex flex-col">
-        
+    <div id="chatbox-window"
+        class="hidden absolute bottom-14 right-0 w-[90vw] sm:w-[420px] max-w-[420px] h-[70vh] sm:h-auto sm:max-h-[600px] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden transform transition-all duration-300 origin-bottom-right scale-95 opacity-0 flex flex-col">
+
         {{-- Header --}}
-        <div class="bg-gradient-to-r from-brand-green to-emerald-600 text-white p-4 flex items-center justify-between flex-shrink-0">
+        <div
+            class="bg-gradient-to-r from-brand-green to-emerald-600 text-white p-4 flex items-center justify-between flex-shrink-0">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                     <i class="fas fa-robot text-lg"></i>
@@ -19,11 +21,13 @@
             </div>
             <div class="flex items-center gap-2">
                 @auth
-                <button onclick="clearChatHistory()" title="Xóa lịch sử" class="w-8 h-8 rounded-full hover:bg-white/20 flex items-center justify-center transition">
-                    <i class="fas fa-trash-alt text-sm"></i>
-                </button>
+                    <button onclick="clearChatHistory()" title="Xóa lịch sử"
+                        class="w-8 h-8 rounded-full hover:bg-white/20 flex items-center justify-center transition">
+                        <i class="fas fa-trash-alt text-sm"></i>
+                    </button>
                 @endauth
-                <button onclick="toggleChatbox()" class="w-10 h-10 sm:w-8 sm:h-8 rounded-full hover:bg-white/20 flex items-center justify-center transition">
+                <button onclick="toggleChatbox()"
+                    class="w-10 h-10 sm:w-8 sm:h-8 rounded-full hover:bg-white/20 flex items-center justify-center transition">
                     <i class="fas fa-times text-lg sm:text-base"></i>
                 </button>
             </div>
@@ -37,22 +41,31 @@
                     <i class="fas fa-robot text-white text-xs"></i>
                 </div>
                 <div class="bg-white rounded-2xl rounded-tl-none px-4 py-3 shadow-sm max-w-[85%] sm:max-w-[80%]">
-                    <p class="text-sm text-gray-700">Xin chào! Tôi là trợ lý AI của Góc Sách. Tôi có thể giúp bạn tìm sách hay, gợi ý đọc theo sở thích. Bạn cần gì nào?</p>
+                    <p class="text-sm text-gray-700">Xin chào! Tôi là trợ lý AI của Góc Sách. Tôi có thể giúp bạn tìm
+                        sách hay, gợi ý đọc theo sở thích. Bạn cần gì nào?</p>
                 </div>
             </div>
-            
+
             {{-- Quick Replies - Gợi ý nhanh --}}
             <div id="quick-replies" class="flex flex-wrap gap-2 mt-2">
-                <button class="quick-reply-btn px-3 py-1.5 bg-white border border-brand-green text-brand-green rounded-full text-xs hover:bg-brand-green hover:text-white transition-all duration-200" data-message="Gợi ý sách hay">
+                <button
+                    class="quick-reply-btn px-3 py-1.5 bg-white border border-brand-green text-brand-green rounded-full text-xs hover:bg-brand-green hover:text-white transition-all duration-200"
+                    data-message="Gợi ý sách hay">
                     Gợi ý sách hay
                 </button>
-                <button class="quick-reply-btn px-3 py-1.5 bg-white border border-brand-green text-brand-green rounded-full text-xs hover:bg-brand-green hover:text-white transition-all duration-200" data-message="Có bao nhiêu sách">
+                <button
+                    class="quick-reply-btn px-3 py-1.5 bg-white border border-brand-green text-brand-green rounded-full text-xs hover:bg-brand-green hover:text-white transition-all duration-200"
+                    data-message="Có bao nhiêu sách">
                     Thống kê
                 </button>
-                <button class="quick-reply-btn px-3 py-1.5 bg-white border border-brand-green text-brand-green rounded-full text-xs hover:bg-brand-green hover:text-white transition-all duration-200" data-message="Làm sao để viết review">
+                <button
+                    class="quick-reply-btn px-3 py-1.5 bg-white border border-brand-green text-brand-green rounded-full text-xs hover:bg-brand-green hover:text-white transition-all duration-200"
+                    data-message="Làm sao để viết review">
                     Cách viết review
                 </button>
-                <button class="quick-reply-btn px-3 py-1.5 bg-white border border-brand-green text-brand-green rounded-full text-xs hover:bg-brand-green hover:text-white transition-all duration-200" data-message="Tủ sách cá nhân là gì">
+                <button
+                    class="quick-reply-btn px-3 py-1.5 bg-white border border-brand-green text-brand-green rounded-full text-xs hover:bg-brand-green hover:text-white transition-all duration-200"
+                    data-message="Tủ sách cá nhân là gì">
                     Về tủ sách
                 </button>
             </div>
@@ -76,9 +89,7 @@
         <div class="p-4 bg-white border-t border-gray-100 flex-shrink-0 safe-area-bottom">
             <form id="chatbox-form" class="flex gap-2">
                 @csrf
-                <input type="text" id="chatbox-input" 
-                    placeholder="Nhập tin nhắn..." 
-                    autocomplete="off"
+                <input type="text" id="chatbox-input" placeholder="Nhập tin nhắn..." autocomplete="off"
                     class="flex-1 px-4 py-3 bg-gray-100 rounded-xl text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-green/30 transition">
                 <button type="submit" id="chatbox-send"
                     class="w-12 h-12 bg-brand-green hover:bg-emerald-700 text-white rounded-xl flex items-center justify-center transition transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0">
@@ -89,7 +100,8 @@
         </div>
 
         {{-- Custom Confirm Modal --}}
-        <div id="chatbox-confirm-modal" class="hidden absolute inset-0 bg-black/50 flex items-center justify-center z-50 rounded-2xl">
+        <div id="chatbox-confirm-modal"
+            class="hidden absolute inset-0 bg-black/50 flex items-center justify-center z-50 rounded-2xl">
             <div class="bg-white rounded-xl p-5 mx-4 max-w-[280px] shadow-xl transform transition-all">
                 <div class="text-center">
                     <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -98,10 +110,12 @@
                     <h4 class="font-bold text-gray-800 mb-2">Xóa lịch sử?</h4>
                     <p class="text-sm text-gray-500 mb-4">Bạn có chắc muốn xóa toàn bộ lịch sử trò chuyện?</p>
                     <div class="flex gap-3">
-                        <button onclick="hideConfirmModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition text-sm font-medium">
+                        <button onclick="hideConfirmModal()"
+                            class="flex-1 px-4 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition text-sm font-medium">
                             Hủy
                         </button>
-                        <button onclick="confirmClearHistory()" class="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium">
+                        <button onclick="confirmClearHistory()"
+                            class="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium">
                             Xóa
                         </button>
                     </div>
@@ -111,47 +125,47 @@
     </div>
 
     {{-- Floating Buttons Container --}}
-    <div id="floating-buttons-container" class="flex flex-col gap-3 items-center">
+    <div id="floating-buttons-container" class="flex flex-col gap-2 sm:gap-3 items-center">
         {{-- Back to Top Button --}}
-        <button id="back-to-top-btn" 
-            class="w-11 h-11 bg-brand-green text-white rounded-full shadow-lg opacity-0 invisible transform translate-y-4 transition-all duration-300 hover:bg-brand-accent hover:scale-110 hover:shadow-xl flex items-center justify-center group"
+        <button id="back-to-top-btn"
+            class="w-9 h-9 sm:w-11 sm:h-11 bg-brand-green text-white rounded-full shadow-lg opacity-0 invisible transform translate-y-4 transition-all duration-300 hover:bg-brand-accent hover:scale-110 hover:shadow-xl flex items-center justify-center group"
             aria-label="Back to top">
-            <i class="fas fa-chevron-up text-sm group-hover:animate-bounce"></i>
+            <i class="fas fa-chevron-up text-xs sm:text-sm group-hover:animate-bounce"></i>
         </button>
 
         {{-- Mobile Toggle Button (chỉ hiện trên mobile) --}}
-        <button id="mobile-float-toggle" 
-            class="md:hidden w-11 h-11 bg-gradient-to-br from-gray-600 to-gray-800 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300"
-            onclick="toggleMobileFloatMenu()"
-            aria-label="Toggle menu">
-            <i id="mobile-float-icon" class="fas fa-ellipsis-v text-lg"></i>
+        <button id="mobile-float-toggle"
+            class="md:hidden w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br from-gray-600 to-gray-800 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300"
+            onclick="toggleMobileFloatMenu()" aria-label="Toggle menu">
+            <i id="mobile-float-icon" class="fas fa-ellipsis-v text-base sm:text-lg"></i>
         </button>
 
         {{-- Các nút social (ẩn trên mobile, hiện khi toggle) --}}
-        <div id="mobile-float-buttons" class="flex flex-col gap-3 md:flex md:opacity-100 hidden opacity-0 transition-all duration-300">
+        <div id="mobile-float-buttons"
+            class="flex flex-col gap-2 sm:gap-3 md:flex md:opacity-100 hidden opacity-0 transition-all duration-300">
             {{-- Facebook Messenger Button --}}
             <a href="https://m.me/j/AbYuQDQf0AvniBIU/" target="_blank" rel="noopener noreferrer"
-                class="floating-btn w-11 h-11 bg-gradient-to-br from-[#00b2ff] to-[#006aff] text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative group"
+                class="floating-btn w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br from-[#00b2ff] to-[#006aff] text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative group"
                 style="animation-delay: 0s; --glow-color: rgba(0, 132, 255, 0.5);"
                 title="Di chuyển tới Cộng đồng Góc Sách trên Facebook">
-                <i class="fab fa-facebook-messenger text-base relative z-10"></i>
+                <i class="fab fa-facebook-messenger text-sm sm:text-base relative z-10"></i>
             </a>
 
             {{-- Zalo Button --}}
             <a href="https://zalo.me/g/fhbbxj936" target="_blank" rel="noopener noreferrer"
-                class="floating-btn w-11 h-11 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative group overflow-hidden"
+                class="floating-btn w-9 h-9 sm:w-11 sm:h-11 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative group overflow-hidden"
                 style="animation-delay: 0.3s; --glow-color: rgba(0, 104, 255, 0.5);"
                 title="Di chuyển tới Cộng đồng Góc Sách trên Zalo">
-                <img src="{{ asset('storage/zalo.png') }}" alt="Zalo" class="w-full h-full object-cover rounded-full relative z-10">
+                <img src="{{ asset('storage/zalo.png') }}" alt="Zalo"
+                    class="w-full h-full object-cover rounded-full relative z-10">
             </a>
 
             {{-- AI Chatbox Button --}}
             <button onclick="toggleChatbox()" id="chatbox-toggle"
-                class="floating-btn w-11 h-11 bg-gradient-to-br from-brand-green to-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative"
-                style="animation-delay: 0.6s; --glow-color: rgba(34, 197, 94, 0.5);"
-                title="Trò chuyện với Chatbot">
-                <i id="chatbox-icon-open" class="fas fa-comments text-base relative z-10"></i>
-                <i id="chatbox-icon-close" class="fas fa-times text-base hidden relative z-10"></i>
+                class="floating-btn w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br from-brand-green to-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative"
+                style="animation-delay: 0.6s; --glow-color: rgba(34, 197, 94, 0.5);" title="Trò chuyện với Chatbot">
+                <i id="chatbox-icon-open" class="fas fa-comments text-sm sm:text-base relative z-10"></i>
+                <i id="chatbox-icon-close" class="fas fa-times text-sm sm:text-base hidden relative z-10"></i>
             </button>
         </div>
     </div>
@@ -160,14 +174,14 @@
 <script>
     // Mobile floating buttons toggle
     let mobileFloatOpen = false;
-    
+
     function toggleMobileFloatMenu() {
         const buttons = document.getElementById('mobile-float-buttons');
         const icon = document.getElementById('mobile-float-icon');
         const toggle = document.getElementById('mobile-float-toggle');
-        
+
         mobileFloatOpen = !mobileFloatOpen;
-        
+
         if (mobileFloatOpen) {
             buttons.classList.remove('hidden', 'opacity-0');
             buttons.classList.add('opacity-100');
@@ -191,23 +205,26 @@
     /* Floating animation với glow effect */
     .floating-btn {
         animation: floatGlow 3s ease-in-out infinite;
-        box-shadow: 0 4px 15px var(--glow-color, rgba(0,0,0,0.2));
+        box-shadow: 0 4px 15px var(--glow-color, rgba(0, 0, 0, 0.2));
         transition: opacity 0.3s, transform 0.3s;
     }
-    
+
     .floating-btn:hover {
         animation-play-state: paused;
-        box-shadow: 0 8px 25px var(--glow-color, rgba(0,0,0,0.3));
+        box-shadow: 0 8px 25px var(--glow-color, rgba(0, 0, 0, 0.3));
     }
-    
+
     @keyframes floatGlow {
-        0%, 100% {
+
+        0%,
+        100% {
             transform: translateY(0);
-            box-shadow: 0 4px 15px var(--glow-color, rgba(0,0,0,0.2));
+            box-shadow: 0 4px 15px var(--glow-color, rgba(0, 0, 0, 0.2));
         }
+
         50% {
             transform: translateY(-5px);
-            box-shadow: 0 8px 25px var(--glow-color, rgba(0,0,0,0.4));
+            box-shadow: 0 8px 25px var(--glow-color, rgba(0, 0, 0, 0.4));
         }
     }
 
@@ -226,7 +243,7 @@
     // Tải lịch sử chat từ database
     async function loadChatHistory() {
         if (!isLoggedIn || historyLoaded) return;
-        
+
         try {
             const response = await fetch('{{ route("chatbot.history") }}', {
                 headers: {
@@ -235,11 +252,11 @@
                 }
             });
             const data = await response.json();
-            
+
             if (data.success && data.messages.length > 0) {
                 // Ẩn quick replies nếu có lịch sử
                 document.getElementById('quick-replies').style.display = 'none';
-                
+
                 // Hiển thị các tin nhắn cũ
                 data.messages.forEach(msg => {
                     addMessage(msg.content, msg.role === 'user', msg.created_at);
@@ -265,7 +282,7 @@
     // Xác nhận xóa lịch sử
     async function confirmClearHistory() {
         hideConfirmModal();
-        
+
         try {
             const response = await fetch('{{ route("chatbot.clear") }}', {
                 method: 'DELETE',
@@ -275,7 +292,7 @@
                 }
             });
             const data = await response.json();
-            
+
             if (data.success) {
                 // Reset UI
                 chatHistory = [];
@@ -357,7 +374,7 @@
     function addMessage(content, isUser = false, timestamp = null) {
         const container = document.getElementById('chatbox-messages');
         const timeStr = formatTime(timestamp);
-        const messageHtml = isUser 
+        const messageHtml = isUser
             ? `<div class="flex gap-3 justify-end">
                     <div class="max-w-[80%]">
                         <div class="bg-brand-green text-white rounded-2xl rounded-tr-none px-4 py-3 shadow-sm">
@@ -377,7 +394,7 @@
                         <p class="text-[10px] text-gray-400 mt-1">${timeStr}</p>
                     </div>
                </div>`;
-        
+
         container.insertAdjacentHTML('beforeend', messageHtml);
         container.scrollTop = container.scrollHeight;
     }
@@ -393,12 +410,12 @@
         const date = new Date(timestamp);
         const now = new Date();
         const isToday = date.toDateString() === now.toDateString();
-        
+
         if (isToday) {
             return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
         } else {
-            return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) + ' ' + 
-                   date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) + ' ' +
+                date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
         }
     }
 
@@ -424,19 +441,19 @@
         document.getElementById('typing-indicator').classList.add('hidden');
     }
 
-    document.getElementById('chatbox-form').addEventListener('submit', async function(e) {
+    document.getElementById('chatbox-form').addEventListener('submit', async function (e) {
         e.preventDefault();
-        
+
         const input = document.getElementById('chatbox-input');
         const sendBtn = document.getElementById('chatbox-send');
         const message = input.value.trim();
-        
+
         if (!message) return;
 
         // Display user message
         addMessage(message, true);
         chatHistory.push({ role: 'user', content: message });
-        
+
         // Clear input and disable
         input.value = '';
         sendBtn.disabled = true;
@@ -458,7 +475,7 @@
 
             const data = await response.json();
             hideTyping();
-            
+
             if (data.success) {
                 addMessage(data.reply, false);
                 chatHistory.push({ role: 'assistant', content: data.reply });
@@ -478,7 +495,7 @@
     // Quick Reply buttons - wrapped in a function for re-attachment
     function attachQuickReplyListeners() {
         document.querySelectorAll('.quick-reply-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function () {
                 const message = this.getAttribute('data-message');
                 document.getElementById('chatbox-input').value = message;
                 document.getElementById('chatbox-form').dispatchEvent(new Event('submit'));
@@ -492,7 +509,7 @@
     attachQuickReplyListeners();
 
     // Close on ESC
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && isOpen) {
             toggleChatbox();
         }
@@ -501,7 +518,7 @@
     // Back to Top Button
     const backToTopBtn = document.getElementById('back-to-top-btn');
     if (backToTopBtn) {
-        window.addEventListener('scroll', function() {
+        window.addEventListener('scroll', function () {
             if (window.pageYOffset > 300) {
                 backToTopBtn.classList.remove('opacity-0', 'invisible', 'translate-y-4');
                 backToTopBtn.classList.add('opacity-100', 'visible', 'translate-y-0');
@@ -510,8 +527,8 @@
                 backToTopBtn.classList.remove('opacity-100', 'visible', 'translate-y-0');
             }
         });
-        
-        backToTopBtn.addEventListener('click', function() {
+
+        backToTopBtn.addEventListener('click', function () {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
@@ -521,12 +538,15 @@
     #chatbox-window.scale-100 {
         transform: scale(1);
     }
+
     #chatbox-window.scale-95 {
         transform: scale(0.95);
     }
+
     #chatbox-window.opacity-100 {
         opacity: 1;
     }
+
     #chatbox-window.opacity-0 {
         opacity: 0;
     }

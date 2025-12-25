@@ -142,8 +142,14 @@ class BookController extends Controller
         }
         // ----------------------------------
 
-        // 2. Khởi tạo Query
-        $query = Book::query();
+        // 2. Khởi tạo Query với withAvg để tính rating từ posts đã published
+        $query = Book::where('is_approved', true)
+            ->withAvg(['posts' => function ($q) {
+                $q->where('status', 'published');
+            }], 'rating')
+            ->withCount(['posts' => function ($q) {
+                $q->where('status', 'published');
+            }]);
 
         // 3. Xử lý Lọc
         if ($keyword !== null && $keyword !== '') {
@@ -154,13 +160,13 @@ class BookController extends Controller
                     break;
 
                 case 'avg_rating':
-                    $query->where('avg_rating', '>=', floatval($keyword))
-                        ->orderBy('avg_rating', 'desc');
+                    $query->having('posts_avg_rating', '>=', floatval($keyword))
+                        ->orderBy('posts_avg_rating', 'desc');
                     break;
 
                 case 'total_reviews':
-                    $query->where('total_reviews', '>=', intval($keyword))
-                        ->orderBy('total_reviews', 'desc');
+                    $query->having('posts_count', '>=', intval($keyword))
+                        ->orderBy('posts_count', 'desc');
                     break;
 
                 case 'title':
@@ -177,6 +183,13 @@ class BookController extends Controller
 
         // 4. Phân trang
         $books = $query->paginate(10)->withQueryString();
+
+        // 5. Gán avg_rating và total_reviews từ posts đã tính
+        $books->getCollection()->transform(function ($book) {
+            $book->avg_rating = round($book->posts_avg_rating ?? 0, 1);
+            $book->total_reviews = $book->posts_count ?? 0;
+            return $book;
+        });
 
         return view('search-book', [
             'books' => $books

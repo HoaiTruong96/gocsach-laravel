@@ -199,7 +199,8 @@
                             @if(isset($isOwnProfile) && $isOwnProfile && $user->activeBadges->count() > 1)
                                 <div id="badges-edit-mode" class="hidden">
                                     <p class="text-[10px] text-gray-400 text-center mb-3">
-                                        <i class="fas fa-info-circle"></i> Kéo thả để sắp xếp thứ tự hiển thị (3 cái đầu tiên sẽ hiển thị ở bình luận)
+                                        <i class="fas fa-info-circle"></i> Kéo thả để sắp xếp thứ tự hiển thị (3 cái đầu tiên sẽ
+                                        hiển thị ở bình luận)
                                     </p>
                                     <div id="sortable-badges" class="flex justify-center flex-wrap gap-3">
                                         @foreach($user->activeBadges as $badge)
@@ -212,7 +213,8 @@
                                             @endphp
 
                                             <div class="badge-item cursor-move relative" data-badge-id="{{ $badge->id }}">
-                                                <div class="absolute -top-1 -left-1 w-4 h-4 bg-blue-500 text-white text-[8px] rounded-full flex items-center justify-center font-bold z-10 badge-order-number">
+                                                <div
+                                                    class="absolute -top-1 -left-1 w-4 h-4 bg-blue-500 text-white text-[8px] rounded-full flex items-center justify-center font-bold z-10 badge-order-number">
                                                     {{ $loop->iteration }}
                                                 </div>
                                                 @if($iconUrl)
@@ -230,7 +232,9 @@
                                                         <i class="fas fa-medal text-xl"></i>
                                                     </div>
                                                 @endif
-                                                <div class="text-[8px] text-center text-gray-500 mt-1 truncate w-12">{{ Str::limit($badge->name, 8) }}</div>
+                                                <div class="text-[8px] text-center text-gray-500 mt-1 truncate w-12">
+                                                    {{ Str::limit($badge->name, 8) }}
+                                                </div>
                                             </div>
                                         @endforeach
                                     </div>
@@ -274,7 +278,7 @@
                                 <div class="grid grid-cols-3 gap-2">
                                     @foreach($user->avatarFrames as $frame)
                                         <div class="relative group cursor-pointer border-2 rounded-lg p-1 transition-all
-                                                                                                                    {{ $frame->pivot->is_equipped ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300' }}"
+                                                                                                                                                    {{ $frame->pivot->is_equipped ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300' }}"
                                             onclick="equipFrame({{ $frame->id }})">
 
                                             <!-- Frame Preview -->
@@ -317,7 +321,7 @@
                                     @foreach($user->avatarFrames as $frame)
                                         <div
                                             class="relative group border-2 rounded-lg p-1 transition-all
-                                                                                                                    {{ $frame->pivot->is_equipped ? 'border-purple-500 bg-purple-50' : 'border-gray-200' }}">
+                                                                                                                                                    {{ $frame->pivot->is_equipped ? 'border-purple-500 bg-purple-50' : 'border-gray-200' }}">
 
                                             <!-- Frame Preview -->
                                             <div
@@ -1112,741 +1116,1350 @@
     </main>
 
     <script>
-            // --- 0. Xử lý chuyển đổi Tab Profile --        -
-            function showProfileTab(tabName) {
-                // Danh sách các tab
-                const tabs = ['overview', 'reviews', 'books', 'saved', 'trash'];
+        // --- 0. Xử lý chuyển đổi Tab Profile --        -
+        function showProfileTab(tabName) {
+            // Danh sách các tab
+            const tabs = ['overview', 'reviews', 'books', 'saved', 'trash'];
 
-                // Ẩn tất cả nội dung tab
-                tabs.forEach(tab => {
-                    const content = document.getElementById(`tab-content-${tab}`);
-                    const btn = document.getElementById(`tab-btn-${tab}`);
+            // Ẩn tất cả nội dung tab
+            tabs.forEach(tab => {
+                const content = document.getElementById(`tab-content-${tab}`);
+                const btn = document.getElementById(`tab-btn-${tab}`);
 
-                    if (content) {
-                        content.classList.add('hidden');
-                    }
-
-                    if (btn) {
-                        btn.classList.remove('border-brand-green', 'text-brand-green', 'bg-brand-green/5');
-                        btn.classList.remove('border-brand-accent', 'text-brand-accent', 'bg-brand-accent/5');
-                        btn.classList.remove('border-yellow-500', 'text-yellow-600', 'bg-yellow-50');
-                        btn.classList.remove('border-red-500', 'text-red-500', 'bg-red-50');
-                        btn.classList.add('border-transparent', 'text-gray-500');
-                    }
-                });
-
-                // Hiển thị tab được chọn
-                const activeContent = document.getElementById(`tab-content-${tabName}`);
-                const activeBtn = document.getElementById(`tab-btn-${tabName}`);
-
-                if (activeContent) {
-                    activeContent.classList.remove('hidden');
+                if (content) {
+                    content.classList.add('hidden');
                 }
 
-                if (activeBtn) {
-                    activeBtn.classList.remove('border-transparent', 'text-gray-500');
-
-                    // Màu sắc khác nhau cho mỗi tab
-                    if (tabName === 'overview' || tabName === 'reviews') {
-                        activeBtn.classList.add('border-brand-green', 'text-brand-green', 'bg-brand-green/5');
-                    } else if (tabName === 'books') {
-                        activeBtn.classList.add('border-brand-accent', 'text-brand-accent', 'bg-brand-accent/5');
-                    } else if (tabName === 'saved') {
-                        activeBtn.classList.add('border-yellow-500', 'text-yellow-600', 'bg-yellow-50');
-                    } else if (tabName === 'trash') {
-                        activeBtn.classList.add('border-red-500', 'text-red-500', 'bg-red-50');
-                    }
-                }
-            }
-
-            // Auto-switch tab dựa trên URL parameters (khi phân trang)
-            document.addEventListener('DOMContentLoaded', function () {
-                const urlParams = new URLSearchParams(window.location.search);
-
-                if (urlParams.has('review_page')) {
-                    showProfileTab('reviews');
-                } else if (urlParams.has('book_page')) {
-                    showProfileTab('books');
+                if (btn) {
+                    btn.classList.remove('border-brand-green', 'text-brand-green', 'bg-brand-green/5');
+                    btn.classList.remove('border-brand-accent', 'text-brand-accent', 'bg-brand-accent/5');
+                    btn.classList.remove('border-yellow-500', 'text-yellow-600', 'bg-yellow-50');
+                    btn.classList.remove('border-red-500', 'text-red-500', 'bg-red-50');
+                    btn.classList.add('border-transparent', 'text-gray-500');
                 }
             });
 
-            // --- 1. Xử lý Nút Toggle Follow (Một hàm duy nhất) ---
-            function toggleFollow(userId) {
-                fetch('{{ route('follow.toggle') }}', {
+            // Hiển thị tab được chọn
+            const activeContent = document.getElementById(`tab-content-${tabName}`);
+            const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+
+            if (activeContent) {
+                activeContent.classList.remove('hidden');
+            }
+
+            if (activeBtn) {
+                activeBtn.classList.remove('border-transparent', 'text-gray-500');
+
+                // Màu sắc khác nhau cho mỗi tab
+                if (tabName === 'overview' || tabName === 'reviews') {
+                    activeBtn.classList.add('border-brand-green', 'text-brand-green', 'bg-brand-green/5');
+                } else if (tabName === 'books') {
+                    activeBtn.classList.add('border-brand-accent', 'text-brand-accent', 'bg-brand-accent/5');
+                } else if (tabName === 'saved') {
+                    activeBtn.classList.add('border-yellow-500', 'text-yellow-600', 'bg-yellow-50');
+                } else if (tabName === 'trash') {
+                    activeBtn.classList.add('border-red-500', 'text-red-500', 'bg-red-50');
+                }
+            }
+        }
+
+        // Auto-switch tab dựa trên URL parameters (khi phân trang)
+        document.addEventListener('DOMContentLoaded', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+
+            if (urlParams.has('review_page')) {
+                showProfileTab('reviews');
+            } else if (urlParams.has('book_page')) {
+                showProfileTab('books');
+            }
+        });
+
+        // --- 1. Xử lý Nút Toggle Follow (Một hàm duy nhất) ---
+        function toggleFollow(userId) {
+            fetch('{{ route('follow.toggle') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ user_id: userId })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'error') { alert(data.message); return; }
+
+                    const btn = document.getElementById('btn-follow');
+                    const text = document.getElementById('follow-text');
+                    const icon = btn.querySelector('i');
+                    const countSpan = document.getElementById('follower-count');
+
+                    if (data.follower_count !== undefined) countSpan.innerText = data.follower_count;
+
+                    if (data.action === 'followed') {
+                        btn.classList.remove('bg-blue-600', 'text-white', 'hover:bg-blue-700');
+                        btn.classList.add('bg-gray-200', 'text-gray-800');
+                        text.innerText = 'Đang theo dõi';
+                        icon.className = 'fas fa-check';
+                    } else {
+                        btn.classList.remove('bg-gray-200', 'text-gray-800');
+                        btn.classList.add('bg-blue-600', 'text-white', 'hover:bg-blue-700');
+                        text.innerText = 'Theo dõi';
+                        icon.className = 'fas fa-user-plus';
+                    }
+                })
+                .catch(error => console.error('Lỗi Follow:', error));
+        }
+
+        // --- 2. Xử lý Modal Danh sách Follow ---
+        function openFollowModal(type, userId) {
+            const modal = document.getElementById('followModal');
+            const title = document.getElementById('modal-title');
+            const body = document.getElementById('modal-body');
+
+            // Reset nội dung loading
+            body.innerHTML = '<div class="flex justify-center py-4"><i class="fas fa-spinner fa-spin text-brand-green text-2xl"></i></div>';
+
+            // Hiện modal
+            modal.classList.remove('hidden');
+
+            // Đặt tiêu đề
+            if (type === 'followers') title.innerText = 'Người theo dõi';
+            else title.innerText = 'Đang theo dõi';
+
+            // Gọi API lấy danh sách
+            fetch(`/api/user/${userId}/${type}`)
+                .then(res => res.json())
+                .then(users => {
+                    body.innerHTML = ''; // Xóa loading
+
+                    if (users.length === 0) {
+                        body.innerHTML = '<p class="text-center text-gray-500 py-4 text-sm">Chưa có ai trong danh sách này.</p>';
+                        return;
+                    }
+
+                    // Vẽ danh sách user
+                    let html = '<div class="space-y-3">';
+                    users.forEach(u => {
+                        // Logic lấy avatar (Nếu null thì dùng UI Avatars)
+                        const avatar = u.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=random`;
+
+                        // Link tới profile người đó
+                        html += `
+                                                            <a href="/profile/${u.id}" class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition group border border-transparent hover:border-gray-100">
+                                                                <img src="${avatar}" class="w-10 h-10 rounded-full border border-gray-200 object-cover">
+                                                                <div>
+                                                                    <h4 class="font-bold text-gray-800 text-sm group-hover:text-brand-green transition">${u.name}</h4>
+                                                                </div>
+                                                                <div class="ml-auto">
+                                                                    <span class="text-xs text-gray-400 group-hover:text-brand-green"><i class="fas fa-chevron-right"></i></span>
+                                                                </div>
+                                                            </a>
+                                                        `;
+                    });
+                    html += '</div>';
+                    body.innerHTML = html;
+                })
+                .catch(err => {
+                    console.error(err);
+                    body.innerHTML = '<p class="text-center text-red-500 py-4 text-sm">Không thể tải dữ liệu.</p>';
+                });
+        }
+
+        function closeFollowModal() {
+            document.getElementById('followModal').classList.add('hidden');
+        }
+
+        // Đóng modal khi nhấn ESC
+        document.addEventListener('keydown', function (event) {
+            if (event.key === "Escape") {
+                closeFollowModal();
+                closeEditProfileModal();
+            }
+        });
+
+        // --- 3. Xử lý Modal Chỉnh sửa Hồ sơ ---
+        function openEditProfileModal() {
+            document.getElementById('editProfileModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent scroll
+        }
+
+        function closeEditProfileModal() {
+            document.getElementById('editProfileModal').classList.add('hidden');
+            document.body.style.overflow = ''; // Restore scroll
+        }
+
+        // Xem trước ảnh khi chọn file
+        function previewAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('avatarPreview').src = e.target.result;
+                    // Xóa URL input khi chọn file
+                    document.getElementById('avatarUrlInput').value = '';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Xem trước ảnh từ URL
+        function previewAvatarUrl(url) {
+            if (url) {
+                document.getElementById('avatarPreview').src = url;
+                // Xóa file input khi nhập URL
+                document.getElementById('avatarInput').value = '';
+            }
+        }
+
+        // Chuyển tab upload avatar
+        function showAvatarTab(type) {
+            const fileTab = document.getElementById('avatar-tab-file');
+            const urlTab = document.getElementById('avatar-tab-url');
+            const fileDiv = document.getElementById('avatar-upload-file');
+            const urlDiv = document.getElementById('avatar-upload-url');
+
+            if (type === 'file') {
+                fileTab.classList.remove('bg-gray-100', 'text-gray-600');
+                fileTab.classList.add('bg-brand-green/10', 'text-brand-green');
+                urlTab.classList.remove('bg-brand-green/10', 'text-brand-green');
+                urlTab.classList.add('bg-gray-100', 'text-gray-600');
+                fileDiv.classList.remove('hidden');
+                urlDiv.classList.add('hidden');
+            } else {
+                urlTab.classList.remove('bg-gray-100', 'text-gray-600');
+                urlTab.classList.add('bg-brand-green/10', 'text-brand-green');
+                fileTab.classList.remove('bg-brand-green/10', 'text-brand-green');
+                fileTab.classList.add('bg-gray-100', 'text-gray-600');
+                urlDiv.classList.remove('hidden');
+                fileDiv.classList.add('hidden');
+            }
+        }
+
+        // Submit form chỉnh sửa hồ sơ
+        function submitEditProfile(event) {
+            event.preventDefault();
+
+            const form = document.getElementById('editProfileForm');
+            const formData = new FormData(form);
+            const submitBtn = document.getElementById('editProfileSubmitBtn');
+            const errorDiv = document.getElementById('editProfileError');
+
+            // Disable button và hiện loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang lưu...';
+            errorDiv.classList.add('hidden');
+
+            fetch('{{ route("profile.update") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Cập nhật giao diện với dữ liệu mới
+                        document.querySelectorAll('[data-user-name]').forEach(el => {
+                            el.textContent = data.user.name;
+                        });
+                        document.querySelectorAll('[data-user-bio]').forEach(el => {
+                            el.textContent = data.user.bio || 'Thành viên tích cực của Góc Sách.';
+                        });
+                        document.querySelectorAll('[data-user-avatar]').forEach(el => {
+                            el.src = data.user.avatar;
+                        });
+
+                        // Đóng modal và reload trang để hiển thị đúng
+                        closeEditProfileModal();
+                        window.location.reload();
+                    } else {
+                        errorDiv.textContent = data.message || 'Có lỗi xảy ra!';
+                        errorDiv.classList.remove('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    errorDiv.textContent = 'Có lỗi xảy ra, vui lòng thử lại!';
+                    errorDiv.classList.remove('hidden');
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-save mr-2"></i> Lưu thay đổi';
+                });
+        }
+
+        // --- 4. Xử lý trang bị khung avatar ---
+        function equipFrame(frameId) {
+            fetch('{{ route("profile.avatar-frame.equip") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ avatar_frame_id: frameId })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.error || 'Có lỗi xảy ra!');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi trang bị khung!');
+                });
+        }
+
+        function unequipFrame() {
+            fetch('{{ route("profile.avatar-frame.unequip") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        // --- 5. Yêu cầu xóa bài review (chờ admin duyệt) ---
+        function requestDeleteReview(postId) {
+            if (!confirm('Bạn có chắc muốn yêu cầu xóa bài review này?\n\nYêu cầu sẽ được gửi đến Admin để xử lý.')) {
+                return;
+            }
+
+            fetch(`/reviews/${postId}/request-delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert(data.message || 'Có lỗi xảy ra!');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi gửi yêu cầu xóa!');
+                });
+        }
+
+        // --- 6. Hủy yêu cầu xóa bài review ---
+        function cancelDeleteReview(postId) {
+            if (!confirm('Bạn có chắc muốn hủy yêu cầu xóa và khôi phục bài viết này?')) {
+                return;
+            }
+
+            fetch(`/reviews/${postId}/cancel-delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert(data.message || 'Có lỗi xảy ra!');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi hủy yêu cầu xóa!');
+                });
+        }
+
+        // --- 7. Khôi phục bài review từ thùng rác ---
+        function restoreReview(postId) {
+            if (!confirm('Bạn có chắc muốn khôi phục bài viết này?')) {
+                return;
+            }
+
+            fetch(`/reviews/${postId}/restore`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert(data.message || 'Có lỗi xảy ra!');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi khôi phục bài viết!');
+                });
+        }
+
+        // --- 8. Xóa vĩnh viễn bài review ---
+        function forceDeleteReview(postId) {
+            if (!confirm('⚠️ CẢNH BÁO: Hành động này không thể hoàn tác!\n\nBạn có chắc chắn muốn xóa vĩnh viễn bài viết này?')) {
+                return;
+            }
+
+            fetch(`/reviews/${postId}/force-delete`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert(data.message || 'Có lỗi xảy ra!');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi xóa bài viết!');
+                });
+        }
+    </script>
+
+    {{-- ============================================================== --}}
+    {{-- MODAL CHỈNH SỬA HỒ SƠ --}}
+    {{-- ============================================================== --}}
+    @if(Auth::check() && Auth::id() == $user->id)
+        <div id="editProfileModal" class="fixed inset-0 z-[70] hidden" aria-labelledby="edit-profile-title" role="dialog"
+            aria-modal="true">
+            {{-- Backdrop --}}
+            <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeEditProfileModal()">
+            </div>
+
+            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4">
+                    <div
+                        class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all w-full max-w-md">
+
+                        {{-- Header --}}
+                        <div class="bg-gradient-to-r from-brand-green to-emerald-600 px-6 py-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-bold text-white flex items-center gap-2" id="edit-profile-title">
+                                    <i class="fas fa-user-edit"></i> Chỉnh sửa hồ sơ
+                                </h3>
+                                <button onclick="closeEditProfileModal()" class="text-white/80 hover:text-white transition p-1">
+                                    <i class="fas fa-times text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Body --}}
+                        <form id="editProfileForm" onsubmit="submitEditProfile(event)" enctype="multipart/form-data"
+                            class="p-6">
+
+                            {{-- Error message --}}
+                            <div id="editProfileError"
+                                class="hidden mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm">
+                            </div>
+
+                            {{-- Avatar Upload với Tabs --}}
+                            <div class="mb-6">
+                                <label class="block text-sm font-semibold text-gray-700 mb-3 text-center">
+                                    <i class="fas fa-image mr-1 text-brand-green"></i> Ảnh đại diện
+                                </label>
+
+                                {{-- Preview ảnh --}}
+                                <div class="flex justify-center mb-4">
+                                    <div class="relative group">
+                                        <img id="avatarPreview"
+                                            src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=3E5F4E&color=fff&size=128' }}"
+                                            class="w-28 h-28 rounded-full border-4 border-brand-beige shadow-lg object-cover">
+                                    </div>
+                                </div>
+
+                                {{-- Tabs chọn hình thức upload --}}
+                                <div class="flex gap-2 justify-center mb-3">
+                                    <button type="button" onclick="showAvatarTab('file')" id="avatar-tab-file"
+                                        class="px-3 py-1.5 text-xs rounded-full bg-brand-green/10 text-brand-green font-bold transition">
+                                        <i class="fas fa-upload mr-1"></i> Upload File
+                                    </button>
+                                    <button type="button" onclick="showAvatarTab('url')" id="avatar-tab-url"
+                                        class="px-3 py-1.5 text-xs rounded-full bg-gray-100 text-gray-600 font-bold transition">
+                                        <i class="fas fa-link mr-1"></i> Nhập URL
+                                    </button>
+                                </div>
+
+                                {{-- Upload File --}}
+                                <div id="avatar-upload-file" class="text-center">
+                                    <label for="avatarInput"
+                                        class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition text-sm font-medium text-gray-600">
+                                        <i class="fas fa-cloud-upload-alt"></i> Chọn ảnh từ máy
+                                    </label>
+                                    <input type="file" id="avatarInput" name="avatar" accept=".jpg,.jpeg,.png,.webp,.gif,.svg"
+                                        class="hidden" onchange="previewAvatar(this)">
+                                    <p class="text-xs text-gray-400 mt-2">JPG, PNG, WebP, GIF, SVG (Tối đa 2MB)</p>
+                                </div>
+
+                                {{-- Nhập URL --}}
+                                <div id="avatar-upload-url" class="hidden">
+                                    <input type="url" name="avatar_url" id="avatarUrlInput"
+                                        class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition text-gray-800 text-sm"
+                                        placeholder="https://example.com/avatar.jpg" oninput="previewAvatarUrl(this.value)">
+                                    <p class="text-xs text-gray-400 mt-2 text-center">Dán đường dẫn trực tiếp đến file ảnh</p>
+                                </div>
+                            </div>
+
+                            {{-- Name Input --}}
+                            <div class="mb-4">
+                                <label for="editName" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                    <i class="fas fa-user mr-1 text-brand-green"></i> Tên hiển thị <span
+                                        class="text-red-500">*</span>
+                                </label>
+                                <input type="text" id="editName" name="name" value="{{ $user->name }}" required maxlength="100"
+                                    class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition text-gray-800"
+                                    placeholder="Nhập tên hiển thị...">
+                            </div>
+
+                            {{-- Bio Input --}}
+                            <div class="mb-6">
+                                <label for="editBio" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                    <i class="fas fa-quote-left mr-1 text-brand-accent"></i> Giới thiệu bản thân
+                                </label>
+                                <textarea id="editBio" name="bio" rows="3" maxlength="500"
+                                    class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition text-gray-800 resize-none"
+                                    placeholder="Viết vài dòng về bản thân...">{{ $user->bio }}</textarea>
+                                <p class="text-xs text-gray-400 mt-1 text-right"><span
+                                        id="bioCharCount">{{ strlen($user->bio ?? '') }}</span>/500 ký tự</p>
+                            </div>
+
+                            {{-- Actions --}}
+                            <div class="flex gap-3">
+                                <button type="button" onclick="closeEditProfileModal()"
+                                    class="flex-1 py-2.5 border border-gray-200 text-gray-600 rounded-lg font-semibold hover:bg-gray-50 transition">
+                                    Hủy bỏ
+                                </button>
+                                <button type="submit" id="editProfileSubmitBtn"
+                                    class="flex-1 py-2.5 bg-brand-green text-white rounded-lg font-semibold hover:bg-brand-green/90 transition flex items-center justify-center gap-2 shadow-md">
+                                    <i class="fas fa-save"></i> Lưu thay đổi
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <script>
+        // Đếm ký tự bio
+        document.getElementById('editBio').addEventListener('input', function () {
+            document.getElementById('bioCharCount').textContent = this.value.length;
+        });
+
+        // Handle Unsave Post (Bỏ lưu bài viết)
+        function handleUnsavePost(postId, btnElement) {
+            if (!confirm('Bạn có chắc muốn bỏ lưu bài viết này?')) return;
+
+            // Visual feedback
+            btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btnElement.disabled = true;
+
+            fetch('/post/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ post_id: postId })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && !data.saved) {
+                        // Xóa card bài viết với animation
+                        const card = document.getElementById(`saved-post-${postId}`);
+                        if (card) {
+                            card.style.transition = 'all 0.3s ease-out';
+                            card.style.opacity = '0';
+                            card.style.transform = 'translateX(-20px)';
+                            setTimeout(() => {
+                                card.remove();
+                                // Update counter in tab
+                                const countSpan = document.querySelector('#tab-btn-saved span');
+                                if (countSpan) {
+                                    let count = parseInt(countSpan.textContent) - 1;
+                                    countSpan.textContent = count;
+                                }
+                                // Check if empty
+                                const container = document.getElementById('saved-posts-container');
+                                if (container && container.children.length === 0) {
+                                    location.reload();
+                                }
+                            }, 300);
+                        }
+                    } else {
+                        btnElement.innerHTML = '<i class="fas fa-bookmark"></i>';
+                        btnElement.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    btnElement.innerHTML = '<i class="fas fa-bookmark"></i>';
+                    btnElement.disabled = false;
+                });
+        }
+
+        // Toggle Comment Box for Saved Posts
+        function toggleSavedComment(postId) {
+            const box = document.getElementById(`saved-comment-box-${postId}`);
+            if (box) {
+                box.classList.toggle('hidden');
+                // Focus input when shown
+                if (!box.classList.contains('hidden')) {
+                    const input = box.querySelector('input[name="content"]');
+                    if (input) input.focus();
+                }
+            }
+        }
+
+        // Handle Like for Saved Posts  
+        function handleLike(id, type) {
+            const btn = document.getElementById(`like-btn-${type}-${id}`);
+            const icon = document.getElementById(`like-icon-${type}-${id}`);
+            const countSpan = document.getElementById(`like-count-${type}-${id}`);
+
+            if (!btn || !icon || !countSpan) return;
+
+            const isLiked = icon.classList.contains('fas');
+
+            // Optimistic update
+            if (isLiked) {
+                icon.classList.remove('fas', 'text-red-500');
+                icon.classList.add('far');
+                btn.classList.remove('text-red-500');
+                btn.classList.add('text-gray-500');
+                countSpan.textContent = Math.max(0, parseInt(countSpan.textContent) - 1);
+            } else {
+                icon.classList.remove('far');
+                icon.classList.add('fas', 'text-red-500');
+                btn.classList.remove('text-gray-500');
+                btn.classList.add('text-red-500');
+                countSpan.textContent = parseInt(countSpan.textContent) + 1;
+            }
+
+            // Send AJAX
+            fetch('/like', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ id: id, type: type })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        countSpan.textContent = data.count;
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Submit Comment for Saved Posts
+        function submitSavedComment(postId, event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const input = form.querySelector('input[name="content"]');
+            const content = input.value.trim();
+
+            if (!content) return;
+
+            // Disable form
+            input.disabled = true;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            fetch(`/post/${postId}/comment`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ content: content })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update count
+                        const countSpan = document.getElementById(`comment-count-${postId}`);
+                        if (countSpan) {
+                            countSpan.textContent = parseInt(countSpan.textContent) + 1;
+                        }
+
+                        // Clear input
+                        input.value = '';
+
+                        // Add new comment to list
+                        const commentBox = document.getElementById(`saved-comment-box-${postId}`);
+                        const commentList = commentBox.querySelector('.space-y-2');
+                        if (commentList && data.comment) {
+                            const newComment = document.createElement('div');
+                            newComment.className = 'flex gap-2';
+                            newComment.innerHTML = `
+                                                                                <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}" 
+                                                                                     class="w-6 h-6 rounded-full mt-0.5">
+                                                                                <div class="bg-gray-50 px-3 py-2 rounded-lg text-sm flex-1">
+                                                                                    <span class="font-bold text-gray-700">{{ Auth::user()->name }}</span>
+                                                                                    <span class="text-gray-600 ml-2">${content}</span>
+                                                                                </div>
+                                                                            `;
+                            commentList.prepend(newComment);
+                        }
+                    } else {
+                        alert(data.message || 'Có lỗi xảy ra');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Không thể gửi bình luận. Vui lòng thử lại.');
+                })
+                .finally(() => {
+                    input.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                });
+        }
+    </script>
+
+    {{-- ============================================================== --}}
+    {{-- MODAL CHỈNH SỬA HỒ SƠ --}}
+    {{-- ============================================================== --}}
+    @if(Auth::check() && Auth::id() == $user->id)
+        <div id="editProfileModal" class="fixed inset-0 z-[70] hidden" aria-labelledby="edit-profile-title" role="dialog"
+            aria-modal="true">
+            {{-- Backdrop --}}
+            <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeEditProfileModal()">
+            </div>
+
+            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4">
+                    <div
+                        class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all w-full max-w-md">
+
+                        {{-- Header --}}
+                        <div class="bg-gradient-to-r from-brand-green to-emerald-600 px-6 py-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-bold text-white flex items-center gap-2" id="edit-profile-title">
+                                    <i class="fas fa-user-edit"></i> Chỉnh sửa hồ sơ
+                                </h3>
+                                <button onclick="closeEditProfileModal()" class="text-white/80 hover:text-white transition p-1">
+                                    <i class="fas fa-times text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Body --}}
+                        <form id="editProfileForm" onsubmit="submitEditProfile(event)" enctype="multipart/form-data"
+                            class="p-6">
+
+                            {{-- Error message --}}
+                            <div id="editProfileError"
+                                class="hidden mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm">
+                            </div>
+
+                            {{-- Avatar Upload với Tabs --}}
+                            <div class="mb-6">
+                                <label class="block text-sm font-semibold text-gray-700 mb-3 text-center">
+                                    <i class="fas fa-image mr-1 text-brand-green"></i> Ảnh đại diện
+                                </label>
+
+                                {{-- Preview ảnh --}}
+                                <div class="flex justify-center mb-4">
+                                    <div class="relative group">
+                                        <img id="avatarPreview"
+                                            src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=3E5F4E&color=fff&size=128' }}"
+                                            class="w-28 h-28 rounded-full border-4 border-brand-beige shadow-lg object-cover">
+                                    </div>
+                                </div>
+
+                                {{-- Tabs chọn hình thức upload --}}
+                                <div class="flex gap-2 justify-center mb-3">
+                                    <button type="button" onclick="showAvatarTab('file')" id="avatar-tab-file"
+                                        class="px-3 py-1.5 text-xs rounded-full bg-brand-green/10 text-brand-green font-bold transition">
+                                        <i class="fas fa-upload mr-1"></i> Upload File
+                                    </button>
+                                    <button type="button" onclick="showAvatarTab('url')" id="avatar-tab-url"
+                                        class="px-3 py-1.5 text-xs rounded-full bg-gray-100 text-gray-600 font-bold transition">
+                                        <i class="fas fa-link mr-1"></i> Nhập URL
+                                    </button>
+                                </div>
+
+                                {{-- Upload File --}}
+                                <div id="avatar-upload-file" class="text-center">
+                                    <label for="avatarInput"
+                                        class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition text-sm font-medium text-gray-600">
+                                        <i class="fas fa-cloud-upload-alt"></i> Chọn ảnh từ máy
+                                    </label>
+                                    <input type="file" id="avatarInput" name="avatar" accept=".jpg,.jpeg,.png,.webp,.gif,.svg"
+                                        class="hidden" onchange="previewAvatar(this)">
+                                    <p class="text-xs text-gray-400 mt-2">JPG, PNG, WebP, GIF, SVG (Tối đa 2MB)</p>
+                                </div>
+
+                                {{-- Nhập URL --}}
+                                <div id="avatar-upload-url" class="hidden">
+                                    <input type="url" name="avatar_url" id="avatarUrlInput"
+                                        class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition text-gray-800 text-sm"
+                                        placeholder="https://example.com/avatar.jpg" oninput="previewAvatarUrl(this.value)">
+                                    <p class="text-xs text-gray-400 mt-2 text-center">Dán đường dẫn trực tiếp đến file ảnh</p>
+                                </div>
+                            </div>
+
+                            {{-- Name Input --}}
+                            <div class="mb-4">
+                                <label for="editName" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                    <i class="fas fa-user mr-1 text-brand-green"></i> Tên hiển thị <span
+                                        class="text-red-500">*</span>
+                                </label>
+                                <input type="text" id="editName" name="name" value="{{ $user->name }}" required maxlength="100"
+                                    class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition text-gray-800"
+                                    placeholder="Nhập tên hiển thị...">
+                            </div>
+
+                            {{-- Bio Input --}}
+                            <div class="mb-6">
+                                <label for="editBio" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                    <i class="fas fa-quote-left mr-1 text-brand-accent"></i> Giới thiệu bản thân
+                                </label>
+                                <textarea id="editBio" name="bio" rows="3" maxlength="500"
+                                    class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition text-gray-800 resize-none"
+                                    placeholder="Viết vài dòng về bản thân...">{{ $user->bio }}</textarea>
+                                <p class="text-xs text-gray-400 mt-1 text-right"><span
+                                        id="bioCharCount">{{ strlen($user->bio ?? '') }}</span>/500 ký tự</p>
+                            </div>
+
+                            {{-- Actions --}}
+                            <div class="flex gap-3">
+                                <button type="button" onclick="closeEditProfileModal()"
+                                    class="flex-1 py-2.5 border border-gray-200 text-gray-600 rounded-lg font-semibold hover:bg-gray-50 transition">
+                                    Hủy bỏ
+                                </button>
+                                <button type="submit" id="editProfileSubmitBtn"
+                                    class="flex-1 py-2.5 bg-brand-green text-white rounded-lg font-semibold hover:bg-brand-green/90 transition flex items-center justify-center gap-2 shadow-md">
+                                    <i class="fas fa-save"></i> Lưu thay đổi
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Đếm ký tự bio
+            document.getElementById('editBio').addEventListener('input', function () {
+                document.getElementById('bioCharCount').textContent = this.value.length;
+            });
+
+            // Handle Unsave Post (Bỏ lưu bài viết)
+            function handleUnsavePost(postId, btnElement) {
+                if (!confirm('Bạn có chắc muốn bỏ lưu bài viết này?')) return;
+
+                // Visual feedback
+                btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                btnElement.disabled = true;
+
+                fetch('/post/save', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
-                    body: JSON.stringify({ user_id: userId })
+                    body: JSON.stringify({ post_id: postId })
                 })
-                    .then(res => res.json())
+                    .then(response => response.json())
                     .then(data => {
-                        if (data.status === 'error') { alert(data.message); return; }
-
-                        const btn = document.getElementById('btn-follow');
-                        const text = document.getElementById('follow-text');
-                        const icon = btn.querySelector('i');
-                        const countSpan = document.getElementById('follower-count');
-
-                        if (data.follower_count !== undefined) countSpan.innerText = data.follower_count;
-
-                        if (data.action === 'followed') {
-                            btn.classList.remove('bg-blue-600', 'text-white', 'hover:bg-blue-700');
-                            btn.classList.add('bg-gray-200', 'text-gray-800');
-                            text.innerText = 'Đang theo dõi';
-                            icon.className = 'fas fa-check';
+                        if (data.success && !data.saved) {
+                            // Xóa card bài viết với animation
+                            const card = document.getElementById(`saved-post-${postId}`);
+                            if (card) {
+                                card.style.transition = 'all 0.3s ease-out';
+                                card.style.opacity = '0';
+                                card.style.transform = 'translateX(-20px)';
+                                setTimeout(() => {
+                                    card.remove();
+                                    // Update counter in tab
+                                    const countSpan = document.querySelector('#tab-btn-saved span');
+                                    if (countSpan) {
+                                        let count = parseInt(countSpan.textContent) - 1;
+                                        countSpan.textContent = count;
+                                    }
+                                    // Check if empty
+                                    const container = document.getElementById('saved-posts-container');
+                                    if (container && container.children.length === 0) {
+                                        location.reload();
+                                    }
+                                }, 300);
+                            }
                         } else {
-                            btn.classList.remove('bg-gray-200', 'text-gray-800');
-                            btn.classList.add('bg-blue-600', 'text-white', 'hover:bg-blue-700');
-                            text.innerText = 'Theo dõi';
-                            icon.className = 'fas fa-user-plus';
+                            btnElement.innerHTML = '<i class="fas fa-bookmark"></i>';
+                            btnElement.disabled = false;
                         }
                     })
-                    .catch(error => console.error('Lỗi Follow:', error));
-            }
-
-            // --- 2. Xử lý Modal Danh sách Follow ---
-            function openFollowModal(type, userId) {
-                const modal = document.getElementById('followModal');
-                const title = document.getElementById('modal-title');
-                const body = document.getElementById('modal-body');
-
-                // Reset nội dung loading
-                body.innerHTML = '<div class="flex justify-center py-4"><i class="fas fa-spinner fa-spin text-brand-green text-2xl"></i></div>';
-
-                // Hiện modal
-                modal.classList.remove('hidden');
-
-                // Đặt tiêu đề
-                if (type === 'followers') title.innerText = 'Người theo dõi';
-                else title.innerText = 'Đang theo dõi';
-
-                // Gọi API lấy danh sách
-                fetch(`/api/user/${userId}/${type}`)
-                    .then(res => res.json())
-                    .then(users => {
-                        body.innerHTML = ''; // Xóa loading
-
-                        if (users.length === 0) {
-                            body.innerHTML = '<p class="text-center text-gray-500 py-4 text-sm">Chưa có ai trong danh sách này.</p>';
-                            return;
-                        }
-
-                        // Vẽ danh sách user
-                        let html = '<div class="space-y-3">';
-                        users.forEach(u => {
-                            // Logic lấy avatar (Nếu null thì dùng UI Avatars)
-                            const avatar = u.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=random`;
-
-                            // Link tới profile người đó
-                            html += `
-                                                    <a href="/profile/${u.id}" class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition group border border-transparent hover:border-gray-100">
-                                                        <img src="${avatar}" class="w-10 h-10 rounded-full border border-gray-200 object-cover">
-                                                        <div>
-                                                            <h4 class="font-bold text-gray-800 text-sm group-hover:text-brand-green transition">${u.name}</h4>
-                                                        </div>
-                                                        <div class="ml-auto">
-                                                            <span class="text-xs text-gray-400 group-hover:text-brand-green"><i class="fas fa-chevron-right"></i></span>
-                                                        </div>
-                                                    </a>
-                                                `;
-                        });
-                        html += '</div>';
-                        body.innerHTML = html;
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        body.innerHTML = '<p class="text-center text-red-500 py-4 text-sm">Không thể tải dữ liệu.</p>';
+                    .catch(error => {
+                        console.error('Error:', error);
+                        btnElement.innerHTML = '<i class="fas fa-bookmark"></i>';
+                        btnElement.disabled = false;
                     });
             }
 
-            function closeFollowModal() {
-                document.getElementById('followModal').classList.add('hidden');
-            }
-
-            // Đóng modal khi nhấn ESC
-            document.addEventListener('keydown', function (event) {
-                if (event.key === "Escape") {
-                    closeFollowModal();
-                    closeEditProfileModal();
-                }
-            });
-
-            // --- 3. Xử lý Modal Chỉnh sửa Hồ sơ ---
-            function openEditProfileModal() {
-                document.getElementById('editProfileModal').classList.remove('hidden');
-                document.body.style.overflow = 'hidden'; // Prevent scroll
-            }
-
-            function closeEditProfileModal() {
-                document.getElementById('editProfileModal').classList.add('hidden');
-                document.body.style.overflow = ''; // Restore scroll
-            }
-
-            // Xem trước ảnh khi chọn file
-            function previewAvatar(input) {
-                if (input.files && input.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        document.getElementById('avatarPreview').src = e.target.result;
-                        // Xóa URL input khi chọn file
-                        document.getElementById('avatarUrlInput').value = '';
-                    };
-                    reader.readAsDataURL(input.files[0]);
+            // Toggle Comment Box for Saved Posts
+            function toggleSavedComment(postId) {
+                const box = document.getElementById(`saved-comment-box-${postId}`);
+                if (box) {
+                    box.classList.toggle('hidden');
+                    // Focus input when shown
+                    if (!box.classList.contains('hidden')) {
+                        const input = box.querySelector('input[name="content"]');
+                        if (input) input.focus();
+                    }
                 }
             }
 
-            // Xem trước ảnh từ URL
-            function previewAvatarUrl(url) {
-                if (url) {
-                    document.getElementById('avatarPreview').src = url;
-                    // Xóa file input khi nhập URL
-                    document.getElementById('avatarInput').value = '';
-                }
-            }
+            // Handle Like for Saved Posts  
+            function handleLike(id, type) {
+                const btn = document.getElementById(`like-btn-${type}-${id}`);
+                const icon = document.getElementById(`like-icon-${type}-${id}`);
+                const countSpan = document.getElementById(`like-count-${type}-${id}`);
 
-            // Chuyển tab upload avatar
-            function showAvatarTab(type) {
-                const fileTab = document.getElementById('avatar-tab-file');
-                const urlTab = document.getElementById('avatar-tab-url');
-                const fileDiv = document.getElementById('avatar-upload-file');
-                const urlDiv = document.getElementById('avatar-upload-url');
+                if (!btn || !icon || !countSpan) return;
 
-                if (type === 'file') {
-                    fileTab.classList.remove('bg-gray-100', 'text-gray-600');
-                    fileTab.classList.add('bg-brand-green/10', 'text-brand-green');
-                    urlTab.classList.remove('bg-brand-green/10', 'text-brand-green');
-                    urlTab.classList.add('bg-gray-100', 'text-gray-600');
-                    fileDiv.classList.remove('hidden');
-                    urlDiv.classList.add('hidden');
+                const isLiked = icon.classList.contains('fas');
+
+                // Optimistic update
+                if (isLiked) {
+                    icon.classList.remove('fas', 'text-red-500');
+                    icon.classList.add('far');
+                    btn.classList.remove('text-red-500');
+                    btn.classList.add('text-gray-500');
+                    countSpan.textContent = Math.max(0, parseInt(countSpan.textContent) - 1);
                 } else {
-                    urlTab.classList.remove('bg-gray-100', 'text-gray-600');
-                    urlTab.classList.add('bg-brand-green/10', 'text-brand-green');
-                    fileTab.classList.remove('bg-brand-green/10', 'text-brand-green');
-                    fileTab.classList.add('bg-gray-100', 'text-gray-600');
-                    urlDiv.classList.remove('hidden');
-                    fileDiv.classList.add('hidden');
+                    icon.classList.remove('far');
+                    icon.classList.add('fas', 'text-red-500');
+                    btn.classList.remove('text-gray-500');
+                    btn.classList.add('text-red-500');
+                    countSpan.textContent = parseInt(countSpan.textContent) + 1;
                 }
-            }
 
-            // Submit form chỉnh sửa hồ sơ
-            function submitEditProfile(event) {
-                event.preventDefault();
-
-                const form = document.getElementById('editProfileForm');
-                const formData = new FormData(form);
-                const submitBtn = document.getElementById('editProfileSubmitBtn');
-                const errorDiv = document.getElementById('editProfileError');
-
-                // Disable button và hiện loading
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang lưu...';
-                errorDiv.classList.add('hidden');
-
-                fetch('{{ route("profile.update") }}', {
+                // Send AJAX
+                fetch('/like', {
                     method: 'POST',
                     headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
-                    body: formData
+                    body: JSON.stringify({ id: id, type: type })
                 })
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            // Cập nhật giao diện với dữ liệu mới
-                            document.querySelectorAll('[data-user-name]').forEach(el => {
-                                el.textContent = data.user.name;
-                            });
-                            document.querySelectorAll('[data-user-bio]').forEach(el => {
-                                el.textContent = data.user.bio || 'Thành viên tích cực của Góc Sách.';
-                            });
-                            document.querySelectorAll('[data-user-avatar]').forEach(el => {
-                                el.src = data.user.avatar;
-                            });
-
-                            // Đóng modal và reload trang để hiển thị đúng
-                            closeEditProfileModal();
-                            window.location.reload();
-                        } else {
-                            errorDiv.textContent = data.message || 'Có lỗi xảy ra!';
-                            errorDiv.classList.remove('hidden');
+                            countSpan.textContent = data.count;
                         }
                     })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        errorDiv.textContent = 'Có lỗi xảy ra, vui lòng thử lại!';
-                        errorDiv.classList.remove('hidden');
-                    })
-                    .finally(() => {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = '<i class="fas fa-save mr-2"></i> Lưu thay đổi';
-                    });
+                    .catch(error => console.error('Error:', error));
             }
 
-            // --- 4. Xử lý trang bị khung avatar ---
-            function equipFrame(frameId) {
-                fetch('{{ route("profile.avatar-frame.equip") }}', {
+            // Submit Comment for Saved Posts
+            function submitSavedComment(postId, event) {
+                event.preventDefault();
+
+                const form = event.target;
+                const input = form.querySelector('input[name="content"]');
+                const content = input.value.trim();
+
+                if (!content) return;
+
+                // Disable form
+                input.disabled = true;
+                const submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                fetch(`/post/${postId}/comment`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
-                    body: JSON.stringify({ avatar_frame_id: frameId })
+                    body: JSON.stringify({ content: content })
                 })
-                    .then(res => res.json())
+                    .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            location.reload();
+                            // Update count
+                            const countSpan = document.getElementById(`comment-count-${postId}`);
+                            if (countSpan) {
+                                countSpan.textContent = parseInt(countSpan.textContent) + 1;
+                            }
+
+                            // Clear input
+                            input.value = '';
+
+                            // Add new comment to list
+                            const commentBox = document.getElementById(`saved-comment-box-${postId}`);
+                            const commentList = commentBox.querySelector('.space-y-2');
+                            if (commentList && data.comment) {
+                                const newComment = document.createElement('div');
+                                newComment.className = 'flex gap-2';
+                                newComment.innerHTML = `
+                                                                            <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}" 
+                                                                                 class="w-6 h-6 rounded-full mt-0.5">
+                                                                            <div class="bg-gray-50 px-3 py-2 rounded-lg text-sm flex-1">
+                                                                                <span class="font-bold text-gray-700">{{ Auth::user()->name }}</span>
+                                                                                <span class="text-gray-600 ml-2">${content}</span>
+                                                                            </div>
+                                                                        `;
+                                commentList.prepend(newComment);
+                            }
                         } else {
-                            alert(data.error || 'Có lỗi xảy ra!');
+                            alert(data.message || 'Có lỗi xảy ra');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('Có lỗi xảy ra khi trang bị khung!');
-                    });
-            }
-
-            function unequipFrame() {
-                fetch('{{ route("profile.avatar-frame.unequip") }}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    }
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            location.reload();
-                        }
+                        alert('Không thể gửi bình luận. Vui lòng thử lại.');
                     })
-                    .catch(error => {
-                        console.error('Error:', error);
-                    });
-            }
-
-            // --- 5. Yêu cầu xóa bài review (chờ admin duyệt) ---
-            function requestDeleteReview(postId) {
-                if (!confirm('Bạn có chắc muốn yêu cầu xóa bài review này?\n\nYêu cầu sẽ được gửi đến Admin để xử lý.')) {
-                    return;
-                }
-
-                fetch(`/reviews/${postId}/request-delete`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    }
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert(data.message);
-                            location.reload();
-                        } else {
-                            alert(data.message || 'Có lỗi xảy ra!');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Có lỗi xảy ra khi gửi yêu cầu xóa!');
-                    });
-            }
-
-            // --- 6. Hủy yêu cầu xóa bài review ---
-            function cancelDeleteReview(postId) {
-                if (!confirm('Bạn có chắc muốn hủy yêu cầu xóa và khôi phục bài viết này?')) {
-                    return;
-                }
-
-                fetch(`/reviews/${postId}/cancel-delete`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    }
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert(data.message);
-                            location.reload();
-                        } else {
-                            alert(data.message || 'Có lỗi xảy ra!');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Có lỗi xảy ra khi hủy yêu cầu xóa!');
-                    });
-            }
-
-            // --- 7. Khôi phục bài review từ thùng rác ---
-            function restoreReview(postId) {
-                if (!confirm('Bạn có chắc muốn khôi phục bài viết này?')) {
-                    return;
-                }
-
-                fetch(`/reviews/${postId}/restore`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    }
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert(data.message);
-                            location.reload();
-                        } else {
-                            alert(data.message || 'Có lỗi xảy ra!');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Có lỗi xảy ra khi khôi phục bài viết!');
-                    });
-            }
-
-            // --- 8. Xóa vĩnh viễn bài review ---
-            function forceDeleteReview(postId) {
-                if (!confirm('⚠️ CẢNH BÁO: Hành động này không thể hoàn tác!\n\nBạn có chắc chắn muốn xóa vĩnh viễn bài viết này?')) {
-                    return;
-                }
-
-                fetch(`/reviews/${postId}/force-delete`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    }
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert(data.message);
-                            location.reload();
-                        } else {
-                            alert(data.message || 'Có lỗi xảy ra!');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Có lỗi xảy ra khi xóa bài viết!');
+                    .finally(() => {
+                        input.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
                     });
             }
         </script>
+    @endif
 
-        {{-- ============================================================== --}}
-        {{-- MODAL CHỈNH SỬA HỒ SƠ --}}
-        {{-- ============================================================== --}}
-        @if(Auth::check() && Auth::id() == $user->id)
-            <div id="editProfileModal" class="fixed inset-0 z-[70] hidden" aria-labelledby="edit-profile-title" role="dialog"
-                aria-modal="true">
-                {{-- Backdrop --}}
-                <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeEditProfileModal()">
-                </div>
+    {{-- ============================================================== --}}
+    {{-- MODAL CHỈNH SỬA HỒ SƠ --}}
+    {{-- ============================================================== --}}
+    @if(Auth::check() && Auth::id() == $user->id)
+        <div id="editProfileModal" class="fixed inset-0 z-[70] hidden" aria-labelledby="edit-profile-title" role="dialog"
+            aria-modal="true">
+            {{-- Backdrop --}}
+            <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeEditProfileModal()">
+            </div>
 
-                <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-                    <div class="flex min-h-full items-center justify-center p-4">
-                        <div
-                            class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all w-full max-w-md">
+            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4">
+                    <div
+                        class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all w-full max-w-md">
 
-                            {{-- Header --}}
-                            <div class="bg-gradient-to-r from-brand-green to-emerald-600 px-6 py-4">
-                                <div class="flex items-center justify-between">
-                                    <h3 class="text-lg font-bold text-white flex items-center gap-2" id="edit-profile-title">
-                                        <i class="fas fa-user-edit"></i> Chỉnh sửa hồ sơ
-                                    </h3>
-                                    <button onclick="closeEditProfileModal()" class="text-white/80 hover:text-white transition p-1">
-                                        <i class="fas fa-times text-xl"></i>
+                        {{-- Header --}}
+                        <div class="bg-gradient-to-r from-brand-green to-emerald-600 px-6 py-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-bold text-white flex items-center gap-2" id="edit-profile-title">
+                                    <i class="fas fa-user-edit"></i> Chỉnh sửa hồ sơ
+                                </h3>
+                                <button onclick="closeEditProfileModal()" class="text-white/80 hover:text-white transition p-1">
+                                    <i class="fas fa-times text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Body --}}
+                        <form id="editProfileForm" onsubmit="submitEditProfile(event)" enctype="multipart/form-data"
+                            class="p-6">
+
+                            {{-- Error message --}}
+                            <div id="editProfileError"
+                                class="hidden mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm">
+                            </div>
+
+                            {{-- Avatar Upload với Tabs --}}
+                            <div class="mb-6">
+                                <label class="block text-sm font-semibold text-gray-700 mb-3 text-center">
+                                    <i class="fas fa-image mr-1 text-brand-green"></i> Ảnh đại diện
+                                </label>
+
+                                {{-- Preview ảnh --}}
+                                <div class="flex justify-center mb-4">
+                                    <div class="relative group">
+                                        <img id="avatarPreview"
+                                            src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=3E5F4E&color=fff&size=128' }}"
+                                            class="w-28 h-28 rounded-full border-4 border-brand-beige shadow-lg object-cover">
+                                    </div>
+                                </div>
+
+                                {{-- Tabs chọn hình thức upload --}}
+                                <div class="flex gap-2 justify-center mb-3">
+                                    <button type="button" onclick="showAvatarTab('file')" id="avatar-tab-file"
+                                        class="px-3 py-1.5 text-xs rounded-full bg-brand-green/10 text-brand-green font-bold transition">
+                                        <i class="fas fa-upload mr-1"></i> Upload File
                                     </button>
+                                    <button type="button" onclick="showAvatarTab('url')" id="avatar-tab-url"
+                                        class="px-3 py-1.5 text-xs rounded-full bg-gray-100 text-gray-600 font-bold transition">
+                                        <i class="fas fa-link mr-1"></i> Nhập URL
+                                    </button>
+                                </div>
+
+                                {{-- Upload File --}}
+                                <div id="avatar-upload-file" class="text-center">
+                                    <label for="avatarInput"
+                                        class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition text-sm font-medium text-gray-600">
+                                        <i class="fas fa-cloud-upload-alt"></i> Chọn ảnh từ máy
+                                    </label>
+                                    <input type="file" id="avatarInput" name="avatar" accept=".jpg,.jpeg,.png,.webp,.gif,.svg"
+                                        class="hidden" onchange="previewAvatar(this)">
+                                    <p class="text-xs text-gray-400 mt-2">JPG, PNG, WebP, GIF, SVG (Tối đa 2MB)</p>
+                                </div>
+
+                                {{-- Nhập URL --}}
+                                <div id="avatar-upload-url" class="hidden">
+                                    <input type="url" name="avatar_url" id="avatarUrlInput"
+                                        class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition text-gray-800 text-sm"
+                                        placeholder="https://example.com/avatar.jpg" oninput="previewAvatarUrl(this.value)">
+                                    <p class="text-xs text-gray-400 mt-2 text-center">Dán đường dẫn trực tiếp đến file ảnh</p>
                                 </div>
                             </div>
 
-                            {{-- Body --}}
-                            <form id="editProfileForm" onsubmit="submitEditProfile(event)" enctype="multipart/form-data"
-                                class="p-6">
+                            {{-- Name Input --}}
+                            <div class="mb-4">
+                                <label for="editName" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                    <i class="fas fa-user mr-1 text-brand-green"></i> Tên hiển thị <span
+                                        class="text-red-500">*</span>
+                                </label>
+                                <input type="text" id="editName" name="name" value="{{ $user->name }}" required maxlength="100"
+                                    class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition text-gray-800"
+                                    placeholder="Nhập tên hiển thị...">
+                            </div>
 
-                                {{-- Error message --}}
-                                <div id="editProfileError"
-                                    class="hidden mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm">
-                                </div>
+                            {{-- Bio Input --}}
+                            <div class="mb-6">
+                                <label for="editBio" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                    <i class="fas fa-quote-left mr-1 text-brand-accent"></i> Giới thiệu bản thân
+                                </label>
+                                <textarea id="editBio" name="bio" rows="3" maxlength="500"
+                                    class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition text-gray-800 resize-none"
+                                    placeholder="Viết vài dòng về bản thân...">{{ $user->bio }}</textarea>
+                                <p class="text-xs text-gray-400 mt-1 text-right"><span
+                                        id="bioCharCount">{{ strlen($user->bio ?? '') }}</span>/500 ký tự</p>
+                            </div>
 
-                                {{-- Avatar Upload với Tabs --}}
-                                <div class="mb-6">
-                                    <label class="block text-sm font-semibold text-gray-700 mb-3 text-center">
-                                        <i class="fas fa-image mr-1 text-brand-green"></i> Ảnh đại diện
-                                    </label>
-
-                                    {{-- Preview ảnh --}}
-                                    <div class="flex justify-center mb-4">
-                                        <div class="relative group">
-                                            <img id="avatarPreview"
-                                                src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=3E5F4E&color=fff&size=128' }}"
-                                                class="w-28 h-28 rounded-full border-4 border-brand-beige shadow-lg object-cover">
-                                        </div>
-                                    </div>
-
-                                    {{-- Tabs chọn hình thức upload --}}
-                                    <div class="flex gap-2 justify-center mb-3">
-                                        <button type="button" onclick="showAvatarTab('file')" id="avatar-tab-file"
-                                            class="px-3 py-1.5 text-xs rounded-full bg-brand-green/10 text-brand-green font-bold transition">
-                                            <i class="fas fa-upload mr-1"></i> Upload File
-                                        </button>
-                                        <button type="button" onclick="showAvatarTab('url')" id="avatar-tab-url"
-                                            class="px-3 py-1.5 text-xs rounded-full bg-gray-100 text-gray-600 font-bold transition">
-                                            <i class="fas fa-link mr-1"></i> Nhập URL
-                                        </button>
-                                    </div>
-
-                                    {{-- Upload File --}}
-                                    <div id="avatar-upload-file" class="text-center">
-                                        <label for="avatarInput"
-                                            class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition text-sm font-medium text-gray-600">
-                                            <i class="fas fa-cloud-upload-alt"></i> Chọn ảnh từ máy
-                                        </label>
-                                        <input type="file" id="avatarInput" name="avatar" accept=".jpg,.jpeg,.png,.webp,.gif,.svg"
-                                            class="hidden" onchange="previewAvatar(this)">
-                                        <p class="text-xs text-gray-400 mt-2">JPG, PNG, WebP, GIF, SVG (Tối đa 2MB)</p>
-                                    </div>
-
-                                    {{-- Nhập URL --}}
-                                    <div id="avatar-upload-url" class="hidden">
-                                        <input type="url" name="avatar_url" id="avatarUrlInput"
-                                            class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition text-gray-800 text-sm"
-                                            placeholder="https://example.com/avatar.jpg" oninput="previewAvatarUrl(this.value)">
-                                        <p class="text-xs text-gray-400 mt-2 text-center">Dán đường dẫn trực tiếp đến file ảnh</p>
-                                    </div>
-                                </div>
-
-                                {{-- Name Input --}}
-                                <div class="mb-4">
-                                    <label for="editName" class="block text-sm font-semibold text-gray-700 mb-1.5">
-                                        <i class="fas fa-user mr-1 text-brand-green"></i> Tên hiển thị <span
-                                            class="text-red-500">*</span>
-                                    </label>
-                                    <input type="text" id="editName" name="name" value="{{ $user->name }}" required maxlength="100"
-                                        class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition text-gray-800"
-                                        placeholder="Nhập tên hiển thị...">
-                                </div>
-
-                                {{-- Bio Input --}}
-                                <div class="mb-6">
-                                    <label for="editBio" class="block text-sm font-semibold text-gray-700 mb-1.5">
-                                        <i class="fas fa-quote-left mr-1 text-brand-accent"></i> Giới thiệu bản thân
-                                    </label>
-                                    <textarea id="editBio" name="bio" rows="3" maxlength="500"
-                                        class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition text-gray-800 resize-none"
-                                        placeholder="Viết vài dòng về bản thân...">{{ $user->bio }}</textarea>
-                                    <p class="text-xs text-gray-400 mt-1 text-right"><span
-                                            id="bioCharCount">{{ strlen($user->bio ?? '') }}</span>/500 ký tự</p>
-                                </div>
-
-                                {{-- Actions --}}
-                                <div class="flex gap-3">
-                                    <button type="button" onclick="closeEditProfileModal()"
-                                        class="flex-1 py-2.5 border border-gray-200 text-gray-600 rounded-lg font-semibold hover:bg-gray-50 transition">
-                                        Hủy bỏ
-                                    </button>
-                                    <button type="submit" id="editProfileSubmitBtn"
-                                        class="flex-1 py-2.5 bg-brand-green text-white rounded-lg font-semibold hover:bg-brand-green/90 transition flex items-center justify-center gap-2 shadow-md">
-                                        <i class="fas fa-save"></i> Lưu thay đổi
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+                            {{-- Actions --}}
+                            <div class="flex gap-3">
+                                <button type="button" onclick="closeEditProfileModal()"
+                                    class="flex-1 py-2.5 border border-gray-200 text-gray-600 rounded-lg font-semibold hover:bg-gray-50 transition">
+                                    Hủy bỏ
+                                </button>
+                                <button type="submit" id="editProfileSubmitBtn"
+                                    class="flex-1 py-2.5 bg-brand-green text-white rounded-lg font-semibold hover:bg-brand-green/90 transition flex items-center justify-center gap-2 shadow-md">
+                                    <i class="fas fa-save"></i> Lưu thay đổi
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <script>
-                // Đếm ký tự bio
-                document.getElementById('editBio').addEventListener('input', function () {
-                    document.getElementById('bioCharCount').textContent = this.value.length;
-                });
+        <script>
+            // Đếm ký tự bio
+            document.getElementById('editBio').addEventListener('input', function () {
+                document.getElementById('bioCharCount').textContent = this.value.length;
+            });
 
-                // Handle Unsave Post (Bỏ lưu bài viết)
-                function handleUnsavePost(postId, btnElement) {
-                    if (!confirm('Bạn có chắc muốn bỏ lưu bài viết này?')) return;
+            // Handle Unsave Post (Bỏ lưu bài viết)
+            function handleUnsavePost(postId, btnElement) {
+                if (!confirm('Bạn có chắc muốn bỏ lưu bài viết này?')) return;
 
-                    // Visual feedback
-                    btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                    btnElement.disabled = true;
+                // Visual feedback
+                btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                btnElement.disabled = true;
 
-                    fetch('/post/save', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({ post_id: postId })
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success && !data.saved) {
-                                // Xóa card bài viết với animation
-                                const card = document.getElementById(`saved-post-${postId}`);
-                                if (card) {
-                                    card.style.transition = 'all 0.3s ease-out';
-                                    card.style.opacity = '0';
-                                    card.style.transform = 'translateX(-20px)';
-                                    setTimeout(() => {
-                                        card.remove();
-                                        // Update counter in tab
-                                        const countSpan = document.querySelector('#tab-btn-saved span');
-                                        if (countSpan) {
-                                            let count = parseInt(countSpan.textContent) - 1;
-                                            countSpan.textContent = count;
-                                        }
-                                        // Check if empty
-                                        const container = document.getElementById('saved-posts-container');
-                                        if (container && container.children.length === 0) {
-                                            location.reload();
-                                        }
-                                    }, 300);
-                                }
-                            } else {
-                                btnElement.innerHTML = '<i class="fas fa-bookmark"></i>';
-                                btnElement.disabled = false;
+                fetch('/post/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ post_id: postId })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && !data.saved) {
+                            // Xóa card bài viết với animation
+                            const card = document.getElementById(`saved-post-${postId}`);
+                            if (card) {
+                                card.style.transition = 'all 0.3s ease-out';
+                                card.style.opacity = '0';
+                                card.style.transform = 'translateX(-20px)';
+                                setTimeout(() => {
+                                    card.remove();
+                                    // Update counter in tab
+                                    const countSpan = document.querySelector('#tab-btn-saved span');
+                                    if (countSpan) {
+                                        let count = parseInt(countSpan.textContent) - 1;
+                                        countSpan.textContent = count;
+                                    }
+                                    // Check if empty
+                                    const container = document.getElementById('saved-posts-container');
+                                    if (container && container.children.length === 0) {
+                                        location.reload();
+                                    }
+                                }, 300);
                             }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
+                        } else {
                             btnElement.innerHTML = '<i class="fas fa-bookmark"></i>';
                             btnElement.disabled = false;
-                        });
-                }
-
-                // Toggle Comment Box for Saved Posts
-                function toggleSavedComment(postId) {
-                    const box = document.getElementById(`saved-comment-box-${postId}`);
-                    if (box) {
-                        box.classList.toggle('hidden');
-                        // Focus input when shown
-                        if (!box.classList.contains('hidden')) {
-                            const input = box.querySelector('input[name="content"]');
-                            if (input) input.focus();
                         }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        btnElement.innerHTML = '<i class="fas fa-bookmark"></i>';
+                        btnElement.disabled = false;
+                    });
+            }
+
+            // Toggle Comment Box for Saved Posts
+            function toggleSavedComment(postId) {
+                const box = document.getElementById(`saved-comment-box-${postId}`);
+                if (box) {
+                    box.classList.toggle('hidden');
+                    // Focus input when shown
+                    if (!box.classList.contains('hidden')) {
+                        const input = box.querySelector('input[name="content"]');
+                        if (input) input.focus();
                     }
                 }
+            }
 
-                // Handle Like for Saved Posts  
-                function handleLike(id, type) {
-                    const btn = document.getElementById(`like-btn-${type}-${id}`);
-                    const icon = document.getElementById(`like-icon-${type}-${id}`);
-                    const countSpan = document.getElementById(`like-count-${type}-${id}`);
+            // Handle Like for Saved Posts  
+            function handleLike(id, type) {
+                const btn = document.getElementById(`like-btn-${type}-${id}`);
+                const icon = document.getElementById(`like-icon-${type}-${id}`);
+                const countSpan = document.getElementById(`like-count-${type}-${id}`);
 
-                    if (!btn || !icon || !countSpan) return;
+                if (!btn || !icon || !countSpan) return;
 
-                    const isLiked = icon.classList.contains('fas');
+                const isLiked = icon.classList.contains('fas');
 
-                    // Optimistic update
-                    if (isLiked) {
-                        icon.classList.remove('fas', 'text-red-500');
-                        icon.classList.add('far');
-                        btn.classList.remove('text-red-500');
-                        btn.classList.add('text-gray-500');
-                        countSpan.textContent = Math.max(0, parseInt(countSpan.textContent) - 1);
-                    } else {
-                        icon.classList.remove('far');
-                        icon.classList.add('fas', 'text-red-500');
-                        btn.classList.remove('text-gray-500');
-                        btn.classList.add('text-red-500');
-                        countSpan.textContent = parseInt(countSpan.textContent) + 1;
-                    }
-
-                    // Send AJAX
-                    fetch('/like', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({ id: id, type: type })
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                countSpan.textContent = data.count;
-                            }
-                        })
-                        .catch(error => console.error('Error:', error));
+                // Optimistic update
+                if (isLiked) {
+                    icon.classList.remove('fas', 'text-red-500');
+                    icon.classList.add('far');
+                    btn.classList.remove('text-red-500');
+                    btn.classList.add('text-gray-500');
+                    countSpan.textContent = Math.max(0, parseInt(countSpan.textContent) - 1);
+                } else {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas', 'text-red-500');
+                    btn.classList.remove('text-gray-500');
+                    btn.classList.add('text-red-500');
+                    countSpan.textContent = parseInt(countSpan.textContent) + 1;
                 }
 
-                // Submit Comment for Saved Posts
-                function submitSavedComment(postId, event) {
-                    event.preventDefault();
-
-                    const form = event.target;
-                    const input = form.querySelector('input[name="content"]');
-                    const content = input.value.trim();
-
-                    if (!content) return;
-
-                    // Disable form
-                    input.disabled = true;
-                    const submitBtn = form.querySelector('button[type="submit"]');
-                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
-                    fetch(`/post/${postId}/comment`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({ content: content })
+                // Send AJAX
+                fetch('/like', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ id: id, type: type })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            countSpan.textContent = data.count;
+                        }
                     })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                // Update count
-                                const countSpan = document.getElementById(`comment-count-${postId}`);
-                                if (countSpan) {
-                                    countSpan.textContent = parseInt(countSpan.textContent) + 1;
-                                }
+                    .catch(error => console.error('Error:', error));
+            }
 
-                                // Clear input
-                                input.value = '';
+            // Submit Comment for Saved Posts
+            function submitSavedComment(postId, event) {
+                event.preventDefault();
 
-                                // Add new comment to list
-                                const commentBox = document.getElementById(`saved-comment-box-${postId}`);
-                                const commentList = commentBox.querySelector('.space-y-2');
-                                if (commentList && data.comment) {
-                                    const newComment = document.createElement('div');
-                                    newComment.className = 'flex gap-2';
-                                    newComment.innerHTML = `
-                                                                    <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}" 
-                                                                         class="w-6 h-6 rounded-full mt-0.5">
-                                                                    <div class="bg-gray-50 px-3 py-2 rounded-lg text-sm flex-1">
-                                                                        <span class="font-bold text-gray-700">{{ Auth::user()->name }}</span>
-                                                                        <span class="text-gray-600 ml-2">${content}</span>
-                                                                    </div>
-                                                                `;
-                                    commentList.prepend(newComment);
-                                }
-} else {
-                                alert(data.message || 'Có lỗi xảy ra');
+                const form = event.target;
+                const input = form.querySelector('input[name="content"]');
+                const content = input.value.trim();
+
+                if (!content) return;
+
+                // Disable form
+                input.disabled = true;
+                const submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                fetch(`/post/${postId}/comment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ content: content })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update count
+                            const countSpan = document.getElementById(`comment-count-${postId}`);
+                            if (countSpan) {
+                                countSpan.textContent = parseInt(countSpan.textContent) + 1;
                             }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('Không thể gửi bình luận. Vui lòng thử lại.');
-                        })
-                        .finally(() => {
-                            input.disabled = false;
-                            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
-                        });
-                }
-            </script>
-        @endif
+
+                            // Clear input
+                            input.value = '';
+
+                            // Add new comment to list
+                            const commentBox = document.getElementById(`saved-comment-box-${postId}`);
+                            const commentList = commentBox.querySelector('.space-y-2');
+                            if (commentList && data.comment) {
+                                const newComment = document.createElement('div');
+                                newComment.className = 'flex gap-2';
+                                newComment.innerHTML = `
+                                                                            <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}" 
+                                                                                 class="w-6 h-6 rounded-full mt-0.5">
+                                                                            <div class="bg-gray-50 px-3 py-2 rounded-lg text-sm flex-1">
+                                                                                <span class="font-bold text-gray-700">{{ Auth::user()->name }}</span>
+                                                                                <span class="text-gray-600 ml-2">${content}</span>
+                                                                            </div>
+                                                                        `;
+                                commentList.prepend(newComment);
+                            }
+                        } else {
+                            alert(data.message || 'Có lỗi xảy ra');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Không thể gửi bình luận. Vui lòng thử lại.');
+                    })
+                    .finally(() => {
+                        input.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                    });
+            }
+        </script>
+    @endif
+
 
     {{-- SortableJS cho sắp xếp badges --}}
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -1897,7 +2510,7 @@
                 ghostClass: 'opacity-50',
                 chosenClass: 'scale-110',
                 dragClass: 'shadow-lg',
-                onEnd: function(evt) {
+                onEnd: function (evt) {
                     updateBadgeOrderNumbers();
                 }
             });
@@ -1942,23 +2555,24 @@
                 },
                 body: JSON.stringify({ badge_ids: badgeIds })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Reload page to show new order
-                    location.reload();
-                } else {
-                    alert(data.message || 'Có lỗi xảy ra');
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Reload page to show new order
+                        location.reload();
+                    } else {
+                        alert(data.message || 'Có lỗi xảy ra');
+                        saveBtn.innerHTML = oldHtml;
+                        saveBtn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Không thể lưu thứ tự. Vui lòng thử lại.');
                     saveBtn.innerHTML = oldHtml;
                     saveBtn.disabled = false;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Không thể lưu thứ tự. Vui lòng thử lại.');
-                saveBtn.innerHTML = oldHtml;
-                saveBtn.disabled = false;
-            });
+                });
         }
     </script>
+
 @endsection
