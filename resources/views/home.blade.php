@@ -25,21 +25,22 @@
                     <div class="container mx-auto flex flex-col md:flex-row items-center gap-12 justify-center">
                         {{-- 1. Ảnh Bìa Sách --}}
                         <div class="w-full md:w-5/12 flex justify-center md:justify-end perspective-1000">
-                            <div
-                                class="relative w-36 h-52 sm:w-48 sm:h-72 md:w-56 md:h-80 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-r-lg rounded-l-sm transform rotate-y-12 hover:rotate-y-0 hover:scale-105 transition-all duration-700 cursor-pointer group/book">
+                            @php
+                                $imagePath = is_object($slide) ? $slide->image : $slide['image'];
+                                $imgSrc = Str::startsWith($imagePath, 'http') ? $imagePath : asset('storage/' . $imagePath);
+                                $bannerLink = is_object($slide) ? ($slide->link ?? '#') : '#';
+                            @endphp
+                            <a href="{{ $bannerLink }}"
+                                class="relative w-36 h-52 sm:w-48 sm:h-72 md:w-56 md:h-80 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-r-lg rounded-l-sm transform rotate-y-12 hover:rotate-y-0 hover:scale-105 transition-all duration-700 cursor-pointer group/book block">
                                 <div
-                                    class="absolute inset-0 bg-white/10 opacity-0 group-hover/book:opacity-20 transition-opacity z-20">
+                                    class="absolute inset-0 bg-white/10 opacity-0 group-hover/book:opacity-20 transition-opacity z-20 rounded-r-lg rounded-l-sm">
                                 </div>
-                                @php
-                                    $imagePath = is_object($slide) ? $slide->image : $slide['image'];
-                                    $imgSrc = Str::startsWith($imagePath, 'http') ? $imagePath : asset('storage/' . $imagePath);
-                                @endphp
                                 <img src="{{ $imgSrc }}"
                                     class="w-full h-full object-cover rounded-r-lg rounded-l-sm border-l-4 border-white/10">
                                 <div
                                     class="absolute top-0 left-0 w-2 h-full bg-gradient-to-r from-white/30 to-transparent z-10">
                                 </div>
-                            </div>
+                            </a>
                         </div>
 
 

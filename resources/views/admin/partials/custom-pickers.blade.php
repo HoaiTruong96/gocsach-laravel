@@ -12,17 +12,28 @@ old('published_year'), 'placeholder' => 'Chọn năm', 'min' => 1900, 'max' => 2
 --}}
 
 @if($type === 'year')
-    {{-- Year Picker - Calendar Style Dropdown --}}
+    {{-- Year Picker - Hybrid: Input + Dropdown --}}
     <div class="year-picker-container relative" data-name="{{ $name }}">
         <input type="hidden" name="{{ $name }}" id="{{ $name }}-input" value="{{ $value ?? '' }}">
-        <button type="button" id="{{ $name }}-trigger"
-            class="year-picker-trigger flex items-center justify-between w-full px-4 py-2 border dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-800 dark:text-white hover:border-blue-400 dark:hover:border-blue-500 transition-all focus:ring-2 focus:ring-blue-500 outline-none">
-            <span
-                class="year-picker-display text-left {{ empty($value) ? 'text-gray-400 dark:text-slate-500 italic' : '' }}">
-                {{ $value ?? $placeholder ?? 'Chọn năm...' }}
-            </span>
-            <i class="fas fa-calendar-alt text-gray-400 dark:text-slate-500 ml-2"></i>
-        </button>
+        
+        <div class="flex items-center border dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 hover:border-blue-400 dark:hover:border-blue-500 transition-all focus-within:ring-2 focus-within:ring-blue-500 overflow-hidden">
+            {{-- Input để nhập tay --}}
+            <input type="text" 
+                   id="{{ $name }}-text-input"
+                   class="year-text-input flex-1 px-4 py-2 bg-transparent text-gray-800 dark:text-white outline-none placeholder-gray-400 dark:placeholder-slate-500"
+                   placeholder="{{ $placeholder ?? 'Nhập hoặc chọn năm...' }}"
+                   value="{{ $value ?? '' }}"
+                   maxlength="4"
+                   pattern="[0-9]*"
+                   inputmode="numeric"
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4); document.getElementById('{{ $name }}-input').value = this.value;">
+            
+            {{-- Nút mở dropdown --}}
+            <button type="button" id="{{ $name }}-trigger"
+                class="year-picker-trigger px-3 py-2 text-gray-400 dark:text-slate-500 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-slate-600 transition border-l dark:border-slate-600">
+                <i class="fas fa-calendar-alt"></i>
+            </button>
+        </div>
 
         <div
             class="year-picker-dropdown hidden absolute z-50 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-xl shadow-xl overflow-hidden">
