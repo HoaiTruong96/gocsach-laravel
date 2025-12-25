@@ -100,17 +100,19 @@ class User extends Authenticatable implements MustVerifyEmail
             ->withTimestamps();
     }
 
-    // Lấy danh hiệu còn hiệu lực
+    // Lấy danh hiệu còn hiệu lực, sắp xếp theo thứ tự display_order
     public function activeBadges()
     {
         return $this->belongsToMany(Badge::class, 'user_badges')
-            ->withPivot('earned_at', 'expires_at')
+            ->withPivot('earned_at', 'expires_at', 'display_order')
             ->where(function ($query) {
                 $query->where('expires_at', '>', now())
                     ->orWhereNull('expires_at');
             })
+            ->orderByPivot('display_order', 'asc')
             ->withTimestamps();
     }
+
 
     // Quan hệ với Thử thách
     public function challenges()

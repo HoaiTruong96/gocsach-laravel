@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Article; // Nhớ import Model Article
+use Illuminate\Support\Facades\Cache;
 
 class ArticleController extends Controller
 {
@@ -45,6 +46,12 @@ class ArticleController extends Controller
             $relatedArticles = $relatedArticles->merge($moreArticles);
         }
 
-        return view('articles.show', compact('article', 'relatedArticles')); 
+        // Gợi ý bài viết - Lấy 4 bài mới nhất khác bài hiện tại
+        $suggestedArticles = Article::where('id', '!=', $article->id)
+            ->orderByDesc('created_at')
+            ->take(4)
+            ->get();
+
+        return view('articles.show', compact('article', 'relatedArticles', 'suggestedArticles')); 
     }
 }

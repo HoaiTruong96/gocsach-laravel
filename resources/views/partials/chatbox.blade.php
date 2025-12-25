@@ -110,15 +110,71 @@
         </div>
     </div>
 
-    {{-- Floating Button - Smaller size --}}
-    <button onclick="toggleChatbox()" id="chatbox-toggle"
-        class="w-11 h-11 bg-gradient-to-br from-brand-green to-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center hover:shadow-xl hover:scale-110 transition-all duration-300 relative">
-        <i id="chatbox-icon-open" class="fas fa-comments text-base"></i>
-        <i id="chatbox-icon-close" class="fas fa-times text-base hidden"></i>
-        {{-- Pulse Animation - only shows when closed --}}
-        <span id="chatbox-pulse" class="absolute w-full h-full rounded-full bg-brand-green animate-ping opacity-20"></span>
-    </button>
+    {{-- Floating Buttons Container --}}
+    <div id="floating-buttons-container" class="flex flex-col gap-3 items-center">
+        {{-- Back to Top Button --}}
+        <button id="back-to-top-btn" 
+            class="w-11 h-11 bg-brand-green text-white rounded-full shadow-lg opacity-0 invisible transform translate-y-4 transition-all duration-300 hover:bg-brand-accent hover:scale-110 hover:shadow-xl flex items-center justify-center group"
+            aria-label="Back to top">
+            <i class="fas fa-chevron-up text-sm group-hover:animate-bounce"></i>
+        </button>
+
+        {{-- Facebook Messenger Button --}}
+        <a href="https://m.me/j/AbYuQDQf0AvniBIU/" target="_blank" rel="noopener noreferrer"
+            class="floating-btn w-11 h-11 bg-gradient-to-br from-[#00b2ff] to-[#006aff] text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative group"
+            style="animation-delay: 0s; --glow-color: rgba(0, 132, 255, 0.5);"
+            title="Di chuyển tới Cộng đồng Góc Sách trên Facebook">
+            <i class="fab fa-facebook-messenger text-base relative z-10"></i>
+        </a>
+
+        {{-- Zalo Button --}}
+        <a href="https://zalo.me/g/fhbbxj936" target="_blank" rel="noopener noreferrer"
+            class="floating-btn w-11 h-11 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative group overflow-hidden"
+            style="animation-delay: 0.3s; --glow-color: rgba(0, 104, 255, 0.5);"
+            title="Di chuyển tới Cộng đồng Góc Sách trên Zalo">
+            <img src="{{ asset('storage/zalo.png') }}" alt="Zalo" class="w-full h-full object-cover rounded-full relative z-10">
+        </a>
+
+        {{-- AI Chatbox Button --}}
+        <button onclick="toggleChatbox()" id="chatbox-toggle"
+            class="floating-btn w-11 h-11 bg-gradient-to-br from-brand-green to-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative"
+            style="animation-delay: 0.6s; --glow-color: rgba(34, 197, 94, 0.5);"
+            title="Trò chuyện với Chatbot">
+            <i id="chatbox-icon-open" class="fas fa-comments text-base relative z-10"></i>
+            <i id="chatbox-icon-close" class="fas fa-times text-base hidden relative z-10"></i>
+        </button>
+    </div>
 </div>
+
+<style>
+    /* Floating animation với glow effect */
+    .floating-btn {
+        animation: floatGlow 3s ease-in-out infinite;
+        box-shadow: 0 4px 15px var(--glow-color, rgba(0,0,0,0.2));
+        transition: opacity 0.3s, transform 0.3s;
+    }
+    
+    .floating-btn:hover {
+        animation-play-state: paused;
+        box-shadow: 0 8px 25px var(--glow-color, rgba(0,0,0,0.3));
+    }
+    
+    @keyframes floatGlow {
+        0%, 100% {
+            transform: translateY(0);
+            box-shadow: 0 4px 15px var(--glow-color, rgba(0,0,0,0.2));
+        }
+        50% {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px var(--glow-color, rgba(0,0,0,0.4));
+        }
+    }
+
+    /* Back to top button transition */
+    #back-to-top-btn {
+        transition: opacity 0.3s, transform 0.3s, visibility 0.3s;
+    }
+</style>
 
 <script>
     let chatHistory = [];
@@ -213,7 +269,7 @@
         const toggle = document.getElementById('chatbox-toggle');
         const iconOpen = document.getElementById('chatbox-icon-open');
         const iconClose = document.getElementById('chatbox-icon-close');
-        const pulse = document.getElementById('chatbox-pulse');
+        const floatingBtns = document.getElementById('floating-buttons-container');
         isOpen = !isOpen;
 
         if (isOpen) {
@@ -226,7 +282,12 @@
             // Switch to X icon
             iconOpen.classList.add('hidden');
             iconClose.classList.remove('hidden');
-            pulse.classList.add('hidden');
+            // Hide other floating buttons (Messenger, Zalo, Back to top)
+            if (floatingBtns) {
+                floatingBtns.querySelectorAll('a, #back-to-top-btn').forEach(btn => {
+                    btn.classList.add('opacity-0', 'pointer-events-none', 'scale-0');
+                });
+            }
             // Load lịch sử chat khi mở
             loadChatHistory();
         } else {
@@ -238,7 +299,17 @@
             // Switch back to comments icon
             iconOpen.classList.remove('hidden');
             iconClose.classList.add('hidden');
-            pulse.classList.remove('hidden');
+            // Show other floating buttons again
+            if (floatingBtns) {
+                floatingBtns.querySelectorAll('a').forEach(btn => {
+                    btn.classList.remove('opacity-0', 'pointer-events-none', 'scale-0');
+                });
+                // Back to top button has its own visibility logic, just remove pointer-events
+                const backBtn = document.getElementById('back-to-top-btn');
+                if (backBtn) {
+                    backBtn.classList.remove('pointer-events-none', 'scale-0');
+                }
+            }
         }
     }
 
@@ -385,6 +456,24 @@
             toggleChatbox();
         }
     });
+
+    // Back to Top Button
+    const backToTopBtn = document.getElementById('back-to-top-btn');
+    if (backToTopBtn) {
+        window.addEventListener('scroll', function() {
+            if (window.pageYOffset > 300) {
+                backToTopBtn.classList.remove('opacity-0', 'invisible', 'translate-y-4');
+                backToTopBtn.classList.add('opacity-100', 'visible', 'translate-y-0');
+            } else {
+                backToTopBtn.classList.add('opacity-0', 'invisible', 'translate-y-4');
+                backToTopBtn.classList.remove('opacity-100', 'visible', 'translate-y-0');
+            }
+        });
+        
+        backToTopBtn.addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
 </script>
 
 <style>

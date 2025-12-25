@@ -13,21 +13,23 @@ class SiteVisit extends Model
     ];
 
     /**
-     * Lấy số người đang online (active trong 5 phút gần đây)
+     * Lấy số người đang online (active trong 5 phút gần đây) - đếm theo IP
      */
     public static function getOnlineCount(): int
     {
-        return self::where('last_activity', '>=', now()->subMinutes(5))->count();
+        return self::where('last_activity', '>=', now()->subMinutes(5))
+            ->distinct('ip_address')
+            ->count('ip_address');
     }
 
     /**
-     * Cập nhật hoặc tạo mới visit
+     * Cập nhật hoặc tạo mới visit - dựa theo IP
      */
-    public static function trackVisit(string $sessionId, ?string $ip = null): void
+    public static function trackVisit(string $ip): void
     {
         self::updateOrCreate(
-            ['session_id' => $sessionId],
-            ['ip_address' => $ip, 'last_activity' => now()]
+            ['ip_address' => $ip],
+            ['session_id' => session_id(), 'last_activity' => now()]
         );
     }
 

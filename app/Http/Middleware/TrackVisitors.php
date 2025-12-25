@@ -17,11 +17,10 @@ class TrackVisitors
     {
         // Chỉ track các request GET (không phải API, assets, etc.)
         if ($request->isMethod('GET') && !$request->ajax() && !$request->is('api/*')) {
-            $sessionId = $request->session()->getId();
             $ip = $request->ip();
 
-            // Cập nhật visit
-            SiteVisit::trackVisit($sessionId, $ip);
+            // Cập nhật visit theo IP
+            SiteVisit::trackVisit($ip);
 
             // Tăng counter tổng page views
             SiteStatistic::incrementValue('total_page_views');

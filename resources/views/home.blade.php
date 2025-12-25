@@ -25,21 +25,22 @@
                     <div class="container mx-auto flex flex-col md:flex-row items-center gap-12 justify-center">
                         {{-- 1. Ảnh Bìa Sách --}}
                         <div class="w-full md:w-5/12 flex justify-center md:justify-end perspective-1000">
-                            <div
-                                class="relative w-36 h-52 sm:w-48 sm:h-72 md:w-56 md:h-80 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-r-lg rounded-l-sm transform rotate-y-12 hover:rotate-y-0 hover:scale-105 transition-all duration-700 cursor-pointer group/book">
+                            @php
+                                $imagePath = is_object($slide) ? $slide->image : $slide['image'];
+                                $imgSrc = Str::startsWith($imagePath, 'http') ? $imagePath : asset('storage/' . $imagePath);
+                                $bannerLink = is_object($slide) ? ($slide->link ?? '#') : '#';
+                            @endphp
+                            <a href="{{ $bannerLink }}"
+                                class="relative w-36 h-52 sm:w-48 sm:h-72 md:w-56 md:h-80 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-r-lg rounded-l-sm transform rotate-y-12 hover:rotate-y-0 hover:scale-105 transition-all duration-700 cursor-pointer group/book block">
                                 <div
-                                    class="absolute inset-0 bg-white/10 opacity-0 group-hover/book:opacity-20 transition-opacity z-20">
+                                    class="absolute inset-0 bg-white/10 opacity-0 group-hover/book:opacity-20 transition-opacity z-20 rounded-r-lg rounded-l-sm">
                                 </div>
-                                @php
-                                    $imagePath = is_object($slide) ? $slide->image : $slide['image'];
-                                    $imgSrc = Str::startsWith($imagePath, 'http') ? $imagePath : asset('storage/' . $imagePath);
-                                @endphp
                                 <img src="{{ $imgSrc }}"
                                     class="w-full h-full object-cover rounded-r-lg rounded-l-sm border-l-4 border-white/10">
                                 <div
                                     class="absolute top-0 left-0 w-2 h-full bg-gradient-to-r from-white/30 to-transparent z-10">
                                 </div>
-                            </div>
+                            </a>
                         </div>
 
 
@@ -793,10 +794,10 @@
                                         <span class="text-xs text-gray-400">Gợi ý cho bạn</span>
                                     </div>
                                 </div>
-                                <a href="{{ route('home') }}"
+                                <a href="{{ route('books.list') }}"
                                     class="text-xs text-purple-500 hover:text-purple-700 font-bold flex items-center gap-1"
-                                    title="Đổi sách khác vào ngày mai">
-                                    <i class="fas fa-sync-alt"></i>
+                                    title="Xem tất cả sách">
+                                    <i class="fas fa-arrow-right"></i>
                                 </a>
                             </div>
 
@@ -849,6 +850,95 @@
                                         </div>
                                     </div>
                                 </div>
+                            </a>
+                        </div>
+                    @endif
+
+                    {{-- Widget: Tác giả ngày hôm nay --}}
+                    @if(isset($dailyAuthor) && $dailyAuthor)
+                        <div
+                            class="bg-gradient-to-br from-sky-50 via-blue-50 to-cyan-50 rounded-2xl p-7 border border-sky-100 shadow-lg relative overflow-hidden group hover:shadow-xl transition-all duration-300">
+                            {{-- Decorative --}}
+                            <div
+                                class="absolute -top-8 -right-8 w-28 h-28 bg-sky-200/30 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-500">
+                            </div>
+                            <div
+                                class="absolute -bottom-6 -left-6 w-20 h-20 bg-blue-200/30 rounded-full blur-xl pointer-events-none">
+                            </div>
+
+                            {{-- Header --}}
+                            <div class="flex items-center justify-between mb-5 relative">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-11 h-11 bg-gradient-to-br from-sky-500 to-blue-500 rounded-xl flex items-center justify-center shadow-md">
+                                        <i class="fas fa-user-pen text-white text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-serif font-bold text-gray-800 text-base leading-none">Tác Giả Hôm Nay
+                                        </h3>
+                                        <span class="text-xs text-gray-400">Khám phá tác giả</span>
+                                    </div>
+                                </div>
+                                <a href="{{ route('authors.index') }}"
+                                    class="text-xs text-sky-500 hover:text-sky-700 font-bold flex items-center gap-1"
+                                    title="Xem tất cả tác giả">
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
+                            </div>
+
+                            {{-- Author Card --}}
+                            <a href="{{ route('authors.show', $dailyAuthor->slug ?? $dailyAuthor->id) }}" class="block group/author">
+                                <div class="flex gap-5">
+                                    {{-- Author Photo --}}
+                                    <div
+                                        class="w-24 h-24 rounded-full overflow-hidden shadow-lg flex-shrink-0 transform group-hover/author:scale-105 transition-transform duration-300 border-3 border-white">
+                                        @php
+                                            $photoUrl = !empty($dailyAuthor->photo)
+                                                ? (str_starts_with($dailyAuthor->photo, 'http') ? $dailyAuthor->photo : asset('storage/' . $dailyAuthor->photo))
+                                                : 'https://ui-avatars.com/api/?name=' . urlencode($dailyAuthor->name) . '&background=0284C7&color=fff&size=96';
+                                        @endphp
+                                        <img src="{{ $photoUrl }}" alt="{{ $dailyAuthor->name }}"
+                                            class="w-full h-full object-cover">
+                                    </div>
+
+                                    {{-- Author Info --}}
+                                    <div class="flex-1 min-w-0 py-1">
+                                        <h4
+                                            class="font-bold text-gray-800 text-base leading-snug group-hover/author:text-sky-600 transition-colors">
+                                            {{ $dailyAuthor->name }}
+                                        </h4>
+                                        
+                                        @if($dailyAuthor->nationality)
+                                            <p class="text-sm text-gray-500 mt-1 flex items-center gap-1.5">
+                                                <i class="fas fa-globe-asia text-xs text-gray-400"></i>
+                                                {{ $dailyAuthor->nationality }}
+                                            </p>
+                                        @endif
+
+                                        @if($dailyAuthor->birth_year)
+                                            <p class="text-xs text-gray-400 mt-1 flex items-center gap-1.5">
+                                                <i class="fas fa-calendar-alt text-[10px]"></i>
+                                                {{ $dailyAuthor->birth_year }}{{ $dailyAuthor->death_year ? ' - ' . $dailyAuthor->death_year : '' }}
+                                            </p>
+                                        @endif
+
+                                        {{-- CTA Button --}}
+                                        <div class="mt-3">
+                                            <span
+                                                class="inline-flex items-center gap-1.5 px-4 py-2 bg-sky-600 text-white text-xs font-bold rounded-full group-hover/author:bg-sky-700 transition shadow-md">
+                                                Xem tác giả <i
+                                                    class="fas fa-arrow-right text-[10px] group-hover/author:translate-x-1 transition-transform"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Full Bio --}}
+                                @if($dailyAuthor->bio)
+                                    <p class="text-gray-600 text-sm mt-4 leading-relaxed italic">
+                                        "{{ strip_tags($dailyAuthor->bio) }}"
+                                    </p>
+                                @endif
                             </a>
                         </div>
                     @endif
