@@ -77,9 +77,17 @@
                                             </h4>
                                         </a>
                                         <div class="flex items-center gap-3 mt-1">
-                                            <div class="flex text-yellow-400 text-xs">
-                                                @for($i=0; $i < round($review->rating); $i++) <i class="fas fa-star"></i> @endfor
-                                                @for($i=0; $i < 5 - round($review->rating); $i++) <i class="far fa-star text-gray-300"></i> @endfor
+                                            @php
+                                                $rating = $review->rating ?? 0;
+                                                $fullStars = floor($rating);
+                                                $hasHalfStar = ($rating - $fullStars) >= 0.3;
+                                                $emptyStars = 5 - $fullStars - ($hasHalfStar ? 1 : 0);
+                                            @endphp
+                                            <div class="flex items-center text-yellow-400 text-xs">
+                                                @for($i = 0; $i < $fullStars; $i++)<i class="fas fa-star"></i>@endfor
+                                                @if($hasHalfStar)<i class="fas fa-star-half-alt"></i>@endif
+                                                @for($i = 0; $i < $emptyStars; $i++)<i class="far fa-star text-gray-300"></i>@endfor
+                                                <span class="ml-1 text-xs font-semibold text-gray-600">{{ number_format($rating, 1) }}</span>
                                             </div>
                                             <span class="text-gray-300 text-xs">•</span>
                                             <span class="text-xs text-gray-400">{{ $review->created_at->format('d/m/Y H:i') }}</span>
