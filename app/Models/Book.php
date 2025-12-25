@@ -62,10 +62,7 @@ class Book extends Model
         return $this->hasMany(Post::class);
     }
 
-    public function bookshelves()
-    {
-        return $this->hasMany(Bookshelf::class);
-    }
+
     public function likes()
     {
         // Vì bảng 'likes' của bạn dùng cột 'post_id' để lưu ID bài viết/sách
