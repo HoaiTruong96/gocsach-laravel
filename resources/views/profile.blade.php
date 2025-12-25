@@ -1849,7 +1849,615 @@
                     });
             }
         </script>
-    @endif
+
+        {{-- ============================================================== --}}
+        {{-- MODAL CHỈNH SỬA HỒ SƠ --}}
+        {{-- ============================================================== --}}
+        @if(Auth::check() && Auth::id() == $user->id)
+            <div id="editProfileModal" class="fixed inset-0 z-[70] hidden" aria-labelledby="edit-profile-title" role="dialog"
+                aria-modal="true">
+                {{-- Backdrop --}}
+                <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeEditProfileModal()">
+                </div>
+
+                <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                    <div class="flex min-h-full items-center justify-center p-4">
+                        <div
+                            class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all w-full max-w-md">
+
+                            {{-- Header --}}
+                            <div class="bg-gradient-to-r from-brand-green to-emerald-600 px-6 py-4">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-lg font-bold text-white flex items-center gap-2" id="edit-profile-title">
+                                        <i class="fas fa-user-edit"></i> Chỉnh sửa hồ sơ
+                                    </h3>
+                                    <button onclick="closeEditProfileModal()" class="text-white/80 hover:text-white transition p-1">
+                                        <i class="fas fa-times text-xl"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {{-- Body --}}
+                            <form id="editProfileForm" onsubmit="submitEditProfile(event)" enctype="multipart/form-data"
+                                class="p-6">
+
+                                {{-- Error message --}}
+                                <div id="editProfileError"
+                                    class="hidden mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm">
+                                </div>
+
+                                {{-- Avatar Upload với Tabs --}}
+                                <div class="mb-6">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-3 text-center">
+                                        <i class="fas fa-image mr-1 text-brand-green"></i> Ảnh đại diện
+                                    </label>
+
+                                    {{-- Preview ảnh --}}
+                                    <div class="flex justify-center mb-4">
+                                        <div class="relative group">
+                                            <img id="avatarPreview"
+                                                src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=3E5F4E&color=fff&size=128' }}"
+                                                class="w-28 h-28 rounded-full border-4 border-brand-beige shadow-lg object-cover">
+                                        </div>
+                                    </div>
+
+                                    {{-- Tabs chọn hình thức upload --}}
+                                    <div class="flex gap-2 justify-center mb-3">
+                                        <button type="button" onclick="showAvatarTab('file')" id="avatar-tab-file"
+                                            class="px-3 py-1.5 text-xs rounded-full bg-brand-green/10 text-brand-green font-bold transition">
+                                            <i class="fas fa-upload mr-1"></i> Upload File
+                                        </button>
+                                        <button type="button" onclick="showAvatarTab('url')" id="avatar-tab-url"
+                                            class="px-3 py-1.5 text-xs rounded-full bg-gray-100 text-gray-600 font-bold transition">
+                                            <i class="fas fa-link mr-1"></i> Nhập URL
+                                        </button>
+                                    </div>
+
+                                    {{-- Upload File --}}
+                                    <div id="avatar-upload-file" class="text-center">
+                                        <label for="avatarInput"
+                                            class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition text-sm font-medium text-gray-600">
+                                            <i class="fas fa-cloud-upload-alt"></i> Chọn ảnh từ máy
+                                        </label>
+                                        <input type="file" id="avatarInput" name="avatar" accept=".jpg,.jpeg,.png,.webp,.gif,.svg"
+                                            class="hidden" onchange="previewAvatar(this)">
+                                        <p class="text-xs text-gray-400 mt-2">JPG, PNG, WebP, GIF, SVG (Tối đa 2MB)</p>
+                                    </div>
+
+                                    {{-- Nhập URL --}}
+                                    <div id="avatar-upload-url" class="hidden">
+                                        <input type="url" name="avatar_url" id="avatarUrlInput"
+                                            class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition text-gray-800 text-sm"
+                                            placeholder="https://example.com/avatar.jpg" oninput="previewAvatarUrl(this.value)">
+                                        <p class="text-xs text-gray-400 mt-2 text-center">Dán đường dẫn trực tiếp đến file ảnh</p>
+                                    </div>
+                                </div>
+
+                                {{-- Name Input --}}
+                                <div class="mb-4">
+                                    <label for="editName" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                        <i class="fas fa-user mr-1 text-brand-green"></i> Tên hiển thị <span
+                                            class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" id="editName" name="name" value="{{ $user->name }}" required maxlength="100"
+                                        class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition text-gray-800"
+                                        placeholder="Nhập tên hiển thị...">
+                                </div>
+
+                                {{-- Bio Input --}}
+                                <div class="mb-6">
+                                    <label for="editBio" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                        <i class="fas fa-quote-left mr-1 text-brand-accent"></i> Giới thiệu bản thân
+                                    </label>
+                                    <textarea id="editBio" name="bio" rows="3" maxlength="500"
+                                        class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition text-gray-800 resize-none"
+                                        placeholder="Viết vài dòng về bản thân...">{{ $user->bio }}</textarea>
+                                    <p class="text-xs text-gray-400 mt-1 text-right"><span
+                                            id="bioCharCount">{{ strlen($user->bio ?? '') }}</span>/500 ký tự</p>
+                                </div>
+
+                                {{-- Actions --}}
+                                <div class="flex gap-3">
+                                    <button type="button" onclick="closeEditProfileModal()"
+                                        class="flex-1 py-2.5 border border-gray-200 text-gray-600 rounded-lg font-semibold hover:bg-gray-50 transition">
+                                        Hủy bỏ
+                                    </button>
+                                    <button type="submit" id="editProfileSubmitBtn"
+                                        class="flex-1 py-2.5 bg-brand-green text-white rounded-lg font-semibold hover:bg-brand-green/90 transition flex items-center justify-center gap-2 shadow-md">
+                                        <i class="fas fa-save"></i> Lưu thay đổi
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                // Đếm ký tự bio
+                document.getElementById('editBio').addEventListener('input', function () {
+                    document.getElementById('bioCharCount').textContent = this.value.length;
+                });
+
+                // Handle Unsave Post (Bỏ lưu bài viết)
+                function handleUnsavePost(postId, btnElement) {
+                    if (!confirm('Bạn có chắc muốn bỏ lưu bài viết này?')) return;
+
+                    // Visual feedback
+                    btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    btnElement.disabled = true;
+
+                    fetch('/post/save', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ post_id: postId })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success && !data.saved) {
+                                // Xóa card bài viết với animation
+                                const card = document.getElementById(`saved-post-${postId}`);
+                                if (card) {
+                                    card.style.transition = 'all 0.3s ease-out';
+                                    card.style.opacity = '0';
+                                    card.style.transform = 'translateX(-20px)';
+                                    setTimeout(() => {
+                                        card.remove();
+                                        // Update counter in tab
+                                        const countSpan = document.querySelector('#tab-btn-saved span');
+                                        if (countSpan) {
+                                            let count = parseInt(countSpan.textContent) - 1;
+                                            countSpan.textContent = count;
+                                        }
+                                        // Check if empty
+                                        const container = document.getElementById('saved-posts-container');
+                                        if (container && container.children.length === 0) {
+                                            location.reload();
+                                        }
+                                    }, 300);
+                                }
+                            } else {
+                                btnElement.innerHTML = '<i class="fas fa-bookmark"></i>';
+                                btnElement.disabled = false;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            btnElement.innerHTML = '<i class="fas fa-bookmark"></i>';
+                            btnElement.disabled = false;
+                        });
+                }
+
+                // Toggle Comment Box for Saved Posts
+                function toggleSavedComment(postId) {
+                    const box = document.getElementById(`saved-comment-box-${postId}`);
+                    if (box) {
+                        box.classList.toggle('hidden');
+                        // Focus input when shown
+                        if (!box.classList.contains('hidden')) {
+                            const input = box.querySelector('input[name="content"]');
+                            if (input) input.focus();
+                        }
+                    }
+                }
+
+                // Handle Like for Saved Posts  
+                function handleLike(id, type) {
+                    const btn = document.getElementById(`like-btn-${type}-${id}`);
+                    const icon = document.getElementById(`like-icon-${type}-${id}`);
+                    const countSpan = document.getElementById(`like-count-${type}-${id}`);
+
+                    if (!btn || !icon || !countSpan) return;
+
+                    const isLiked = icon.classList.contains('fas');
+
+                    // Optimistic update
+                    if (isLiked) {
+                        icon.classList.remove('fas', 'text-red-500');
+                        icon.classList.add('far');
+                        btn.classList.remove('text-red-500');
+                        btn.classList.add('text-gray-500');
+                        countSpan.textContent = Math.max(0, parseInt(countSpan.textContent) - 1);
+                    } else {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas', 'text-red-500');
+                        btn.classList.remove('text-gray-500');
+                        btn.classList.add('text-red-500');
+                        countSpan.textContent = parseInt(countSpan.textContent) + 1;
+                    }
+
+                    // Send AJAX
+                    fetch('/like', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ id: id, type: type })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                countSpan.textContent = data.count;
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                }
+
+                // Submit Comment for Saved Posts
+                function submitSavedComment(postId, event) {
+                    event.preventDefault();
+
+                    const form = event.target;
+                    const input = form.querySelector('input[name="content"]');
+                    const content = input.value.trim();
+
+                    if (!content) return;
+
+                    // Disable form
+                    input.disabled = true;
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                    fetch(`/post/${postId}/comment`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ content: content })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Update count
+                                const countSpan = document.getElementById(`comment-count-${postId}`);
+                                if (countSpan) {
+                                    countSpan.textContent = parseInt(countSpan.textContent) + 1;
+                                }
+
+                                // Clear input
+                                input.value = '';
+
+                                // Add new comment to list
+                                const commentBox = document.getElementById(`saved-comment-box-${postId}`);
+                                const commentList = commentBox.querySelector('.space-y-2');
+                                if (commentList && data.comment) {
+                                    const newComment = document.createElement('div');
+                                    newComment.className = 'flex gap-2';
+                                    newComment.innerHTML = `
+                                                                    <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}" 
+                                                                         class="w-6 h-6 rounded-full mt-0.5">
+                                                                    <div class="bg-gray-50 px-3 py-2 rounded-lg text-sm flex-1">
+                                                                        <span class="font-bold text-gray-700">{{ Auth::user()->name }}</span>
+                                                                        <span class="text-gray-600 ml-2">${content}</span>
+                                                                    </div>
+                                                                `;
+                                    commentList.prepend(newComment);
+                                }
+                            } else {
+                                alert(data.message || 'Có lỗi xảy ra');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Không thể gửi bình luận. Vui lòng thử lại.');
+                        })
+                        .finally(() => {
+                            input.disabled = false;
+                            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                        });
+                }
+            </script>
+        @endif
+
+        {{-- ============================================================== --}}
+        {{-- MODAL CHỈNH SỬA HỒ SƠ --}}
+        {{-- ============================================================== --}}
+        @if(Auth::check() && Auth::id() == $user->id)
+            <div id="editProfileModal" class="fixed inset-0 z-[70] hidden" aria-labelledby="edit-profile-title" role="dialog"
+                aria-modal="true">
+                {{-- Backdrop --}}
+                <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeEditProfileModal()">
+                </div>
+
+                <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                    <div class="flex min-h-full items-center justify-center p-4">
+                        <div
+                            class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all w-full max-w-md">
+
+                            {{-- Header --}}
+                            <div class="bg-gradient-to-r from-brand-green to-emerald-600 px-6 py-4">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-lg font-bold text-white flex items-center gap-2" id="edit-profile-title">
+                                        <i class="fas fa-user-edit"></i> Chỉnh sửa hồ sơ
+                                    </h3>
+                                    <button onclick="closeEditProfileModal()" class="text-white/80 hover:text-white transition p-1">
+                                        <i class="fas fa-times text-xl"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {{-- Body --}}
+                            <form id="editProfileForm" onsubmit="submitEditProfile(event)" enctype="multipart/form-data"
+                                class="p-6">
+
+                                {{-- Error message --}}
+                                <div id="editProfileError"
+                                    class="hidden mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm">
+                                </div>
+
+                                {{-- Avatar Upload với Tabs --}}
+                                <div class="mb-6">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-3 text-center">
+                                        <i class="fas fa-image mr-1 text-brand-green"></i> Ảnh đại diện
+                                    </label>
+
+                                    {{-- Preview ảnh --}}
+                                    <div class="flex justify-center mb-4">
+                                        <div class="relative group">
+                                            <img id="avatarPreview"
+                                                src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=3E5F4E&color=fff&size=128' }}"
+                                                class="w-28 h-28 rounded-full border-4 border-brand-beige shadow-lg object-cover">
+                                        </div>
+                                    </div>
+
+                                    {{-- Tabs chọn hình thức upload --}}
+                                    <div class="flex gap-2 justify-center mb-3">
+                                        <button type="button" onclick="showAvatarTab('file')" id="avatar-tab-file"
+                                            class="px-3 py-1.5 text-xs rounded-full bg-brand-green/10 text-brand-green font-bold transition">
+                                            <i class="fas fa-upload mr-1"></i> Upload File
+                                        </button>
+                                        <button type="button" onclick="showAvatarTab('url')" id="avatar-tab-url"
+                                            class="px-3 py-1.5 text-xs rounded-full bg-gray-100 text-gray-600 font-bold transition">
+                                            <i class="fas fa-link mr-1"></i> Nhập URL
+                                        </button>
+                                    </div>
+
+                                    {{-- Upload File --}}
+                                    <div id="avatar-upload-file" class="text-center">
+                                        <label for="avatarInput"
+                                            class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition text-sm font-medium text-gray-600">
+                                            <i class="fas fa-cloud-upload-alt"></i> Chọn ảnh từ máy
+                                        </label>
+                                        <input type="file" id="avatarInput" name="avatar" accept=".jpg,.jpeg,.png,.webp,.gif,.svg"
+                                            class="hidden" onchange="previewAvatar(this)">
+                                        <p class="text-xs text-gray-400 mt-2">JPG, PNG, WebP, GIF, SVG (Tối đa 2MB)</p>
+                                    </div>
+
+                                    {{-- Nhập URL --}}
+                                    <div id="avatar-upload-url" class="hidden">
+                                        <input type="url" name="avatar_url" id="avatarUrlInput"
+                                            class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition text-gray-800 text-sm"
+                                            placeholder="https://example.com/avatar.jpg" oninput="previewAvatarUrl(this.value)">
+                                        <p class="text-xs text-gray-400 mt-2 text-center">Dán đường dẫn trực tiếp đến file ảnh</p>
+                                    </div>
+                                </div>
+
+                                {{-- Name Input --}}
+                                <div class="mb-4">
+                                    <label for="editName" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                        <i class="fas fa-user mr-1 text-brand-green"></i> Tên hiển thị <span
+                                            class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" id="editName" name="name" value="{{ $user->name }}" required maxlength="100"
+                                        class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition text-gray-800"
+                                        placeholder="Nhập tên hiển thị...">
+                                </div>
+
+                                {{-- Bio Input --}}
+                                <div class="mb-6">
+                                    <label for="editBio" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                        <i class="fas fa-quote-left mr-1 text-brand-accent"></i> Giới thiệu bản thân
+                                    </label>
+                                    <textarea id="editBio" name="bio" rows="3" maxlength="500"
+                                        class="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition text-gray-800 resize-none"
+                                        placeholder="Viết vài dòng về bản thân...">{{ $user->bio }}</textarea>
+                                    <p class="text-xs text-gray-400 mt-1 text-right"><span
+                                            id="bioCharCount">{{ strlen($user->bio ?? '') }}</span>/500 ký tự</p>
+                                </div>
+
+                                {{-- Actions --}}
+                                <div class="flex gap-3">
+                                    <button type="button" onclick="closeEditProfileModal()"
+                                        class="flex-1 py-2.5 border border-gray-200 text-gray-600 rounded-lg font-semibold hover:bg-gray-50 transition">
+                                        Hủy bỏ
+                                    </button>
+                                    <button type="submit" id="editProfileSubmitBtn"
+                                        class="flex-1 py-2.5 bg-brand-green text-white rounded-lg font-semibold hover:bg-brand-green/90 transition flex items-center justify-center gap-2 shadow-md">
+                                        <i class="fas fa-save"></i> Lưu thay đổi
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                // Đếm ký tự bio
+                document.getElementById('editBio').addEventListener('input', function () {
+                    document.getElementById('bioCharCount').textContent = this.value.length;
+                });
+
+                // Handle Unsave Post (Bỏ lưu bài viết)
+                function handleUnsavePost(postId, btnElement) {
+                    if (!confirm('Bạn có chắc muốn bỏ lưu bài viết này?')) return;
+
+                    // Visual feedback
+                    btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    btnElement.disabled = true;
+
+                    fetch('/post/save', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ post_id: postId })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success && !data.saved) {
+                                // Xóa card bài viết với animation
+                                const card = document.getElementById(`saved-post-${postId}`);
+                                if (card) {
+                                    card.style.transition = 'all 0.3s ease-out';
+                                    card.style.opacity = '0';
+                                    card.style.transform = 'translateX(-20px)';
+                                    setTimeout(() => {
+                                        card.remove();
+                                        // Update counter in tab
+                                        const countSpan = document.querySelector('#tab-btn-saved span');
+                                        if (countSpan) {
+                                            let count = parseInt(countSpan.textContent) - 1;
+                                            countSpan.textContent = count;
+                                        }
+                                        // Check if empty
+                                        const container = document.getElementById('saved-posts-container');
+                                        if (container && container.children.length === 0) {
+                                            location.reload();
+                                        }
+                                    }, 300);
+                                }
+                            } else {
+                                btnElement.innerHTML = '<i class="fas fa-bookmark"></i>';
+                                btnElement.disabled = false;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            btnElement.innerHTML = '<i class="fas fa-bookmark"></i>';
+                            btnElement.disabled = false;
+                        });
+                }
+
+                // Toggle Comment Box for Saved Posts
+                function toggleSavedComment(postId) {
+                    const box = document.getElementById(`saved-comment-box-${postId}`);
+                    if (box) {
+                        box.classList.toggle('hidden');
+                        // Focus input when shown
+                        if (!box.classList.contains('hidden')) {
+                            const input = box.querySelector('input[name="content"]');
+                            if (input) input.focus();
+                        }
+                    }
+                }
+
+                // Handle Like for Saved Posts  
+                function handleLike(id, type) {
+                    const btn = document.getElementById(`like-btn-${type}-${id}`);
+                    const icon = document.getElementById(`like-icon-${type}-${id}`);
+                    const countSpan = document.getElementById(`like-count-${type}-${id}`);
+
+                    if (!btn || !icon || !countSpan) return;
+
+                    const isLiked = icon.classList.contains('fas');
+
+                    // Optimistic update
+                    if (isLiked) {
+                        icon.classList.remove('fas', 'text-red-500');
+                        icon.classList.add('far');
+                        btn.classList.remove('text-red-500');
+                        btn.classList.add('text-gray-500');
+                        countSpan.textContent = Math.max(0, parseInt(countSpan.textContent) - 1);
+                    } else {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas', 'text-red-500');
+                        btn.classList.remove('text-gray-500');
+                        btn.classList.add('text-red-500');
+                        countSpan.textContent = parseInt(countSpan.textContent) + 1;
+                    }
+
+                    // Send AJAX
+                    fetch('/like', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ id: id, type: type })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                countSpan.textContent = data.count;
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                }
+
+                // Submit Comment for Saved Posts
+                function submitSavedComment(postId, event) {
+                    event.preventDefault();
+
+                    const form = event.target;
+                    const input = form.querySelector('input[name="content"]');
+                    const content = input.value.trim();
+
+                    if (!content) return;
+
+                    // Disable form
+                    input.disabled = true;
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                    fetch(`/post/${postId}/comment`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ content: content })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Update count
+                                const countSpan = document.getElementById(`comment-count-${postId}`);
+                                if (countSpan) {
+                                    countSpan.textContent = parseInt(countSpan.textContent) + 1;
+                                }
+
+                                // Clear input
+                                input.value = '';
+
+                                // Add new comment to list
+                                const commentBox = document.getElementById(`saved-comment-box-${postId}`);
+                                const commentList = commentBox.querySelector('.space-y-2');
+                                if (commentList && data.comment) {
+                                    const newComment = document.createElement('div');
+                                    newComment.className = 'flex gap-2';
+                                    newComment.innerHTML = `
+                                                                    <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}" 
+                                                                         class="w-6 h-6 rounded-full mt-0.5">
+                                                                    <div class="bg-gray-50 px-3 py-2 rounded-lg text-sm flex-1">
+                                                                        <span class="font-bold text-gray-700">{{ Auth::user()->name }}</span>
+                                                                        <span class="text-gray-600 ml-2">${content}</span>
+                                                                    </div>
+                                                                `;
+                                    commentList.prepend(newComment);
+                                }
+} else {
+                                alert(data.message || 'Có lỗi xảy ra');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Không thể gửi bình luận. Vui lòng thử lại.');
+                        })
+                        .finally(() => {
+                            input.disabled = false;
+                            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                        });
+                }
+            </script>
+        @endif
+>>>>>>> f3f625bb159d8778a57960a64baa85e7f11ac59c
 
 
     {{-- SortableJS cho sắp xếp badges --}}
