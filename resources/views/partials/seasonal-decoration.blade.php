@@ -2,6 +2,7 @@
     Seasonal Decorations Component
     - Admin: Dropdown chọn theme đầy đủ
     - User/Guest: Nút toggle tắt/mở theme hiện tại
+    - Supports custom icons from admin settings
 --}}
 
 @php
@@ -11,6 +12,7 @@
     
     // Kiểm tra nếu admin đã chọn theme cụ thể (lưu trong session)
     $overrideTheme = session('admin_theme_override');
+    $themeSettings = session('theme_settings', []);
     
     if ($overrideTheme && $overrideTheme !== 'auto') {
         $initialTheme = $overrideTheme === 'default' ? null : $overrideTheme;
@@ -22,7 +24,7 @@
         if ($month == 12 && $day >= 20 && $day <= 26) {
             $initialTheme = 'christmas';
         }
-        // 🧧 Tết Nguyên Đán: ~15/01 - 15/02 (ước lượng)
+        // 🧧 Tết Nguyên Đán: ~15/01 - 15/02
         elseif (($month == 1 && $day >= 15) || ($month == 2 && $day <= 15)) {
             $initialTheme = 'tet';
         }
@@ -36,7 +38,22 @@
         }
     }
     
-    // Theme icons mapping
+    // Default settings for each theme
+    $defaultSettings = [
+        'christmas' => ['falling' => '❄️', 'corner_left' => '🎄', 'corner_right' => '🎅', 'falling_count' => 12],
+        'tet' => ['falling' => '🌸', 'corner_left' => '🏮', 'corner_right' => '🧧', 'falling_count' => 15],
+        'valentine' => ['falling' => '💕', 'corner_left' => '🌹', 'corner_right' => '', 'falling_count' => 10],
+        'halloween' => ['falling' => '🦇', 'corner_left' => '🎃', 'corner_right' => '👻', 'falling_count' => 8],
+    ];
+    
+    // Get settings for each theme (merge with defaults)
+    $getSettings = function($theme) use ($themeSettings, $defaultSettings) {
+        $defaults = $defaultSettings[$theme] ?? [];
+        $custom = $themeSettings[$theme] ?? [];
+        return array_merge($defaults, $custom);
+    };
+    
+    // Theme icons mapping for toggle button
     $themeIcons = [
         'christmas' => '🎄',
         'tet' => '🧧',
@@ -44,9 +61,6 @@
         'halloween' => '🎃',
     ];
     $currentIcon = $themeIcons[$initialTheme] ?? '✨';
-    
-    // User preference (lưu trong localStorage, check bằng JS)
-    $userThemeOff = false; // Mặc định bật
 @endphp
 
 {{-- ADMIN THEME SELECTOR (Full dropdown) --}}
@@ -253,49 +267,87 @@
 @endif
 @endif
 
-{{-- ALL THEME DECORATIONS --}}
+{{-- ALL THEME DECORATIONS with Custom Icons --}}
 <div id="seasonal-decorations" class="fixed inset-0 pointer-events-none z-[9990] overflow-hidden">
     
     {{-- CHRISTMAS --}}
+    @php 
+        $christmasSettings = $getSettings('christmas'); 
+        $christmasFalling = is_array($christmasSettings['falling'] ?? null) ? $christmasSettings['falling'] : [$christmasSettings['falling'] ?? '❄️'];
+    @endphp
     <div id="decoration-christmas" class="theme-decoration absolute inset-0 {{ $initialTheme === 'christmas' ? '' : 'hidden' }}">
         <div class="snowflakes" aria-hidden="true">
-            @for($i = 0; $i < 12; $i++)<div class="snowflake"><div class="inner">❄</div></div>@endfor
+            @for($i = 0; $i < intval($christmasSettings['falling_count'] ?? 12); $i++)
+                <div class="snowflake"><div class="inner">{{ $christmasFalling[$i % count($christmasFalling)] }}</div></div>
+            @endfor
         </div>
-        <div class="absolute bottom-0 left-0 text-6xl opacity-20 transform -translate-x-1/4">🎄</div>
-        <div class="absolute top-20 right-4 text-4xl opacity-30 animate-bounce">🎅</div>
+        @if(!empty($christmasSettings['corner_left']))
+            <div class="absolute bottom-0 left-0 text-6xl opacity-50 transform -translate-x-1/4">{{ $christmasSettings['corner_left'] }}</div>
+        @endif
+        @if(!empty($christmasSettings['corner_right']))
+            <div class="absolute top-20 right-4 text-4xl opacity-60 animate-bounce">{{ $christmasSettings['corner_right'] }}</div>
+        @endif
     </div>
 
     {{-- TET --}}
+    @php 
+        $tetSettings = $getSettings('tet'); 
+        $tetFalling = is_array($tetSettings['falling'] ?? null) ? $tetSettings['falling'] : [$tetSettings['falling'] ?? '🌸'];
+    @endphp
     <div id="decoration-tet" class="theme-decoration absolute inset-0 {{ $initialTheme === 'tet' ? '' : 'hidden' }}">
         <div class="petals" aria-hidden="true">
-            @for($i = 0; $i < 15; $i++)<div class="petal">🌸</div>@endfor
+            @for($i = 0; $i < intval($tetSettings['falling_count'] ?? 15); $i++)
+                <div class="petal">{{ $tetFalling[$i % count($tetFalling)] }}</div>
+            @endfor
         </div>
-        <div class="absolute top-20 right-4 text-4xl opacity-40 animate-pulse">🧧</div>
-        <div class="absolute bottom-10 left-4 text-5xl opacity-25">🏮</div>
+        @if(!empty($tetSettings['corner_right']))
+            <div class="absolute top-20 right-4 text-4xl opacity-70 animate-pulse">{{ $tetSettings['corner_right'] }}</div>
+        @endif
+        @if(!empty($tetSettings['corner_left']))
+            <div class="absolute bottom-10 left-4 text-5xl opacity-50">{{ $tetSettings['corner_left'] }}</div>
+        @endif
     </div>
 
     {{-- VALENTINE --}}
+    @php 
+        $valentineSettings = $getSettings('valentine'); 
+        $valentineFalling = is_array($valentineSettings['falling'] ?? null) ? $valentineSettings['falling'] : [$valentineSettings['falling'] ?? '💕'];
+    @endphp
     <div id="decoration-valentine" class="theme-decoration absolute inset-0 {{ $initialTheme === 'valentine' ? '' : 'hidden' }}">
         <div class="hearts" aria-hidden="true">
-            @for($i = 0; $i < 10; $i++)<div class="heart">💕</div>@endfor
+            @for($i = 0; $i < intval($valentineSettings['falling_count'] ?? 10); $i++)
+                <div class="heart">{{ $valentineFalling[$i % count($valentineFalling)] }}</div>
+            @endfor
         </div>
-        <div class="absolute bottom-0 right-0 text-5xl opacity-25 transform translate-x-1/4">🌹</div>
+        @if(!empty($valentineSettings['corner_left']))
+            <div class="absolute bottom-0 right-0 text-5xl opacity-50 transform translate-x-1/4">{{ $valentineSettings['corner_left'] }}</div>
+        @endif
     </div>
 
     {{-- HALLOWEEN --}}
+    @php 
+        $halloweenSettings = $getSettings('halloween'); 
+        $halloweenFalling = is_array($halloweenSettings['falling'] ?? null) ? $halloweenSettings['falling'] : [$halloweenSettings['falling'] ?? '🦇'];
+    @endphp
     <div id="decoration-halloween" class="theme-decoration absolute inset-0 {{ $initialTheme === 'halloween' ? '' : 'hidden' }}">
         <div class="bats" aria-hidden="true">
-            @for($i = 0; $i < 8; $i++)<div class="bat">🦇</div>@endfor
+            @for($i = 0; $i < intval($halloweenSettings['falling_count'] ?? 8); $i++)
+                <div class="bat">{{ $halloweenFalling[$i % count($halloweenFalling)] }}</div>
+            @endfor
         </div>
-        <div class="absolute bottom-0 left-4 text-6xl opacity-30">🎃</div>
-        <div class="absolute top-20 right-4 text-4xl opacity-40">👻</div>
+        @if(!empty($halloweenSettings['corner_left']))
+            <div class="absolute bottom-0 left-4 text-6xl opacity-60">{{ $halloweenSettings['corner_left'] }}</div>
+        @endif
+        @if(!empty($halloweenSettings['corner_right']))
+            <div class="absolute top-20 right-4 text-4xl opacity-70">{{ $halloweenSettings['corner_right'] }}</div>
+        @endif
     </div>
 
 </div>
 
 <style>
 .snowflakes,.petals,.hearts,.bats{position:absolute;top:0;left:0;width:100%;height:100%}
-.snowflake{position:absolute;top:-10%;color:#a8d4ff;font-size:1.5rem;animation:snowfall linear infinite;opacity:.7}
+.snowflake{position:absolute;top:-10%;color:#a8d4ff;font-size:1.5rem;animation:snowfall linear infinite;opacity:.9}
 .snowflake:nth-child(1){left:5%;animation-duration:10s;animation-delay:0s;font-size:1.2rem}
 .snowflake:nth-child(2){left:15%;animation-duration:12s;animation-delay:1s;font-size:1.8rem}
 .snowflake:nth-child(3){left:25%;animation-duration:8s;animation-delay:2s;font-size:1rem}
@@ -308,9 +360,10 @@
 .snowflake:nth-child(10){left:92%;animation-duration:7s;animation-delay:1.2s;font-size:1rem}
 .snowflake:nth-child(11){left:10%;animation-duration:16s;animation-delay:4s;font-size:1.9rem}
 .snowflake:nth-child(12){left:50%;animation-duration:11s;animation-delay:2s;font-size:1.2rem}
-@keyframes snowfall{0%{transform:translateY(0) rotate(0);opacity:.7}100%{transform:translateY(110vh) rotate(360deg);opacity:.3}}
+.snowflake:nth-child(n+13){left:calc(5% + (var(--i, 0) * 7%));animation-duration:calc(8s + (var(--i, 0) * 0.5s))}
+@keyframes snowfall{0%{transform:translateY(0) rotate(0);opacity:.9}100%{transform:translateY(110vh) rotate(360deg);opacity:.5}}
 
-.petal{position:absolute;top:-10%;font-size:1.2rem;animation:petalfall linear infinite;opacity:.8}
+.petal{position:absolute;top:-10%;font-size:1.2rem;animation:petalfall linear infinite;opacity:.95}
 .petal:nth-child(1){left:8%;animation-duration:12s}.petal:nth-child(2){left:18%;animation-duration:10s;animation-delay:1s}
 .petal:nth-child(3){left:28%;animation-duration:14s;animation-delay:2s}.petal:nth-child(4){left:38%;animation-duration:11s;animation-delay:.5s}
 .petal:nth-child(5){left:48%;animation-duration:13s;animation-delay:3s}.petal:nth-child(6){left:58%;animation-duration:9s;animation-delay:1.5s}
@@ -318,23 +371,23 @@
 .petal:nth-child(9){left:88%;animation-duration:12s;animation-delay:3.5s}.petal:nth-child(10){left:95%;animation-duration:8s;animation-delay:1.2s}
 .petal:nth-child(11){left:3%;animation-duration:16s;animation-delay:4s}.petal:nth-child(12){left:33%;animation-duration:11s;animation-delay:2s}
 .petal:nth-child(13){left:63%;animation-duration:13s;animation-delay:1s}.petal:nth-child(14){left:73%;animation-duration:14s;animation-delay:3s}
-.petal:nth-child(15){left:83%;animation-duration:10s}
-@keyframes petalfall{0%{transform:translateY(0) rotate(0) translateX(0);opacity:.8}50%{transform:translateY(50vh) rotate(180deg) translateX(30px)}100%{transform:translateY(110vh) rotate(360deg) translateX(-30px);opacity:.4}}
+.petal:nth-child(15){left:83%;animation-duration:10s}.petal:nth-child(n+16){left:calc(5% + (var(--i, 0) * 5%));animation-duration:calc(9s + (var(--i, 0) * 0.4s))}
+@keyframes petalfall{0%{transform:translateY(0) rotate(0) translateX(0);opacity:.95}50%{transform:translateY(50vh) rotate(180deg) translateX(30px)}100%{transform:translateY(110vh) rotate(360deg) translateX(-30px);opacity:.6}}
 
-.heart{position:absolute;bottom:-10%;font-size:1.5rem;animation:heartrise linear infinite;opacity:.6}
+.heart{position:absolute;bottom:-10%;font-size:1.5rem;animation:heartrise linear infinite;opacity:.85}
 .heart:nth-child(1){left:10%;animation-duration:12s}.heart:nth-child(2){left:20%;animation-duration:10s;animation-delay:1s}
 .heart:nth-child(3){left:30%;animation-duration:14s;animation-delay:2s}.heart:nth-child(4){left:40%;animation-duration:11s;animation-delay:.5s}
 .heart:nth-child(5){left:50%;animation-duration:13s;animation-delay:3s}.heart:nth-child(6){left:60%;animation-duration:9s;animation-delay:1.5s}
 .heart:nth-child(7){left:70%;animation-duration:15s;animation-delay:2.5s}.heart:nth-child(8){left:80%;animation-duration:10s;animation-delay:.8s}
 .heart:nth-child(9){left:90%;animation-duration:12s;animation-delay:3.5s}.heart:nth-child(10){left:5%;animation-duration:8s;animation-delay:1.2s}
-@keyframes heartrise{0%{transform:translateY(0) scale(.8);opacity:.6}50%{transform:translateY(-50vh) scale(1.2);opacity:.8}100%{transform:translateY(-110vh) scale(.5);opacity:0}}
+@keyframes heartrise{0%{transform:translateY(0) scale(.8);opacity:.85}50%{transform:translateY(-50vh) scale(1.2);opacity:1}100%{transform:translateY(-110vh) scale(.5);opacity:0}}
 
-.bat{position:absolute;font-size:1.8rem;animation:batfly linear infinite;opacity:.5}
+.bat{position:absolute;font-size:1.8rem;animation:batfly linear infinite;opacity:.8}
 .bat:nth-child(1){top:10%;left:-10%;animation-duration:8s}.bat:nth-child(2){top:20%;left:-10%;animation-duration:10s;animation-delay:1s}
 .bat:nth-child(3){top:30%;left:-10%;animation-duration:7s;animation-delay:2s}.bat:nth-child(4){top:15%;left:-10%;animation-duration:9s;animation-delay:.5s}
 .bat:nth-child(5){top:25%;left:-10%;animation-duration:11s;animation-delay:3s}.bat:nth-child(6){top:35%;left:-10%;animation-duration:8s;animation-delay:1.5s}
 .bat:nth-child(7){top:5%;left:-10%;animation-duration:12s;animation-delay:2.5s}.bat:nth-child(8){top:40%;left:-10%;animation-duration:6s;animation-delay:.8s}
-@keyframes batfly{0%{transform:translateX(0) translateY(0) rotate(0);opacity:.5}25%{transform:translateX(25vw) translateY(-20px) rotate(-5deg)}50%{transform:translateX(50vw) translateY(10px) rotate(5deg)}75%{transform:translateX(75vw) translateY(-15px) rotate(-3deg)}100%{transform:translateX(110vw) translateY(0) rotate(0);opacity:.3}}
+@keyframes batfly{0%{transform:translateX(0) translateY(0) rotate(0);opacity:.8}25%{transform:translateX(25vw) translateY(-20px) rotate(-5deg)}50%{transform:translateX(50vw) translateY(10px) rotate(5deg)}75%{transform:translateX(75vw) translateY(-15px) rotate(-3deg)}100%{transform:translateX(110vw) translateY(0) rotate(0);opacity:.5}}
 
 @media(max-width:768px){.snowflake:nth-child(n+7),.petal:nth-child(n+8),.heart:nth-child(n+6),.bat:nth-child(n+5){display:none}.snowflake,.petal,.heart,.bat{font-size:1rem!important}}
 </style>
