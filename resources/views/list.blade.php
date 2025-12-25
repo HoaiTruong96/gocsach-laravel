@@ -25,9 +25,18 @@
                 <aside class="lg:col-span-3 space-y-8">
                     {{-- Widget Thể Loại --}}
 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-soft">
-    <h3 class="font-bold text-brand-green font-serif text-lg mb-4 pb-2 border-b border-gray-100">
-        <i class="fas fa-filter mr-2 text-brand-accent"></i> Thể Loại
-    </h3>
+    <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
+        <h3 class="font-bold text-brand-green font-serif text-lg">
+            <i class="fas fa-filter mr-2 text-brand-accent"></i> Thể Loại
+        </h3>
+        @if(request('categories') && count(request('categories')) > 0)
+            <a href="{{ request()->fullUrlWithQuery(['categories' => null]) }}" 
+               class="text-xs text-red-500 hover:text-red-700 hover:underline flex items-center gap-1 transition"
+               title="Bỏ lọc thể loại">
+                <i class="fas fa-times-circle"></i> Bỏ lọc
+            </a>
+        @endif
+    </div>
     
     {{-- CODE MỚI: Dùng biến $categories --}}
     <div class="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
