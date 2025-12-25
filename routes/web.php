@@ -276,6 +276,19 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/dashboard/users', [AdminController::class, 'dashboardUsers'])->name('dashboard.users');
     Route::get('/dashboard/export-excel', [AdminController::class, 'exportExcel'])->name('dashboard.export');
 
+    // Set Theme Decoration
+    Route::post('/set-theme', function (Illuminate\Http\Request $request) {
+        $theme = $request->input('theme');
+        $validThemes = ['auto', 'default', 'christmas', 'tet', 'valentine', 'halloween'];
+        
+        if (in_array($theme, $validThemes)) {
+            session(['admin_theme_override' => $theme]);
+            return response()->json(['success' => true, 'theme' => $theme]);
+        }
+        
+        return response()->json(['success' => false, 'message' => 'Invalid theme'], 400);
+    })->name('set-theme');
+
     // Resource Controllers
     Route::resource('books', AdminBookController::class);
     Route::post('books/{book}/approve', [AdminBookController::class, 'approve'])->name('books.approve');
