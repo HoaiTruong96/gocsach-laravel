@@ -27,7 +27,24 @@ class ArticleController extends Controller
 
         $article = $query->firstOrFail();
 
-        return view('articles.show', compact('article'));
+        // Tăng lượt xem
+        $article->increment('view_count');
+
+        // Lấy bài viết liên quan (cùng tag hoặc mới nhất, loại trừ bài hiện tại)
+        $relatedArticles = Article::where('id', '!=', $article->id)
+            ->where('is_active', true)
+            ->orderByDesc('created_at')
+            ->take(4)
+            ->get();
+
+        // Gợi ý bài viết - Lấy 4 bài mới nhất khác bài hiện tại
+        $suggestedArticles = Article::where('id', '!=', $article->id)
+            ->where('is_active', true)
+            ->orderByDesc('created_at')
+            ->take(4)
+            ->get();
+
+        return view('articles.show', compact('article', 'relatedArticles', 'suggestedArticles'));
     }
 
     // Hiển thị form tạo bài viết mới

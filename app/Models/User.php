@@ -59,11 +59,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Like::class);
     }
 
-    public function bookshelves()
-    {
-        return $this->belongsToMany(Book::class, 'bookshelves', 'user_id', 'book_id')
-            ->withPivot('status')->withTimestamps();
-    }
+
 
     // --- [PHẦN QUAN TRỌNG ĐÃ SỬA] ---
 
@@ -104,17 +100,19 @@ class User extends Authenticatable implements MustVerifyEmail
             ->withTimestamps();
     }
 
-    // Lấy danh hiệu còn hiệu lực
+    // Lấy danh hiệu còn hiệu lực, sắp xếp theo thứ tự display_order
     public function activeBadges()
     {
         return $this->belongsToMany(Badge::class, 'user_badges')
-            ->withPivot('earned_at', 'expires_at')
+            ->withPivot('earned_at', 'expires_at', 'display_order')
             ->where(function ($query) {
                 $query->where('expires_at', '>', now())
                     ->orWhereNull('expires_at');
             })
+            ->orderByPivot('display_order', 'asc')
             ->withTimestamps();
     }
+
 
     // Quan hệ với Thử thách
     public function challenges()
@@ -138,6 +136,20 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->avatarFrames()
             ->wherePivot('is_equipped', true)
             ->first();
+    }
+
+    // --- 5. LẤY DANH HIỆU HOẠT ĐỘNG (ACTIVITY TITLE) ---
+    /**
+     * Lấy danh hiệu dựa trên số bài viết đã duyệt và sách đã đề xuất được duyệt
+     *
+     * @return \App\Models\ActivityTitle|null
+     */
+    public function getActivityTitle()
+    {
+        $publishedPosts = $this->posts()->where('status', 'published')->count();
+        $approvedBooks = $this->contributedBooks()->where('is_approved', true)->count();
+
+        return ActivityTitle::getForUser($publishedPosts, $approvedBooks);
     }
 
     // --- 4. HÀM TÍNH ĐIỂM THỬ THÁCH (CHUẨN XÁC) ---

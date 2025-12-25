@@ -107,6 +107,10 @@
         </div>
 
         {{-- Nút Điều Hướng --}}
+        <button id="heroPrevBtn"
+            class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/20 hover:bg-brand-accent/80 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 hover:scale-110 z-20 cursor-pointer">
+            <i class="fas fa-chevron-left text-xl"></i>
+        </button>
         <button id="heroNextBtn"
             class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/20 hover:bg-brand-accent/80 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 hover:scale-110 z-20 cursor-pointer">
             <i class="fas fa-chevron-right text-xl"></i>
@@ -794,10 +798,10 @@
                                         <span class="text-xs text-gray-400">Gợi ý cho bạn</span>
                                     </div>
                                 </div>
-                                <a href="{{ route('home') }}"
+                                <a href="{{ route('books.list') }}"
                                     class="text-xs text-purple-500 hover:text-purple-700 font-bold flex items-center gap-1"
-                                    title="Đổi sách khác vào ngày mai">
-                                    <i class="fas fa-sync-alt"></i>
+                                    title="Xem tất cả sách">
+                                    <i class="fas fa-arrow-right"></i>
                                 </a>
                             </div>
 

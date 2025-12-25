@@ -18,6 +18,7 @@ use App\Http\Controllers\FollowController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\BannerController;
+use App\Http\Controllers\Admin\ActivityTitleController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\BookSuggestionController;
@@ -167,6 +168,7 @@ Route::middleware(['auth', 'email.verified'])->group(function () {
     Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/avatar-frame/equip', [ProfileController::class, 'equipAvatarFrame'])->name('profile.avatar-frame.equip');
     Route::post('/profile/avatar-frame/unequip', [ProfileController::class, 'unequipAvatarFrame'])->name('profile.avatar-frame.unequip');
+    Route::post('/profile/badges/order', [ProfileController::class, 'updateBadgeOrder'])->name('profile.badges.order');
     Route::post('/follow/toggle', [FollowController::class, 'toggleFollow'])->name('follow.toggle');
 
     // --- ĐỀ XUẤT SÁCH ---
@@ -274,6 +276,41 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/dashboard/users', [AdminController::class, 'dashboardUsers'])->name('dashboard.users');
     Route::get('/dashboard/export-excel', [AdminController::class, 'exportExcel'])->name('dashboard.export');
 
+    // Set Theme Decoration
+    Route::post('/set-theme', function (Illuminate\Http\Request $request) {
+        $theme = $request->input('theme');
+        $validThemes = ['auto', 'default', 'christmas', 'tet', 'valentine', 'halloween'];
+        
+        if (in_array($theme, $validThemes)) {
+            session(['admin_theme_override' => $theme]);
+            return response()->json(['success' => true, 'theme' => $theme]);
+        }
+        
+        return response()->json(['success' => false, 'message' => 'Invalid theme'], 400);
+    })->name('set-theme');
+
+    // Theme Management Page
+    Route::get('/theme', function () {
+        return view('admin.theme.index');
+    })->name('theme.index');
+
+    // Save Theme Settings
+    Route::post('/theme/save-settings', function (Illuminate\Http\Request $request) {
+        $theme = $request->input('theme');
+        $settings = $request->input('settings');
+        
+        $validThemes = ['christmas', 'tet', 'valentine', 'halloween'];
+        
+        if (in_array($theme, $validThemes) && is_array($settings)) {
+            $allSettings = session('theme_settings', []);
+            $allSettings[$theme] = $settings;
+            session(['theme_settings' => $allSettings]);
+            return response()->json(['success' => true]);
+        }
+        
+        return response()->json(['success' => false, 'message' => 'Invalid data'], 400);
+    })->name('theme.save-settings');
+
     // Resource Controllers
     Route::resource('books', AdminBookController::class);
     Route::post('books/{book}/approve', [AdminBookController::class, 'approve'])->name('books.approve');
@@ -285,7 +322,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
     Route::post('users/{user}/toggle-active', [\App\Http\Controllers\Admin\UserController::class, 'toggleActive'])->name('users.toggle-active');
     Route::resource('banners', BannerController::class);
-    Route::resource('badges', \App\Http\Controllers\Admin\BadgeController::class);
+    Route::resource('badges', App\Http\Controllers\Admin\BadgeController::class);
+    Route::resource('activity-titles', ActivityTitleController::class);
     Route::resource('challenges', \App\Http\Controllers\Admin\ChallengeController::class);
     Route::resource('avatar-frames', \App\Http\Controllers\Admin\AvatarFrameController::class);
     // Authors - dùng adminIndex() thay vì index() cho trang admin

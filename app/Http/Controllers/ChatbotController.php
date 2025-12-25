@@ -33,10 +33,7 @@ class ChatbotController extends Controller
             'keywords' => ['viết review', 'đăng review', 'cách review', 'làm sao review'],
             'answer' => 'Để viết review sách, bạn cần đăng nhập trước. Sau đó vào trang chi tiết cuốn sách muốn review và click vào nút "Viết Review". Chia sẻ cảm nhận, đánh giá sao và nội dung review của bạn.'
         ],
-        'faq_bookshelf' => [
-            'keywords' => ['tủ sách', 'bookshelf', 'lưu sách', 'sách yêu thích'],
-            'answer' => 'Tủ sách cá nhân giúp bạn lưu và quản lý các sách theo trạng thái: Đang đọc, Đã đọc, Muốn đọc. Để thêm sách vào tủ, vào trang chi tiết sách và click nút "Thêm vào tủ sách".'
-        ],
+
         'faq_about' => [
             'keywords' => ['góc sách là gì', 'giới thiệu', 'về góc sách', 'website này'],
             'answer' => 'Góc Sách là cộng đồng yêu sách Việt Nam, nơi bạn có thể khám phá sách hay, đọc và viết review, tham gia thảo luận với những người cùng đam mê đọc sách. Website có hàng nghìn đầu sách với đa dạng thể loại.'
@@ -197,17 +194,17 @@ class ChatbotController extends Controller
             $keyword = isset($matches[2]) ? trim($matches[2]) : $this->extractKeyword($message);
             if ($keyword) {
                 $books = Book::where('is_approved', true)
-                    ->where(function($q) use ($keyword) {
+                    ->where(function ($q) use ($keyword) {
                         $q->where('author_name', 'like', "%{$keyword}%")
-                          ->orWhereHas('author', function($q) use ($keyword) {
-                              $q->where('name', 'like', "%{$keyword}%");
-                          });
+                            ->orWhereHas('author', function ($q) use ($keyword) {
+                                $q->where('name', 'like', "%{$keyword}%");
+                            });
                     })
                     ->select('title', 'author_name', 'average_rating', 'slug')
                     ->orderByDesc('average_rating')
                     ->limit(10)
                     ->get();
-                
+
                 if ($books->count() > 0) {
                     $results['type'] = 'author_books';
                     $results['keyword'] = $keyword;
@@ -221,14 +218,14 @@ class ChatbotController extends Controller
             $keyword = isset($matches[2]) ? trim($matches[2]) : $this->extractKeyword($message);
             if ($keyword && empty($results)) {
                 $books = Book::where('is_approved', true)
-                    ->whereHas('categories', function($q) use ($keyword) {
+                    ->whereHas('categories', function ($q) use ($keyword) {
                         $q->where('name', 'like', "%{$keyword}%");
                     })
                     ->select('title', 'author_name', 'average_rating', 'slug')
                     ->orderByDesc('average_rating')
                     ->limit(10)
                     ->get();
-                
+
                 if ($books->count() > 0) {
                     $results['type'] = 'category_books';
                     $results['keyword'] = $keyword;
@@ -242,15 +239,15 @@ class ChatbotController extends Controller
             $keyword = isset($matches[2]) ? trim($matches[2]) : $this->extractKeyword($message);
             if ($keyword) {
                 $books = Book::where('is_approved', true)
-                    ->where(function($q) use ($keyword) {
+                    ->where(function ($q) use ($keyword) {
                         $q->where('title', 'like', "%{$keyword}%")
-                          ->orWhere('description', 'like', "%{$keyword}%");
+                            ->orWhere('description', 'like', "%{$keyword}%");
                     })
                     ->select('title', 'author_name', 'average_rating', 'slug')
                     ->orderByDesc('average_rating')
                     ->limit(10)
                     ->get();
-                
+
                 if ($books->count() > 0) {
                     $results['type'] = 'search_books';
                     $results['keyword'] = $keyword;
@@ -285,7 +282,7 @@ class ChatbotController extends Controller
                 ->select('title', 'author_name', 'average_rating', 'slug')
                 ->limit(10)
                 ->get();
-            
+
             if ($books->count() > 0) {
                 $results['type'] = 'top_books';
                 $results['books'] = $books->toArray();
@@ -297,14 +294,14 @@ class ChatbotController extends Controller
             $keyword = $this->extractKeyword($message);
             if ($keyword && strlen($keyword) >= 3) {
                 $posts = Post::where('status', 'published')
-                    ->where(function($q) use ($keyword) {
+                    ->where(function ($q) use ($keyword) {
                         $q->where('title', 'like', "%{$keyword}%")
-                          ->orWhere('content', 'like', "%{$keyword}%");
+                            ->orWhere('content', 'like', "%{$keyword}%");
                     })
                     ->with('book:id,title,slug')
                     ->limit(5)
                     ->get(['id', 'title', 'book_id']);
-                
+
                 if ($posts->count() > 0) {
                     $results['type'] = 'related_posts';
                     $results['keyword'] = $keyword;
@@ -323,17 +320,17 @@ class ChatbotController extends Controller
     {
         // Loại bỏ các từ phổ biến không có ý nghĩa tìm kiếm
         $stopWords = ['tìm', 'sách', 'của', 'có', 'không', 'cho', 'tôi', 'mình', 'bạn', 'xin', 'vui lòng', 'giúp', 'với', 'về', 'là', 'được', 'hay', 'nhất', 'thể loại', 'tác giả'];
-        
+
         $words = preg_split('/\s+/', mb_strtolower($message));
         $keywords = [];
-        
+
         foreach ($words as $word) {
             $word = trim($word);
             if (strlen($word) >= 2 && !in_array($word, $stopWords)) {
                 $keywords[] = $word;
             }
         }
-        
+
         return implode(' ', array_slice($keywords, 0, 3));
     }
 
@@ -404,7 +401,7 @@ class ChatbotController extends Controller
         }
 
         $context .= "\nHãy dựa vào dữ liệu trên để trả lời người dùng một cách chính xác và hữu ích.";
-        
+
         return $context;
     }
 
@@ -471,7 +468,7 @@ class ChatbotController extends Controller
                 ->orderBy('created_at', 'asc')
                 ->limit(20) // Lấy 20 tin nhắn gần nhất cho context
                 ->get(['role', 'content']);
-            
+
             foreach ($dbMessages as $msg) {
                 $history[] = [
                     'role' => $msg->role,
@@ -508,7 +505,7 @@ Bot: Góc Sách có nhiều sách của Nguyễn Nhật Ánh. Một số tác ph
 
         // Build conversation history
         $contents = [];
-        
+
         // Add system context as first message
         $contents[] = [
             'role' => 'user',
@@ -531,28 +528,28 @@ Bot: Góc Sách có nhiều sách của Nguyễn Nhật Ánh. Một số tác ph
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
             ])->post($this->apiUrl . '?key=' . $this->apiKey, [
-                'contents' => $contents,
-                'generationConfig' => [
-                    'temperature' => 0.7,
-                    'topK' => 40,
-                    'topP' => 0.95,
-                    'maxOutputTokens' => 800,
-                ],
-                'safetySettings' => [
-                    ['category' => 'HARM_CATEGORY_HARASSMENT', 'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'],
-                    ['category' => 'HARM_CATEGORY_HATE_SPEECH', 'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'],
-                    ['category' => 'HARM_CATEGORY_SEXUALLY_EXPLICIT', 'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'],
-                    ['category' => 'HARM_CATEGORY_DANGEROUS_CONTENT', 'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'],
-                ],
-            ]);
+                        'contents' => $contents,
+                        'generationConfig' => [
+                            'temperature' => 0.7,
+                            'topK' => 40,
+                            'topP' => 0.95,
+                            'maxOutputTokens' => 800,
+                        ],
+                        'safetySettings' => [
+                            ['category' => 'HARM_CATEGORY_HARASSMENT', 'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'],
+                            ['category' => 'HARM_CATEGORY_HATE_SPEECH', 'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'],
+                            ['category' => 'HARM_CATEGORY_SEXUALLY_EXPLICIT', 'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'],
+                            ['category' => 'HARM_CATEGORY_DANGEROUS_CONTENT', 'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'],
+                        ],
+                    ]);
 
             if ($response->successful()) {
                 $data = $response->json();
                 $reply = $data['candidates'][0]['content']['parts'][0]['text'] ?? 'Xin lỗi, tôi không thể trả lời lúc này.';
-                
+
                 // Lưu response của bot vào database
                 $this->saveMessage('assistant', $reply);
-                
+
                 return response()->json([
                     'success' => true,
                     'reply' => $reply
