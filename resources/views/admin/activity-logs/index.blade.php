@@ -172,15 +172,7 @@
                         class="px-3 py-2 bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-slate-200 text-sm rounded-lg hover:bg-gray-300 dark:hover:bg-slate-500 transition {{ request('search') ? '' : 'hidden' }}">
                         <i class="fas fa-times"></i>
                     </button>
-                    <a href="{{ route('admin.activity-logs.trash') }}"
-                        class="inline-flex items-center gap-2 px-3 py-2 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 font-medium text-sm rounded-lg hover:bg-red-200 transition">
-                        <i class="fas fa-trash text-xs"></i>Thùng rác
-                    </a>
                 </div>
-                <a href="{{ route('admin.activity-logs.trash') }}"
-                    class="inline-flex items-center gap-2 px-3 py-1.5 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 font-medium text-sm rounded-lg hover:bg-red-200 dark:hover:bg-red-900/60 transition">
-                    <i class="fas fa-trash text-xs"></i>Thùng rác
-                </a>
             </div>
         </div>
 
@@ -254,8 +246,9 @@
                     <i class="fas fa-filter"></i>Áp dụng
                 </button>
                 <button type="button" id="clearFilters"
-                    class="px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition flex items-center gap-1.5 h-[38px]">
-                    <i class="fas fa-times"></i>
+                    class="px-4 py-2 bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-slate-200 text-sm font-medium rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 hover:text-red-600 dark:hover:text-red-400 transition flex items-center gap-1.5 h-[38px]"
+                    title="Xóa bộ lọc">
+                    <i class="fas fa-rotate-left"></i>
                 </button>
             </div>
         </div>
@@ -272,41 +265,6 @@
                     {{ $logs->links('vendor.pagination.admin') }}
                 </div>
             @endif
-        </div>
-    </div>
-
-    {{-- Cleanup Section --}}
-    <div class="mt-6 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-5">
-        <div class="flex flex-wrap items-center justify-between gap-4">
-            <div>
-                <h4 class="font-bold text-gray-700 dark:text-white flex items-center gap-2">
-                    <i class="fas fa-broom text-orange-500"></i>Dọn dẹp Log cũ
-                </h4>
-                <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Xóa các log cũ để giảm tải database. Không thể
-                    hoàn tác.</p>
-            </div>
-            <form method="POST" action="{{ route('admin.activity-logs.cleanup') }}" class="flex items-center gap-2"
-                onsubmit="return confirm('Bạn có chắc muốn xóa các log cũ?')">
-                @csrf
-                <div class="custom-select-wrapper dropup" id="cleanupSelectWrapper" style="min-width: 180px;">
-                    <div class="custom-select-trigger">
-                        <span class="trigger-text">Cũ hơn 90 ngày</span>
-                        <i class="fas fa-chevron-down arrow"></i>
-                    </div>
-                    <div class="custom-options">
-                        <div class="custom-option" data-value="30">Cũ hơn 30 ngày</div>
-                        <div class="custom-option" data-value="60">Cũ hơn 60 ngày</div>
-                        <div class="custom-option selected" data-value="90">Cũ hơn 90 ngày</div>
-                        <div class="custom-option" data-value="180">Cũ hơn 180 ngày</div>
-                        <div class="custom-option" data-value="365">Cũ hơn 1 năm</div>
-                    </div>
-                    <input type="hidden" name="days" value="90">
-                </div>
-                <button type="submit"
-                    class="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition flex items-center gap-1.5 h-[38px]">
-                    <i class="fas fa-trash-alt"></i>Dọn dẹp
-                </button>
-            </form>
         </div>
     </div>
 

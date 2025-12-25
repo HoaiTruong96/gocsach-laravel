@@ -38,9 +38,11 @@
                 <div class="relative">
                     <input type="text" id="searchInput" value="{{ request('search') }}" placeholder="Tìm tên hoặc email..."
                         class="w-56 pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none placeholder:italic placeholder:text-gray-400 dark:placeholder:text-slate-400">
-                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-400 text-sm"></i>
+                    <i
+                        class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-400 text-sm"></i>
                 </div>
-                <button type="button" id="searchBtn" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
+                <button type="button" id="searchBtn"
+                    class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
                     <i class="fas fa-search" id="searchBtnIcon"></i>
                     <i class="fas fa-spinner fa-spin hidden" id="loadingIcon"></i>
                 </button>
@@ -148,6 +150,40 @@
                 performSearch('');
                 searchInput.focus();
             });
+
+            // Handle pagination clicks via AJAX
+            function handlePaginationClick(e) {
+                const link = e.target.closest('a[href]');
+                if (!link) return;
+
+                e.preventDefault();
+                const url = new URL(link.href);
+                url.searchParams.set('ajax', '1');
+
+                // Show loading
+                tableContainer.style.opacity = '0.5';
+
+                fetch(url.toString(), {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        tableContainer.innerHTML = data.table;
+                        paginationContainer.innerHTML = data.pagination;
+
+                        // Update URL
+                        const newUrl = new URL(link.href);
+                        window.history.replaceState({}, '', newUrl);
+
+                        // Scroll to top of table
+                        tableContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    })
+                    .finally(() => {
+                        tableContainer.style.opacity = '1';
+                    });
+            }
+
+            paginationContainer.addEventListener('click', handlePaginationClick);
         });
     </script>
 @endsection

@@ -31,6 +31,22 @@
             font-family: 'Inter', sans-serif;
         }
 
+        /* Force hide sidebar on mobile/tablet */
+        @media (max-width: 1279px) {
+            aside.w-72 {
+                display: none !important;
+            }
+        }
+
+        /* Mobile menu overlay */
+        #mobile-menu-overlay {
+            z-index: 9999;
+        }
+
+        #mobile-menu-drawer {
+            z-index: 10000;
+        }
+
         /* Custom Scrollbar cho Sidebar */
         .sidebar-scroll::-webkit-scrollbar {
             width: 5px;
@@ -55,6 +71,22 @@
 
         .dark .sidebar-scroll::-webkit-scrollbar-thumb:hover {
             background: #64748b;
+        }
+
+        /* Min-width for description columns in tables */
+        .col-description {
+            min-width: 200px;
+        }
+
+        td.col-description,
+        th.col-description {
+            min-width: 200px;
+        }
+
+        /* Fallback for tables with description text */
+        table td:has(> .line-clamp-2),
+        table td:has(> .line-clamp-3) {
+            min-width: 200px;
         }
 
         .sidebar-scroll::-webkit-scrollbar-thumb {
@@ -350,6 +382,29 @@
             font-weight: 900;
             font-family: "Font Awesome 6 Free";
         }
+
+        /* Badge Animations */
+        @keyframes badge-blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .badge-blink {
+            animation: badge-blink 0.8s ease-in-out infinite;
+        }
+
+        .badge-fade-out {
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            opacity: 0 !important;
+            transform: scale(0.5);
+        }
     </style>
 </head>
 
@@ -357,7 +412,7 @@
     <div class="flex min-h-screen">
 
         <aside
-            class="w-72 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 flex-shrink-0 hidden lg:flex flex-col sticky top-0 h-screen shadow-xl dark:shadow-none border-r border-gray-200 dark:border-slate-800 z-50 transition-colors duration-300">
+            class="w-72 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 flex-shrink-0 hidden xl:flex flex-col sticky top-0 h-screen shadow-xl dark:shadow-none border-r border-gray-200 dark:border-slate-800 z-50 transition-colors duration-300">
 
             {{-- 1. Brand Logo --}}
             <div
@@ -428,16 +483,14 @@
                         <i
                             class="fas fa-book w-5 text-center {{ request()->routeIs('admin.books.*') ? 'text-white' : 'text-slate-400 group-hover:text-emerald-400' }}"></i>
                         <span class="font-medium text-sm">Quản Lý Sách</span>
-                        {{-- Badge sách chờ duyệt --}}
+                        {{-- Badge sách chờ duyệt (polling update) --}}
                         @php
                             $pendingBooksCount = \App\Models\Book::where('is_approved', false)->count();
                         @endphp
-                        @if($pendingBooksCount > 0)
-                            <span
-                                class="ml-auto bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md animate-pulse">
-                                {{ $pendingBooksCount }}
-                            </span>
-                        @endif
+                        <span id="badge-books-pending"
+                            class="ml-auto min-w-[20px] h-5 flex items-center justify-center bg-gradient-to-r from-orange-500 to-amber-500 text-white text-[10px] font-bold px-1.5 rounded-full shadow-md shadow-orange-500/30 {{ $pendingBooksCount > 0 ? 'badge-blink' : 'hidden' }}">
+                            {{ $pendingBooksCount > 0 ? $pendingBooksCount : '' }}
+                        </span>
                     </a>
 
                     {{-- Quản lý Tác giả --}}
@@ -460,16 +513,14 @@
                         <i
                             class="fas fa-star w-5 text-center {{ request()->routeIs('admin.posts.*') ? 'text-white' : 'text-slate-400 group-hover:text-yellow-400' }}"></i>
                         <span class="font-medium text-sm">Kiểm Duyệt Bài Đăng</span>
-                        {{-- Badge số lượng bài chờ duyệt --}}
+                        {{-- Badge số lượng bài chờ duyệt (polling update) --}}
                         @php
-                            $pendingPostsCount = \App\Models\Post::where('status', 'pending')->count();
+                            $pendingPostsCount = \App\Models\Post::whereIn('status', ['pending', 'pending_delete'])->count();
                         @endphp
-                        @if($pendingPostsCount > 0)
-                            <span
-                                class="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md animate-pulse">
-                                {{ $pendingPostsCount }}
-                            </span>
-                        @endif
+                        <span id="badge-posts-pending"
+                            class="ml-auto min-w-[20px] h-5 flex items-center justify-center bg-gradient-to-r from-red-500 to-rose-500 text-white text-[10px] font-bold px-1.5 rounded-full shadow-md shadow-red-500/30 {{ $pendingPostsCount > 0 ? 'badge-blink' : 'hidden' }}">
+                            {{ $pendingPostsCount > 0 ? $pendingPostsCount : '' }}
+                        </span>
                     </a>
 
                     {{-- Báo Cáo Bình Luận --}}
@@ -478,16 +529,14 @@
                         <i
                             class="fas fa-flag w-5 text-center {{ request()->routeIs('admin.comment-reports.*') ? 'text-white' : 'text-slate-400 group-hover:text-red-400' }}"></i>
                         <span class="font-medium text-sm">Báo Cáo Bình Luận</span>
-                        {{-- Badge số lượng báo cáo chờ xử lý --}}
+                        {{-- Badge số lượng báo cáo chờ xử lý (polling update) --}}
                         @php
                             $pendingReportsCount = \App\Models\CommentReport::where('status', 'pending')->count();
                         @endphp
-                        @if($pendingReportsCount > 0)
-                            <span
-                                class="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md animate-pulse">
-                                {{ $pendingReportsCount }}
-                            </span>
-                        @endif
+                        <span id="badge-comment-reports"
+                            class="ml-auto min-w-[20px] h-5 flex items-center justify-center bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] font-bold px-1.5 rounded-full shadow-md shadow-red-500/30 {{ $pendingReportsCount > 0 ? 'badge-blink' : 'hidden' }}">
+                            {{ $pendingReportsCount > 0 ? $pendingReportsCount : '' }}
+                        </span>
                     </a>
 
                     {{-- Báo Cáo Bài Viết --}}
@@ -496,16 +545,14 @@
                         <i
                             class="fas fa-file-alt w-5 text-center {{ request()->routeIs('admin.post-reports.*') ? 'text-white' : 'text-slate-400 group-hover:text-purple-400' }}"></i>
                         <span class="font-medium text-sm">Báo Cáo Bài Viết</span>
-                        {{-- Badge số lượng báo cáo chờ xử lý --}}
+                        {{-- Badge số lượng báo cáo chờ xử lý (polling update) --}}
                         @php
                             $pendingPostReportsCount = \App\Models\PostReport::where('status', 'pending')->count();
                         @endphp
-                        @if($pendingPostReportsCount > 0)
-                            <span
-                                class="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md animate-pulse">
-                                {{ $pendingPostReportsCount }}
-                            </span>
-                        @endif
+                        <span id="badge-post-reports"
+                            class="ml-auto min-w-[20px] h-5 flex items-center justify-center bg-gradient-to-r from-purple-500 to-violet-500 text-white text-[10px] font-bold px-1.5 rounded-full shadow-md shadow-purple-500/30 {{ $pendingPostReportsCount > 0 ? 'badge-blink' : 'hidden' }}">
+                            {{ $pendingPostReportsCount > 0 ? $pendingPostReportsCount : '' }}
+                        </span>
                     </a>
                 </div>
 
@@ -560,7 +607,7 @@
 
             {{-- Mobile Header --}}
             <div
-                class="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 p-4 lg:hidden sticky top-0 z-20 flex justify-between items-center shadow-sm transition-colors duration-300">
+                class="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 p-4 xl:hidden sticky top-0 z-20 flex justify-between items-center shadow-sm transition-colors duration-300">
                 <div class="flex items-center gap-2 font-bold text-slate-800 dark:text-white">
                     <i class="fas fa-shield-alt text-blue-600"></i> Admin Panel
                 </div>
@@ -571,13 +618,145 @@
                         <i class="fas fa-moon dark:hidden"></i>
                         <i class="fas fa-sun hidden dark:inline text-yellow-400"></i>
                     </button>
-                    <button class="text-slate-500 dark:text-slate-400 hover:text-blue-600 focus:outline-none">
+                    <button id="mobile-menu-toggle"
+                        class="text-slate-500 dark:text-slate-400 hover:text-blue-600 focus:outline-none p-2">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
                 </div>
             </div>
 
-            <main class="p-6 lg:p-8 flex-1 overflow-y-auto">
+            {{-- Mobile Menu Overlay --}}
+            <div id="mobile-menu-overlay" class="fixed inset-0 z-[100] xl:hidden hidden">
+                {{-- Backdrop --}}
+                <div id="mobile-menu-backdrop"
+                    class="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 opacity-0">
+                </div>
+
+                {{-- Menu Drawer --}}
+                <div id="mobile-menu-drawer"
+                    class="absolute left-0 top-0 h-full w-72 bg-white dark:bg-slate-900 shadow-2xl transform -translate-x-full transition-transform duration-300 ease-out">
+                    {{-- Drawer Header --}}
+                    <div
+                        class="h-16 flex items-center justify-between px-6 border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-950/50">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                                <i class="fas fa-shield-alt text-sm"></i>
+                            </div>
+                            <div>
+                                <h1 class="font-bold text-lg text-slate-800 dark:text-white tracking-tight">Admin Panel
+                                </h1>
+                            </div>
+                        </div>
+                        <button id="mobile-menu-close"
+                            class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+
+                    {{-- Drawer Navigation --}}
+                    <nav class="flex-1 overflow-y-auto sidebar-scroll py-4 px-4 space-y-6 h-[calc(100vh-4rem)]">
+                        {{-- Tổng Quan --}}
+                        <div>
+                            <p class="px-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tổng Quan</p>
+                            <a href="{{ route('admin.dashboard') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.dashboard') ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
+                                <i class="fas fa-chart-pie w-5 text-center"></i>
+                                <span class="font-medium text-sm">Dashboard</span>
+                            </a>
+                        </div>
+
+                        {{-- Nội Dung --}}
+                        <div class="space-y-1">
+                            <p class="px-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Nội Dung</p>
+                            <a href="{{ route('admin.banners.index') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.banners.*') ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
+                                <i class="fas fa-images w-5 text-center"></i>
+                                <span class="font-medium text-sm">Quản Lý Banner</span>
+                            </a>
+                            <a href="{{ route('admin.articles.index') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.articles.*') ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
+                                <i class="fas fa-newspaper w-5 text-center"></i>
+                                <span class="font-medium text-sm">Tạp Chí Đọc</span>
+                            </a>
+                            <a href="{{ route('admin.quotes.index') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.quotes.*') ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
+                                <i class="fas fa-quote-left w-5 text-center"></i>
+                                <span class="font-medium text-sm">Quản Lý Châm Ngôn</span>
+                            </a>
+                            <a href="{{ route('admin.books.index') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.books.*') ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
+                                <i class="fas fa-book w-5 text-center"></i>
+                                <span class="font-medium text-sm">Quản Lý Sách</span>
+                            </a>
+                            <a href="{{ route('admin.authors.index') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.authors.*') ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
+                                <i class="fas fa-user-pen w-5 text-center"></i>
+                                <span class="font-medium text-sm">Quản Lý Tác Giả</span>
+                            </a>
+                            <a href="{{ route('admin.categories.index') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.categories.*') ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
+                                <i class="fas fa-tags w-5 text-center"></i>
+                                <span class="font-medium text-sm">Quản Lý Danh Mục</span>
+                            </a>
+                            <a href="{{ route('admin.posts.index') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.posts.*') ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
+                                <i class="fas fa-star w-5 text-center"></i>
+                                <span class="font-medium text-sm">Kiểm Duyệt Bài Đăng</span>
+                            </a>
+                            <a href="{{ route('admin.comment-reports.index') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.comment-reports.*') ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
+                                <i class="fas fa-flag w-5 text-center"></i>
+                                <span class="font-medium text-sm">Báo Cáo Bình Luận</span>
+                            </a>
+                            <a href="{{ route('admin.post-reports.index') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.post-reports.*') ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
+                                <i class="fas fa-file-alt w-5 text-center"></i>
+                                <span class="font-medium text-sm">Báo Cáo Bài Viết</span>
+                            </a>
+                        </div>
+
+                        {{-- Hệ Thống --}}
+                        <div class="space-y-1">
+                            <p class="px-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Hệ Thống</p>
+                            <a href="{{ route('admin.users.index') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.users.*') ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
+                                <i class="fas fa-users w-5 text-center"></i>
+                                <span class="font-medium text-sm">Thành Viên</span>
+                            </a>
+                            <a href="{{ route('admin.activity-logs.index') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.activity-logs.*') ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
+                                <i class="fas fa-clipboard-list w-5 text-center"></i>
+                                <span class="font-medium text-sm">Nhật Ký Hoạt Động</span>
+                            </a>
+                            <a href="{{ route('admin.game.index') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.game.*') ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
+                                <i class="fas fa-trophy w-5 text-center"></i>
+                                <span class="font-medium text-sm">Thử Thách & Danh Hiệu</span>
+                            </a>
+                        </div>
+
+                        {{-- Footer Links --}}
+                        <div class="pt-4 border-t border-gray-200 dark:border-slate-700 space-y-1">
+                            <a href="{{ route('home') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800">
+                                <i class="fas fa-external-link-alt w-5 text-center"></i>
+                                <span class="text-sm">Xem Trang Chủ</span>
+                            </a>
+                            <form action="{{ route('logout') }}" method="POST">
+                                @csrf
+                                <button type="submit"
+                                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10">
+                                    <i class="fas fa-sign-out-alt w-5 text-center"></i>
+                                    <span class="text-sm font-medium">Đăng Xuất</span>
+                                </button>
+                            </form>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+
+            <main class="p-6 xl:p-8 flex-1 overflow-y-auto">
                 <div class="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                     <div>
                         <h1 class="text-3xl font-bold text-slate-800 dark:text-white tracking-tight">@yield('header')
@@ -587,7 +766,7 @@
                     <div class="flex items-center gap-3">
                         {{-- Theme Toggle Button (Desktop) --}}
                         <button id="theme-toggle"
-                            class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 shadow-sm transition-all duration-300"
+                            class="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 shadow-sm transition-all duration-300"
                             title="Chế độ sáng/tối">
                             <i class="fas fa-moon text-indigo-500 dark:hidden"></i>
                             <i class="fas fa-sun text-yellow-400 hidden dark:inline"></i>
@@ -675,15 +854,20 @@
                         }
                     }
 
-                    // Auto dismiss after 5 seconds (except validation alerts - keep them visible)
+                    // Auto hide alerts after 5 seconds
                     document.addEventListener('DOMContentLoaded', function () {
-                        ['success-alert', 'error-alert'].forEach(id => {
-                            const alert = document.getElementById(id);
-                            if (alert) {
-                                setTimeout(() => dismissAlert(id), 5000);
+                        const alerts = ['success-alert', 'error-alert', 'validation-alert'];
+                        alerts.forEach(id => {
+                            const element = document.getElementById(id);
+                            if (element) {
+                                setTimeout(() => {
+                                    dismissAlert(id);
+                                }, 5000);
                             }
                         });
                     });
+
+
                 </script>
 
                 <div class="animate-fade-in">
@@ -1200,6 +1384,136 @@
                     });
                 });
             }
+        });
+    </script>
+
+    {{-- Real-time Polling for Pending Counts with Read State --}}
+    <script>
+        (function () {
+            const POLL_INTERVAL = 15000; // 15 giây (tối ưu cho ~5 admin)
+            const API_URL = '{{ route("admin.api.pending-counts") }}';
+
+            // Xác định trang hiện tại để ẩn badge khi đang xem
+            const currentPage = {
+                posts: {{ request()->routeIs('admin.posts.*') ? 'true' : 'false' }},
+                books: {{ request()->routeIs('admin.books.*') ? 'true' : 'false' }},
+                commentReports: {{ request()->routeIs('admin.comment-reports.*') ? 'true' : 'false' }},
+                postReports: {{ request()->routeIs('admin.post-reports.*') ? 'true' : 'false' }}
+            };
+
+            // Lấy last-seen counts từ sessionStorage
+            function getLastSeen(key) {
+                return parseInt(sessionStorage.getItem('lastSeen_' + key) || '0');
+            }
+
+            function setLastSeen(key, value) {
+                sessionStorage.setItem('lastSeen_' + key, value.toString());
+            }
+
+            function updateBadge(elementId, currentCount, isCurrentPage) {
+                const badge = document.getElementById(elementId);
+                if (!badge) return;
+
+                // Nếu đang ở trang này → ẩn badge với animation (đã đọc)
+                if (isCurrentPage) {
+                    if (!badge.classList.contains('hidden') && !badge.classList.contains('badge-fade-out')) {
+                        badge.classList.add('badge-fade-out');
+                        badge.classList.remove('badge-blink');
+                        setTimeout(() => {
+                            badge.textContent = '';
+                            badge.classList.add('hidden');
+                            badge.classList.remove('badge-fade-out');
+                        }, 300);
+                    }
+                    return;
+                }
+
+                // Nếu có pending → hiện badge nhấp nháy (đèn giáng sinh)
+                if (currentCount > 0) {
+                    badge.textContent = currentCount;
+                    badge.classList.remove('hidden', 'badge-fade-out');
+                    badge.classList.add('badge-blink');
+                } else {
+                    // Không có pending → ẩn
+                    badge.textContent = '';
+                    badge.classList.add('hidden');
+                    badge.classList.remove('badge-blink', 'badge-fade-out');
+                }
+            }
+
+            function fetchPendingCounts() {
+                fetch(API_URL, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        const postsTotal = data.posts_pending + data.posts_pending_delete;
+
+                        // Cập nhật badges - nhấp nháy nếu có pending, ẩn nếu đang ở trang đó
+                        updateBadge('badge-posts-pending', postsTotal, currentPage.posts);
+                        updateBadge('badge-books-pending', data.books_pending, currentPage.books);
+                        updateBadge('badge-comment-reports', data.comment_reports, currentPage.commentReports);
+                        updateBadge('badge-post-reports', data.post_reports, currentPage.postReports);
+
+                        // Dispatch custom event cho các trang cần listen
+                        window.dispatchEvent(new CustomEvent('pendingCountsUpdated', { detail: data }));
+                    })
+                    .catch(error => {
+                        console.warn('[Polling] Error fetching counts:', error);
+                    });
+            }
+
+            // Poll định kỳ
+            setInterval(fetchPendingCounts, POLL_INTERVAL);
+
+            // Fetch ngay khi load trang
+            document.addEventListener('DOMContentLoaded', fetchPendingCounts);
+        })();
+    </script>
+
+    {{-- Mobile Menu Toggle --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleBtn = document.getElementById('mobile-menu-toggle');
+            const closeBtn = document.getElementById('mobile-menu-close');
+            const overlay = document.getElementById('mobile-menu-overlay');
+            const backdrop = document.getElementById('mobile-menu-backdrop');
+            const drawer = document.getElementById('mobile-menu-drawer');
+
+            if (!toggleBtn || !overlay) return;
+
+            function openMenu() {
+                overlay.classList.remove('hidden');
+                // Trigger animation after display
+                requestAnimationFrame(() => {
+                    backdrop.classList.remove('opacity-0');
+                    backdrop.classList.add('opacity-100');
+                    drawer.classList.remove('-translate-x-full');
+                    drawer.classList.add('translate-x-0');
+                });
+                document.body.classList.add('overflow-hidden');
+            }
+
+            function closeMenu() {
+                backdrop.classList.remove('opacity-100');
+                backdrop.classList.add('opacity-0');
+                drawer.classList.remove('translate-x-0');
+                drawer.classList.add('-translate-x-full');
+                document.body.classList.remove('overflow-hidden');
+                // Hide overlay after animation
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                }, 300);
+            }
+
+            toggleBtn.addEventListener('click', openMenu);
+            closeBtn.addEventListener('click', closeMenu);
+            backdrop.addEventListener('click', closeMenu);
+
+            // Close on link click
+            overlay.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', closeMenu);
+            });
         });
     </script>
 

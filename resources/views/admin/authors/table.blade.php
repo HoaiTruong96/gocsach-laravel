@@ -25,7 +25,6 @@
                     </span>
                 </th>
                 <th class="px-6 py-3 w-36 bg-gray-50 dark:bg-slate-700 text-center">Quốc tịch</th>
-                <th class="px-6 py-3 w-36 bg-gray-50 dark:bg-slate-700 text-center">Trạng thái</th>
                 <th class="px-6 py-3 w-32 bg-gray-50 dark:bg-slate-700 text-center whitespace-nowrap">Hành động</th>
             </tr>
         </thead>
@@ -78,53 +77,31 @@
                     <td class="px-6 py-4 text-center text-gray-600 dark:text-slate-400 text-sm">
                         {{ $author->nationality ?? '—' }}
                     </td>
-                    <td class="px-6 py-4 text-center">
-                        @if($author->is_from_books ?? false)
-                            <span
-                                class="inline-flex items-center justify-center gap-1 px-2 py-1 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-300 text-[10px] font-bold rounded-full border border-amber-200 dark:border-amber-700 w-28 whitespace-nowrap">
-                                <i class="fas fa-exclamation-circle"></i> Chưa đăng ký
-                            </span>
-                        @else
-                            <span
-                                class="inline-flex items-center justify-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-300 text-[10px] font-bold rounded-full border border-green-200 dark:border-green-700 w-28 whitespace-nowrap">
-                                <i class="fas fa-check-circle"></i> Đã đăng ký
-                            </span>
-                        @endif
-                    </td>
                     <td class="px-6 py-4 text-center whitespace-nowrap">
                         <div class="flex justify-center items-center gap-2">
-                            @if($author->id)
-                                {{-- Edit --}}
-                                <a href="{{ route('admin.authors.edit', $author->id) }}"
-                                    class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 hover:bg-blue-500 dark:hover:bg-blue-600 hover:text-white transition"
-                                    title="Sửa">
-                                    <i class="fas fa-pen text-xs"></i>
-                                </a>
-                                {{-- Delete --}}
-                                <form action="{{ route('admin.authors.destroy', $author->id) }}" method="POST"
-                                    onsubmit="return confirm('Bạn có chắc muốn xóa tác giả {{ $author->name }}?');"
-                                    class="inline">
-                                    @csrf @method('DELETE')
-                                    <button type="submit"
-                                        class="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 hover:bg-red-500 dark:hover:bg-red-600 hover:text-white transition"
-                                        title="Xóa">
-                                        <i class="fas fa-trash text-xs"></i>
-                                    </button>
-                                </form>
-                            @else
-                                {{-- Quick Register --}}
-                                <a href="{{ route('admin.authors.create', ['name' => $author->name]) }}"
-                                    class="px-3 py-1.5 rounded-lg bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-300 hover:bg-green-500 dark:hover:bg-green-600 hover:text-white transition text-xs font-medium flex items-center gap-1"
-                                    title="Đăng ký tác giả này">
-                                    <i class="fas fa-user-plus"></i> Đăng ký
-                                </a>
-                            @endif
+                            {{-- Edit --}}
+                            <a href="{{ route('admin.authors.edit', $author->id) }}"
+                                class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 hover:bg-blue-500 dark:hover:bg-blue-600 hover:text-white transition"
+                                title="Sửa">
+                                <i class="fas fa-pen text-xs"></i>
+                            </a>
+                            {{-- Delete --}}
+                            <form action="{{ route('admin.authors.destroy', $author->id) }}" method="POST"
+                                onsubmit="return confirm('Bạn có chắc muốn xóa tác giả {{ $author->name }}?');"
+                                class="inline">
+                                @csrf @method('DELETE')
+                                <button type="submit"
+                                    class="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 hover:bg-red-500 dark:hover:bg-red-600 hover:text-white transition"
+                                    title="Xóa">
+                                    <i class="fas fa-trash text-xs"></i>
+                                </button>
+                            </form>
                         </div>
                     </td>
                 </tr>
             @empty
                 <tr id="empty-row">
-                    <td colspan="6" class="text-center py-12 text-gray-500 dark:text-slate-400">
+                    <td colspan="5" class="text-center py-12 text-gray-500 dark:text-slate-400">
                         <div class="flex flex-col items-center justify-center">
                             <i class="fas fa-user-edit text-4xl text-gray-300 dark:text-slate-600 mb-3"></i>
                             <p>Không có tác giả nào.</p>
@@ -139,7 +116,7 @@
 @if($authors->hasPages())
     <div class="p-4 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-700 flex justify-center flex-none"
         id="pagination-container">
-        {{ $authors->appends(['tab' => $tab])->links('vendor.pagination.admin') }}
+        {{ $authors->links('vendor.pagination.admin') }}
     </div>
 @endif
 

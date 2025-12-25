@@ -45,28 +45,29 @@ class UserController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Toggle active status (vô hiệu hóa/kích hoạt tài khoản)
      */
-    public function destroy(User $user)
+    public function toggleActive(User $user)
     {
-        if ($user->role === 'admin')
-            return back()->with('error', 'Không thể xóa Admin');
+        if ($user->role === 'admin') {
+            return back()->with('error', 'Không thể vô hiệu hóa Admin');
+        }
 
-        $userData = $user->toArray();
-        $userName = $user->name;
+        $user->is_active = !$user->is_active;
+        $user->save();
 
-        $user->delete();
+        $action = $user->is_active ? 'Kích hoạt' : 'Vô hiệu hóa';
 
         // Ghi log
         AdminActivityLog::log(
-            'delete',
-            "Xóa thành viên: {$userName} ({$userData['email']})",
+            'update',
+            "{$action} thành viên: {$user->name} ({$user->email})",
             User::class,
-            $userData['id'],
-            $userData,
-            null
+            $user->id,
+            ['is_active' => !$user->is_active],
+            ['is_active' => $user->is_active]
         );
 
-        return back()->with('success', 'Đã xóa thành viên!');
+        return back()->with('success', "Đã {$action} thành viên!");
     }
 }

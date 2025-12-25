@@ -122,18 +122,6 @@ class ReportController extends Controller
             \Log::error("Failed to send notification: " . $e->getMessage());
         }
 
-        // Gửi thông báo cho Admin
-        try {
-            $admins = User::where('role', 'admin')->get();
-            Notification::send($admins, new NewReportNotification([
-                'reporter_name' => $user->name,
-                'target_type' => 'post',
-                'link' => route('admin.post-reports.index') // Link admin
-            ]));
-        } catch (\Exception $e) {
-            \Log::error("Failed to send notification: " . $e->getMessage());
-        }
-
         return response()->json([
             'success' => true,
             'message' => 'Cảm ơn bạn đã báo cáo! Chúng tôi sẽ xem xét và xử lý sớm nhất.',

@@ -41,7 +41,8 @@
 
     <div
         class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 max-w-2xl mx-auto">
-        <form action="{{ route('admin.authors.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('admin.authors.store') }}" method="POST" enctype="multipart/form-data"
+            onsubmit="return validateYears()">
             @csrf
             <input type="hidden" name="cropped_photo" id="cropped-photo">
 
@@ -122,9 +123,32 @@
                 {{-- Quốc tịch --}}
                 <div>
                     <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Quốc tịch</label>
-                    <input type="text" name="nationality" value="{{ old('nationality') }}"
-                        class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic"
-                        placeholder="Việt Nam">
+                    <div class="relative" id="nationality-wrapper">
+                        <input type="text" name="nationality" id="nationality-input" value="{{ old('nationality') }}"
+                            autocomplete="off"
+                            class="w-full px-4 py-2 pl-10 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic"
+                            placeholder="Chọn hoặc nhập quốc tịch mới..." onfocus="showNationalitySuggestions()"
+                            oninput="filterNationalities()">
+                        <i class="fas fa-globe-asia absolute left-3 top-1/2 -translate-y-1/2 text-blue-500"></i>
+
+                        {{-- Custom Dropdown --}}
+                        <div id="nationality-dropdown"
+                            class="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto hidden">
+                            @foreach($nationalities ?? [] as $nat)
+                                <button type="button" onclick="selectNationalityOption('{{ $nat }}')"
+                                    class="nationality-option w-full text-left px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/30 text-gray-700 dark:text-slate-300 flex items-center gap-2"
+                                    data-value="{{ strtolower($nat) }}">
+                                    <i class="fas fa-flag text-gray-400 text-xs"></i>{{ $nat }}
+                                </button>
+                            @endforeach
+                            @if(count($nationalities ?? []) == 0)
+                                <p class="px-4 py-3 text-sm text-gray-400 italic">Chưa có quốc tịch nào</p>
+                            @endif
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-400 dark:text-slate-500 mt-2 italic">
+                        <i class="fas fa-lightbulb mr-1"></i>Gõ để tìm quốc tịch đã có hoặc nhập mới
+                    </p>
                 </div>
 
                 {{-- Bio --}}
@@ -230,11 +254,15 @@
         function loadUrlImage() {
             const url = document.getElementById('photo-url').value.trim();
             if (!url) return alert('Vui lòng nhập URL ảnh!');
+
+            // Use proxy to avoid CORS issues
+            const proxyUrl = "{{ route('admin.authors.proxy-image') }}?url=" + encodeURIComponent(url);
+
             const img = new Image();
             img.crossOrigin = 'anonymous';
-            img.onload = () => initCropper(url);
-            img.onerror = () => alert('Không thể tải ảnh từ URL này!');
-            img.src = url;
+            img.onload = () => initCropper(proxyUrl);
+            img.onerror = () => alert('Không thể tải ảnh từ URL này (hoặc ảnh được bảo vệ)!');
+            img.src = proxyUrl;
         }
 
         function initCropper(src) {
@@ -303,5 +331,41 @@
             document.getElementById('photo-file').value = '';
             document.getElementById('photo-url').value = '';
         }
+
+        // ===== Nationality Dropdown =====
+        function showNationalitySuggestions() {
+            document.getElementById('nationality-dropdown').classList.remove('hidden');
+        }
+
+        function hideNationalitySuggestions() {
+            document.getElementById('nationality-dropdown').classList.add('hidden');
+        }
+
+        function filterNationalities() {
+            const input = document.getElementById('nationality-input').value.toLowerCase();
+            const options = document.querySelectorAll('.nationality-option');
+            let hasVisible = false;
+            options.forEach(opt => {
+                const match = opt.dataset.value.includes(input);
+                opt.classList.toggle('hidden', !match);
+                if (match) hasVisible = true;
+            });
+            if (input.length > 0) {
+                document.getElementById('nationality-dropdown').classList.remove('hidden');
+            }
+        }
+
+        function selectNationalityOption(value) {
+            document.getElementById('nationality-input').value = value;
+            hideNationalitySuggestions();
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function (e) {
+            const wrapper = document.getElementById('nationality-wrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                hideNationalitySuggestions();
+            }
+        });
     </script>
 @endsection

@@ -92,7 +92,7 @@
                                     $cover = $post->book->cover_image ?? null;
                                     $coverUrl = $cover
                                         ? (Str::startsWith($cover, 'http') ? $cover : asset('storage/' . $cover))
-                                        : 'https://via.placeholder.com/150x200';
+                                        : 'https://placehold.co/150x200';
                                 @endphp
                                 <img src="{{ $coverUrl }}" class="w-16 h-24 flex-shrink-0 object-cover rounded shadow-md bg-white">
                                 <div class="flex-1 min-w-0">
