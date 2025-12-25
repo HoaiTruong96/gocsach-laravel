@@ -92,7 +92,7 @@ class ProfileController extends Controller
         }
 
         // 2. THỐNG KÊ
-        $totalBooks = $user->bookshelves()->count();
+
         $totalReviews = $user->posts()->count();
         $totalFollowing = $user->followings()->count();
         $totalFollowers = $user->followers()->count();
@@ -113,35 +113,32 @@ class ProfileController extends Controller
         // Phân trang 10 bài/trang
         $reviews = $reviewsQuery->paginate(10, ['*'], 'review_page')->withQueryString();
 
-        // 4. Lấy sách trong tủ
-        $query = $user->bookshelves()->orderByPivot('created_at', 'desc');
 
-        if ($request->has('status')) {
-            $status = $request->get('status');
-            if ($status == 'favorites')
-                $query->wherePivot('status', 'wishlist');
-            elseif ($status == 'reading')
-                $query->wherePivot('status', 'reading');
-            elseif ($status == 'completed')
-                $query->wherePivot('status', 'completed');
-        }
-
-        $myBooks = $query->take(12)->get();
 
         // 5. Lấy danh sách sách đề xuất (do user tạo) - PHÂN TRANG 12 SÁCH
-        // Chỉ hiển thị cho chính chủ profile
-        $suggestedBooks = collect();
-        $totalSuggestedBooks = 0;
-        $savedPosts = collect();
-        $trashedPosts = collect();
-        if (Auth::id() == $user->id) {
+        // [CẬP NHẬT] Hiển thị cho TẤT CẢ người xem, không chỉ chủ profile
+        $isOwnProfile = Auth::id() == $user->id;
+
+        if ($isOwnProfile) {
+            // Chủ profile: thấy TẤT CẢ sách (kể cả chờ duyệt)
             $totalSuggestedBooks = Book::where('created_by_user_id', $user->id)->count();
-            // Phân trang 12 sách/trang
             $suggestedBooks = Book::where('created_by_user_id', $user->id)
                 ->orderBy('created_at', 'desc')
                 ->paginate(12, ['*'], 'book_page')->withQueryString();
+        } else {
+            // Khách: chỉ thấy sách ĐÃ DUYỆT
+            $totalSuggestedBooks = Book::where('created_by_user_id', $user->id)
+                ->where('is_approved', true)->count();
+            $suggestedBooks = Book::where('created_by_user_id', $user->id)
+                ->where('is_approved', true)
+                ->orderBy('created_at', 'desc')
+                ->paginate(12, ['*'], 'book_page')->withQueryString();
+        }
 
-            // 6. Lấy danh sách bài viết đã lưu
+        // 6. Lấy danh sách bài viết đã lưu (chỉ cho chủ profile)
+        $savedPosts = collect();
+        $trashedPosts = collect();
+        if ($isOwnProfile) {
             $savedPosts = $user->savedPosts()
                 ->with(['user', 'book', 'likes', 'comments.user'])
                 ->withCount(['likes', 'comments'])
@@ -156,19 +153,23 @@ class ProfileController extends Controller
                 ->get();
         }
 
+        // 8. Lấy danh hiệu hoạt động (Activity Title) dựa trên số bài viết và sách đã duyệt
+        $activityTitle = $user->getActivityTitle();
+
         return view('profile', [
             'user' => $user,
             'reviews' => $reviews,
-            'myBooks' => $myBooks,
+            // 'myBooks' => $myBooks, // Removed
             'suggestedBooks' => $suggestedBooks,
             'savedPosts' => $savedPosts,
             'trashedPosts' => $trashedPosts,
-            'totalBooks' => $totalBooks,
+            // 'totalBooks' => $totalBooks, // Removed
             'totalReviews' => $totalReviews,
             'totalSuggestedBooks' => $totalSuggestedBooks,
             'totalFollowing' => $totalFollowing,
             'totalFollowers' => $totalFollowers,
-            'isOwnProfile' => Auth::id() == $user->id,
+            'isOwnProfile' => $isOwnProfile,
+            'activityTitle' => $activityTitle, // [MỚI] Danh hiệu hoạt động
         ]);
     }
 
