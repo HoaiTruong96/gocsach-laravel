@@ -7,6 +7,7 @@ use App\Models\Badge;
 use App\Models\AdminActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class BadgeController extends Controller
 {
@@ -40,7 +41,7 @@ class BadgeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:badges,name',
+            'name' => ['required', 'string', 'max:255', Rule::unique('badges', 'name')->whereNull('deleted_at')],
             'description' => 'nullable|string',
             'icon' => 'nullable|string|max:255',
         ], [
@@ -92,7 +93,7 @@ class BadgeController extends Controller
     public function update(Request $request, Badge $badge)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:badges,name,' . $badge->id,
+            'name' => ['required', 'string', 'max:255', Rule::unique('badges', 'name')->ignore($badge->id)->whereNull('deleted_at')],
             'description' => 'nullable|string',
             'icon' => 'nullable|string|max:255',
         ]);

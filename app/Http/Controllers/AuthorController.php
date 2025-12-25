@@ -7,6 +7,7 @@ use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class AuthorController extends Controller
 {
@@ -226,7 +227,7 @@ class AuthorController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:authors,name',
+            'name' => ['required', 'string', 'max:255', Rule::unique('authors', 'name')->whereNull('deleted_at')],
             'photo' => 'nullable|string|max:500',
             'photo_file' => 'nullable|image|mimes:png,jpg,jpeg,gif,webp|max:2048',
             'cropped_photo' => 'nullable|string',
@@ -290,7 +291,7 @@ class AuthorController extends Controller
         $author = Author::findOrFail($id);
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:authors,name,' . $id,
+            'name' => ['required', 'string', 'max:255', Rule::unique('authors', 'name')->ignore($id)->whereNull('deleted_at')],
             'photo' => 'nullable|string|max:500',
             'photo_file' => 'nullable|image|mimes:png,jpg,jpeg,gif,webp|max:2048',
             'cropped_photo' => 'nullable|string',

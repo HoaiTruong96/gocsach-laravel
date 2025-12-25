@@ -119,34 +119,3 @@
         </div>
     </footer>
 </div>
-
-{{-- Back to Top Button - Above Chatbox --}}
-<button id="back-to-top" 
-        class="fixed bottom-20 right-6 z-[9997] w-11 h-11 bg-brand-green text-white rounded-full shadow-lg opacity-0 invisible transform translate-y-4 transition-all duration-300 hover:bg-brand-accent hover:scale-110 hover:shadow-xl flex items-center justify-center group"
-        aria-label="Back to top">
-    <i class="fas fa-chevron-up text-sm group-hover:animate-bounce"></i>
-</button>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const backToTopBtn = document.getElementById('back-to-top');
-    
-    if (backToTopBtn) {
-        // Show/hide button based on scroll position
-        window.addEventListener('scroll', function() {
-            if (window.pageYOffset > 300) {
-                backToTopBtn.classList.remove('opacity-0', 'invisible', 'translate-y-4');
-                backToTopBtn.classList.add('opacity-100', 'visible', 'translate-y-0');
-            } else {
-                backToTopBtn.classList.add('opacity-0', 'invisible', 'translate-y-4');
-                backToTopBtn.classList.remove('opacity-100', 'visible', 'translate-y-0');
-            }
-        });
-        
-        // Scroll to top on click
-        backToTopBtn.addEventListener('click', function() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-    }
-});
-</script>

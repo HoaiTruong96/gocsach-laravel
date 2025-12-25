@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 @section('title', 'Quản Lý Thử Thách & Phần Thưởng')
 @section('header', 'Quản Lý Thử Thách & Phần Thưởng')
 
@@ -172,7 +172,7 @@
                                             <div class="flex items-center">
                                                 @if($badge->icon && Str::startsWith($badge->icon, 'http'))
                                                     <img src="{{ $badge->icon }}" alt="{{ $badge->name }}"
-                                                        class="w-8 h-8 object-contain mr-3 rounded">
+                                                        class="w-8 h-8 object-contain mr-3 rounded" referrerpolicy="no-referrer">
                                                 @else
                                                     <span class="text-2xl mr-3">{{ $badge->icon ?? '🏅' }}</span>
                                                 @endif
@@ -384,7 +384,7 @@
                                             <div class="flex items-center gap-4 text-sm">
                                                 <span class="text-gray-600 dark:text-slate-300">
                                                     <i class="fas fa-medal text-yellow-500 mr-1"></i>
-                                                    {{ $challenge->badge->name }}
+                                                    {{ $challenge->badge?->name ?? 'Danh hiệu đã xóa' }}
                                                 </span>
                                                 <span class="text-gray-600 dark:text-slate-300">
                                                     <i class="fas fa-pen mr-1"></i>{{ $challenge->target_count }} reviews
@@ -524,7 +524,8 @@
                                     {{-- Preview Image --}}
                                     <div class="h-24 w-24 mx-auto mb-2 flex items-center justify-center">
                                         <img src="{{ Str::startsWith($frame->frame_image, 'http') ? $frame->frame_image : asset('storage/' . $frame->frame_image) }}"
-                                            alt="{{ $frame->name }}" class="max-h-full max-w-full object-contain rounded">
+                                            alt="{{ $frame->name }}" class="max-h-full max-w-full object-contain rounded"
+                                            referrerpolicy="no-referrer">
                                     </div>
                                     {{-- Info --}}
                                     <div class="text-center">
@@ -676,7 +677,7 @@
 
                 if (url && isImageUrl(url)) {
                     preview.classList.remove('hidden');
-                    previewContent.innerHTML = `<img src="${url}" alt="Preview" class="w-16 h-16 object-contain mx-auto rounded-lg" onerror="this.parentElement.innerHTML='<span class=\'text-red-500 text-sm\'>Không thể tải ảnh</span>'">`;
+                    previewContent.innerHTML = '<img src="' + url + '" alt="Preview" class="w-16 h-16 object-contain mx-auto rounded-lg" referrerpolicy="no-referrer">';;
                 } else if (url) {
                     preview.classList.remove('hidden');
                     previewContent.innerHTML = '<span class="text-yellow-500 text-sm">Vui lòng nhập URL hình ảnh hợp lệ</span>';
