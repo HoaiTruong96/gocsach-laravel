@@ -118,6 +118,25 @@ class ActivityLogController extends Controller
             // Kiểm tra xem model có sử dụng SoftDeletes không
             $usesSoftDeletes = in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses_recursive($modelClass));
 
+            // Kiểm tra trùng lặp trước khi restore (check name hoặc title)
+            $duplicateField = null;
+            $duplicateValue = null;
+
+            if (isset($oldValues['name'])) {
+                $duplicateField = 'name';
+                $duplicateValue = $oldValues['name'];
+            } elseif (isset($oldValues['title'])) {
+                $duplicateField = 'title';
+                $duplicateValue = $oldValues['title'];
+            }
+
+            if ($duplicateField && $duplicateValue) {
+                $existingActive = $modelClass::where($duplicateField, $duplicateValue)->first();
+                if ($existingActive) {
+                    return back()->with('error', "Không thể khôi phục! Đã tồn tại \"{$duplicateValue}\" đang hoạt động.");
+                }
+            }
+
             $existingRecord = null;
             if ($usesSoftDeletes) {
                 // Chỉ dùng withTrashed nếu model có SoftDeletes
