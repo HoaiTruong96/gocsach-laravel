@@ -268,4 +268,36 @@ class ProfileController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Đã gỡ khung avatar!']);
     }
+
+    /**
+     * Cập nhật thứ tự hiển thị danh hiệu
+     */
+    public function updateBadgeOrder(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Bạn cần đăng nhập!'], 401);
+        }
+
+        $request->validate([
+            'badge_ids' => 'required|array',
+            'badge_ids.*' => 'integer|exists:badges,id'
+        ]);
+
+        $badgeIds = $request->input('badge_ids');
+
+        // Cập nhật thứ tự cho từng badge
+        foreach ($badgeIds as $order => $badgeId) {
+            // Chỉ cập nhật nếu user thực sự sở hữu badge này
+            $user->badges()->updateExistingPivot($badgeId, [
+                'display_order' => $order
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã cập nhật thứ tự danh hiệu!'
+        ]);
+    }
 }

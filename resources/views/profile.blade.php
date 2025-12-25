@@ -117,18 +117,25 @@
                     </div>
                     {{-- [MỚI] KHUNG HIỂN THỊ DANH HIỆU (BADGES) --}}
                     <div class="mb-6 border-t border-b border-gray-100 py-4">
-                        <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">
-                            <i class="fas fa-medal mr-1"></i> Danh Hiệu
-                        </h4>
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                <i class="fas fa-medal mr-1"></i> Danh Hiệu
+                            </h4>
+                            @if(isset($isOwnProfile) && $isOwnProfile && $user->activeBadges && $user->activeBadges->count() > 1)
+                                <button onclick="toggleBadgeEditMode()" id="btn-edit-badge-order"
+                                    class="text-[10px] text-blue-500 hover:text-blue-700 font-bold transition">
+                                    <i class="fas fa-arrows-alt mr-1"></i> Sắp xếp
+                                </button>
+                            @endif
+                        </div>
 
                         @if($user->activeBadges && $user->activeBadges->count() > 0)
-                            <div class="flex justify-center flex-wrap gap-3">
+                            {{-- Chế độ xem bình thường --}}
+                            <div id="badges-view-mode" class="flex justify-center flex-wrap gap-3">
                                 @foreach($user->activeBadges as $badge)
                                     @php
                                         $icon = $badge->icon;
-                                        // Kiểm tra xem icon có phải là URL hay không
                                         $isUrl = $icon && (Str::startsWith($icon, 'http') || Str::startsWith($icon, '/'));
-                                        // Nếu là URL thì xử lý đường dẫn
                                         $iconUrl = $isUrl
                                             ? (Str::startsWith($icon, 'http') ? $icon : asset('storage/' . $icon))
                                             : null;
@@ -136,25 +143,21 @@
 
                                     <div class="group relative cursor-help">
                                         @if($iconUrl)
-                                            {{-- Hiển thị ảnh nếu là URL hợp lệ --}}
                                             <img src="{{ $iconUrl }}" alt="{{ $badge->name }}"
                                                 class="w-12 h-12 object-contain drop-shadow-sm transform group-hover:scale-110 transition duration-300"
                                                 onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md\'>🏆</div>';">
                                         @elseif($icon && mb_strlen($icon) <= 4)
-                                            {{-- Hiển thị emoji nếu icon là emoji (ký tự ngắn) --}}
                                             <div
                                                 class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-2xl shadow-md transform group-hover:scale-110 transition duration-300">
                                                 {{ $icon }}
                                             </div>
                                         @else
-                                            {{-- Fallback: Hiển thị icon mặc định nếu không có --}}
                                             <div
                                                 class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white shadow-md transform group-hover:scale-110 transition duration-300">
                                                 <i class="fas fa-medal text-xl"></i>
                                             </div>
                                         @endif
 
-                                        {{-- Tooltip hiển thị tên khi di chuột vào --}}
                                         <div
                                             class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-max">
                                             <div class="bg-gray-800 text-white text-xs rounded py-1 px-3 shadow-lg text-center">
@@ -163,7 +166,6 @@
                                                     <div class="text-[10px] text-gray-300 font-normal">{{ $badge->description }}</div>
                                                 @endif
                                             </div>
-                                            {{-- Mũi tên nhỏ của tooltip --}}
                                             <div
                                                 class="w-2 h-2 bg-gray-800 transform rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2">
                                             </div>
@@ -171,6 +173,58 @@
                                     </div>
                                 @endforeach
                             </div>
+
+                            {{-- Chế độ sắp xếp (chỉ cho chủ profile) --}}
+                            @if(isset($isOwnProfile) && $isOwnProfile && $user->activeBadges->count() > 1)
+                                <div id="badges-edit-mode" class="hidden">
+                                    <p class="text-[10px] text-gray-400 text-center mb-3">
+                                        <i class="fas fa-info-circle"></i> Kéo thả để sắp xếp thứ tự hiển thị (3 cái đầu tiên sẽ hiển thị ở bình luận)
+                                    </p>
+                                    <div id="sortable-badges" class="flex justify-center flex-wrap gap-3">
+                                        @foreach($user->activeBadges as $badge)
+                                            @php
+                                                $icon = $badge->icon;
+                                                $isUrl = $icon && (Str::startsWith($icon, 'http') || Str::startsWith($icon, '/'));
+                                                $iconUrl = $isUrl
+                                                    ? (Str::startsWith($icon, 'http') ? $icon : asset('storage/' . $icon))
+                                                    : null;
+                                            @endphp
+
+                                            <div class="badge-item cursor-move relative" data-badge-id="{{ $badge->id }}">
+                                                <div class="absolute -top-1 -left-1 w-4 h-4 bg-blue-500 text-white text-[8px] rounded-full flex items-center justify-center font-bold z-10 badge-order-number">
+                                                    {{ $loop->iteration }}
+                                                </div>
+                                                @if($iconUrl)
+                                                    <img src="{{ $iconUrl }}" alt="{{ $badge->name }}"
+                                                        class="w-12 h-12 object-contain drop-shadow-sm ring-2 ring-blue-300 ring-offset-1 rounded-lg"
+                                                        onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22gold%22><circle cx=%2212%22 cy=%2212%22 r=%2210%22/></svg>';">
+                                                @elseif($icon && mb_strlen($icon) <= 4)
+                                                    <div
+                                                        class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-2xl shadow-md ring-2 ring-blue-300 ring-offset-1">
+                                                        {{ $icon }}
+                                                    </div>
+                                                @else
+                                                    <div
+                                                        class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white shadow-md ring-2 ring-blue-300 ring-offset-1">
+                                                        <i class="fas fa-medal text-xl"></i>
+                                                    </div>
+                                                @endif
+                                                <div class="text-[8px] text-center text-gray-500 mt-1 truncate w-12">{{ Str::limit($badge->name, 8) }}</div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="flex justify-center gap-2 mt-4">
+                                        <button onclick="saveBadgeOrder()"
+                                            class="px-4 py-1.5 bg-blue-500 text-white text-xs font-bold rounded-lg hover:bg-blue-600 transition shadow-sm">
+                                            <i class="fas fa-save mr-1"></i> Lưu thứ tự
+                                        </button>
+                                        <button onclick="toggleBadgeEditMode()"
+                                            class="px-4 py-1.5 bg-gray-200 text-gray-600 text-xs font-bold rounded-lg hover:bg-gray-300 transition">
+                                            <i class="fas fa-times mr-1"></i> Hủy
+                                        </button>
+                                    </div>
+                                </div>
+                            @endif
                         @else
                             {{-- Empty State: Chưa có danh hiệu nào --}}
                             <div class="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-200">
@@ -185,6 +239,7 @@
                         @endif
                     </div>
                     {{-- KẾT THÚC KHUNG DANH HIỆU --}}
+
 
                     {{-- [MỚI] KHUNG AVATAR --}}
                     <div class="mb-6 border-t border-b border-gray-100 py-4">
@@ -1732,7 +1787,120 @@
                                 input.disabled = false;
                                 submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
                             });
-                        }
-                    </script>
+                        }\n                    </script>
     @endif
+
+    {{-- SortableJS cho sắp xếp badges --}}
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script>
+        let badgeSortable = null;
+
+        // Toggle chế độ sắp xếp badges
+        function toggleBadgeEditMode() {
+            const viewMode = document.getElementById('badges-view-mode');
+            const editMode = document.getElementById('badges-edit-mode');
+            const editBtn = document.getElementById('btn-edit-badge-order');
+
+            if (!viewMode || !editMode) return;
+
+            const isEditing = !editMode.classList.contains('hidden');
+
+            if (isEditing) {
+                // Thoát chế độ sắp xếp
+                editMode.classList.add('hidden');
+                viewMode.classList.remove('hidden');
+                if (editBtn) {
+                    editBtn.innerHTML = '<i class="fas fa-arrows-alt mr-1"></i> Sắp xếp';
+                }
+                // Destroy sortable
+                if (badgeSortable) {
+                    badgeSortable.destroy();
+                    badgeSortable = null;
+                }
+            } else {
+                // Vào chế độ sắp xếp
+                viewMode.classList.add('hidden');
+                editMode.classList.remove('hidden');
+                if (editBtn) {
+                    editBtn.innerHTML = '<i class="fas fa-eye mr-1"></i> Xem';
+                }
+                // Init sortable
+                initBadgeSortable();
+            }
+        }
+
+        // Khởi tạo Sortable
+        function initBadgeSortable() {
+            const container = document.getElementById('sortable-badges');
+            if (!container) return;
+
+            badgeSortable = new Sortable(container, {
+                animation: 150,
+                ghostClass: 'opacity-50',
+                chosenClass: 'scale-110',
+                dragClass: 'shadow-lg',
+                onEnd: function(evt) {
+                    updateBadgeOrderNumbers();
+                }
+            });
+        }
+
+        // Cập nhật số thứ tự hiển thị sau khi kéo thả
+        function updateBadgeOrderNumbers() {
+            const container = document.getElementById('sortable-badges');
+            if (!container) return;
+
+            const badges = container.querySelectorAll('.badge-item');
+            badges.forEach((badge, index) => {
+                const numberEl = badge.querySelector('.badge-order-number');
+                if (numberEl) {
+                    numberEl.textContent = index + 1;
+                }
+            });
+        }
+
+        // Lưu thứ tự badges
+        function saveBadgeOrder() {
+            const container = document.getElementById('sortable-badges');
+            if (!container) return;
+
+            const badgeIds = [];
+            container.querySelectorAll('.badge-item').forEach(item => {
+                badgeIds.push(parseInt(item.dataset.badgeId));
+            });
+
+            // Show loading
+            const saveBtn = event.target.closest('button') || document.querySelector('[onclick="saveBadgeOrder()"]');
+            const oldHtml = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Đang lưu...';
+            saveBtn.disabled = true;
+
+            fetch('{{ route("profile.badges.order") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ badge_ids: badgeIds })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Reload page to show new order
+                    location.reload();
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra');
+                    saveBtn.innerHTML = oldHtml;
+                    saveBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Không thể lưu thứ tự. Vui lòng thử lại.');
+                saveBtn.innerHTML = oldHtml;
+                saveBtn.disabled = false;
+            });
+        }
+    </script>
 @endsection
