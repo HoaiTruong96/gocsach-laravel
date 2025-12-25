@@ -19,6 +19,14 @@
     <script>
         tailwind.config = {
             theme: {
+                screens: {
+                    'xs': '400px',
+                    'sm': '640px',
+                    'md': '768px',
+                    'lg': '1024px',
+                    'xl': '1280px',
+                    '2xl': '1536px',
+                },
                 extend: {
                     colors: {
                         'brand-green': '#2A483A',
@@ -42,6 +50,13 @@
     </script>
 
     <style>
+        /* Prevent horizontal scroll on mobile */
+        html,
+        body {
+            overflow-x: hidden;
+            max-width: 100vw;
+        }
+
         body {
             background-color: #FAF9F6;
             color: #333;
@@ -73,6 +88,11 @@
 
         .hero-slider-wrapper {
             transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Safe area for iOS */
+        .safe-area-bottom {
+            padding-bottom: env(safe-area-inset-bottom, 0);
         }
     </style>
 </head>
