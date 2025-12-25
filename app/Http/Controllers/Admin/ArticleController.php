@@ -27,6 +27,9 @@ class ArticleController extends Controller
 
         $article = $query->firstOrFail();
 
+        // Tăng lượt xem
+        $article->increment('view_count');
+
         // Lấy bài viết liên quan (cùng tag hoặc mới nhất, loại trừ bài hiện tại)
         $relatedArticles = Article::where('id', '!=', $article->id)
             ->where('is_active', true)
