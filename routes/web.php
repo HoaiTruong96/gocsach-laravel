@@ -18,6 +18,7 @@ use App\Http\Controllers\FollowController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\BannerController;
+use App\Http\Controllers\Admin\ActivityTitleController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\BookSuggestionController;
@@ -167,6 +168,7 @@ Route::middleware(['auth', 'email.verified'])->group(function () {
     Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/avatar-frame/equip', [ProfileController::class, 'equipAvatarFrame'])->name('profile.avatar-frame.equip');
     Route::post('/profile/avatar-frame/unequip', [ProfileController::class, 'unequipAvatarFrame'])->name('profile.avatar-frame.unequip');
+    Route::post('/profile/badges/order', [ProfileController::class, 'updateBadgeOrder'])->name('profile.badges.order');
     Route::post('/follow/toggle', [FollowController::class, 'toggleFollow'])->name('follow.toggle');
 
     // --- ĐỀ XUẤT SÁCH ---
@@ -285,7 +287,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
     Route::post('users/{user}/toggle-active', [\App\Http\Controllers\Admin\UserController::class, 'toggleActive'])->name('users.toggle-active');
     Route::resource('banners', BannerController::class);
-    Route::resource('badges', \App\Http\Controllers\Admin\BadgeController::class);
+    Route::resource('badges', App\Http\Controllers\Admin\BadgeController::class);
+    Route::resource('activity-titles', ActivityTitleController::class);
     Route::resource('challenges', \App\Http\Controllers\Admin\ChallengeController::class);
     Route::resource('avatar-frames', \App\Http\Controllers\Admin\AvatarFrameController::class);
     // Authors - dùng adminIndex() thay vì index() cho trang admin
