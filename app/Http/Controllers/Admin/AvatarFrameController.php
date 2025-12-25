@@ -8,6 +8,7 @@ use App\Models\AdminActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class AvatarFrameController extends Controller
 {
@@ -25,7 +26,7 @@ class AvatarFrameController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:avatar_frames,name',
+            'name' => ['required', 'string', 'max:255', Rule::unique('avatar_frames', 'name')->whereNull('deleted_at')],
             'description' => 'nullable|string',
             'frame_image' => 'nullable|image|mimes:gif,png,jpg,jpeg,webp,svg|max:2048',
             'frame_image_url' => 'nullable|url',
@@ -85,7 +86,7 @@ class AvatarFrameController extends Controller
     public function update(Request $request, AvatarFrame $avatarFrame)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:avatar_frames,name,' . $avatarFrame->id,
+            'name' => ['required', 'string', 'max:255', Rule::unique('avatar_frames', 'name')->ignore($avatarFrame->id)->whereNull('deleted_at')],
             'description' => 'nullable|string',
             'frame_image' => 'nullable|image|mimes:gif,png,jpg,jpeg,webp,svg|max:2048',
             'frame_image_url' => 'nullable|url',
