@@ -146,77 +146,21 @@
             class="floating-btn w-11 h-11 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative group overflow-hidden"
             style="animation-delay: 0.3s; --glow-color: rgba(0, 104, 255, 0.5);"
             title="Di chuyển tới Cộng đồng Góc Sách trên Zalo">
-            <img src="{{ asset('storage/zalo.jpg') }}" alt="Zalo"
-                class="w-full h-full object-cover rounded-full relative z-10">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg" alt="Zalo" class="w-full h-full object-cover rounded-full relative z-10">
         </a>
 
         {{-- AI Chatbox Button --}}
         <button onclick="toggleChatbox()" id="chatbox-toggle"
             class="floating-btn w-11 h-11 bg-gradient-to-br from-brand-green to-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative"
-            style="animation-delay: 0.6s; --glow-color: rgba(34, 197, 94, 0.5);" title="Trò chuyện với Chatbot">
+            style="animation-delay: 0.6s; --glow-color: rgba(34, 197, 94, 0.5);"
+            title="Trò chuyện với Chatbot">
             <i id="chatbox-icon-open" class="fas fa-comments text-base relative z-10"></i>
             <i id="chatbox-icon-close" class="fas fa-times text-base hidden relative z-10"></i>
         </button>
-
-        {{-- Các nút social (ẩn trên mobile, hiện khi toggle) --}}
-        <div id="mobile-float-buttons" class="flex flex-col gap-3 md:flex md:opacity-100 hidden opacity-0 transition-all duration-300">
-            {{-- Facebook Messenger Button --}}
-            <a href="https://m.me/j/AbYuQDQf0AvniBIU/" target="_blank" rel="noopener noreferrer"
-                class="floating-btn w-11 h-11 bg-gradient-to-br from-[#00b2ff] to-[#006aff] text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative group"
-                style="animation-delay: 0s; --glow-color: rgba(0, 132, 255, 0.5);"
-                title="Di chuyển tới Cộng đồng Góc Sách trên Facebook">
-                <i class="fab fa-facebook-messenger text-base relative z-10"></i>
-            </a>
-
-            {{-- Zalo Button --}}
-            <a href="https://zalo.me/g/fhbbxj936" target="_blank" rel="noopener noreferrer"
-                class="floating-btn w-11 h-11 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative group overflow-hidden"
-                style="animation-delay: 0.3s; --glow-color: rgba(0, 104, 255, 0.5);"
-                title="Di chuyển tới Cộng đồng Góc Sách trên Zalo">
-                <img src="{{ asset('storage/zalo.png') }}" alt="Zalo" class="w-full h-full object-cover rounded-full relative z-10">
-            </a>
-
-            {{-- AI Chatbox Button --}}
-            <button onclick="toggleChatbox()" id="chatbox-toggle"
-                class="floating-btn w-11 h-11 bg-gradient-to-br from-brand-green to-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative"
-                style="animation-delay: 0.6s; --glow-color: rgba(34, 197, 94, 0.5);"
-                title="Trò chuyện với Chatbot">
-                <i id="chatbox-icon-open" class="fas fa-comments text-base relative z-10"></i>
-                <i id="chatbox-icon-close" class="fas fa-times text-base hidden relative z-10"></i>
-            </button>
-        </div>
     </div>
 </div>
 
-<script>
-    // Mobile floating buttons toggle
-    let mobileFloatOpen = false;
-    
-    function toggleMobileFloatMenu() {
-        const buttons = document.getElementById('mobile-float-buttons');
-        const icon = document.getElementById('mobile-float-icon');
-        const toggle = document.getElementById('mobile-float-toggle');
-        
-        mobileFloatOpen = !mobileFloatOpen;
-        
-        if (mobileFloatOpen) {
-            buttons.classList.remove('hidden', 'opacity-0');
-            buttons.classList.add('opacity-100');
-            icon.classList.remove('fa-ellipsis-v');
-            icon.classList.add('fa-times');
-            toggle.classList.remove('from-gray-600', 'to-gray-800');
-            toggle.classList.add('from-rose-500', 'to-pink-600');
-        } else {
-            buttons.classList.add('opacity-0');
-            buttons.classList.remove('opacity-100');
-            setTimeout(() => buttons.classList.add('hidden'), 300);
-            icon.classList.add('fa-ellipsis-v');
-            icon.classList.remove('fa-times');
-            toggle.classList.add('from-gray-600', 'to-gray-800');
-            toggle.classList.remove('from-rose-500', 'to-pink-600');
-        }
-    }
-</script>
+
 
 <style>
     /* Floating animation với glow effect */
