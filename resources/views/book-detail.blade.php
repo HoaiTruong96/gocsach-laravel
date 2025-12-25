@@ -183,7 +183,24 @@
                                             @endif
                                         </span>
                                     </a>
-                                    <span class="text-xs">{{ $mainPost->created_at->format('d/m/Y') }}</span>
+                                    <div class="flex items-center gap-2">
+                                        @if($mainPost->rating)
+                                            @php
+                                                $rating = $mainPost->rating ?? 0;
+                                                $fullStars = floor($rating);
+                                                $hasHalfStar = ($rating - $fullStars) >= 0.3;
+                                                $emptyStars = 5 - $fullStars - ($hasHalfStar ? 1 : 0);
+                                            @endphp
+                                            <div class="flex items-center text-yellow-400 text-xs">
+                                                @for($i = 0; $i < $fullStars; $i++)<i class="fas fa-star"></i>@endfor
+                                                @if($hasHalfStar)<i class="fas fa-star-half-alt"></i>@endif
+                                                @for($i = 0; $i < $emptyStars; $i++)<i class="far fa-star text-gray-300"></i>@endfor
+                                                <span class="ml-1 text-xs font-semibold text-gray-600">{{ number_format($rating, 1) }}</span>
+                                            </div>
+                                            <span class="text-gray-300">•</span>
+                                        @endif
+                                        <span class="text-xs">{{ $mainPost->created_at->format('d/m/Y') }}</span>
+                                    </div>
                                 </div>
                             </div>
 
