@@ -72,10 +72,30 @@
                     <div class="flex-shrink-0 relative z-10 flex flex-col md:flex-row items-center gap-3">
                         <!-- Badge -->
                         <div class="flex flex-col items-center">
-                            <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 mb-1 shadow-sm border border-yellow-200">
-                                <i class="fas fa-medal text-3xl"></i>
-                            </div>
-                            <span class="text-xs font-bold text-yellow-700 uppercase tracking-wide">Danh hiệu</span>
+                            @if($challenge->badge)
+                                @php
+                                    $completedBadgeIcon = $challenge->badge->icon;
+                                    $isCompletedBadgeUrl = $completedBadgeIcon && (Str::startsWith($completedBadgeIcon, 'http') || Str::startsWith($completedBadgeIcon, 'badges/'));
+                                    $completedBadgeIconUrl = $isCompletedBadgeUrl 
+                                        ? (Str::startsWith($completedBadgeIcon, 'http') ? $completedBadgeIcon : asset('storage/' . $completedBadgeIcon))
+                                        : null;
+                                @endphp
+                                <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 mb-1 shadow-sm border border-yellow-200">
+                                    @if($completedBadgeIconUrl)
+                                        <img src="{{ $completedBadgeIconUrl }}" alt="{{ $challenge->badge->name }}" class="w-10 h-10 object-contain">
+                                    @elseif($completedBadgeIcon && mb_strlen($completedBadgeIcon) <= 4)
+                                        <span class="text-3xl">{{ $completedBadgeIcon }}</span>
+                                    @else
+                                        <i class="fas fa-medal text-3xl"></i>
+                                    @endif
+                                </div>
+                                <span class="text-xs font-bold text-yellow-700 uppercase tracking-wide">{{ $challenge->badge->name }}</span>
+                            @else
+                                <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 mb-1 shadow-sm border border-yellow-200">
+                                    <i class="fas fa-medal text-3xl"></i>
+                                </div>
+                                <span class="text-xs font-bold text-yellow-700 uppercase tracking-wide">Danh hiệu</span>
+                            @endif
                         </div>
                         
                         <!-- Avatar Frame (if exists) -->
@@ -159,10 +179,19 @@
                                     <div class="space-y-3">
                                         {{-- Badge Reward --}}
                                         @if($challenge->badge)
+                                            @php
+                                                $badgeIcon = $challenge->badge->icon;
+                                                $isBadgeUrl = $badgeIcon && (Str::startsWith($badgeIcon, 'http') || Str::startsWith($badgeIcon, 'badges/'));
+                                                $badgeIconUrl = $isBadgeUrl 
+                                                    ? (Str::startsWith($badgeIcon, 'http') ? $badgeIcon : asset('storage/' . $badgeIcon))
+                                                    : null;
+                                            @endphp
                                             <div class="flex items-center gap-3 bg-yellow-50 p-2.5 rounded-lg border border-yellow-100">
                                                 <div class="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center shadow-sm">
-                                                    @if($challenge->badge->icon)
-                                                        <img src="{{ Str::startsWith($challenge->badge->icon, 'http') ? $challenge->badge->icon : asset('storage/' . $challenge->badge->icon) }}" alt="" class="w-6 h-6 object-contain">
+                                                    @if($badgeIconUrl)
+                                                        <img src="{{ $badgeIconUrl }}" alt="" class="w-6 h-6 object-contain">
+                                                    @elseif($badgeIcon && mb_strlen($badgeIcon) <= 4)
+                                                        <span class="text-xl">{{ $badgeIcon }}</span>
                                                     @else
                                                         <i class="fas fa-medal text-white"></i>
                                                     @endif
@@ -276,10 +305,19 @@
                                     <div class="space-y-4">
                                         {{-- Badge Reward --}}
                                         @if($challenge->badge)
+                                            @php
+                                                $badgeIcon2 = $challenge->badge->icon;
+                                                $isBadgeUrl2 = $badgeIcon2 && (Str::startsWith($badgeIcon2, 'http') || Str::startsWith($badgeIcon2, 'badges/'));
+                                                $badgeIconUrl2 = $isBadgeUrl2 
+                                                    ? (Str::startsWith($badgeIcon2, 'http') ? $badgeIcon2 : asset('storage/' . $badgeIcon2))
+                                                    : null;
+                                            @endphp
                                             <div class="flex items-center gap-3 bg-gradient-to-r from-yellow-500/10 to-transparent p-3 rounded-xl border border-yellow-400/20">
                                                 <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg shadow-yellow-500/20">
-                                                    @if($challenge->badge->icon)
-                                                        <img src="{{ Str::startsWith($challenge->badge->icon, 'http') ? $challenge->badge->icon : asset('storage/' . $challenge->badge->icon) }}" alt="" class="w-8 h-8 object-contain">
+                                                    @if($badgeIconUrl2)
+                                                        <img src="{{ $badgeIconUrl2 }}" alt="" class="w-8 h-8 object-contain">
+                                                    @elseif($badgeIcon2 && mb_strlen($badgeIcon2) <= 4)
+                                                        <span class="text-2xl">{{ $badgeIcon2 }}</span>
                                                     @else
                                                         <i class="fas fa-medal text-white text-xl"></i>
                                                     @endif
