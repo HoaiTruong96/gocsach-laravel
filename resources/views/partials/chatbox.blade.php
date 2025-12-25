@@ -111,7 +111,7 @@
     </div>
 
     {{-- Floating Buttons Container --}}
-    <div class="flex flex-col gap-3 items-center">
+    <div id="floating-buttons-container" class="flex flex-col gap-3 items-center">
         {{-- Back to Top Button --}}
         <button id="back-to-top-btn" 
             class="w-11 h-11 bg-brand-green text-white rounded-full shadow-lg opacity-0 invisible transform translate-y-4 transition-all duration-300 hover:bg-brand-accent hover:scale-110 hover:shadow-xl flex items-center justify-center group"
@@ -151,6 +151,7 @@
     .floating-btn {
         animation: floatGlow 3s ease-in-out infinite;
         box-shadow: 0 4px 15px var(--glow-color, rgba(0,0,0,0.2));
+        transition: opacity 0.3s, transform 0.3s;
     }
     
     .floating-btn:hover {
@@ -167,6 +168,11 @@
             transform: translateY(-5px);
             box-shadow: 0 8px 25px var(--glow-color, rgba(0,0,0,0.4));
         }
+    }
+
+    /* Back to top button transition */
+    #back-to-top-btn {
+        transition: opacity 0.3s, transform 0.3s, visibility 0.3s;
     }
 </style>
 
@@ -263,7 +269,7 @@
         const toggle = document.getElementById('chatbox-toggle');
         const iconOpen = document.getElementById('chatbox-icon-open');
         const iconClose = document.getElementById('chatbox-icon-close');
-        const pulse = document.getElementById('chatbox-pulse');
+        const floatingBtns = document.getElementById('floating-buttons-container');
         isOpen = !isOpen;
 
         if (isOpen) {
@@ -276,7 +282,12 @@
             // Switch to X icon
             iconOpen.classList.add('hidden');
             iconClose.classList.remove('hidden');
-            pulse.classList.add('hidden');
+            // Hide other floating buttons (Messenger, Zalo, Back to top)
+            if (floatingBtns) {
+                floatingBtns.querySelectorAll('a, #back-to-top-btn').forEach(btn => {
+                    btn.classList.add('opacity-0', 'pointer-events-none', 'scale-0');
+                });
+            }
             // Load lịch sử chat khi mở
             loadChatHistory();
         } else {
@@ -288,7 +299,17 @@
             // Switch back to comments icon
             iconOpen.classList.remove('hidden');
             iconClose.classList.add('hidden');
-            pulse.classList.remove('hidden');
+            // Show other floating buttons again
+            if (floatingBtns) {
+                floatingBtns.querySelectorAll('a').forEach(btn => {
+                    btn.classList.remove('opacity-0', 'pointer-events-none', 'scale-0');
+                });
+                // Back to top button has its own visibility logic, just remove pointer-events
+                const backBtn = document.getElementById('back-to-top-btn');
+                if (backBtn) {
+                    backBtn.classList.remove('pointer-events-none', 'scale-0');
+                }
+            }
         }
     }
 
