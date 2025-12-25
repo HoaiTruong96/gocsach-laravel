@@ -56,14 +56,52 @@
 
                 <div class="mb-6">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Địa chỉ Email</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                            <i class="fas fa-envelope"></i>
-                        </span>
-                        <input type="email" name="email" 
-                            class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green transition" 
-                            placeholder="yourname@gmail.com" required value="{{ old('email') }}">
-                    </div>
+                    @auth
+                        {{-- User đã đăng nhập - hiển thị email của họ và khóa input --}}
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                <i class="fas fa-envelope"></i>
+                            </span>
+                            <input type="email" name="email" 
+                                class="w-full pl-10 pr-4 py-3 bg-gray-100 border border-gray-200 rounded-lg text-gray-600 cursor-not-allowed" 
+                                value="{{ Auth::user()->email }}" readonly>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Bạn đang đặt lại mật khẩu cho tài khoản này
+                        </p>
+                    @else
+                        {{-- User chưa đăng nhập --}}
+                        @php
+                            $prefillEmail = request()->query('email');
+                        @endphp
+                        
+                        @if($prefillEmail)
+                            {{-- Email được truyền từ trang login - khóa input --}}
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                    <i class="fas fa-envelope"></i>
+                                </span>
+                                <input type="email" name="email" 
+                                    class="w-full pl-10 pr-4 py-3 bg-gray-100 border border-gray-200 rounded-lg text-gray-600 cursor-not-allowed" 
+                                    value="{{ $prefillEmail }}" readonly>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Bạn đang đặt lại mật khẩu cho tài khoản này
+                            </p>
+                        @else
+                            {{-- Không có email - cho phép nhập email bất kỳ --}}
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                    <i class="fas fa-envelope"></i>
+                                </span>
+                                <input type="email" name="email" 
+                                    class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green transition" 
+                                    placeholder="yourname@gmail.com" required value="{{ old('email') }}">
+                            </div>
+                        @endif
+                    @endauth
                 </div>
 
                 <button type="submit" 

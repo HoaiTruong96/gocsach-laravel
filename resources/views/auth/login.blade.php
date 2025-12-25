@@ -56,7 +56,7 @@
                 <div class="mb-6">
                     <div class="flex justify-between items-center mb-2">
                         <label class="text-gray-700 text-sm font-bold">Mật khẩu</label>
-                        <a href="{{ route('password.request') }}" class="text-xs text-brand-brown hover:underline" tabindex="-1">Quên mật khẩu?</a>
+                        <a href="#" onclick="goToForgotPassword(event)" class="text-xs text-brand-brown hover:underline" tabindex="-1">Quên mật khẩu?</a>
                     </div>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fas fa-lock"></i></span>
@@ -75,6 +75,9 @@
 
                 <div class="text-center mt-6">
                     <p class="text-sm text-gray-500">Chưa có tài khoản? <a href="{{ route('register') }}" class="text-brand-brown font-bold hover:underline">Đăng ký ngay</a></p>
+                    <a href="{{ route('home') }}" class="inline-flex items-center gap-2 mt-4 text-sm text-gray-500 hover:text-brand-green transition">
+                        <i class="fas fa-arrow-left"></i> Quay lại trang chủ
+                    </a>
                 </div>
             </form>
         </div>
@@ -93,6 +96,21 @@
                 passwordInput.type = 'password';
                 eyeIcon.classList.remove('fa-eye-slash');
                 eyeIcon.classList.add('fa-eye'); // Đổi lại icon mắt thường
+            }
+        }
+
+        // Chuyển đến trang quên mật khẩu với email đã nhập
+        function goToForgotPassword(event) {
+            event.preventDefault();
+            const emailInput = document.querySelector('input[name="email"]');
+            const email = emailInput.value.trim();
+            
+            if (email) {
+                // Nếu có email, truyền qua query parameter
+                window.location.href = "{{ route('password.request') }}?email=" + encodeURIComponent(email);
+            } else {
+                // Nếu chưa nhập email, vẫn chuyển đến trang forgot password
+                window.location.href = "{{ route('password.request') }}";
             }
         }
     </script>

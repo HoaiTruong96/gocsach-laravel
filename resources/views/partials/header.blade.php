@@ -19,9 +19,8 @@
                 cộng đồng</button>
 
             <div class="flex gap-3 ml-4">
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="hover:text-brand-accent transition"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="hover:text-brand-accent transition"><i class="fab fa-instagram"></i></a>
-                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" class="hover:text-brand-accent transition"><i class="fab fa-youtube"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=61585413759981" target="_blank" rel="noopener noreferrer" class="hover:text-brand-accent transition"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://youtu.be/mKptA96QMZ0" target="_blank" rel="noopener noreferrer" class="hover:text-brand-accent transition"><i class="fab fa-youtube"></i></a>
             </div>
         </div>
     </div>
@@ -111,22 +110,23 @@
             {{-- User & Notification Actions --}}
             <div class="flex items-center gap-3 md:gap-5">
                 @auth
-                    {{-- Notification Bell --}}
-                    <div class="relative group pb-4 -mb-4">
-                        <button class="text-gray-500 hover:text-brand-green transition relative p-2 focus:outline-none">
+                    {{-- Notification Bell - Click to Open --}}
+                    <div class="relative" id="notification-dropdown-container">
+                        <button type="button" id="notification-dropdown-trigger"
+                            class="text-gray-500 transition relative p-2 focus:outline-none rounded-xl hover:bg-green-100 hover:text-brand-green hover:shadow-[0_0_15px_rgba(62,95,78,0.3)]">
                             <i class="far fa-bell text-xl"></i>
                             <span id="notification-badge"
                                 class="{{ Auth::user()->unreadNotifications->count() > 0 ? '' : 'hidden' }} absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white animate-bounce">
                                 <span id="notification-count">{{ Auth::user()->unreadNotifications->count() }}</span>
                             </span>
                         </button>
-                        <div
-                            class="dropdown-menu dropdown-bridge absolute right-0 top-full mt-0 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in z-50 origin-top-right">
+                        <div id="notification-dropdown-menu"
+                            class="hidden absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in z-50 origin-top-right">
                             <div class="px-4 py-3 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
                                 <span class="text-sm font-bold text-gray-700">Thông báo</span>
-                                <a href="{{ route('notification.readAll') }}" id="mark-all-read-btn"
+                                <button type="button" onclick="markAllNotificationsAsRead()" id="mark-all-read-btn"
                                     class="{{ Auth::user()->unreadNotifications->count() > 0 ? '' : 'hidden' }} text-[10px] text-blue-500 hover:underline cursor-pointer">Đánh
-                                    dấu đã đọc</a>
+                                    dấu đã đọc</button>
                             </div>
                             <div id="notification-list" class="max-h-80 overflow-y-auto">
                                 @forelse(Auth::user()->notifications as $notification)
@@ -239,6 +239,44 @@
                             </div>
                         </div>
                     </div>
+
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const notifTrigger = document.getElementById('notification-dropdown-trigger');
+                        const notifMenu = document.getElementById('notification-dropdown-menu');
+                        const notifContainer = document.getElementById('notification-dropdown-container');
+
+                        if (notifTrigger && notifMenu) {
+                            notifTrigger.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const isOpen = !notifMenu.classList.contains('hidden');
+                                
+                                // Close user dropdown if open
+                                const userMenu = document.getElementById('user-dropdown-menu');
+                                if (userMenu) userMenu.classList.add('hidden');
+                                
+                                if (isOpen) {
+                                    notifMenu.classList.add('hidden');
+                                } else {
+                                    notifMenu.classList.remove('hidden');
+                                }
+                            });
+
+                            document.addEventListener('click', function(e) {
+                                if (!notifContainer.contains(e.target)) {
+                                    notifMenu.classList.add('hidden');
+                                }
+                            });
+
+                            document.addEventListener('keydown', function(e) {
+                                if (e.key === 'Escape') {
+                                    notifMenu.classList.add('hidden');
+                                }
+                            });
+                        }
+                    });
+                    </script>
 
                     {{-- User Dropdown - Click to Open --}}
                     <div class="relative z-50" id="user-dropdown-container">
@@ -725,7 +763,7 @@
                         // Xử lý ảnh bìa
                         let imgUrl = book.cover_image
                             ? (book.cover_image.startsWith('http') ? book.cover_image : '/storage/' + book.cover_image)
-                            : 'https://via.placeholder.com/50x70?text=No+Image';
+                            : 'https://placehold.co/50x70?text=No+Image';
 
                         // URL chi tiết sách (dùng slug hoặc ID nếu slug không có)
                         let detailUrl = `/chi-tiet/${book.slug || book.id}`;
@@ -739,7 +777,7 @@
                         html += `
                         <li>
                             <a href="${detailUrl}" class="search-result-link flex items-center gap-3 p-3 hover:bg-gray-50 transition cursor-pointer">
-                                <img src="${imgUrl}" class="w-10 h-14 object-cover rounded shadow-sm border border-gray-200 flex-shrink-0" onerror="this.src='https://via.placeholder.com/50x70?text=No+Image'">
+                                <img src="${imgUrl}" class="w-10 h-14 object-cover rounded shadow-sm border border-gray-200 flex-shrink-0" onerror="this.src='https://placehold.co/50x70?text=No+Image'">
                                 <div class="flex-1 min-w-0">
                                     <h4 class="text-sm font-bold text-gray-800 line-clamp-1">${highlightedTitle}</h4>
                                     <p class="text-xs text-gray-500">${book.author_name || 'Đang cập nhật'}</p>
@@ -884,11 +922,100 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Polling mỗi 30 giây
-    setInterval(fetchNotifications, 5000);
+    // Polling mỗi 10 giây
+    setInterval(fetchNotifications, 10000);
     
     // Fetch ngay khi trang load (sau 2 giây để tránh lag)
     setTimeout(fetchNotifications, 2000);
+    
+    // ====== NOTIFICATION BELL CLICK HANDLER ======
+    const bellBtn = document.getElementById('notification-bell-btn');
+    const dropdown = document.getElementById('notification-dropdown');
+    const badge = document.getElementById('notification-badge');
+    const wrapper = document.getElementById('notification-wrapper');
+    
+    if (bellBtn && dropdown) {
+        // Khi click vào chuông thông báo
+        bellBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            // Toggle dropdown
+            const isHidden = dropdown.classList.contains('hidden');
+            dropdown.classList.toggle('hidden');
+            
+            // Nếu mở dropdown và có thông báo chưa đọc -> chỉ ẩn badge số, KHÔNG đánh dấu đã đọc
+            // Người dùng vẫn thấy các thông báo chưa đọc với chấm xanh
+            if (isHidden && badge && !badge.classList.contains('hidden')) {
+                // Chỉ ẩn badge số trên chuông, không gọi API đánh dấu đã đọc
+                badge.classList.add('hidden');
+            }
+        });
+        
+        // ====== MARK ALL AS READ (AJAX) ======
+        window.markAllNotificationsAsRead = function() {
+            const markAllBtn = document.getElementById('mark-all-read-btn');
+            const listContainer = document.getElementById('notification-list');
+            
+            // Disable button và hiện loading
+            if (markAllBtn) {
+                markAllBtn.innerText = 'Đang xử lý...';
+                markAllBtn.disabled = true;
+            }
+            
+            fetch('{{ route("notification.readAll") }}', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Ẩn nút "Đánh dấu đã đọc"
+                    if (markAllBtn) markAllBtn.classList.add('hidden');
+                    
+                    // Cập nhật UI: xóa chấm xanh và thêm class đã đọc cho tất cả thông báo
+                    if (listContainer) {
+                        // Xóa tất cả chấm xanh (unread indicator)
+                        listContainer.querySelectorAll('.bg-brand-green.rounded-full').forEach(dot => dot.remove());
+                        
+                        // Thêm class đã đọc cho tất cả thông báo
+                        listContainer.querySelectorAll('a').forEach(item => {
+                            item.classList.remove('bg-blue-50/30');
+                            item.classList.add('opacity-60', 'grayscale-[0.5]');
+                        });
+                    }
+                    
+                    // Ẩn badge số trên chuông (nếu chưa ẩn)
+                    const badge = document.getElementById('notification-badge');
+                    if (badge) badge.classList.add('hidden');
+                }
+            })
+            .catch(err => {
+                console.log('Mark all read error:', err);
+                // Restore button nếu lỗi
+                if (markAllBtn) {
+                    markAllBtn.innerText = 'Đánh dấu đã đọc';
+                    markAllBtn.disabled = false;
+                }
+            });
+        };
+        
+        // Click ra ngoài thì đóng dropdown
+        document.addEventListener('click', function(e) {
+            if (wrapper && !wrapper.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+        
+        // Nhấn ESC để đóng dropdown
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                dropdown.classList.add('hidden');
+            }
+        });
+    }
 });
 </script>
 @endauth

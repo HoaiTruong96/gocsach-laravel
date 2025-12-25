@@ -12,17 +12,28 @@ old('published_year'), 'placeholder' => 'Chọn năm', 'min' => 1900, 'max' => 2
 --}}
 
 @if($type === 'year')
-    {{-- Year Picker - Calendar Style Dropdown --}}
+    {{-- Year Picker - Hybrid: Input + Dropdown --}}
     <div class="year-picker-container relative" data-name="{{ $name }}">
         <input type="hidden" name="{{ $name }}" id="{{ $name }}-input" value="{{ $value ?? '' }}">
-        <button type="button" id="{{ $name }}-trigger"
-            class="year-picker-trigger flex items-center justify-between w-full px-4 py-2 border dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-800 dark:text-white hover:border-blue-400 dark:hover:border-blue-500 transition-all focus:ring-2 focus:ring-blue-500 outline-none">
-            <span
-                class="year-picker-display text-left {{ empty($value) ? 'text-gray-400 dark:text-slate-500 italic' : '' }}">
-                {{ $value ?? $placeholder ?? 'Chọn năm...' }}
-            </span>
-            <i class="fas fa-calendar-alt text-gray-400 dark:text-slate-500 ml-2"></i>
-        </button>
+        
+        <div class="flex items-center border dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 hover:border-blue-400 dark:hover:border-blue-500 transition-all focus-within:ring-2 focus-within:ring-blue-500 overflow-hidden">
+            {{-- Input để nhập tay --}}
+            <input type="text" 
+                   id="{{ $name }}-text-input"
+                   class="year-text-input flex-1 px-4 py-2 bg-transparent text-gray-800 dark:text-white outline-none placeholder-gray-400 dark:placeholder-slate-500"
+                   placeholder="{{ $placeholder ?? 'Nhập hoặc chọn năm...' }}"
+                   value="{{ $value ?? '' }}"
+                   maxlength="4"
+                   pattern="[0-9]*"
+                   inputmode="numeric"
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4); document.getElementById('{{ $name }}-input').value = this.value;">
+            
+            {{-- Nút mở dropdown --}}
+            <button type="button" id="{{ $name }}-trigger"
+                class="year-picker-trigger px-3 py-2 text-gray-400 dark:text-slate-500 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-slate-600 transition border-l dark:border-slate-600">
+                <i class="fas fa-calendar-alt"></i>
+            </button>
+        </div>
 
         <div
             class="year-picker-dropdown hidden absolute z-50 mt-1 w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-xl shadow-xl overflow-hidden">
@@ -93,7 +104,8 @@ old('published_year'), 'placeholder' => 'Chọn năm', 'min' => 1900, 'max' => 2
 @elseif($type === 'rating')
     {{-- Rating Picker - Interactive Star Style (1.0 - 5.0) --}}
     @php
-        $currentVal = $value ? number_format((float) $value, 1) : '';
+        $numericValue = $value ? (float) $value : 0;
+        $currentVal = $value ? number_format($numericValue, 1) : '';
         $hasValue = !empty($currentVal);
     @endphp
     <div class="rating-picker-container" data-name="{{ $name }}" data-initial="{{ $currentVal }}">
@@ -108,7 +120,7 @@ old('published_year'), 'placeholder' => 'Chọn năm', 'min' => 1900, 'max' => 2
                     <i class="fas fa-star text-3xl text-gray-200 dark:text-slate-600 absolute inset-0"></i>
                     {{-- Filled star (clipped based on value) --}}
                     <div class="rating-star-fill absolute inset-0 overflow-hidden"
-                        style="width: {{ $hasValue && $value >= $i ? '100' : ($hasValue && $value > $i - 1 ? (($value - ($i - 1)) * 100) : '0') }}%;">
+                        style="width: {{ $hasValue && $numericValue >= $i ? '100' : ($hasValue && $numericValue > $i - 1 ? (($numericValue - ($i - 1)) * 100) : '0') }}%;">
                         <i class="fas fa-star text-3xl text-amber-400"></i>
                     </div>
                 </div>

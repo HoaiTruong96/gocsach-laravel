@@ -46,7 +46,7 @@
                     Danh Sách Review ({{ $reviews->total() }})
                 </h2>
                 
-                <a href="{{ route('detail', $book->slug) }}#section-review" class="inline-flex items-center gap-2 text-sm font-bold text-brand-accent hover:text-brand-brown hover:underline transition">
+                <a href="{{ route('reviews.create', ['book_id' => $book->id]) }}" class="inline-flex items-center gap-2 text-sm font-bold text-brand-accent hover:text-brand-brown hover:underline transition">
                     <i class="fas fa-pen"></i> Viết đánh giá mới
                 </a>
             </div>
@@ -214,7 +214,7 @@
                                                                 <button onclick="toggleReplySection({{ $comment->id }})" 
                                                                         class="text-[10px] font-bold text-gray-400 hover:text-brand-green flex gap-1 items-center transition">
                                                                     <i class="far fa-comment-dots"></i>
-                                                                    <span>Trả lời ({{ $replies->count() }})</span>
+                                                                    <span>Trả lời</span> <span id="reply-count-{{ $comment->id }}">({{ $replies->count() }})</span>
                                                                 </button>
                                                                 {{-- Nút Báo cáo comment --}}
                                                                 @auth
@@ -464,11 +464,11 @@
                     if (list) list.insertAdjacentHTML('beforeend', replyHtml);
                 }
 
-                // Update count button
-                const toggleBtn = document.querySelector(`button[onclick="toggleReplySection(${commentId})"] span`);
-                if(toggleBtn) {
-                     const currentCount = parseInt(toggleBtn.innerText.match(/\d+/) || 0);
-                     toggleBtn.innerText = `Trả lời (${currentCount + 1})`;
+                // Update count button sử dụng ID cụ thể
+                const replyCountSpan = document.getElementById(`reply-count-${commentId}`);
+                if(replyCountSpan) {
+                     const currentCount = parseInt(replyCountSpan.innerText.match(/\d+/) || 0);
+                     replyCountSpan.innerText = `(${currentCount + 1})`;
                 }
             }
         })
@@ -714,7 +714,7 @@
                                     <button onclick="toggleReplySection(${data.comment_id})" 
                                             class="text-[10px] font-bold text-gray-400 hover:text-brand-green flex gap-1 items-center transition">
                                         <i class="far fa-comment-dots"></i>
-                                        <span>Trả lời (0)</span>
+                                        <span>Trả lời</span> <span id="reply-count-${data.comment_id}">(0)</span>
                                     </button>
                                 </div>
                                 <div id="reply-section-${data.comment_id}" class="hidden mt-3 ml-2 pl-4 border-l border-gray-200">

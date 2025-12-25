@@ -133,6 +133,7 @@ class ProfileController extends Controller
         $suggestedBooks = collect();
         $totalSuggestedBooks = 0;
         $savedPosts = collect();
+        $trashedPosts = collect();
         if (Auth::id() == $user->id) {
             $totalSuggestedBooks = Book::where('created_by_user_id', $user->id)->count();
             // Phân trang 12 sách/trang
@@ -146,6 +147,13 @@ class ProfileController extends Controller
                 ->withCount(['likes', 'comments'])
                 ->orderByPivot('created_at', 'desc')
                 ->get();
+
+            // 7. Lấy danh sách bài review đã xóa (thùng rác)
+            $trashedPosts = $user->posts()
+                ->onlyTrashed()
+                ->with('book')
+                ->orderBy('deleted_at', 'desc')
+                ->get();
         }
 
         return view('profile', [
@@ -154,6 +162,7 @@ class ProfileController extends Controller
             'myBooks' => $myBooks,
             'suggestedBooks' => $suggestedBooks,
             'savedPosts' => $savedPosts,
+            'trashedPosts' => $trashedPosts,
             'totalBooks' => $totalBooks,
             'totalReviews' => $totalReviews,
             'totalSuggestedBooks' => $totalSuggestedBooks,

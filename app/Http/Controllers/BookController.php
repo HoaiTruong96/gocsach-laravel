@@ -176,7 +176,7 @@ class BookController extends Controller
         }
 
         // 4. Phân trang
-        $books = $query->paginate(12)->withQueryString();
+        $books = $query->paginate(10)->withQueryString();
 
         return view('search-book', [
             'books' => $books
