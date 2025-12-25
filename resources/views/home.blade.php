@@ -107,6 +107,10 @@
         </div>
 
         {{-- Nút Điều Hướng --}}
+        <button id="heroPrevBtn"
+            class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/20 hover:bg-brand-accent/80 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 hover:scale-110 z-20 cursor-pointer">
+            <i class="fas fa-chevron-left text-xl"></i>
+        </button>
         <button id="heroNextBtn"
             class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/20 hover:bg-brand-accent/80 text-white flex items-center justify-center backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 hover:scale-110 z-20 cursor-pointer">
             <i class="fas fa-chevron-right text-xl"></i>
