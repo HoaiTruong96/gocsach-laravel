@@ -996,7 +996,7 @@
                 const trigger = container.querySelector('.year-picker-trigger');
                 const dropdown = container.querySelector('.year-picker-dropdown');
                 const input = container.querySelector('input[type="hidden"]');
-                const display = container.querySelector('.year-picker-display');
+                const textInput = container.querySelector('.year-text-input'); // Ô nhập tay mới
                 const yearGrid = container.querySelector('.year-grid');
                 const rangeDisplay = container.querySelector('.year-range-display');
                 const clearBtn = container.querySelector('.year-clear-btn');
@@ -1030,8 +1030,10 @@
 
                 function selectYear(year) {
                     input.value = year;
-                    display.textContent = year;
-                    display.classList.remove('text-gray-400', 'dark:text-slate-500', 'italic');
+                    // Đồng bộ với text input
+                    if (textInput) {
+                        textInput.value = year;
+                    }
                     dropdown.classList.add('hidden');
                     dropdown.classList.remove('show');
                     renderYears();
@@ -1055,8 +1057,10 @@
                     clearBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
                         input.value = '';
-                        display.textContent = display.dataset.placeholder || 'Chọn năm...';
-                        display.classList.add('text-gray-400', 'dark:text-slate-500', 'italic');
+                        // Đồng bộ với text input
+                        if (textInput) {
+                            textInput.value = '';
+                        }
                         dropdown.classList.add('hidden');
                         dropdown.classList.remove('show');
                         renderYears();
@@ -1088,10 +1092,17 @@
                     }
                 });
 
-                // Initialize
-                if (input.value) {
-                    display.textContent = input.value;
-                    display.classList.remove('text-gray-400', 'dark:text-slate-500', 'italic');
+                // Đồng bộ text input -> hidden input khi người dùng nhập xong (blur)
+                if (textInput) {
+                    textInput.addEventListener('blur', () => {
+                        const val = textInput.value.trim();
+                        if (val && /^\d{1,4}$/.test(val)) {
+                            input.value = val;
+                        } else if (val === '') {
+                            input.value = '';
+                        }
+                        renderYears();
+                    });
                 }
             });
 

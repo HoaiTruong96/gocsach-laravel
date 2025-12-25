@@ -66,7 +66,7 @@ class HomeController extends Controller
             ]);
         }
 
-        $bookQuery = Book::where('is_approved', true)->with('categories')->withAvg(['posts'], 'rating')->orderBy('view_count', 'desc')->take(10);
+        $bookQuery = Book::where('is_approved', true)->with('categories')->withAvg(['posts'], 'rating')->orderBy('created_at', 'desc')->take(10);
         $books = $bookQuery->get();
         foreach ($books as $book) {
             $book->avg_rating = round($book->posts_avg_rating ?? 0, 1);
@@ -114,6 +114,15 @@ class HomeController extends Controller
             $randomBook->avg_rating = round($randomBook->posts_avg_rating ?? 0, 1);
         }
 
+        // --- TÁC GIẢ NGÀY HÔM NAY ---
+        $allAuthors = \App\Models\Author::all();
+        $dailyAuthor = null;
+        if ($allAuthors->count() > 0) {
+            // Dùng ngày làm seed để cùng ngày hiển thị cùng tác giả (offset +1 để khác sách)
+            $dayOfYear = now()->dayOfYear + now()->year + 1;
+            $dailyAuthor = $allAuthors[$dayOfYear % $allAuthors->count()];
+        }
+
         // --- BÀI REVIEW NỔI BẬT (FEATURED POSTS) ---
         // Mới nhất - sắp xếp theo ngày tạo
         $latestPosts = Post::with(['user', 'book'])
@@ -142,6 +151,7 @@ class HomeController extends Controller
             'dailyQuote',
             'communityStats',
             'randomBook',
+            'dailyAuthor',
             'latestPosts',
             'hotPosts'
         ));
