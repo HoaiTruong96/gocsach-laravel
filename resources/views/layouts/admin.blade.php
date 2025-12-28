@@ -405,6 +405,57 @@
             opacity: 0 !important;
             transform: scale(0.5);
         }
+
+        /* ===== ELEGANT THEME TRANSITION ===== */
+        /* Silky smooth synchronized transitions */
+        html.theme-transitioning,
+        html.theme-transitioning *,
+        html.theme-transitioning *::before,
+        html.theme-transitioning *::after {
+            transition: background-color 0.35s cubic-bezier(0.22, 0.61, 0.36, 1),
+                border-color 0.35s cubic-bezier(0.22, 0.61, 0.36, 1),
+                color 0.35s cubic-bezier(0.22, 0.61, 0.36, 1),
+                fill 0.35s cubic-bezier(0.22, 0.61, 0.36, 1),
+                box-shadow 0.35s cubic-bezier(0.22, 0.61, 0.36, 1) !important;
+        }
+
+        /* Toggle button spin animation */
+        @keyframes theme-icon-spin {
+            0% {
+                transform: rotate(0deg) scale(1);
+            }
+
+            50% {
+                transform: rotate(180deg) scale(1.2);
+            }
+
+            100% {
+                transform: rotate(360deg) scale(1);
+            }
+        }
+
+        #theme-toggle.spinning i,
+        #theme-toggle-mobile.spinning i {
+            animation: theme-icon-spin 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Subtle glow pulse on toggle button */
+        @keyframes theme-glow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+            }
+
+            50% {
+                box-shadow: 0 0 20px 5px rgba(99, 102, 241, 0.4);
+            }
+        }
+
+        #theme-toggle.glowing,
+        #theme-toggle-mobile.glowing {
+            animation: theme-glow 0.6s ease-out;
+        }
     </style>
 </head>
 
@@ -578,7 +629,7 @@
                         class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.game.*') || request()->routeIs('admin.badges.*') || request()->routeIs('admin.challenges.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
                         <i
                             class="fas fa-trophy w-5 text-center {{ request()->routeIs('admin.game.*') || request()->routeIs('admin.badges.*') || request()->routeIs('admin.challenges.*') ? 'text-white' : 'text-slate-400 group-hover:text-yellow-400' }}"></i>
-                        <span class="font-medium text-sm">Thử Thách & Danh Hiệu</span>
+                        <span class="font-medium text-sm">Thử Thách</span>
                     </a>
 
                     <a href="{{ route('admin.activity-titles.index') }}"
@@ -907,11 +958,37 @@
         (function () {
             const themeToggle = document.getElementById('theme-toggle');
             const themeToggleMobile = document.getElementById('theme-toggle-mobile');
+            let isTransitioning = false;
+            const COOLDOWN_MS = 800;
 
-            function toggleTheme() {
+            function toggleTheme(event) {
+                // Cooldown check
+                if (isTransitioning) return;
+                isTransitioning = true;
+
                 const html = document.documentElement;
+                const btn = event.currentTarget;
+
+                // Add animations and disable state
+                btn.classList.add('spinning', 'glowing');
+                btn.style.pointerEvents = 'none';
+                btn.style.opacity = '0.7';
+
+                // Enable smooth synchronized transitions
+                html.classList.add('theme-transitioning');
+
+                // Toggle theme
                 const isDark = html.classList.toggle('dark');
                 localStorage.setItem('admin-theme', isDark ? 'dark' : 'light');
+
+                // Clean up after animation
+                setTimeout(() => {
+                    btn.classList.remove('spinning', 'glowing');
+                    btn.style.pointerEvents = '';
+                    btn.style.opacity = '';
+                    html.classList.remove('theme-transitioning');
+                    isTransitioning = false;
+                }, COOLDOWN_MS);
             }
 
             if (themeToggle) {
