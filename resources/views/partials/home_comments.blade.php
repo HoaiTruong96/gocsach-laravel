@@ -18,10 +18,13 @@
                             ])
                         </a>
                         <div>
-                            <a href="{{ route('public.profile', $comment->user->id) }}"
-                                class="hover:text-brand-green transition">
-                                <h4 class="font-bold text-gray-800 text-sm">{{ $comment->user->name }}</h4>
-                            </a>
+                            <div class="flex items-center gap-1">
+                                <a href="{{ route('public.profile', $comment->user->id) }}"
+                                    class="hover:text-brand-green transition">
+                                    <h4 class="font-bold text-gray-800 text-sm">{{ $comment->user->name }}</h4>
+                                </a>
+                                @include('partials.user-badges', ['user' => $comment->user, 'size' => 'xs'])
+                            </div>
                             <div class="text-xs text-gray-500 flex items-center gap-1">
                                 <span>Đánh giá về:</span>
                                 @if($book)
@@ -112,10 +115,13 @@
                                 <div class="flex-1">
                                     <div class="bg-white p-2 rounded-xl rounded-tl-none border border-gray-100 shadow-sm">
                                         <div class="flex justify-between items-center mb-1">
-                                            <a href="{{ route('public.profile', $reply->user->id) }}"
-                                                class="hover:text-brand-green transition">
-                                                <h6 class="font-bold text-[10px] text-gray-700">{{ $reply->user->name }}</h6>
-                                            </a>
+                                            <div class="flex items-center gap-1">
+                                                <a href="{{ route('public.profile', $reply->user->id) }}"
+                                                    class="hover:text-brand-green transition">
+                                                    <h6 class="font-bold text-[10px] text-gray-700">{{ $reply->user->name }}</h6>
+                                                </a>
+                                                @include('partials.user-badges', ['user' => $reply->user, 'size' => 'xs'])
+                                            </div>
                                             <span class="text-[9px] text-gray-400">{{ $reply->created_at->diffForHumans() }}</span>
                                         </div>
                                         <p class="text-[11px] text-gray-600">{{ $reply->content }}</p>

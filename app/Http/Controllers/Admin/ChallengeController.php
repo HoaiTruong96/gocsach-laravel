@@ -37,8 +37,8 @@ class ChallengeController extends Controller
         $validated = $request->validate([
             'badge_id' => 'required|exists:badges,id',
             'avatar_frame_id' => 'nullable|exists:avatar_frames,id',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'name' => 'required|string|max:50',
+            'description' => 'nullable|string|max:150',
             'target_count' => 'required|integer|min:1',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
@@ -51,6 +51,8 @@ class ChallengeController extends Controller
             'start_date.required' => 'Vui lòng chọn ngày bắt đầu.',
             'end_date.required' => 'Vui lòng chọn ngày kết thúc.',
             'end_date.after' => 'Ngày kết thúc phải sau ngày bắt đầu.',
+            'name.max' => 'Tên thử thách tối đa 50 ký tự.',
+            'description.max' => 'Mô tả tối đa 150 ký tự.',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']) . '-' . Str::random(4);
@@ -91,7 +93,7 @@ class ChallengeController extends Controller
      */
     public function show(Challenge $challenge)
     {
-        $challenge->load('badge');
+        $challenge->load('badge', 'avatarFrame');
 
         $userChallenges = UserChallenge::where('challenge_id', $challenge->id)
             ->with('user')
@@ -99,17 +101,31 @@ class ChallengeController extends Controller
             ->orderBy('current_count', 'desc')
             ->paginate(20);
 
-        return view('admin.challenges.show', compact('challenge', 'userChallenges'));
+        // Cho modal edit
+        $badges = Badge::where('is_active', true)->get();
+        $frames = \App\Models\AvatarFrame::where('is_active', true)->orderBy('order')->get();
+
+        return view('admin.game.challenges.show', compact('challenge', 'userChallenges', 'badges', 'frames'));
     }
 
     /**
      * Form chỉnh sửa challenge
      */
-    public function edit(Challenge $challenge)
+    public function edit(Request $request, Challenge $challenge)
     {
         $badges = Badge::where('is_active', true)->get();
         $frames = \App\Models\AvatarFrame::where('is_active', true)->orderBy('order')->get();
-        return view('admin.challenges.edit', compact('challenge', 'badges', 'frames'));
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'challenge' => $challenge->load('badge', 'avatarFrame'),
+                'badges' => $badges,
+                'frames' => $frames
+            ]);
+        }
+
+        return view('admin.game.challenges.edit', compact('challenge', 'badges', 'frames'));
     }
 
     /**
@@ -120,8 +136,8 @@ class ChallengeController extends Controller
         $validated = $request->validate([
             'badge_id' => 'required|exists:badges,id',
             'avatar_frame_id' => 'nullable|exists:avatar_frames,id',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'name' => 'required|string|max:50',
+            'description' => 'nullable|string|max:150',
             'target_count' => 'required|integer|min:1',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
@@ -130,6 +146,8 @@ class ChallengeController extends Controller
             'name.required' => 'Vui lòng nhập tên thử thách.',
             'target_count.required' => 'Vui lòng nhập số bài review cần viết.',
             'end_date.after' => 'Ngày kết thúc phải sau ngày bắt đầu.',
+            'name.max' => 'Tên thử thách tối đa 50 ký tự.',
+            'description.max' => 'Mô tả tối đa 150 ký tự.',
         ]);
 
         $oldValues = $challenge->toArray();
@@ -154,7 +172,15 @@ class ChallengeController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
-        return redirect()->route('admin.game.index', ['tab' => 'challenges'])
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật thử thách thành công!',
+                'challenge' => $challenge->fresh()->load('badge', 'avatarFrame')
+            ]);
+        }
+
+        return redirect()->route('admin.challenges.show', $challenge)
             ->with('success', 'Cập nhật thử thách thành công!');
     }
 

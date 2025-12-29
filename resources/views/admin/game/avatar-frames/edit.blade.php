@@ -14,19 +14,27 @@
                     <div>
                         <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">
                             Tên khung <span class="text-red-500">*</span>
+                            <span class="text-xs text-gray-400 font-normal ml-1">(<span
+                                    id="name-count">{{ strlen($frame->name) }}</span>/50)</span>
                         </label>
-                        <input type="text" name="name" value="{{ old('name', $frame->name) }}"
+                        <input type="text" name="name" value="{{ old('name', $frame->name) }}" maxlength="50"
                             class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white"
-                            required>
+                            required
+                            oninput="document.getElementById('name-count').textContent = this.value.length">
                         @error('name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
 
                     {{-- Mô tả --}}
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Mô tả</label>
-                        <textarea name="description" rows="5"
+                        <label class="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">
+                            Mô tả
+                            <span class="text-xs text-gray-400 font-normal ml-1">(<span
+                                    id="desc-count">{{ strlen($frame->description ?? '') }}</span>/150)</span>
+                        </label>
+                        <textarea name="description" rows="5" maxlength="150"
                             class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white resize-y min-h-[120px]"
-                            placeholder="Mô tả khung avatar...">{{ old('description', $frame->description) }}</textarea>
+                            placeholder="Mô tả khung avatar..."
+                            oninput="document.getElementById('desc-count').textContent = this.value.length">{{ old('description', $frame->description) }}</textarea>
                     </div>
 
                     {{-- Hình ảnh hiện tại --}}

@@ -22,7 +22,7 @@
                 <td class="px-4 py-3 align-top">
                     <div class="flex items-center gap-2">
                         <img src="{{ $log->admin->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($log->admin->name) }}"
-                            class="w-8 h-8 rounded-full border dark:border-slate-600">
+                            class="w-8 h-8 rounded-full border dark:border-slate-600 object-cover">
                         <div class="min-w-0">
                             <div class="text-sm font-bold text-gray-800 dark:text-white truncate">{{ $log->admin->name }}
                             </div>
