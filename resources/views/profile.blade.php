@@ -199,7 +199,7 @@
                             @if(isset($isOwnProfile) && $isOwnProfile && $user->activeBadges->count() > 1)
                                 <div id="badges-edit-mode" class="hidden">
                                     <p class="text-[10px] text-gray-400 text-center mb-3">
-                                        <i class="fas fa-info-circle"></i> Kéo thả để sắp xếp thứ tự hiển thị (5 cái đầu tiên sẽ
+                                        <i class="fas fa-info-circle"></i> Kéo thả để sắp xếp thứ tự hiển thị (3 cái đầu tiên sẽ
                                         hiển thị ở bình luận)
                                     </p>
                                     <div id="sortable-badges" class="flex justify-center flex-wrap gap-3">

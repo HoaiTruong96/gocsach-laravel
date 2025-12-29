@@ -1,5 +1,5 @@
 {{-- AI Chatbox Component --}}
-<div id="chatbox-container" class="fixed bottom-6 right-6 z-[9998] sm:bottom-6 sm:right-6">
+<div id="chatbox-container" class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[9998]">
 
     {{-- Chat Window - Responsive: compact on mobile, larger on desktop --}}
     <div id="chatbox-window"
@@ -161,11 +161,16 @@
     <div id="floating-buttons-container" class="flex flex-col gap-2 sm:gap-3 items-center">
         {{-- Back to Top Button --}}
         <button id="back-to-top-btn"
-            class="w-11 h-11 bg-brand-green text-white rounded-full shadow-lg opacity-0 invisible transform translate-y-4 transition-all duration-300 hover:bg-brand-accent hover:scale-110 hover:shadow-xl flex items-center justify-center group"
+            class="w-9 h-9 sm:w-11 sm:h-11 bg-brand-green text-white rounded-full shadow-lg opacity-0 invisible transform translate-y-4 transition-all duration-300 hover:bg-brand-accent hover:scale-110 hover:shadow-xl flex items-center justify-center group"
             aria-label="Back to top">
             <i class="fas fa-chevron-up text-xs sm:text-sm group-hover:animate-bounce"></i>
         </button>
 
+        {{-- Mobile Toggle Button (chỉ hiện trên mobile) --}}
+        <button id="mobile-float-toggle"
+            class="md:hidden w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br from-gray-600 to-gray-800 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300"
+            onclick="toggleMobileFloatMenu()" aria-label="Toggle menu">
+            <i id="mobile-float-icon" class="fas fa-ellipsis-v text-base sm:text-lg"></i>
         {{-- Facebook Messenger Button --}}
         <a href="https://m.me/j/AbYuQDQf0AvniBIU/" target="_blank" rel="noopener noreferrer"
             class="floating-btn w-11 h-11 bg-gradient-to-br from-[#00b2ff] to-[#006aff] text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative group"
@@ -257,6 +262,7 @@
     .floating-btn {
         animation: floatGlow 3s ease-in-out infinite;
         box-shadow: 0 4px 15px var(--glow-color, rgba(0, 0, 0, 0.2));
+        transition: opacity 0.3s, transform 0.3s;
     }
 
 
