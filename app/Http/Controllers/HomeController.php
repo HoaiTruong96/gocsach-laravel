@@ -26,11 +26,11 @@ class HomeController extends Controller
 
         // Query từ bảng COMMENTS - chỉ lấy comment cha (không phải reply)
         $reviewQuery = Comment::with([
-            'user',
+            'user.activeBadges', // Load user cùng với badges
             'post.book', // Lấy thông tin sách qua bài post
             'likes',
             'replies' => function ($query) {
-                $query->with(['user', 'likes'])->latest();
+                $query->with(['user.activeBadges', 'likes'])->latest(); // Load badges cho cả replies
             }
         ])
             ->whereNull('parent_id') // Chỉ lấy comment gốc, không phải reply
