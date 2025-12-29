@@ -125,12 +125,12 @@
     </div>
 
     {{-- Floating Buttons Container --}}
-    <div id="floating-buttons-container" class="flex flex-col gap-3 items-center">
+    <div id="floating-buttons-container" class="flex flex-col gap-2 sm:gap-3 items-center">
         {{-- Back to Top Button --}}
         <button id="back-to-top-btn"
             class="w-11 h-11 bg-brand-green text-white rounded-full shadow-lg opacity-0 invisible transform translate-y-4 transition-all duration-300 hover:bg-brand-accent hover:scale-110 hover:shadow-xl flex items-center justify-center group"
             aria-label="Back to top">
-            <i class="fas fa-chevron-up text-sm group-hover:animate-bounce"></i>
+            <i class="fas fa-chevron-up text-xs sm:text-sm group-hover:animate-bounce"></i>
         </button>
 
         {{-- Facebook Messenger Button --}}
@@ -159,30 +159,31 @@
         </button>
 
         {{-- Các nút social (ẩn trên mobile, hiện khi toggle) --}}
-        <div id="mobile-float-buttons" class="flex flex-col gap-3 md:flex md:opacity-100 hidden opacity-0 transition-all duration-300">
+        <div id="mobile-float-buttons"
+            class="flex flex-col gap-2 sm:gap-3 md:flex md:opacity-100 hidden opacity-0 transition-all duration-300">
             {{-- Facebook Messenger Button --}}
             <a href="https://m.me/j/AbYuQDQf0AvniBIU/" target="_blank" rel="noopener noreferrer"
-                class="floating-btn w-11 h-11 bg-gradient-to-br from-[#00b2ff] to-[#006aff] text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative group"
+                class="floating-btn w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br from-[#00b2ff] to-[#006aff] text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative group"
                 style="animation-delay: 0s; --glow-color: rgba(0, 132, 255, 0.5);"
                 title="Di chuyển tới Cộng đồng Góc Sách trên Facebook">
-                <i class="fab fa-facebook-messenger text-base relative z-10"></i>
+                <i class="fab fa-facebook-messenger text-sm sm:text-base relative z-10"></i>
             </a>
 
             {{-- Zalo Button --}}
             <a href="https://zalo.me/g/fhbbxj936" target="_blank" rel="noopener noreferrer"
-                class="floating-btn w-11 h-11 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative group overflow-hidden"
+                class="floating-btn w-9 h-9 sm:w-11 sm:h-11 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative group overflow-hidden"
                 style="animation-delay: 0.3s; --glow-color: rgba(0, 104, 255, 0.5);"
                 title="Di chuyển tới Cộng đồng Góc Sách trên Zalo">
-                <img src="{{ asset('storage/zalo.png') }}" alt="Zalo" class="w-full h-full object-cover rounded-full relative z-10">
+                <img src="{{ asset('storage/zalo.png') }}" alt="Zalo"
+                    class="w-full h-full object-cover rounded-full relative z-10">
             </a>
 
             {{-- AI Chatbox Button --}}
             <button onclick="toggleChatbox()" id="chatbox-toggle"
-                class="floating-btn w-11 h-11 bg-gradient-to-br from-brand-green to-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative"
-                style="animation-delay: 0.6s; --glow-color: rgba(34, 197, 94, 0.5);"
-                title="Trò chuyện với Chatbot">
-                <i id="chatbox-icon-open" class="fas fa-comments text-base relative z-10"></i>
-                <i id="chatbox-icon-close" class="fas fa-times text-base hidden relative z-10"></i>
+                class="floating-btn w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br from-brand-green to-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative"
+                style="animation-delay: 0.6s; --glow-color: rgba(34, 197, 94, 0.5);" title="Trò chuyện với Chatbot">
+                <i id="chatbox-icon-open" class="fas fa-comments text-sm sm:text-base relative z-10"></i>
+                <i id="chatbox-icon-close" class="fas fa-times text-sm sm:text-base hidden relative z-10"></i>
             </button>
         </div>
     </div>
@@ -191,14 +192,14 @@
 <script>
     // Mobile floating buttons toggle
     let mobileFloatOpen = false;
-    
+
     function toggleMobileFloatMenu() {
         const buttons = document.getElementById('mobile-float-buttons');
         const icon = document.getElementById('mobile-float-icon');
         const toggle = document.getElementById('mobile-float-toggle');
-        
+
         mobileFloatOpen = !mobileFloatOpen;
-        
+
         if (mobileFloatOpen) {
             buttons.classList.remove('hidden', 'opacity-0');
             buttons.classList.add('opacity-100');
