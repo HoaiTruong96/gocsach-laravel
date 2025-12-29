@@ -16,7 +16,9 @@ class AdminController extends Controller
     {
         // THÔNG SỐ & BIỂU ĐỒ
         $totalReviews = Post::whereNotNull('book_id')->count();
-        $totalViews = Post::sum('view_count') + Book::sum('view_count');
+        $postViews = Post::sum('view_count');
+        $bookViews = Book::sum('view_count');
+        $totalViews = $postViews + $bookViews;
         $pendingReviews = Post::where('status', 'pending')->whereNotNull('book_id')->count();
         $totalUsers = User::where('role', 'user')->count();
 
@@ -67,6 +69,8 @@ class AdminController extends Controller
         return view('admin.dashboard', compact(
             'totalReviews',
             'totalViews',
+            'postViews',
+            'bookViews',
             'pendingReviews',
             'totalUsers',
             'labels',
