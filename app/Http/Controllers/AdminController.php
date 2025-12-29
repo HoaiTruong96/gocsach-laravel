@@ -137,6 +137,7 @@ class AdminController extends Controller
 
         // Lấy dữ liệu Reviews của tháng
         $reviews = Post::with(['user', 'book'])
+            ->withCount('likes')
             ->whereNotNull('book_id')
             ->whereYear('created_at', $selectedYear)
             ->whereMonth('created_at', $selectedMonth)
@@ -145,10 +146,34 @@ class AdminController extends Controller
 
         // Lấy dữ liệu Users đăng ký trong tháng
         $users = User::where('role', 'user')
+            ->withCount([
+                'posts' => function ($query) {
+                    $query->whereNotNull('book_id');
+                }
+            ])
             ->whereYear('created_at', $selectedYear)
             ->whereMonth('created_at', $selectedMonth)
             ->latest()
             ->get();
+
+        // Top 5 sách được review nhiều nhất trong tháng
+        $topBooks = Post::whereNotNull('book_id')
+            ->whereYear('created_at', $selectedYear)
+            ->whereMonth('created_at', $selectedMonth)
+            ->select('book_id', DB::raw('COUNT(*) as review_count'))
+            ->groupBy('book_id')
+            ->orderByDesc('review_count')
+            ->limit(5)
+            ->with('book')
+            ->get();
+
+        // Thống kê bổ sung
+        $totalViews = $reviews->sum('view_count');
+        $totalLikes = $reviews->sum('likes_count');
+        $totalComments = \App\Models\Comment::whereIn('post_id', $reviews->pluck('id'))
+            ->whereYear('created_at', $selectedYear)
+            ->whereMonth('created_at', $selectedMonth)
+            ->count();
 
         // Ghi log
         AdminActivityLog::log(
@@ -165,17 +190,20 @@ class AdminController extends Controller
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
-        $callback = function () use ($reviews, $users, $selectedMonth, $selectedYear) {
+        $callback = function () use ($reviews, $users, $topBooks, $selectedMonth, $selectedYear, $totalViews, $totalLikes, $totalComments) {
             $file = fopen('php://output', 'w');
 
             // BOM cho UTF-8
             fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-            // ======== PHẦN REVIEWS ========
-            fputcsv($file, ["BÁO CÁO THÁNG {$selectedMonth}/{$selectedYear}"]);
+            // ======== TIÊU ĐỀ BÁO CÁO ========
+            fputcsv($file, ["BÁO CÁO THỐNG KÊ THÁNG {$selectedMonth}/{$selectedYear}"]);
+            fputcsv($file, ["Ngày xuất: " . date('d/m/Y H:i')]);
             fputcsv($file, []);
+
+            // ======== PHẦN REVIEWS ========
             fputcsv($file, ["=== DANH SÁCH BÀI REVIEW ({$reviews->count()} bài) ==="]);
-            fputcsv($file, ['STT', 'Tên sách', 'Người viết', 'Email', 'Trạng thái', 'Ngày tạo']);
+            fputcsv($file, ['STT', 'Tên sách', 'Người viết', 'Email', 'Đánh giá (sao)', 'Lượt xem', 'Lượt thích', 'Trạng thái', 'Ngày tạo']);
 
             foreach ($reviews as $index => $review) {
                 fputcsv($file, [
@@ -183,6 +211,9 @@ class AdminController extends Controller
                     $review->book->title ?? 'Sách đã xóa',
                     $review->user->name ?? 'N/A',
                     $review->user->email ?? 'N/A',
+                    $review->rating ? $review->rating . '/5' : 'Chưa đánh giá',
+                    number_format($review->view_count ?? 0),
+                    number_format($review->likes_count ?? 0),
                     $review->status == 'published' ? 'Đã duyệt' : 'Chờ duyệt',
                     $review->created_at->format('d/m/Y H:i'),
                 ]);
@@ -192,15 +223,35 @@ class AdminController extends Controller
             fputcsv($file, []);
             fputcsv($file, []);
             fputcsv($file, ["=== THÀNH VIÊN MỚI ĐĂNG KÝ ({$users->count()} người) ==="]);
-            fputcsv($file, ['STT', 'Họ tên', 'Email', 'Ngày đăng ký']);
+            fputcsv($file, ['STT', 'Họ tên', 'Email', 'Số bài viết', 'Ngày đăng ký']);
 
             foreach ($users as $index => $user) {
                 fputcsv($file, [
                     $index + 1,
                     $user->name,
                     $user->email,
+                    $user->posts_count ?? 0,
                     $user->created_at->format('d/m/Y H:i'),
                 ]);
+            }
+
+            // ======== TOP 5 SÁCH ĐƯỢC REVIEW NHIỀU NHẤT ========
+            if ($topBooks->count() > 0) {
+                fputcsv($file, []);
+                fputcsv($file, []);
+                fputcsv($file, ["=== TOP 5 SÁCH ĐƯỢC REVIEW NHIỀU NHẤT ==="]);
+                fputcsv($file, ['Hạng', 'Tên sách', 'Tác giả', 'Số lượt review']);
+
+                foreach ($topBooks as $index => $item) {
+                    if ($item->book) {
+                        fputcsv($file, [
+                            $index + 1,
+                            $item->book->title,
+                            $item->book->author_name ?? 'Không rõ',
+                            $item->review_count,
+                        ]);
+                    }
+                }
             }
 
             // ======== THỐNG KÊ TỔNG HỢP ========
@@ -211,6 +262,9 @@ class AdminController extends Controller
             fputcsv($file, ['Tổng bài review trong tháng', $reviews->count()]);
             fputcsv($file, ['Review đã duyệt', $reviews->where('status', 'published')->count()]);
             fputcsv($file, ['Review chờ duyệt', $reviews->where('status', 'pending')->count()]);
+            fputcsv($file, ['Tổng lượt xem bài viết', number_format($totalViews)]);
+            fputcsv($file, ['Tổng lượt thích', number_format($totalLikes)]);
+            fputcsv($file, ['Tổng bình luận mới', number_format($totalComments)]);
             fputcsv($file, ['Thành viên mới đăng ký', $users->count()]);
 
             fclose($file);
