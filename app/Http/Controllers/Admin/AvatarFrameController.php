@@ -44,6 +44,9 @@ class AvatarFrameController extends Controller
         }
 
         if (!$frameImage) {
+            if ($request->ajax()) {
+                return response()->json(['errors' => ['frame_image_url' => ['Vui lòng nhập URL hình ảnh!']]], 422);
+            }
             return back()->withInput()->with('error', 'Vui lòng tải ảnh hoặc nhập URL hình ảnh!');
         }
 
@@ -68,6 +71,14 @@ class AvatarFrameController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Tạo khung avatar thành công!',
+                'frame' => $frame
+            ]);
+        }
+
         return redirect()->route('admin.game.index', ['tab' => 'frames'])
             ->with('success', 'Tạo khung avatar thành công!');
     }
@@ -75,9 +86,15 @@ class AvatarFrameController extends Controller
     /**
      * Form chỉnh sửa
      */
-    public function edit(AvatarFrame $avatarFrame)
+    public function edit(Request $request, AvatarFrame $avatarFrame)
     {
-        return view('admin.avatar-frames.edit', ['frame' => $avatarFrame]);
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'frame' => $avatarFrame
+            ]);
+        }
+        return view('admin.game.avatar-frames.edit', ['frame' => $avatarFrame]);
     }
 
     /**
@@ -129,6 +146,14 @@ class AvatarFrameController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật khung avatar thành công!',
+                'frame' => $avatarFrame
+            ]);
+        }
+
         return redirect()->route('admin.game.index', ['tab' => 'frames'])
             ->with('success', 'Cập nhật khung avatar thành công!');
     }
@@ -159,6 +184,13 @@ class AvatarFrameController extends Controller
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Xóa khung avatar thành công!'
+            ]);
+        }
 
         return redirect()->route('admin.game.index', ['tab' => 'frames'])
             ->with('success', 'Xóa khung avatar thành công!');
