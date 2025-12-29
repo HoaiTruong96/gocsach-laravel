@@ -21,15 +21,15 @@
                 <div class="flex gap-2 text-xs">
                     <span
                         class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 rounded-full font-bold whitespace-nowrap">
-                        <i class="fas fa-users"></i>{{ $totalUsers }}
+                        <i class="fas fa-users"></i>Tổng: {{ $totalUsers }}
                     </span>
                     <span
                         class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 rounded-full font-bold whitespace-nowrap">
-                        <i class="fas fa-shield-alt"></i>{{ $adminCount }}
+                        <i class="fas fa-shield-alt"></i>Admin: {{ $adminCount }}
                     </span>
                     <span
                         class="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-300 rounded-full font-bold whitespace-nowrap">
-                        <i class="fas fa-user"></i>{{ $memberCount }}
+                        <i class="fas fa-user"></i>Thành viên: {{ $memberCount }}
                     </span>
                 </div>
             </div>

@@ -19,9 +19,9 @@
                             {{ $review->created_at->format('d/m') }}
                         </p>
                     </td>
-                    <td class="px-4 py-3 text-right">
+                    <td class="px-4 py-3 text-right whitespace-nowrap">
                         <span
-                            class="px-2 py-1 rounded text-xs font-bold {{ $review->status == 'published' ? 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300' : 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300' }}">
+                            class="inline-block px-2 py-1 rounded text-xs font-bold whitespace-nowrap {{ $review->status == 'published' ? 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300' : 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300' }}">
                             {{ $review->status == 'published' ? 'Đã duyệt' : 'Chờ duyệt' }}
                         </span>
                     </td>
