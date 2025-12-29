@@ -20,11 +20,13 @@
                 <td class="px-5 py-4">
                     <div class="flex items-center gap-3">
                         <img src="{{ $user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random' }}"
-                            class="w-10 h-10 rounded-full border dark:border-slate-600 {{ !$user->is_active ? 'opacity-50 grayscale' : '' }}">
+                            class="w-10 h-10 rounded-full border dark:border-slate-600 object-cover {{ !$user->is_active ? 'opacity-50 grayscale' : '' }}">
                         <div>
-                            <span class="font-bold text-gray-800 dark:text-white {{ !$user->is_active ? 'line-through opacity-60' : '' }}">{{ $user->name }}</span>
+                            <span
+                                class="font-bold text-gray-800 dark:text-white {{ !$user->is_active ? 'line-through opacity-60' : '' }}">{{ $user->name }}</span>
                             @if(!$user->is_active)
-                                <span class="ml-2 inline-flex items-center px-1.5 py-0.5 bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-300 rounded text-xs font-bold">
+                                <span
+                                    class="ml-2 inline-flex items-center px-1.5 py-0.5 bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-300 rounded text-xs font-bold">
                                     <i class="fas fa-ban mr-1 text-[10px]"></i>Đã khóa
                                 </span>
                             @endif

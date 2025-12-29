@@ -89,7 +89,11 @@
             <div class="relative z-10">
                 <p class="text-green-500 text-sm font-bold uppercase tracking-wider mb-1">TỔNG LƯỢT XEM</p>
                 <h3 class="text-3xl font-extrabold text-gray-800 dark:text-white">{{ number_format($totalViews) }}</h3>
-                <p class="text-gray-400 dark:text-slate-400 text-xs mt-2">Toàn hệ thống</p>
+                <p class="text-gray-400 dark:text-slate-400 text-xs mt-2">
+                    <span class="text-blue-500">Bài viết: {{ number_format($postViews) }}</span>
+                    <span class="mx-1">|</span>
+                    <span class="text-emerald-500">Sách: {{ number_format($bookViews) }}</span>
+                </p>
             </div>
             <i class="fas fa-eye absolute right-4 top-6 text-6xl text-green-500 opacity-20"></i>
         </div>
