@@ -121,7 +121,7 @@
                             </span>
                         </button>
                         <div id="notification-dropdown-menu"
-                            class="hidden absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in z-50 origin-top-right">
+                            class="hidden fixed sm:absolute left-0 sm:left-auto right-0 top-16 sm:top-full sm:mt-2 w-full sm:w-80 bg-white rounded-none sm:rounded-xl shadow-xl border-t sm:border border-gray-100 overflow-hidden animate-fade-in z-[100] sm:origin-top-right">
                             <div class="px-4 py-3 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
                                 <span class="text-sm font-bold text-gray-700">Thông báo</span>
                                 <button type="button" onclick="markAllNotificationsAsRead()" id="mark-all-read-btn"
@@ -373,10 +373,10 @@
                     });
                     </script>
                 @else
-                    {{-- Guest --}}
-                    <div class="flex items-center gap-2 sm:gap-3">
+                    {{-- Guest - Hide on very small screens, show in mobile menu instead --}}
+                    <div class="hidden xs:flex items-center gap-2 sm:gap-3">
                         <a href="{{ route('login') }}"
-                            class="bg-brand-green text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-full hover:bg-[#16271f] transition font-bold shadow-md text-sm flex items-center gap-2">
+                            class="bg-brand-green text-white px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-full hover:bg-[#16271f] transition font-bold shadow-md text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2">
                             <i class="fas fa-sign-in-alt text-xs"></i> <span class="hidden sm:inline">Đăng Nhập</span><span class="sm:hidden">Đăng nhập</span>
                         </a>
                         <a href="{{ route('register') }}"
