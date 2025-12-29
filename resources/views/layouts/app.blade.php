@@ -92,6 +92,9 @@
 
     @stack('scripts')
 
+    {{-- Seasonal Decorations (Giáng sinh, Tết, Valentine, Halloween) --}}
+    @include('partials.seasonal-decoration')
+
     {{-- AI Chatbox --}}
     @include('partials.chatbox')
 
