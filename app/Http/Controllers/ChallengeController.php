@@ -31,6 +31,17 @@ class ChallengeController extends Controller
         $user = Auth::user();
         $challenge = Challenge::findOrFail($id);
 
+        // Kiểm tra xem thử thách đã bắt đầu chưa
+        $today = now()->startOfDay();
+        if ($challenge->start_date->startOfDay()->gt($today)) {
+            return redirect()->back()->with('error', 'Thử thách chưa bắt đầu! Vui lòng quay lại sau.');
+        }
+
+        // Kiểm tra xem thử thách đã kết thúc chưa
+        if ($challenge->end_date->startOfDay()->lt($today)) {
+            return redirect()->back()->with('error', 'Thử thách đã kết thúc!');
+        }
+
         // Kiểm tra xem đã tham gia chưa
         // Lưu ý: Dùng hàm challenges() trong Model User mà chúng ta đã sửa
         if ($user->challenges()->where('challenge_id', $id)->exists()) {
