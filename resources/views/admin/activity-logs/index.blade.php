@@ -138,20 +138,20 @@
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
                     <span class="font-bold text-gray-700 dark:text-slate-200 flex items-center gap-2">
-                        <i class="fas fa-clipboard-list text-blue-500"></i>Theo dõi hoạt động Admin
+                        <i class="fas fa-clipboard-list text-blue-500"></i>Theo dõi trạng thái hoạt động
                     </span>
                     <div class="flex gap-2 text-xs">
                         <span
                             class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 rounded-full font-bold">
-                            <i class="fas fa-calendar-day"></i>{{ $todayCount }} hôm nay
+                            <i class="fas fa-calendar-day"></i>Hôm nay: {{ $todayCount }}
                         </span>
                         <span
                             class="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-300 rounded-full font-bold">
-                            <i class="fas fa-calendar-week"></i>{{ $weekCount }} tuần
+                            <i class="fas fa-calendar-week"></i>Tuần này: {{ $weekCount }}
                         </span>
                         <span
                             class="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 dark:bg-slate-600 text-gray-600 dark:text-slate-300 rounded-full font-bold">
-                            <i class="fas fa-database"></i>{{ $totalCount }} tổng
+                            <i class="fas fa-database"></i>Tổng: {{ $totalCount }}
                         </span>
                     </div>
                 </div>
@@ -195,7 +195,7 @@
                             <div class="custom-option {{ request('admin_id') == $admin->id ? 'selected' : '' }}"
                                 data-value="{{ $admin->id }}">
                                 <img src="{{ $admin->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($admin->name) }}"
-                                    class="w-4 h-4 rounded-full">
+                                    class="w-4 h-4 rounded-full object-cover flex-shrink-0">
                                 {{ $admin->name }}
                             </div>
                         @endforeach

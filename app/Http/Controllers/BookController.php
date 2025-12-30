@@ -144,12 +144,16 @@ class BookController extends Controller
 
         // 2. Khởi tạo Query với withAvg để tính rating từ posts đã published
         $query = Book::where('is_approved', true)
-            ->withAvg(['posts' => function ($q) {
-                $q->where('status', 'published');
-            }], 'rating')
-            ->withCount(['posts' => function ($q) {
-                $q->where('status', 'published');
-            }]);
+            ->withAvg([
+                'posts' => function ($q) {
+                    $q->where('status', 'published');
+                }
+            ], 'rating')
+            ->withCount([
+                'posts' => function ($q) {
+                    $q->where('status', 'published');
+                }
+            ]);
 
         // 3. Xử lý Lọc
         if ($keyword !== null && $keyword !== '') {
@@ -280,6 +284,15 @@ class BookController extends Controller
             ->withCount(['likes', 'comments'])
             ->latest()
             ->paginate(10);
+
+        // Tăng view_count cho các bài review được hiển thị (chỉ tính 1 lần/session)
+        foreach ($reviews as $review) {
+            $sessionKey = 'review_viewed_' . $review->id;
+            if (!Session::has($sessionKey)) {
+                $review->increment('view_count');
+                Session::put($sessionKey, true);
+            }
+        }
 
         return view('review-detail', [
             'book' => $book,
