@@ -345,6 +345,10 @@
                                 e.stopPropagation();
                                 const isOpen = !menu.classList.contains('hidden');
                                 
+                                // Close notification dropdown if open
+                                const notifMenu = document.getElementById('notification-dropdown-menu');
+                                if (notifMenu) notifMenu.classList.add('hidden');
+                                
                                 if (isOpen) {
                                     menu.classList.add('hidden');
                                     arrow.classList.remove('rotate-180');
