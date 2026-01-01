@@ -52,7 +52,7 @@
                         </div>
 
                         @if(Auth::id() == $user->id)
-                            <button
+                            <button onclick="openEditProfileModal()"
                                 class="absolute bottom-0 right-0 bg-white border border-gray-200 p-1.5 rounded-full text-gray-500 hover:text-brand-green hover:border-brand-green shadow-sm transition z-20"
                                 title="Đổi ảnh đại diện">
                                 <i class="fas fa-camera text-xs"></i>
@@ -728,10 +728,17 @@
                                             @endif
                                         @endif
 
-                                        <a href="{{ route('book.reviews', $post->book->slug ?? $post->book_id) }}"
-                                            class="text-brand-green font-bold hover:underline text-xs uppercase tracking-wide flex items-center gap-1">
-                                            Xem chi tiết <i class="fas fa-arrow-right"></i>
-                                        </a>
+                                        @if($post->status == 'pending' && Auth::check() && Auth::id() == $post->user_id)
+                                            <a href="{{ route('reviews.edit', $post->id) }}"
+                                                class="text-brand-green font-bold hover:underline text-xs uppercase tracking-wide flex items-center gap-1">
+                                                Xem & Chỉnh sửa <i class="fas fa-arrow-right"></i>
+                                            </a>
+                                        @else
+                                            <a href="{{ route('book.reviews', $post->book->slug ?? $post->book_id) }}"
+                                                class="text-brand-green font-bold hover:underline text-xs uppercase tracking-wide flex items-center gap-1">
+                                                Xem chi tiết <i class="fas fa-arrow-right"></i>
+                                            </a>
+                                        @endif
                                     </div>
                                 </div>
                             </div>

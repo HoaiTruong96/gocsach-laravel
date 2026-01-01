@@ -153,11 +153,12 @@
 
             {{-- Zalo Button --}}
             <a href="https://zalo.me/g/fhbbxj936" target="_blank" rel="noopener noreferrer"
-                class="floating-btn w-9 h-9 sm:w-11 sm:h-11 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative group overflow-hidden"
+                class="floating-btn w-9 h-9 sm:w-11 sm:h-11 rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300 relative group overflow-hidden bg-[#0068FF]"
                 style="animation-delay: 0.3s; --glow-color: rgba(0, 104, 255, 0.5);"
                 title="Di chuyển tới Cộng đồng Góc Sách trên Zalo">
-                <img src="{{ asset('storage/zalo.png') }}" alt="Zalo"
-                    class="w-full h-full object-cover rounded-full relative z-10">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white relative z-10" viewBox="0 0 48 48" fill="currentColor">
+                    <path d="M24 4C12.95 4 4 12.95 4 24c0 11.05 8.95 20 20 20s20-8.95 20-20C44 12.95 35.05 4 24 4zm8.14 26.73l-5.27-2.75c-.37-.19-.8-.16-1.14.08l-2.85 2.03c-.06.04-.13.03-.17-.02l-3.57-4.75c-.04-.06-.03-.13.02-.17l2.03-2.85c.24-.34.27-.77.08-1.14l-2.75-5.27c-.25-.48-.79-.69-1.28-.48l-3.82 1.6c-.55.23-.87.82-.73 1.4.89 3.67 2.98 7.04 5.91 9.97 2.93 2.93 6.31 5.02 9.97 5.91.58.14 1.17-.18 1.4-.73l1.6-3.82c.21-.49 0-1.03-.48-1.28-.01.03.05.26.05.27z"/>
+                </svg>
             </a>
 
             {{-- AI Chatbox Button --}}
