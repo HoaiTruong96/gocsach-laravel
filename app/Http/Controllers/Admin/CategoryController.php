@@ -25,10 +25,66 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate(['name' => 'required|unique:categories,name']);
+        $request->validate([
+            'name' => 'required|min:2|max:100'
+        ], [
+            'name.required' => 'Tên danh mục là bắt buộc!',
+            'name.min' => 'Tên danh mục phải có ít nhất 2 ký tự!',
+            'name.max' => 'Tên danh mục không được quá 100 ký tự!'
+        ]);
+
+        $slug = Str::slug($request->name);
+
+        // Kiểm tra xem có danh mục đã soft-delete với name hoặc slug này không
+        $existingTrashed = Category::withTrashed()
+            ->where(function ($query) use ($request, $slug) {
+                $query->where('name', $request->name)
+                    ->orWhere('slug', $slug);
+            })
+            ->first();
+
+        if ($existingTrashed) {
+            if ($existingTrashed->trashed()) {
+                // Khôi phục danh mục đã xóa và cập nhật thông tin
+                $existingTrashed->restore();
+                $existingTrashed->update([
+                    'name' => $request->name,
+                    'slug' => $slug,
+                    'description' => $request->description
+                ]);
+
+                AdminActivityLog::log(
+                    'restore',
+                    "Khôi phục danh mục: {$existingTrashed->name}",
+                    Category::class,
+                    $existingTrashed->id,
+                    null,
+                    $existingTrashed->toArray()
+                );
+
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'category' => $existingTrashed,
+                        'message' => 'Đã khôi phục danh mục đã xóa trước đó!'
+                    ]);
+                }
+                return back()->with('success', 'Đã khôi phục danh mục đã xóa trước đó!');
+            } else {
+                // Danh mục đang hoạt động - báo lỗi trùng
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'errors' => ['name' => ['Tên danh mục hoặc slug đã tồn tại!']]
+                    ], 422);
+                }
+                return back()->withErrors(['name' => 'Tên danh mục hoặc slug đã tồn tại!']);
+            }
+        }
+
         $category = Category::create([
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
+            'slug' => $slug,
             'description' => $request->description
         ]);
 
