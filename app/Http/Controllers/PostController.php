@@ -209,6 +209,11 @@ class PostController extends Controller
         $user = Auth::user();
         $post = Post::with('book')->findOrFail($id);
 
+        // Không cho phép sửa nếu bài viết đang chờ duyệt xóa
+        if ($post->status === 'pending_delete') {
+            return redirect()->back()->with('error', 'Bài viết đang chờ duyệt xóa, không thể chỉnh sửa.');
+        }
+
         // Chỉ cho phép chủ bài viết hoặc admin sửa
         $isAdmin = $user->role === 'admin';
         if (!$isAdmin && (int) $post->user_id !== (int) $user->id) {
@@ -228,6 +233,11 @@ class PostController extends Controller
     {
         $user = Auth::user();
         $post = Post::findOrFail($id);
+
+        // Không cho phép sửa nếu bài viết đang chờ duyệt xóa
+        if ($post->status === 'pending_delete') {
+            return redirect()->back()->with('error', 'Bài viết đang chờ duyệt xóa, không thể chỉnh sửa.');
+        }
 
         // Chỉ cho phép chủ bài viết hoặc admin sửa
         $isAdmin = $user->role === 'admin';
@@ -280,7 +290,7 @@ class PostController extends Controller
             ->with('success', $message);
     }
 
-    // Yêu cầu xóa bài review (chờ admin duyệt)
+    // Yêu cầu xóa bài review (chờ admin duyệt) hoặc xóa ngay nếu admin tự xóa bài của mình
     public function requestDelete($id)
     {
         $user = Auth::user();
@@ -294,16 +304,16 @@ class PostController extends Controller
             ], 403);
         }
 
-        // Nếu user là admin thì xóa ngay (soft delete)
+        // Nếu admin xóa bài của chính mình -> xóa ngay (soft delete)
         if ($user->role === 'admin') {
-            $post->delete();
+            $post->delete(); // Soft delete
             return response()->json([
                 'success' => true,
-                'message' => 'Đã xóa bài viết thành công!'
+                'message' => 'Bài viết đã được xóa thành công!'
             ]);
         }
 
-        // Người dùng thường: Cập nhật status thành pending_delete
+        // User thường: cập nhật status thành pending_delete, chờ admin duyệt
         $post->update(['status' => 'pending_delete']);
 
         // Gửi thông báo cho admin
