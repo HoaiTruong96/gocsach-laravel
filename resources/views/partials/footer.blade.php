@@ -98,11 +98,15 @@
                 <div class="col-span-2 sm:col-span-2 md:col-span-1">
                     <h4 class="font-bold mb-3 sm:mb-6 text-white text-sm sm:text-lg text-center sm:text-left">Đăng Ký Nhận Tin</h4>
                     <p class="text-xs text-gray-300 mb-3 sm:mb-4 leading-relaxed text-center sm:text-left">Nhận thông báo sách mới, sự kiện và bài viết hay.</p>
-                    <form onsubmit="event.preventDefault();" class="flex flex-col sm:flex-col gap-2 sm:gap-3">
-                        <input type="email" placeholder="Email của bạn..." class="w-full px-4 py-2.5 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-sm focus:outline-none focus:border-[#D4A373] text-white placeholder-gray-400 transition">
-                        <button class="bg-[#8C6B4B] hover:bg-[#6e5338] text-white font-bold px-4 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm transition shadow-lg flex justify-center items-center gap-2">
-                            <i class="fas fa-paper-plane text-xs"></i> Đăng Ký
+                    <form id="newsletter-form" class="flex flex-col sm:flex-col gap-2 sm:gap-3">
+                        @csrf
+                        <input type="email" id="newsletter-email" name="email" placeholder="Email của bạn..." 
+                            class="w-full px-4 py-2.5 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-sm focus:outline-none focus:border-[#D4A373] text-white placeholder-gray-400 transition" required>
+                        <button type="submit" id="newsletter-btn" class="bg-[#8C6B4B] hover:bg-[#6e5338] text-white font-bold px-4 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm transition shadow-lg flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="fas fa-paper-plane text-xs" id="newsletter-icon"></i>
+                            <span id="newsletter-text">Đăng Ký</span>
                         </button>
+                        <p id="newsletter-message" class="text-xs text-center sm:text-left hidden"></p>
                     </form>
                 </div>
             </div>
@@ -119,3 +123,55 @@
         </div>
     </footer>
 </div>
+
+<script>
+document.getElementById('newsletter-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('newsletter-email').value;
+    const btn = document.getElementById('newsletter-btn');
+    const icon = document.getElementById('newsletter-icon');
+    const text = document.getElementById('newsletter-text');
+    const message = document.getElementById('newsletter-message');
+    const csrfToken = document.querySelector('#newsletter-form input[name="_token"]').value;
+    
+    // Disable button and show loading
+    btn.disabled = true;
+    icon.className = 'fas fa-spinner fa-spin text-xs';
+    text.textContent = 'Đang xử lý...';
+    message.classList.add('hidden');
+    
+    try {
+        const response = await fetch('{{ route("subscribe") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ email: email })
+        });
+        
+        const data = await response.json();
+        
+        message.classList.remove('hidden');
+        if (data.success) {
+            message.className = 'text-xs text-center sm:text-left text-green-400';
+            message.textContent = data.message;
+            document.getElementById('newsletter-email').value = '';
+        } else {
+            message.className = 'text-xs text-center sm:text-left text-red-400';
+            message.textContent = data.message;
+        }
+    } catch (error) {
+        message.classList.remove('hidden');
+        message.className = 'text-xs text-center sm:text-left text-red-400';
+        message.textContent = 'Có lỗi xảy ra. Vui lòng thử lại!';
+    } finally {
+        // Reset button
+        btn.disabled = false;
+        icon.className = 'fas fa-paper-plane text-xs';
+        text.textContent = 'Đăng Ký';
+    }
+});
+</script>

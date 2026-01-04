@@ -645,6 +645,25 @@
                             class="fas fa-palette w-5 text-center {{ request()->routeIs('admin.theme.*') ? 'text-white' : 'text-slate-400 group-hover:text-pink-400' }}"></i>
                         <span class="font-medium text-sm">Trang Trí Lễ Hội</span>
                     </a>
+
+                    <a href="{{ route('admin.subscribers.index') }}"
+                        class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.subscribers.*') ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white' }}">
+                        <i
+                            class="fas fa-envelope w-5 text-center {{ request()->routeIs('admin.subscribers.*') ? 'text-white' : 'text-slate-400 group-hover:text-teal-400' }}"></i>
+                        <span class="font-medium text-sm">Đăng Ký Nhận Tin</span>
+                        @php
+                            $lastViewedSubscribers = session('admin_last_viewed_subscribers');
+                            $newSubscriberCount = $lastViewedSubscribers 
+                                ? \App\Models\Subscriber::where('created_at', '>', $lastViewedSubscribers)->count()
+                                : \App\Models\Subscriber::count();
+                        @endphp
+                        @if($newSubscriberCount > 0)
+                            <span
+                                class="ml-auto min-w-[20px] h-5 flex items-center justify-center bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-[10px] font-bold px-1.5 rounded-full shadow-md shadow-teal-500/30 badge-blink">
+                                {{ $newSubscriberCount }}
+                            </span>
+                        @endif
+                    </a>
                 </div>
             </nav>
 
@@ -803,6 +822,11 @@
                                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.activity-titles.*') ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
                                 <i class="fas fa-crown w-5 text-center"></i>
                                 <span class="font-medium text-sm">Danh Hiệu Hoạt Động</span>
+                            </a>
+                            <a href="{{ route('admin.subscribers.index') }}"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.subscribers.*') ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800' }}">
+                                <i class="fas fa-envelope w-5 text-center"></i>
+                                <span class="font-medium text-sm">Đăng Ký Nhận Tin</span>
                             </a>
                         </div>
 
