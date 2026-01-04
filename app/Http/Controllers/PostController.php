@@ -211,8 +211,13 @@ class PostController extends Controller
 
         // Chỉ cho phép chủ bài viết hoặc admin sửa
         $isAdmin = $user->role === 'admin';
-        if (!$isAdmin && (int)$post->user_id !== (int)$user->id) {
+        if (!$isAdmin && (int) $post->user_id !== (int) $user->id) {
             return redirect()->back()->with('error', 'Bạn không có quyền sửa bài viết này.');
+        }
+
+        // Không cho sửa bài viết đang chờ xóa
+        if ($post->status === 'pending_delete') {
+            return redirect()->back()->with('error', 'Không thể sửa bài viết đang chờ xóa!');
         }
 
         return view('edit-review', compact('user', 'post'));
@@ -226,7 +231,7 @@ class PostController extends Controller
 
         // Chỉ cho phép chủ bài viết hoặc admin sửa
         $isAdmin = $user->role === 'admin';
-        if (!$isAdmin && (int)$post->user_id !== (int)$user->id) {
+        if (!$isAdmin && (int) $post->user_id !== (int) $user->id) {
             return redirect()->back()->with('error', 'Bạn không có quyền sửa bài viết này.');
         }
 
@@ -282,14 +287,23 @@ class PostController extends Controller
         $post = Post::findOrFail($id);
 
         // Chỉ cho phép chủ bài viết yêu cầu xóa
-        if ((int)$post->user_id !== (int)$user->id) {
+        if ((int) $post->user_id !== (int) $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Bạn không có quyền xóa bài viết này.'
             ], 403);
         }
 
-        // Cập nhật status thành pending_delete
+        // Nếu user là admin thì xóa ngay (soft delete)
+        if ($user->role === 'admin') {
+            $post->delete();
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã xóa bài viết thành công!'
+            ]);
+        }
+
+        // Người dùng thường: Cập nhật status thành pending_delete
         $post->update(['status' => 'pending_delete']);
 
         // Gửi thông báo cho admin
@@ -318,7 +332,7 @@ class PostController extends Controller
         $post = Post::findOrFail($id);
 
         // Chỉ cho phép chủ bài viết hủy yêu cầu xóa
-        if ((int)$post->user_id !== (int)$user->id) {
+        if ((int) $post->user_id !== (int) $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Bạn không có quyền thực hiện hành động này.'
@@ -349,7 +363,7 @@ class PostController extends Controller
         $post = Post::onlyTrashed()->findOrFail($id);
 
         // Chỉ cho phép chủ bài viết khôi phục
-        if ((int)$post->user_id !== (int)$user->id) {
+        if ((int) $post->user_id !== (int) $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Bạn không có quyền khôi phục bài viết này.'
@@ -373,7 +387,7 @@ class PostController extends Controller
         $post = Post::onlyTrashed()->findOrFail($id);
 
         // Chỉ cho phép chủ bài viết xóa vĩnh viễn
-        if ((int)$post->user_id !== (int)$user->id) {
+        if ((int) $post->user_id !== (int) $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Bạn không có quyền xóa bài viết này.'

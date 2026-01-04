@@ -47,6 +47,12 @@ class PostController extends Controller
     {
         $post = Post::with(['user', 'book'])->findOrFail($id);
 
+        // Không cho sửa bài viết đang chờ xóa
+        if ($post->status === 'pending_delete') {
+            return redirect()->route('admin.posts.index', ['status' => 'pending_delete'])
+                ->with('error', 'Không thể sửa bài viết đang chờ xóa!');
+        }
+
         return view('admin.posts.edit', compact('post'));
     }
 
