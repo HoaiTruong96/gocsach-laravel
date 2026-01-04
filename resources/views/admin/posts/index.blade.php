@@ -85,10 +85,16 @@
                                 <p class="text-gray-500 dark:text-slate-400 text-sm line-clamp-2 mb-2">
                                     {{ Str::limit(strip_tags($review->content), 100) }}
                                 </p>
-                                <button type="button" onclick="showReviewModal({{ $review->id }})"
-                                    class="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 font-medium">
-                                    <i class="fas fa-eye mr-1"></i>Xem chi tiết
-                                </button>
+                                @if($review->status != 'pending_delete')
+                                    <button type="button" onclick="showReviewModal({{ $review->id }})"
+                                        class="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 font-medium">
+                                        <i class="fas fa-eye mr-1"></i>Xem chi tiết
+                                    </button>
+                                @else
+                                    <span class="text-xs text-gray-400 dark:text-slate-500 italic">
+                                        <i class="fas fa-lock mr-1"></i>Đang chờ xóa
+                                    </span>
+                                @endif
                                 {{-- Hidden content for modal --}}
                                 <div id="review-data-{{ $review->id }}" class="hidden"
                                     data-title="{{ $review->title }}"
@@ -140,11 +146,13 @@
 
                             <td class="px-5 py-4 text-center align-top">
                                 <div class="flex justify-center gap-1.5">
-                                    {{-- Nút Sửa (luôn hiển thị) --}}
-                                    <a href="{{ route('admin.posts.edit', $review->id) }}"
-                                        class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 hover:bg-blue-500 dark:hover:bg-blue-600 hover:text-white transition" title="Sửa">
-                                        <i class="fas fa-edit text-xs"></i>
-                                    </a>
+                                    {{-- Nút Sửa (ẩn khi đang chờ xóa) --}}
+                                    @if($review->status != 'pending_delete')
+                                        <a href="{{ route('admin.posts.edit', $review->id) }}"
+                                            class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 hover:bg-blue-500 dark:hover:bg-blue-600 hover:text-white transition" title="Sửa">
+                                            <i class="fas fa-edit text-xs"></i>
+                                        </a>
+                                    @endif
                                     @if($review->status == 'pending')
                                         {{-- Duyệt --}}
                                         <form action="{{ route('admin.posts.update', $review->id) }}" method="POST">

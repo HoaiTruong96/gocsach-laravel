@@ -10,6 +10,7 @@ use App\Models\Article;
 use App\Models\Post;     // <--- Đã thêm Post
 use App\Models\Banner;
 use App\Models\Quote;
+use App\Models\Challenge;
 use App\Models\Like;
 use App\Models\CommentLike;
 use Illuminate\Support\Facades\Auth;
@@ -140,6 +141,15 @@ class HomeController extends Controller
             ->take(8)
             ->get();
 
+        // --- THỬ THÁCH NGẪU NHIÊN ĐANG HOẠT ĐỘNG ---
+        $today = now()->toDateString();
+        $activeChallenge = Challenge::with('badge')
+            ->where('is_active', true)
+            ->where('start_date', '<=', $today)
+            ->where('end_date', '>=', $today)
+            ->inRandomOrder()
+            ->first();
+
         // Truyền biến $latestReviews vào view
         return view('home', compact(
             'heroSlides',
@@ -153,7 +163,8 @@ class HomeController extends Controller
             'randomBook',
             'dailyAuthor',
             'latestPosts',
-            'hotPosts'
+            'hotPosts',
+            'activeChallenge'
         ));
     }
 
