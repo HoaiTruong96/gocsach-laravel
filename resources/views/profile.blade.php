@@ -278,7 +278,7 @@
                                 <div class="grid grid-cols-3 gap-2">
                                     @foreach($user->avatarFrames as $frame)
                                         <div class="relative group cursor-pointer border-2 rounded-lg p-1 transition-all
-                                                                                                                                                    {{ $frame->pivot->is_equipped ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300' }}"
+                                                                                                                                                                    {{ $frame->pivot->is_equipped ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300' }}"
                                             onclick="equipFrame({{ $frame->id }})">
 
                                             <!-- Frame Preview -->
@@ -321,7 +321,7 @@
                                     @foreach($user->avatarFrames as $frame)
                                         <div
                                             class="relative group border-2 rounded-lg p-1 transition-all
-                                                                                                                                                    {{ $frame->pivot->is_equipped ? 'border-purple-500 bg-purple-50' : 'border-gray-200' }}">
+                                                                                                                                                                    {{ $frame->pivot->is_equipped ? 'border-purple-500 bg-purple-50' : 'border-gray-200' }}">
 
                                             <!-- Frame Preview -->
                                             <div
@@ -716,7 +716,14 @@
                                     </span>
 
                                     <div class="flex items-center gap-3">
-                                        {{-- Nút Sửa (chỉ hiện với chủ bài viết, ẩn khi pending_delete) --}}
+                                        {{-- Nút Sửa (ẩn khi đang chờ xóa) --}}
+                                        @if(Auth::check() && Auth::id() == $post->user_id && $post->status != 'pending_delete')
+                                            <a href="{{ route('reviews.edit', $post->id) }}"
+                                                class="text-blue-500 hover:text-blue-700 font-bold hover:underline text-xs uppercase tracking-wide flex items-center gap-1 transition">
+                                                <i class="fas fa-edit"></i> Sửa
+                                            </a>
+                                        @endif
+                                        {{-- Nút Xóa (chờ admin duyệt) --}}
                                         @if(Auth::check() && Auth::id() == $post->user_id)
                                             @if($post->status != 'pending_delete')
                                                 <a href="{{ route('reviews.edit', $post->id) }}"
@@ -1264,16 +1271,16 @@
 
                         // Link tới profile người đó
                         html += `
-                                                            <a href="/profile/${u.id}" class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition group border border-transparent hover:border-gray-100">
-                                                                <img src="${avatar}" class="w-10 h-10 rounded-full border border-gray-200 object-cover">
-                                                                <div>
-                                                                    <h4 class="font-bold text-gray-800 text-sm group-hover:text-brand-green transition">${u.name}</h4>
-                                                                </div>
-                                                                <div class="ml-auto">
-                                                                    <span class="text-xs text-gray-400 group-hover:text-brand-green"><i class="fas fa-chevron-right"></i></span>
-                                                                </div>
-                                                            </a>
-                                                        `;
+                                                                <a href="/profile/${u.id}" class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition group border border-transparent hover:border-gray-100">
+                                                                    <img src="${avatar}" class="w-10 h-10 rounded-full border border-gray-200 object-cover">
+                                                                    <div>
+                                                                        <h4 class="font-bold text-gray-800 text-sm group-hover:text-brand-green transition">${u.name}</h4>
+                                                                    </div>
+                                                                    <div class="ml-auto">
+                                                                        <span class="text-xs text-gray-400 group-hover:text-brand-green"><i class="fas fa-chevron-right"></i></span>
+                                                                    </div>
+                                                                </a>
+                                                            `;
                     });
                     html += '</div>';
                     body.innerHTML = html;
@@ -1847,13 +1854,13 @@
                             const newComment = document.createElement('div');
                             newComment.className = 'flex gap-2';
                             newComment.innerHTML = `
-                                                                                <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}" 
-                                                                                     class="w-6 h-6 rounded-full mt-0.5">
-                                                                                <div class="bg-gray-50 px-3 py-2 rounded-lg text-sm flex-1">
-                                                                                    <span class="font-bold text-gray-700">{{ Auth::user()->name }}</span>
-                                                                                    <span class="text-gray-600 ml-2">${content}</span>
-                                                                                </div>
-                                                                            `;
+                                                                                    <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}" 
+                                                                                         class="w-6 h-6 rounded-full mt-0.5">
+                                                                                    <div class="bg-gray-50 px-3 py-2 rounded-lg text-sm flex-1">
+                                                                                        <span class="font-bold text-gray-700">{{ Auth::user()->name }}</span>
+                                                                                        <span class="text-gray-600 ml-2">${content}</span>
+                                                                                    </div>
+                                                                                `;
                             commentList.prepend(newComment);
                         }
                     } else {
@@ -2150,13 +2157,13 @@
                                 const newComment = document.createElement('div');
                                 newComment.className = 'flex gap-2';
                                 newComment.innerHTML = `
-                                                                            <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}" 
-                                                                                 class="w-6 h-6 rounded-full mt-0.5">
-                                                                            <div class="bg-gray-50 px-3 py-2 rounded-lg text-sm flex-1">
-                                                                                <span class="font-bold text-gray-700">{{ Auth::user()->name }}</span>
-                                                                                <span class="text-gray-600 ml-2">${content}</span>
-                                                                            </div>
-                                                                        `;
+                                                                                    <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}" 
+                                                                                         class="w-6 h-6 rounded-full mt-0.5">
+                                                                                    <div class="bg-gray-50 px-3 py-2 rounded-lg text-sm flex-1">
+                                                                                        <span class="font-bold text-gray-700">{{ Auth::user()->name }}</span>
+                                                                                        <span class="text-gray-600 ml-2">${content}</span>
+                                                                                    </div>
+                                                                                `;
                                 commentList.prepend(newComment);
                             }
                         } else {
@@ -2454,13 +2461,13 @@
                                 const newComment = document.createElement('div');
                                 newComment.className = 'flex gap-2';
                                 newComment.innerHTML = `
-                                                                            <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}" 
-                                                                                 class="w-6 h-6 rounded-full mt-0.5">
-                                                                            <div class="bg-gray-50 px-3 py-2 rounded-lg text-sm flex-1">
-                                                                                <span class="font-bold text-gray-700">{{ Auth::user()->name }}</span>
-                                                                                <span class="text-gray-600 ml-2">${content}</span>
-                                                                            </div>
-                                                                        `;
+                                                                                    <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}" 
+                                                                                         class="w-6 h-6 rounded-full mt-0.5">
+                                                                                    <div class="bg-gray-50 px-3 py-2 rounded-lg text-sm flex-1">
+                                                                                        <span class="font-bold text-gray-700">{{ Auth::user()->name }}</span>
+                                                                                        <span class="text-gray-600 ml-2">${content}</span>
+                                                                                    </div>
+                                                                                `;
                                 commentList.prepend(newComment);
                             }
                         } else {

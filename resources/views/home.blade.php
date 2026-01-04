@@ -673,6 +673,7 @@
                 </section>
 
                 {{-- Banner Sự Kiện - PREMIUM --}}
+                @if(isset($activeChallenge) && $activeChallenge)
                 <div
                     class="bg-gradient-to-br from-[#2A483A] via-[#1e3a2f] to-[#0f1f17] rounded-2xl p-8 relative overflow-hidden shadow-xl text-white group hover:shadow-2xl transition-all duration-500">
                     {{-- Decorative Elements --}}
@@ -686,8 +687,6 @@
                     </div>
                     <div class="absolute bottom-0 left-0 w-48 h-48 bg-green-500/10 rounded-full blur-2xl -ml-12 -mb-12">
                     </div>
-                    <div class="absolute top-1/2 right-1/4 w-2 h-2 bg-brand-accent rounded-full animate-ping"></div>
-                    <div class="absolute bottom-1/3 left-1/4 w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></div>
 
                     <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
                         <div class="flex items-center gap-5">
@@ -697,19 +696,22 @@
                                 <i class="fas fa-trophy text-white text-2xl"></i>
                             </div>
 
-
                             <div>
                                 <span
                                     class="inline-flex items-center gap-2 text-brand-accent text-xs font-bold uppercase tracking-wider border border-brand-accent/40 bg-brand-accent/10 px-3 py-1 rounded-full mb-2">
-                                    <span class="w-1.5 h-1.5 bg-brand-accent rounded-full animate-pulse"></span>
+                                    <span class="w-1.5 h-1.5 bg-brand-accent rounded-full"></span>
                                     Sự kiện HOT
                                 </span>
-                                <h3 class="text-2xl md:text-3xl font-serif font-bold mb-2 text-brand-beige">Thử Thách Đọc
-                                    Sách 2025</h3>
+                                <h3 class="text-2xl md:text-3xl font-serif font-bold mb-2 text-brand-beige">{{ $activeChallenge->name }}</h3>
                                 <p class="text-white/70 text-sm font-light max-w-md leading-relaxed">
                                     <i class="fas fa-medal text-yellow-400 mr-1"></i>
-                                    Hoàn thành <span class="text-brand-accent font-bold">3 cuốn sách</span> để nhận huy hiệu
-                                    "Mọt Sách Cần Cù" và nhiều phần thưởng hấp dẫn!
+                                    Hoàn thành <span class="text-brand-accent font-bold">{{ $activeChallenge->target_count }} cuốn sách</span> 
+                                    @if($activeChallenge->badge)
+                                        để nhận huy hiệu "{{ $activeChallenge->badge->name }}"
+                                    @endif
+                                    @if($activeChallenge->description)
+                                        - {{ Str::limit($activeChallenge->description, 60) }}
+                                    @endif
                                 </p>
                             </div>
                         </div>
@@ -721,6 +723,7 @@
                         </a>
                     </div>
                 </div>
+                @endif
             </div> {{-- END CỘT 8 --}}
 
             {{-- [CỘT PHẢI - 4 PHẦN] --}}
