@@ -27,9 +27,12 @@ class SiteVisit extends Model
      */
     public static function trackVisit(string $ip): void
     {
+        // Tạo session_id unique dựa theo IP để tránh lỗi duplicate key
+        $sessionId = md5($ip);
+
         self::updateOrCreate(
             ['ip_address' => $ip],
-            ['last_activity' => now()]
+            ['session_id' => $sessionId, 'last_activity' => now()]
         );
     }
 
