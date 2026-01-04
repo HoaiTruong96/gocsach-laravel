@@ -215,6 +215,11 @@ class PostController extends Controller
             return redirect()->back()->with('error', 'Bạn không có quyền sửa bài viết này.');
         }
 
+        // Không cho sửa bài viết đang chờ xóa
+        if ($post->status === 'pending_delete') {
+            return redirect()->back()->with('error', 'Không thể sửa bài viết đang chờ xóa!');
+        }
+
         return view('edit-review', compact('user', 'post'));
     }
 
