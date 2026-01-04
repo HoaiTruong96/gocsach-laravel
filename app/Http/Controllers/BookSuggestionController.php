@@ -57,37 +57,47 @@ class BookSuggestionController extends Controller
         // 3. Create slug
         $slug = Str::slug($request->title) . '-' . Str::random(4);
 
-        // 4. Create book with is_approved = false
+        // 4. Xác định trạng thái: Admin = tự động duyệt, User = chờ duyệt
+        $isAdmin = Auth::user()->role === 'admin';
+        $isApproved = $isAdmin ? true : false;
+
+        // 5. Create book
         $book = Book::create([
             'title' => $request->title,
             'slug' => $slug,
             'author_name' => $request->author_name,
             'description' => $request->description,
             'cover_image' => $coverPath,
-            'is_approved' => false,
+            'is_approved' => $isApproved,
             'created_by_user_id' => Auth::id(),
             'view_count' => 0,
         ]);
 
-        // 5. Attach categories if selected
+        // 6. Attach categories if selected
         if ($request->category_ids && count($request->category_ids) > 0) {
             $book->categories()->attach($request->category_ids);
         }
 
-        // 6. Gửi thông báo cho Admin
-        try {
-            $admins = User::where('role', 'admin')->get();
-            Notification::send($admins, new NewBookRequestNotification([
-                'requester_name' => Auth::user()->name,
-                'book_title' => $book->title,
-                'link' => route('admin.books.index') // Hoặc link chi tiết sách chờ duyệt
-            ]));
-        } catch (\Exception $e) {
-            \Log::error("Failed to send notification: " . $e->getMessage());
+        // 7. Gửi thông báo cho Admin (chỉ khi user thường đề xuất)
+        if (!$isAdmin) {
+            try {
+                $admins = User::where('role', 'admin')->get();
+                Notification::send($admins, new NewBookRequestNotification([
+                    'requester_name' => Auth::user()->name,
+                    'book_title' => $book->title,
+                    'link' => route('admin.books.index') // Hoặc link chi tiết sách chờ duyệt
+                ]));
+            } catch (\Exception $e) {
+                \Log::error("Failed to send notification: " . $e->getMessage());
+            }
         }
 
-        // 6. Redirect back to profile with success message
+        // 8. Redirect back to profile with success message
+        $message = $isAdmin
+            ? 'Đã thêm sách thành công!'
+            : 'Đề xuất sách thành công! Vui lòng chờ Admin phê duyệt.';
+
         return redirect()->route('profile', Auth::id())
-            ->with('success', 'Đề xuất sách thành công! Vui lòng chờ Admin phê duyệt.');
+            ->with('success', $message);
     }
 }

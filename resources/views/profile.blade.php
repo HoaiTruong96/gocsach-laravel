@@ -278,7 +278,7 @@
                                 <div class="grid grid-cols-3 gap-2">
                                     @foreach($user->avatarFrames as $frame)
                                         <div class="relative group cursor-pointer border-2 rounded-lg p-1 transition-all
-                                                                                                                                                    {{ $frame->pivot->is_equipped ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300' }}"
+                                                                                                                                                                    {{ $frame->pivot->is_equipped ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300' }}"
                                             onclick="equipFrame({{ $frame->id }})">
 
                                             <!-- Frame Preview -->
@@ -321,7 +321,7 @@
                                     @foreach($user->avatarFrames as $frame)
                                         <div
                                             class="relative group border-2 rounded-lg p-1 transition-all
-                                                                                                                                                    {{ $frame->pivot->is_equipped ? 'border-purple-500 bg-purple-50' : 'border-gray-200' }}">
+                                                                                                                                                                    {{ $frame->pivot->is_equipped ? 'border-purple-500 bg-purple-50' : 'border-gray-200' }}">
 
                                             <!-- Frame Preview -->
                                             <div
@@ -507,20 +507,21 @@
                                             </div>
                                         </div>
                                         @if(Auth::check() && Auth::id() == $post->user_id)
-                                            {{-- Nút Sửa (chỉ cho chủ bài viết) --}}
-                                            <a href="{{ route('reviews.edit', $post->id) }}"
-                                                class="text-blue-500 hover:text-blue-700 self-center opacity-0 group-hover:opacity-100 transition"
-                                                title="Chỉnh sửa">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            {{-- Nút Xóa (chờ admin duyệt) --}}
+                                            {{-- Nút Sửa (chỉ cho chủ bài viết, ẩn khi pending_delete) --}}
                                             @if($post->status != 'pending_delete')
+                                                <a href="{{ route('reviews.edit', $post->id) }}"
+                                                    class="text-blue-500 hover:text-blue-700 self-center opacity-0 group-hover:opacity-100 transition"
+                                                    title="Chỉnh sửa">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                {{-- Nút Xóa (chờ admin duyệt) --}}
                                                 <button onclick="requestDeleteReview({{ $post->id }})"
                                                     class="text-red-400 hover:text-red-600 self-center opacity-0 group-hover:opacity-100 transition"
                                                     title="Yêu cầu xóa">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
                                             @else
+                                                {{-- Trạng thái chờ duyệt xóa --}}
                                                 <button onclick="cancelDeleteReview({{ $post->id }})"
                                                     class="text-[10px] text-orange-600 bg-orange-50 hover:bg-orange-100 px-1.5 py-0.5 rounded font-bold self-center transition cursor-pointer"
                                                     title="Click để hủy yêu cầu xóa">
@@ -528,12 +529,14 @@
                                                 </button>
                                             @endif
                                         @else
-                                            {{-- Nút Xem (cho người khác) --}}
-                                            <a href="{{ route('book.reviews', $post->book->slug ?? $post->book_id) }}"
-                                                class="text-brand-green hover:text-brand-green/80 self-center opacity-0 group-hover:opacity-100 transition"
-                                                title="Xem bài review">
-                                                <i class="fas fa-external-link-alt"></i>
-                                            </a>
+                                            {{-- Nút Xem (cho người khác, ẩn khi pending_delete) --}}
+                                            @if($post->status != 'pending_delete')
+                                                <a href="{{ route('book.reviews', $post->book->slug ?? $post->book_id) }}"
+                                                    class="text-brand-green hover:text-brand-green/80 self-center opacity-0 group-hover:opacity-100 transition"
+                                                    title="Xem bài review">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </a>
+                                            @endif
                                         @endif
                                     </div>
                                 @endforeach
@@ -646,6 +649,11 @@
                                             class="inline-flex items-center gap-1.5 px-3 py-1 bg-red-50 text-red-700 text-xs font-bold rounded-full border border-red-200 shadow-sm">
                                             <i class="fas fa-times-circle"></i> Bị từ chối
                                         </span>
+                                    @elseif($post->status == 'pending_delete')
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-3 py-1 bg-orange-50 text-orange-700 text-xs font-bold rounded-full border border-orange-200 shadow-sm animate-pulse">
+                                            <i class="fas fa-trash-alt"></i> Chờ duyệt xóa
+                                        </span>
                                     @elseif($post->status == 'published')
                                         {{-- Nếu bạn muốn hiện chữ Đã duyệt (thường thì không cần thiết, để trống cho đẹp) --}}
                                         {{-- <span class="text-green-600 text-xs font-bold"><i class="fas fa-check-circle"></i> Đã
@@ -708,19 +716,27 @@
                                     </span>
 
                                     <div class="flex items-center gap-3">
-                                        {{-- Nút Sửa (chỉ hiện với chủ bài viết) --}}
-                                        @if(Auth::check() && Auth::id() == $post->user_id)
+                                        {{-- Nút Sửa (ẩn khi đang chờ xóa) --}}
+                                        @if(Auth::check() && Auth::id() == $post->user_id && $post->status != 'pending_delete')
                                             <a href="{{ route('reviews.edit', $post->id) }}"
                                                 class="text-blue-500 hover:text-blue-700 font-bold hover:underline text-xs uppercase tracking-wide flex items-center gap-1 transition">
                                                 <i class="fas fa-edit"></i> Sửa
                                             </a>
-                                            {{-- Nút Xóa (chờ admin duyệt) --}}
+                                        @endif
+                                        {{-- Nút Xóa (chờ admin duyệt) --}}
+                                        @if(Auth::check() && Auth::id() == $post->user_id)
                                             @if($post->status != 'pending_delete')
+                                                <a href="{{ route('reviews.edit', $post->id) }}"
+                                                    class="text-blue-500 hover:text-blue-700 font-bold hover:underline text-xs uppercase tracking-wide flex items-center gap-1 transition">
+                                                    <i class="fas fa-edit"></i> Sửa
+                                                </a>
+                                                {{-- Nút Xóa (chờ admin duyệt) --}}
                                                 <button onclick="requestDeleteReview({{ $post->id }})"
                                                     class="text-red-500 hover:text-red-700 font-bold hover:underline text-xs uppercase tracking-wide flex items-center gap-1 transition">
                                                     <i class="fas fa-trash-alt"></i> Xóa
                                                 </button>
                                             @else
+                                                {{-- Trạng thái chờ duyệt xóa --}}
                                                 <button onclick="cancelDeleteReview({{ $post->id }})"
                                                     class="text-orange-600 hover:text-orange-800 font-bold hover:underline text-xs uppercase tracking-wide flex items-center gap-1 transition cursor-pointer">
                                                     <i class="fas fa-undo"></i> Hủy xóa
@@ -728,16 +744,19 @@
                                             @endif
                                         @endif
 
-                                        @if($post->status == 'pending' && Auth::check() && Auth::id() == $post->user_id)
-                                            <a href="{{ route('reviews.edit', $post->id) }}"
-                                                class="text-brand-green font-bold hover:underline text-xs uppercase tracking-wide flex items-center gap-1">
-                                                Xem & Chỉnh sửa <i class="fas fa-arrow-right"></i>
-                                            </a>
-                                        @else
-                                            <a href="{{ route('book.reviews', $post->book->slug ?? $post->book_id) }}"
-                                                class="text-brand-green font-bold hover:underline text-xs uppercase tracking-wide flex items-center gap-1">
-                                                Xem chi tiết <i class="fas fa-arrow-right"></i>
-                                            </a>
+                                        {{-- Link Xem chi tiết (ẩn khi pending_delete) --}}
+                                        @if($post->status != 'pending_delete')
+                                            @if($post->status == 'pending' && Auth::check() && Auth::id() == $post->user_id)
+                                                <a href="{{ route('reviews.edit', $post->id) }}"
+                                                    class="text-brand-green font-bold hover:underline text-xs uppercase tracking-wide flex items-center gap-1">
+                                                    Xem & Chỉnh sửa <i class="fas fa-arrow-right"></i>
+                                                </a>
+                                            @else
+                                                <a href="{{ route('book.reviews', $post->book->slug ?? $post->book_id) }}"
+                                                    class="text-brand-green font-bold hover:underline text-xs uppercase tracking-wide flex items-center gap-1">
+                                                    Xem chi tiết <i class="fas fa-arrow-right"></i>
+                                                </a>
+                                            @endif
                                         @endif
                                     </div>
                                 </div>
@@ -1252,16 +1271,16 @@
 
                         // Link tới profile người đó
                         html += `
-                                                            <a href="/profile/${u.id}" class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition group border border-transparent hover:border-gray-100">
-                                                                <img src="${avatar}" class="w-10 h-10 rounded-full border border-gray-200 object-cover">
-                                                                <div>
-                                                                    <h4 class="font-bold text-gray-800 text-sm group-hover:text-brand-green transition">${u.name}</h4>
-                                                                </div>
-                                                                <div class="ml-auto">
-                                                                    <span class="text-xs text-gray-400 group-hover:text-brand-green"><i class="fas fa-chevron-right"></i></span>
-                                                                </div>
-                                                            </a>
-                                                        `;
+                                                                <a href="/profile/${u.id}" class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition group border border-transparent hover:border-gray-100">
+                                                                    <img src="${avatar}" class="w-10 h-10 rounded-full border border-gray-200 object-cover">
+                                                                    <div>
+                                                                        <h4 class="font-bold text-gray-800 text-sm group-hover:text-brand-green transition">${u.name}</h4>
+                                                                    </div>
+                                                                    <div class="ml-auto">
+                                                                        <span class="text-xs text-gray-400 group-hover:text-brand-green"><i class="fas fa-chevron-right"></i></span>
+                                                                    </div>
+                                                                </a>
+                                                            `;
                     });
                     html += '</div>';
                     body.innerHTML = html;
@@ -1835,13 +1854,13 @@
                             const newComment = document.createElement('div');
                             newComment.className = 'flex gap-2';
                             newComment.innerHTML = `
-                                                                                <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}" 
-                                                                                     class="w-6 h-6 rounded-full mt-0.5">
-                                                                                <div class="bg-gray-50 px-3 py-2 rounded-lg text-sm flex-1">
-                                                                                    <span class="font-bold text-gray-700">{{ Auth::user()->name }}</span>
-                                                                                    <span class="text-gray-600 ml-2">${content}</span>
-                                                                                </div>
-                                                                            `;
+                                                                                    <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}" 
+                                                                                         class="w-6 h-6 rounded-full mt-0.5">
+                                                                                    <div class="bg-gray-50 px-3 py-2 rounded-lg text-sm flex-1">
+                                                                                        <span class="font-bold text-gray-700">{{ Auth::user()->name }}</span>
+                                                                                        <span class="text-gray-600 ml-2">${content}</span>
+                                                                                    </div>
+                                                                                `;
                             commentList.prepend(newComment);
                         }
                     } else {
@@ -2138,13 +2157,13 @@
                                 const newComment = document.createElement('div');
                                 newComment.className = 'flex gap-2';
                                 newComment.innerHTML = `
-                                                                            <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}" 
-                                                                                 class="w-6 h-6 rounded-full mt-0.5">
-                                                                            <div class="bg-gray-50 px-3 py-2 rounded-lg text-sm flex-1">
-                                                                                <span class="font-bold text-gray-700">{{ Auth::user()->name }}</span>
-                                                                                <span class="text-gray-600 ml-2">${content}</span>
-                                                                            </div>
-                                                                        `;
+                                                                                    <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}" 
+                                                                                         class="w-6 h-6 rounded-full mt-0.5">
+                                                                                    <div class="bg-gray-50 px-3 py-2 rounded-lg text-sm flex-1">
+                                                                                        <span class="font-bold text-gray-700">{{ Auth::user()->name }}</span>
+                                                                                        <span class="text-gray-600 ml-2">${content}</span>
+                                                                                    </div>
+                                                                                `;
                                 commentList.prepend(newComment);
                             }
                         } else {
@@ -2442,13 +2461,13 @@
                                 const newComment = document.createElement('div');
                                 newComment.className = 'flex gap-2';
                                 newComment.innerHTML = `
-                                                                            <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}" 
-                                                                                 class="w-6 h-6 rounded-full mt-0.5">
-                                                                            <div class="bg-gray-50 px-3 py-2 rounded-lg text-sm flex-1">
-                                                                                <span class="font-bold text-gray-700">{{ Auth::user()->name }}</span>
-                                                                                <span class="text-gray-600 ml-2">${content}</span>
-                                                                            </div>
-                                                                        `;
+                                                                                    <img src="{{ Auth::user()->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) }}" 
+                                                                                         class="w-6 h-6 rounded-full mt-0.5">
+                                                                                    <div class="bg-gray-50 px-3 py-2 rounded-lg text-sm flex-1">
+                                                                                        <span class="font-bold text-gray-700">{{ Auth::user()->name }}</span>
+                                                                                        <span class="text-gray-600 ml-2">${content}</span>
+                                                                                    </div>
+                                                                                `;
                                 commentList.prepend(newComment);
                             }
                         } else {
