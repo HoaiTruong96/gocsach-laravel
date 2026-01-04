@@ -117,10 +117,6 @@
                             <i class="fas fa-book-open text-lg"></i>
                             <span>Đọc Review</span>
                         </a>
-                        <a href="#" class="flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-brand-accent text-white font-bold shadow-lg hover:bg-[#c29263] hover:-translate-y-1 transition-all duration-300 min-w-[200px]">
-                            <i class="fas fa-shopping-cart"></i>
-                            <span>Mua Sách Ngay</span>
-                        </a>
                     </div>
                 </div>
             </div>
