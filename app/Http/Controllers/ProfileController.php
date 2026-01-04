@@ -45,7 +45,7 @@ class ProfileController extends Controller
         if ($request->hasFile('avatar')) {
             // Xóa avatar cũ nếu có và không phải URL bên ngoài
             if ($user->avatar && !Str::startsWith($user->avatar, 'http')) {
-                Storage::delete('public/' . str_replace('/storage/', '', $user->avatar));
+                Storage::disk('public')->delete(str_replace('/storage/', '', $user->avatar));
             }
 
             // Lưu avatar mới
@@ -54,7 +54,7 @@ class ProfileController extends Controller
         } elseif ($request->filled('avatar_url')) {
             // Xóa avatar cũ nếu có và không phải URL bên ngoài
             if ($user->avatar && !Str::startsWith($user->avatar, 'http')) {
-                Storage::delete('public/' . str_replace('/storage/', '', $user->avatar));
+                Storage::disk('public')->delete(str_replace('/storage/', '', $user->avatar));
             }
             // Sử dụng URL
             $user->avatar = $request->avatar_url;

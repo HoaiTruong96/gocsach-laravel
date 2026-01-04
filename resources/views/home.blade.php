@@ -705,7 +705,7 @@
                                     Sự kiện HOT
                                 </span>
                                 <h3 class="text-2xl md:text-3xl font-serif font-bold mb-2 text-brand-beige">Thử Thách Đọc
-                                    Sách 2025</h3>
+                                    Sách 2026</h3>
                                 <p class="text-white/70 text-sm font-light max-w-md leading-relaxed">
                                     <i class="fas fa-medal text-yellow-400 mr-1"></i>
                                     Hoàn thành <span class="text-brand-accent font-bold">3 cuốn sách</span> để nhận huy hiệu
