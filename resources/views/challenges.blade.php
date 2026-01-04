@@ -23,6 +23,20 @@
         </div>
     @endif
 
+    @if(session('error'))
+        <div class="mb-8 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-3 shadow-sm animate-fade-in">
+            <i class="fas fa-exclamation-circle text-xl"></i>
+            <span class="font-medium">{{ session('error') }}</span>
+        </div>
+    @endif
+
+    @if(session('info'))
+        <div class="mb-8 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg flex items-center gap-3 shadow-sm animate-fade-in">
+            <i class="fas fa-info-circle text-xl"></i>
+            <span class="font-medium">{{ session('info') }}</span>
+        </div>
+    @endif
+
     <div class="space-y-6">
         {{-- VÒNG LẶP: Duyệt qua từng thử thách thật trong Database --}}
         @foreach($challenges as $challenge)
@@ -236,6 +250,13 @@
 
             {{-- TRƯỜNG HỢP 3: CHƯA THAM GIA (Thẻ Design Mới) --}}
             @else
+                @php
+                    $today = \Carbon\Carbon::now()->startOfDay();
+                    $startDate = \Carbon\Carbon::parse($challenge->start_date)->startOfDay();
+                    $endDate = \Carbon\Carbon::parse($challenge->end_date)->startOfDay();
+                    $isUpcoming = $startDate->gt($today);
+                    $isEnded = $endDate->lt($today);
+                @endphp
                 <div class="bg-gradient-to-br from-[#1a2f25] via-[#2A483A] to-[#1a2f25] rounded-2xl shadow-xl text-white relative overflow-hidden group hover:-translate-y-1 transition duration-300">
                     {{-- Background Pattern --}}
                     <div class="absolute inset-0 opacity-5" style="background-image: url('https://www.transparenttextures.com/patterns/cubes.png');"></div>
@@ -247,10 +268,22 @@
                     <div class="relative z-10 p-6 md:p-8">
                         {{-- Header với thời gian --}}
                         <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-                            <span class="inline-flex items-center gap-2 bg-brand-accent/20 border border-brand-accent/30 text-brand-accent text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm">
-                                <span class="w-2 h-2 bg-brand-accent rounded-full animate-pulse"></span>
-                                Sự Kiện Mới
-                            </span>
+                            @if($isUpcoming)
+                                <span class="inline-flex items-center gap-2 bg-orange-500/20 border border-orange-400/30 text-orange-400 text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm">
+                                    <i class="far fa-clock"></i>
+                                    Sắp Diễn Ra
+                                </span>
+                            @elseif($isEnded)
+                                <span class="inline-flex items-center gap-2 bg-gray-500/20 border border-gray-400/30 text-gray-400 text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm">
+                                    <i class="fas fa-flag-checkered"></i>
+                                    Đã Kết Thúc
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-2 bg-brand-accent/20 border border-brand-accent/30 text-brand-accent text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm">
+                                    <span class="w-2 h-2 bg-brand-accent rounded-full animate-pulse"></span>
+                                    Đang Diễn Ra
+                                </span>
+                            @endif
                             <div class="flex items-center gap-4 text-xs text-white/60 font-medium">
                                 <span class="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-full">
                                     <i class="far fa-calendar-alt"></i> 
@@ -280,19 +313,37 @@
                                         <i class="fas fa-bullseye text-brand-accent"></i>
                                         <span class="text-sm font-semibold">{{ $challenge->target_count }} bài review</span>
                                     </div>
-                                    <div class="text-xs text-white/50">
-                                        Còn <span class="text-brand-accent font-bold">{{ (int) now()->diffInDays(\Carbon\Carbon::parse($challenge->end_date)) }}</span> ngày
-                                    </div>
+                                    @if($isUpcoming)
+                                        <div class="text-xs text-white/50">
+                                            Bắt đầu sau <span class="text-orange-400 font-bold">{{ (int) now()->diffInDays(\Carbon\Carbon::parse($challenge->start_date)) }}</span> ngày
+                                        </div>
+                                    @elseif(!$isEnded)
+                                        <div class="text-xs text-white/50">
+                                            Còn <span class="text-brand-accent font-bold">{{ (int) now()->diffInDays(\Carbon\Carbon::parse($challenge->end_date)) }}</span> ngày
+                                        </div>
+                                    @endif
                                 </div>
                                 
                                 {{-- CTA Button --}}
-                                <form action="{{ route('challenge.join', $challenge->id) }}" method="POST" class="inline-block">
-                                    @csrf
-                                    <button type="submit" class="bg-gradient-to-r from-brand-accent to-[#c29263] hover:from-[#c29263] hover:to-brand-accent text-white px-8 py-3 rounded-full font-bold shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-brand-accent/25 active:scale-95 flex items-center gap-2 group">
-                                        <span>Tham Gia Ngay</span>
-                                        <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-                                    </button>
-                                </form>
+                                @if($isUpcoming)
+                                    <div class="inline-flex items-center gap-2 bg-gray-500/50 text-white/70 px-8 py-3 rounded-full font-bold cursor-not-allowed">
+                                        <i class="far fa-clock"></i>
+                                        <span>Sẽ mở vào {{ \Carbon\Carbon::parse($challenge->start_date)->format('d/m/Y') }}</span>
+                                    </div>
+                                @elseif($isEnded)
+                                    <div class="inline-flex items-center gap-2 bg-gray-500/50 text-white/70 px-8 py-3 rounded-full font-bold cursor-not-allowed">
+                                        <i class="fas fa-ban"></i>
+                                        <span>Thử thách đã kết thúc</span>
+                                    </div>
+                                @else
+                                    <form action="{{ route('challenge.join', $challenge->id) }}" method="POST" class="inline-block">
+                                        @csrf
+                                        <button type="submit" class="bg-gradient-to-r from-brand-accent to-[#c29263] hover:from-[#c29263] hover:to-brand-accent text-white px-8 py-3 rounded-full font-bold shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-brand-accent/25 active:scale-95 flex items-center gap-2 group">
+                                            <span>Tham Gia Ngay</span>
+                                            <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                                        </button>
+                                    </form>
+                                @endif
                             </div>
                             
                             {{-- Right: Phần thưởng --}}

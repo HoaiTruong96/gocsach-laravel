@@ -23,6 +23,7 @@ use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\BookSuggestionController;
 use App\Http\Controllers\ChatbotController;
+use App\Http\Controllers\SubscriberController;
 
 // ====================================================
 // 1. NHÓM PUBLIC (Ai cũng xem được)
@@ -73,6 +74,9 @@ Route::get('/ajax-search', function (Illuminate\Http\Request $request) {
 Route::post('/api/chatbot', [ChatbotController::class, 'chat'])->name('chatbot.chat');
 Route::get('/api/chatbot/history', [ChatbotController::class, 'getHistory'])->name('chatbot.history');
 Route::delete('/api/chatbot/history', [ChatbotController::class, 'clearHistory'])->name('chatbot.clear');
+
+// Newsletter Subscription
+Route::post('/subscribe', [SubscriberController::class, 'store'])->name('subscribe');
 
 // Trang chi tiết bài viết Tạp chí
 Route::get('/tap-chi/{slug}', [ArticleController::class, 'show'])->name('articles.show');
@@ -335,6 +339,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('authors/{author}', [AuthorController::class, 'update'])->name('authors.update');
     Route::delete('authors/{author}', [AuthorController::class, 'destroy'])->name('authors.destroy');
     Route::resource('quotes', \App\Http\Controllers\Admin\QuoteController::class);
+
+    // Subscribers Management
+    Route::get('subscribers', [\App\Http\Controllers\Admin\SubscriberController::class, 'index'])->name('subscribers.index');
+    Route::post('subscribers/{subscriber}/toggle-active', [\App\Http\Controllers\Admin\SubscriberController::class, 'toggleActive'])->name('subscribers.toggle-active');
+    Route::delete('subscribers/{subscriber}', [\App\Http\Controllers\Admin\SubscriberController::class, 'destroy'])->name('subscribers.destroy');
+    Route::get('subscribers/export', [\App\Http\Controllers\Admin\SubscriberController::class, 'export'])->name('subscribers.export');
 
     // Activity Logs (xem + khôi phục)
     Route::get('/activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');

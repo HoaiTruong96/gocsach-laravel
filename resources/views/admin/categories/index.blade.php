@@ -57,6 +57,7 @@
                             <tr>
                                 <th class="px-5 py-3 w-12 text-center">#</th>
                                 <th class="px-5 py-3">Tên</th>
+                                <th class="px-5 py-3">Mô tả</th>
                                 <th class="px-5 py-3">Slug</th>
                                 <th class="px-5 py-3 text-center w-24">Số sách</th>
                                 <th class="px-5 py-3 text-center w-20"></th>
@@ -71,6 +72,14 @@
                                     </td>
                                     <td class="px-5 py-3">
                                         <span class="font-medium text-gray-800 dark:text-white">{{ $cat->name }}</span>
+                                    </td>
+                                    <td class="px-5 py-3 text-gray-500 dark:text-slate-400 text-sm max-w-[200px]">
+                                        @if($cat->description)
+                                            <span class="truncate block"
+                                                title="{{ $cat->description }}">{{ Str::limit($cat->description, 50) }}</span>
+                                        @else
+                                            <span class="text-gray-300 dark:text-slate-600 italic">—</span>
+                                        @endif
                                     </td>
                                     <td class="px-5 py-3 text-gray-500 dark:text-slate-400 text-sm font-mono italic">
                                         {{ $cat->slug }}
@@ -111,6 +120,9 @@
     </div>
 
     <script>
+        // Track tổng số danh mục từ server
+        let totalCategories = {{ $categories->total() }};
+
         // AJAX Add Category
         document.getElementById('add-category-form').addEventListener('submit', async function (e) {
             e.preventDefault();
@@ -184,7 +196,7 @@
                     row.style.opacity = '0';
                     setTimeout(() => {
                         row.remove();
-                        updateCount();
+                        updateCount(-1);
                     }, 300);
                     showToast('Đã xóa danh mục!', 'success');
                 } else {
@@ -196,9 +208,9 @@
             }
         }
 
-        function updateCount() {
-            const count = document.querySelectorAll('.category-row').length;
-            document.getElementById('total-count').textContent = `(${count})`;
+        function updateCount(delta = 0) {
+            totalCategories += delta;
+            document.getElementById('total-count').textContent = `(${totalCategories})`;
         }
 
         function showToast(message, type) {
