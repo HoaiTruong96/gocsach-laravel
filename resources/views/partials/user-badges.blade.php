@@ -4,13 +4,13 @@ Usage: @include('partials.user-badges', ['user' => $someUser, 'size' => 'sm'])
 
 $user: User model (required)
 $size: 'xs', 'sm', 'md' (optional, default: 'sm')
-$max: số badge tối đa hiển thị (optional, default: 3)
+$max: số badge tối đa hiển thị (optional, default: 5)
 --}}
 
 @php
     $badges = $user->activeBadges ?? collect();
     $size = $size ?? 'sm';
-    $max = $max ?? 3;
+    $max = $max ?? 5;
 
     // Size classes
     $sizeClasses = [
