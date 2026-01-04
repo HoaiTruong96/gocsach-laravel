@@ -37,7 +37,7 @@
                                 </label>
                                 <input type="text" name="name" value="{{ old('name', $challenge->name) }}" maxlength="50"
                                     class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic"
-                                    placeholder="VD: Season Mùa Đông 2025" required
+                                    placeholder="VD: Season Mùa Đông 2026" required
                                     oninput="document.getElementById('name-count').textContent = this.value.length">
                                 @error('name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                             </div>

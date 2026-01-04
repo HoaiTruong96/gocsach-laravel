@@ -40,7 +40,7 @@ return [
 
         'public' => [
             'driver' => 'local',
-            'root' => storage_path('app/public'),
+            'root' => public_path('storage'), // [FIX] Lưu trực tiếp vào public/storage (không qua symlink)
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
             'throw' => false,

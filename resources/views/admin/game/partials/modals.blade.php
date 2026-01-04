@@ -39,7 +39,7 @@
                                 </label>
                                 <input type="text" name="name" id="challenge-name" maxlength="50"
                                     class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white placeholder:italic"
-                                    placeholder="VD: Season Mùa Đông 2025" required
+                                    placeholder="VD: Season Mùa Đông 2026" required
                                     oninput="document.getElementById('challenge-name-count').textContent = this.value.length">
                                 <p class="text-red-500 text-xs mt-1 hidden" id="error-name"></p>
                             </div>
@@ -361,7 +361,7 @@
                         </label>
                         <input type="text" name="name" id="frame-name" maxlength="50"
                             class="w-full px-4 py-2 border dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none bg-white dark:bg-slate-700 text-gray-800 dark:text-white"
-                            placeholder="VD: Khung Mùa Đông 2025" required
+                            placeholder="VD: Khung Mùa Đông 2026" required
                             oninput="document.getElementById('frame-name-count').textContent = this.value.length">
                         <p class="text-red-500 text-xs mt-1 hidden" id="frame-error-name"></p>
                     </div>

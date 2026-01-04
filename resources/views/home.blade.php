@@ -702,7 +702,8 @@
                                     <span class="w-1.5 h-1.5 bg-brand-accent rounded-full"></span>
                                     Sự kiện HOT
                                 </span>
-                                <h3 class="text-2xl md:text-3xl font-serif font-bold mb-2 text-brand-beige">{{ $activeChallenge->name }}</h3>
+                                <h3 class="text-2xl md:text-3xl font-serif font-bold mb-2 text-brand-beige">Thử Thách Đọc
+                                    Sách 2026</h3>
                                 <p class="text-white/70 text-sm font-light max-w-md leading-relaxed">
                                     <i class="fas fa-medal text-yellow-400 mr-1"></i>
                                     Hoàn thành <span class="text-brand-accent font-bold">{{ $activeChallenge->target_count }} cuốn sách</span> 

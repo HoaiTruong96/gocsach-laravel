@@ -124,9 +124,10 @@
                             class="hidden fixed sm:absolute left-0 sm:left-auto right-0 top-16 sm:top-full sm:mt-2 w-full sm:w-80 bg-white rounded-none sm:rounded-xl shadow-xl border-t sm:border border-gray-100 overflow-hidden animate-fade-in z-[100] sm:origin-top-right">
                             <div class="px-4 py-3 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
                                 <span class="text-sm font-bold text-gray-700">Thông báo</span>
-                                <button type="button" onclick="markAllNotificationsAsRead()" id="mark-all-read-btn"
+                                {{-- Ẩn nút Đánh dấu đã đọc theo yêu cầu --}}
+                                {{-- <button type="button" onclick="markAllNotificationsAsRead()" id="mark-all-read-btn"
                                     class="{{ Auth::user()->unreadNotifications->count() > 0 ? '' : 'hidden' }} text-[10px] text-blue-500 hover:underline cursor-pointer">Đánh
-                                    dấu đã đọc</button>
+                                    dấu đã đọc</button> --}}
                             </div>
                             <div id="notification-list" class="max-h-80 overflow-y-auto">
                                 @forelse(Auth::user()->notifications as $notification)
