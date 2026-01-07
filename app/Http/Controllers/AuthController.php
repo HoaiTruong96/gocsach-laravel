@@ -39,7 +39,7 @@ class AuthController extends Controller
             }
 
             $request->session()->regenerate();
-            
+
             // Kiểm tra email đã xác thực chưa
             $user = Auth::user();
             if (!$user->email_verified_at) {
@@ -48,11 +48,11 @@ class AuthController extends Controller
                     ->where('email', $user->email)
                     ->where('expires_at', '>', Carbon::now())
                     ->first();
-                
+
                 // Nếu không có mã hoặc mã đã hết hạn, tạo mã mới
                 if (!$existingCode) {
                     $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-                    
+
                     DB::table('password_reset_codes')->where('email', $user->email)->delete();
                     DB::table('password_reset_codes')->insert([
                         'email' => $user->email,
@@ -82,12 +82,12 @@ class AuthController extends Controller
                     return redirect()->route('verification.notice')
                         ->with('status', 'Đã gửi mã xác thực mới vào email của bạn!');
                 }
-                
+
                 // Nếu mã còn hiệu lực, chuyển đến trang xác thực
                 return redirect()->route('verification.notice')
                     ->with('status', 'Vui lòng xác thực email để tiếp tục sử dụng.');
             }
-            
+
             return redirect()->route('home'); // Đăng nhập xong về trang chủ
         }
 
@@ -250,7 +250,7 @@ class AuthController extends Controller
         if (Auth::check()) {
             $user = Auth::user();
             $email = $user->email;
-            
+
             // Kiểm tra nếu user nhập email khác với email đang đăng nhập
             if ($request->email && $request->email !== $email) {
                 return back()->withErrors(['email' => 'Bạn chỉ có thể đặt lại mật khẩu cho tài khoản đang đăng nhập.']);
@@ -267,7 +267,7 @@ class AuthController extends Controller
 
             $email = $request->email;
             $user = User::where('email', $email)->first();
-            
+
             if (!$user) {
                 return back()->withErrors(['email' => 'Không tìm thấy email này trong hệ thống.']);
             }
